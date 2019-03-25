@@ -114,9 +114,10 @@ class PlacementGenerator(object):
         #dx = self.vdata.voxelized_intensity.voxel_dimensions[0]
 
         # generate some points first, say 10% of the sample
-        # and return the last sphere
         if len(self.pattern) <= self.__n_initial:
-            x, r = self._first_order(centers)
+            return self._first_order(centers)
+
+        x, r = self._first_order(centers)
 
         # get nearest neighbor and calc its distance
         # to the current point

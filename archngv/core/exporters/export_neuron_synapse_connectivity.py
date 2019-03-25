@@ -28,7 +28,7 @@ def create_synaptic_connectivity_fields(fd_conn, total_neurons, total_synapses):
                                              shape=(total_neurons + 1,),
                                              dtype='f16', chunks=None)
     dset_afferent_neuron_offsets[0] = 0
-    dset_afferent_neuron_offsets.attrs['column_names'] = ['Synapse']
+    #dset_afferent_neuron_offsets.attrs['column_names'] = ['Synapse']
 
     return dset_afferent_neuron, dset_afferent_neuron_offsets
 
@@ -42,7 +42,7 @@ def export_neuron_synapse_association(ngv_config,
     n_neurons = len(neuron_gids)
     total_synapses = sum(len(connectome.afferent_synapses(gid)) for gid in neuron_gids)
 
-    L.info('{} total synapses. Started extraction.').format(total_synapses)
+    L.info('{} total synapses. Started extraction.'.format(total_synapses))
 
     with h5py.File(ngv_config.output_paths('synaptic_data'), 'w') as fd_data, \
          h5py.File(ngv_config.output_paths('synaptic_connectivity'), 'w') as fd_conn:

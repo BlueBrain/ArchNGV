@@ -23,7 +23,7 @@ pwd = os.path.dirname(__file__)
 
 SETUP_REQUIREMENTS = \
 [
-    'numpy>=1.15',
+    'numpy>=1.13',
     'cython>=0.25.2'
 ]
 
@@ -34,12 +34,11 @@ REQUIREMENTS = \
     'enum34>=1.0.4',
     'h5py>=2.3.1',
     'jenkspy>=0.1.4',
-    'lxml>=4.1.1',
     'openmesh>=1.1.2',
     'pandas>=0.16.2',
     'numpy-stl>=2.7',
     'Rtree>=0.8.3',
-    'scipy>=1.1.0',
+    'scipy>=1.0.0',
     'tess>=0.2.2',
     'trimesh>=2.21.15'
 ] + [
@@ -52,9 +51,6 @@ REQUIREMENTS = \
 
 DEPENDENCIES = \
 [
-    'git+ssh://git@github.com/eleftherioszisis/MorphMath.git#egg=morphmath-0.0',
-    'git+ssh://git@github.com/eleftherioszisis/MorphSpatial.git#egg=morphspatial-0.0',
-    'git+ssh://git@github.com/eleftherioszisis/SpatialIndex.git#egg=spatial_index-0.0',
     'https://bbpteam.epfl.ch/repository/devpi/bbprelman/dev/voxcell#egg=voxcell-2.5.2'
 ]
 
