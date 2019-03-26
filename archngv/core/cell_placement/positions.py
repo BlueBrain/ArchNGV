@@ -2,12 +2,15 @@
 Entry fucntions to use cell placement
 """
 
+# pylint: disable = logging-format-interpolation
+
 import logging
 import numpy as np
 
 from .energy import EnergyOperator
 from .atlas import PlacementVoxelData
 from .generation import PlacementGenerator
+from .generation import PlacementParameters
 from .soma_generation import truncated_normal_distribution
 
 
@@ -18,6 +21,17 @@ def total_number_of_cells(voxelized_intensity):
     """ Given a 3D intensity array return the total number of cells
     """
     return int(np.round(voxelized_intensity.voxel_volume * voxelized_intensity.raw.sum() * 1e-9))
+
+
+def create_placement_parameters(user_params):
+    """ Create placement parameters named tuple
+    """
+    return PlacementParameters(
+                                beta = user_params['beta']
+                                number_of_trials = user_params['ntrials'],
+                                cutoff_radius = user_params['cutoff_radius'],
+                                initial_sample_size = user_params['n_initial']
+                              )
 
 
 def create_positions(parameters,
@@ -47,7 +61,10 @@ def create_positions(parameters,
     L.info('Voxelized Intensity, Brain Regions shapes: {}, {}'.format(voxelized_intensity.raw.shape,
                                                                       voxelized_brain_regions.raw.shape))
 
-    pgen = PlacementGenerator(parameters['MetropolisHastings'],
+    placement_parameters = \
+        create_placement_parameters(parameters['MetropolisHastings'])
+
+    pgen = PlacementGenerator(placement_parameters,
                               total_cells,
                               placement_data,
                               energy_operator,

@@ -5,29 +5,33 @@ Function potentials that depend on the distance r
 import numpy as np
 
 
-def lenard_jones(r, rm, e):
+def lenard_jones(dist, d_m, epsilon):
     """ Lenard Jones potential to approximate attraction
     repulsion
 
-    rm: distance at which the potential reaches its min
-    e: the depth of the potential well
+    Args:
+        d_m: float
+            Distance at which the potential reaches its min.
+        epsilon:
+            The depth of the potential well.
     """
-    ratio = rm / r
-    return e * (np.power(ratio, 12) - 2. * np.power(ratio, 6))
+    ratio = d_m / dist
+    return epsilon * (np.power(ratio, 12) - 2. * np.power(ratio, 6))
 
 
-def coulomb(r, rm):
+def coulomb(dist, d_m):
     """ Classical Coulomb potential
     """
-    return rm / r ** 2
+    return d_m / dist ** 2
 
 
-def inverse_distance(r, rm):
+def inverse_distance(dist, d_m):
     """ One over r repulsion potential
     """
-    return rm / r
+    return d_m / dist
 
-def spring(r, d, k):
+
+def spring(dist, d_m, spring_constant):
     """ Spring potential
     """
-    return k * (r - d) ** 2
+    return spring_constant * (dist - d_m) ** 2

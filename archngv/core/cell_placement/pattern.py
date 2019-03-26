@@ -6,26 +6,26 @@ import numpy
 from spatial_index import sphere_rtree  # pylint: disable=no-name-in-module
 
 
-def collision_sphere_with_sphere(point_1, radius_1, point_2, radius_2):
-    """ Checks if two spheres collide by comparing their intercenter distance
-    versus the sum of their radii
-    """
-    return numpy.sqrt((point_2[0] - point_1[0]) ** 2 + \
-                      (point_2[1] - point_1[1]) ** 2 + \
-                      (point_2[2] - point_1[2]) ** 2) <= radius_1 + radius_2
-
-
 class SpatialSpherePattern(object):
     """ Data Structure for a sphere collection embedded in space,
     registered in an Rtree index.
 
-    max_spheres : int
-        Maximum Number of spheres in the pattern.
+    Args:
+        max_spheres : int
+            Maximum Number of spheres in the pattern.
 
+    Attributes:
+        coordinates: 2D array
+            Coordinates of the centers of the spheres stored in the pattern
+        radii: 1D array
+            Respective radii
+        index: int
+            The current position in the coordinates / radii arrays.
+        si: sphere_rtree
+            The rtree spatial index data structure
     """
     def __init__(self, max_spheres):
 
-        # the centers and radii of the spheres
         self._coordinates = numpy.zeros((max_spheres, 3), dtype=numpy.float)
         self._radii = numpy.zeros(max_spheres, dtype=numpy.float)
 
@@ -33,23 +33,23 @@ class SpatialSpherePattern(object):
 
         self._si = sphere_rtree()
 
-    def __getitem__(self, value):
-        assert value < self._index
-        return self._coordinates[value], self._radii[value]
+    def __getitem__(self, pos):
+        """ Get sphere center and radius at position pos """
+        assert pos < self._index
+        return self._coordinates[pos], self._radii[pos]
 
     def __len__(self):
+        """ Number of elements in the index """
         return self._index
 
     @property
     def coordinates(self):
-        """ Returns a view of the stored coordinates
-        """
+        """ Returns a view of the stored coordinates """
         return self._coordinates[:self._index]
 
     @property
     def radii(self):
-        """ Returns a view of the stored radii
-        """
+        """ Returns a view of the stored radii """
         return self._radii[:self._index]
 
     def add(self, position, radius):
@@ -66,6 +66,13 @@ class SpatialSpherePattern(object):
         """ Checks if the new sphere intersects with another from
         the index. RTree intersection iterator is empty in case of
         no hits which raises a StopIteration exception.
+
+        Args:
+            new_position: 1D array
+            new_radius: float
+
+        Returns: Bool
+            True if there is intersection with another object.
         """
         return self._si.is_intersecting(new_position[0],
                                         new_position[1],
@@ -73,5 +80,12 @@ class SpatialSpherePattern(object):
 
     def nearest_neighbour(self, new_position, new_radius):
         """ Yields the nearest neighbor index of the sphere (new_position, new_radius)
+
+        Args:
+            new_position: 1D array
+            new_radius: float
+
+        Returns:
+            Index of the nearest neighbor.
         """
         return self._si.nearest(new_position[0], new_position[1], new_position[2], 1)

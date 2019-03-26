@@ -44,9 +44,8 @@ class EnergyOperator(object):
     """ Energy function class where potentials can be registered and then summed for the calculation
     of the total energy
     """
-    def __init__(self, intensity, init_options):
-
-        self.intensity = intensity
+    def __init__(self, voxelized_intensity, init_options):
+        self.intensity = voxelized_intensity
         self.potentials = _init_potentials(init_options)
 
     def has_second_order_potentials(self):
@@ -65,5 +64,16 @@ class EnergyOperator(object):
         return self.intensity(points)
 
     def __call__(self, point, distance):
+        """ Calculates the first and second order potentials
+
+        Args:
+            point: 1D array
+                xyz
+            distance: float
+                distance between two points
+
+        Returns:
+            The energy based on first and second order potentials
+        """
         return - self.first_order_potentials(point) \
                + self.second_order_potentials(distance)

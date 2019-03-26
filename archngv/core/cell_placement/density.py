@@ -11,7 +11,7 @@ def read_densities_from_file(filename):
     are equidistant, thus the depth of the circuit is used to
     derive their size.
     """
-    #densities = np.tile(10700., 100)
+    # densities = np.tile(10700., 100)
     # assume they are in mm^3, thus they are converted to um^3
     densities, bins_left, bins_right = np.loadtxt(filename).T
 
@@ -48,7 +48,7 @@ def create_density_from_laminar_densities(laminar_densities, bins, bounding_box,
 
         raise NotImplementedError
 
-    #_validate(dgrid, laminar_densities, nmin, N_ygrid)
+    # _validate(dgrid, laminar_densities, nmin, N_ygrid)
 
     return VoxelData(dgrid, voxel_dimensions, offset=bounding_box.offset)
 
