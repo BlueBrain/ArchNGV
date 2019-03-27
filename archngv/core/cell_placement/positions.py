@@ -27,7 +27,7 @@ def create_placement_parameters(user_params):
     """ Create placement parameters named tuple
     """
     return PlacementParameters(
-                                beta = user_params['beta']
+                                beta = user_params['beta'],
                                 number_of_trials = user_params['ntrials'],
                                 cutoff_radius = user_params['cutoff_radius'],
                                 initial_sample_size = user_params['n_initial']

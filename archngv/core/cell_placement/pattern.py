@@ -74,11 +74,9 @@ class SpatialSpherePattern(object):
         Returns: Bool
             True if there is intersection with another object.
         """
-        return self._si.is_intersecting(new_position[0],
-                                        new_position[1],
-                                        new_position[2], new_radius)
+        return self._si.is_intersecting(new_position[0], new_position[1], new_position[2], new_radius)
 
-    def nearest_neighbour(self, new_position, new_radius):
+    def nearest_neighbor(self, new_position, new_radius):
         """ Yields the nearest neighbor index of the sphere (new_position, new_radius)
 
         Args:
@@ -89,3 +87,10 @@ class SpatialSpherePattern(object):
             Index of the nearest neighbor.
         """
         return self._si.nearest(new_position[0], new_position[1], new_position[2], 1)
+
+
+    def distance_to_nearest_neighbor(self, new_position, new_radius):
+        """ Distance to nearest neighbor
+        """
+        index = self.nearest_neighbour(trial_position, trial_radius)
+        return np.linalg.norm(self.coordinates[index] - trial_position)
