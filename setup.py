@@ -1,91 +1,40 @@
 #!/usr/bin/env python
 
 import os
+import imp
 from setuptools import setup
 from setuptools import Extension
 from setuptools import find_packages
 from setuptools.command.build_ext import build_ext as build_ext
 
 
-NAME='archngv'
-
-APPS_FILENAMES = ['ngv_initialize_directories.py',
-                  'ngv_input_generation.py',
-                  'ngv_main_workflow.py',
-                  'ngv_preprocessing.py',
-                  'ngv_postprocessing.py']
-
-APPS = ["{}/workflow/apps/{}".format(NAME, p) for p in APPS_FILENAMES]
-
-
-pwd = os.path.dirname(__file__)
-
-
-SETUP_REQUIREMENTS = \
-[
-    'numpy>=1.13',
-    'cython>=0.25.2'
-]
-
-
-REQUIREMENTS = \
-[
-    'cached-property>=1.3.1',
-    'enum34>=1.0.4',
-    'h5py>=2.3.1',
-    'jenkspy>=0.1.4',
-    'openmesh>=1.1.2',
-    'pandas>=0.16.2',
-    'numpy-stl>=2.7',
-    'Rtree>=0.8.3',
-    'scipy>=1.0.0',
-    'tess>=0.2.2',
-    'trimesh>=2.21.15'
-] + [
-    'morphmath>=0.0',
-    'morphspatial>=0.0',
-    'spatial_index>=0.0',
-    'voxcell>=2.5.2'
-]
-
-
-DEPENDENCIES = \
-[
-    'https://bbpteam.epfl.ch/repository/devpi/bbprelman/dev/voxcell#egg=voxcell-2.5.2'
-]
-
-
-def scandir(directory, files=[]):
-
-    for f in os.listdir(directory):
-
-        f_path = os.path.join(directory, f)
-
-        if os.path.isfile(f_path) and f_path.endswith(".pyx"):
-            files.append(f_path)
-        elif os.path.isdir(f_path):
-            scandir(f_path, files)
-
-    return files
+VERSION = imp.load_source("archngv.version", "archngv/version.py").VERSION
 
 def create_extensions(directory):
 
+    def scandir(directory, files=[]):
+
+        for f in os.listdir(directory):
+
+            f_path = os.path.join(directory, f)
+
+            if os.path.isfile(f_path) and f_path.endswith(".pyx"):
+                files.append(f_path)
+            elif os.path.isdir(f_path):
+                scandir(f_path, files)
+
+        return files
+
     extensions = []
 
-    for fpath in scandir(directory):
+    for filepath in scandir(directory):
 
-        dpath = fpath.replace(os.path.sep, '.')[:-4]
-        
-        extension = Extension(
-             dpath,
-             sources=[fpath],
-             #include_dirs=[numpy.get_include()],
-             language='c++',
-             extra_compile_args=["-O2"]
-        )
+        dotted_path = filepath.replace(os.path.sep, '.')[:-4]
+        extension = Extension(dotted_Path, sources=[filepath], language='c++', extra_compile_args=["-O2"])
         extensions.append(extension)
 
     return extensions
+
 
 class CustomBuildExtCommand(build_ext):
     """build_ext command for use when numpy headers are needed."""
@@ -106,30 +55,50 @@ setup(
         'Programming Language :: Python :: 3.6',
     ],
 
-      name=NAME,
+      name = 'archngv',
 
-      version='0.0',
+      version = VERSION,
 
       description = 'NGV Architecture Modules',
 
-      author='Eleftherios Zisis',
+      author ='Eleftherios Zisis',
 
       author_email = 'eleftherios.zisis@epfl.ch',
 
-      setup_requires = SETUP_REQUIREMENTS,
+      setup_requires = [
+                            'numpy>=1.13',
+                            'cython>=0.25.2'
+      ],
 
-      install_requires = REQUIREMENTS,
-
-      dependency_links = DEPENDENCIES,
+      install_requires = [
+                            'morphmath',
+                            'morphspatial',
+                            'spatial_index',
+                            'cached-property>=1.3.1',
+                            'enum34>=1.0.4',
+                            'h5py>=2.3.1',
+                            'jenkspy>=0.1.4',
+                            'openmesh>=1.1.2',
+                            'pandas>=0.16.2',
+                            'numpy-stl>=2.7',
+                            'scipy>=1.0.0',
+                            'tess>=0.2.2',
+                            'trimesh>=2.21.15'
+      ],
 
       packages = find_packages(),
 
-      scripts = APPS,
+      scripts = [
+                  'archngv/workflow/apps/ngv_initialize_directories.py',
+                  'archngv/workflow/apps/ngv_input_generation.py',
+                  'archngv/workflow/apps/ngv_main_workflow.py',
+                  'archngv/worfklow/apps/ngv_preprocessing.py',
+                  'archngv/workflow/apps/ngv_postprocessing.py'
+      ],
 
       cmdclass = {'build_ext': CustomBuildExtCommand},
 
-      ext_modules = create_extensions(NAME),
+      ext_modules = create_extensions('archngv'),
 
       include_package_data = True
-     )
-
+)
