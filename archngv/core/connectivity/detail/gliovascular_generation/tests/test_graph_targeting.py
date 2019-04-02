@@ -6,17 +6,20 @@ from .. import graph_targeting as _gt
 def parametric_line(start, u_dir, t):
     return start + t * u_dir
 
+
 def line_lengths(points, edges):
     return np.linalg.norm(points[edges[:, 1]] - points[edges[:, 0]], axis=1)
 
+
 def sequential_edges(Npoints):
     return np.asarray([(n, n + 1) for n in range(Npoints - 1)], dtype=np.int)
+
 
 def _create_test_line(Npoints, dP, target_linear_density):
 
     l_T = target_linear_density
 
-    start = np.array([1.,2.,3.])
+    start = np.array([1., 2., 3.])
     direction = np.array([12., -21., 100.])
 
     u_d = direction / np.linalg.norm(direction)
@@ -51,7 +54,7 @@ def test_targeting_on_straight_line():
 
 def test_targeting_on_random_lines():
 
-    for i in range(10):
+    for _ in range(10):
 
         L = np.random.uniform(0.02, 100.)
         linear_density = 1. / (10. * np.random.uniform(0.01, L - 0.01))
@@ -61,7 +64,7 @@ def test_targeting_on_random_lines():
         parameters = {"linear_density": linear_density}
 
         a_targets, a_segments = \
-        _gt.distribution_on_line_graph(points[edges[:, 0]], points[edges[:, 1]], linear_density)
+            _gt.distribution_on_line_graph(points[edges[:, 0]], points[edges[:, 1]], linear_density)
 
         txt = "\nRandomized line test Failed: \n"
         txt += "parameters: L = {0}, linear density = {1}\n".format(L, linear_density)

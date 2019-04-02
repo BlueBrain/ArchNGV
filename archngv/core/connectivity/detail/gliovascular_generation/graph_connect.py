@@ -1,6 +1,7 @@
+""" Connect astrocytes with vasculature targets
+"""
 
 import logging
-import itertools
 
 import numpy
 import scipy.stats
@@ -11,13 +12,14 @@ from morphspatial import collision
 
 from ....data_structures.data_microdomains import MicrodomainTesselation
 
-#from archngv.data_structures.data_microdomains import MicrodomainTesselation
 
 L = logging.getLogger(__name__)
 
 
 def _num_endfeet_distribution(mean, std, clip_a, clip_b):
-
+    """ Returns the truncated normal distribution with (mean, std)
+    minimum value clip_a and maximum value clip_b
+    """
     a, b = (clip_a - mean) / std, (clip_b - mean) / std
 
     return scipy.stats.truncnorm(a, b, mean, std)
@@ -31,21 +33,23 @@ def _radius_approx_from_segments(vasculature, target_segment_idx):
     seg_radii_begs, seg_radii_ends = vasculature.segments_radii
 
     target_radii = \
-    0.5 * (seg_radii_begs[target_segment_idx] + seg_radii_ends[target_segment_idx])
-
+        0.5 * (seg_radii_begs[target_segment_idx] + seg_radii_ends[target_segment_idx])
 
     return target_radii
 
 
-def _find_spheres_inside_bounding_box(domain_shape, target_positions):
+def points_inside_bounding_box(bbox, target_positions):
+    """
+    Args:
+        bbox: tuple [xmin, ymin, zmin, xmax, ymax, zmax]
+        positions: array[float, (N, 3)]
 
-    bbox = domain_shape.bounding_box
-
-    mask = (bbox[0] <= target_positions[:, 0])  & (target_positions[:, 0] <= bbox[3]) & \
+    Returns: array[bool, (N,)]
+        True if point inside bounding box
+    """
+    return (bbox[0] <= target_positions[:, 0])  & (target_positions[:, 0] <= bbox[3]) & \
            (bbox[1] <= target_positions[:, 1])  & (target_positions[:, 1] <= bbox[4]) & \
            (bbox[2] <= target_positions[:, 2])  & (target_positions[:, 2] <= bbox[5])
-
-    return mask
 
 
 def _find_available_targets(domain_shape, bb_idx, target_positions, target_radii):
@@ -119,7 +123,7 @@ def domains_to_vasculature(cell_ids,
                            target_vasculature_segments,
                            microdomain_filepath,
                            properties):
-    """ 
+    """
     1. Generate structural connectivity from the geometrical aspects
     of hulls and target spheres.
 
@@ -132,7 +136,7 @@ def domains_to_vasculature(cell_ids,
     target_radii = _radius_approx_from_segments(vasculature,
                                                 target_vasculature_segments)
 
-    L.info('Endfeet Distribution Paremeters {}'.format(properties['Endfeet Distribution']))
+    L.info('Endfeet Distribution Paremeters %s', properties['Endfeet Distribution'])
 
     n_distr = _num_endfeet_distribution(*properties['Endfeet Distribution'])
 
@@ -149,20 +153,23 @@ def domains_to_vasculature(cell_ids,
                 continue
 
             domain_shape = microdom.domain_object(int(cell_id))
-            mask_bb = _find_spheres_inside_bounding_box(domain_shape, target_positions)
+            mask_bb = points_inside_bounding_box(domain_shape.bounding_box, target_positions)
 
-            if mask_bb.any():
+            if not mask_bb.any():
+                continue
 
-                targets_idx = \
+            targets_idx = \
                 _find_available_targets(domain_shape, idx[mask_bb], target_positions, target_radii)
-                if targets_idx.any():
 
-                    sliced = _filter_according_to_strategy(domain_shape.centroid,
-                                                           target_positions[targets_idx],
-                                                           target_radii[targets_idx],
-                                                           number_of_endfeet,
-                                                           reachout_strategy_function)
-                    targets_idx = targets_idx[sliced]
-                    domain_target_edges.extend([(domain_index, target_index) for target_index in targets_idx])
+            if not targets_idx.any():
+                continue
+
+            sliced = _filter_according_to_strategy(domain_shape.centroid,
+                                                   target_positions[targets_idx],
+                                                   target_radii[targets_idx],
+                                                   number_of_endfeet,
+                                                   reachout_strategy_function)
+            targets_idx = targets_idx[sliced]
+            domain_target_edges.extend([(domain_index, target_index) for target_index in targets_idx])
 
     return numpy.asarray(domain_target_edges)

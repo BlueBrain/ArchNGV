@@ -30,7 +30,7 @@ def create_extensions(directory):
     for filepath in scandir(directory):
 
         dotted_path = filepath.replace(os.path.sep, '.')[:-4]
-        extension = Extension(dotted_Path, sources=[filepath], language='c++', extra_compile_args=["-O2"])
+        extension = Extension(dotted_path, sources=[filepath], language='c++', extra_compile_args=["-O2"])
         extensions.append(extension)
 
     return extensions
@@ -92,13 +92,11 @@ setup(
                   'archngv/workflow/apps/ngv_initialize_directories.py',
                   'archngv/workflow/apps/ngv_input_generation.py',
                   'archngv/workflow/apps/ngv_main_workflow.py',
-                  'archngv/worfklow/apps/ngv_preprocessing.py',
+                  'archngv/workflow/apps/ngv_preprocessing.py',
                   'archngv/workflow/apps/ngv_postprocessing.py'
       ],
 
       cmdclass = {'build_ext': CustomBuildExtCommand},
-
       ext_modules = create_extensions('archngv'),
-
       include_package_data = True
 )

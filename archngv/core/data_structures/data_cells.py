@@ -1,13 +1,12 @@
+"""
+Data structures for basic cell characteristics
+"""
+
 import os
-import h5py
-import logging
 
 import numpy as np
 
 from .common import H5ContextManager
-
-
-L = logging.getLogger(__name__)
 
 
 class CellData(H5ContextManager):
@@ -26,10 +25,13 @@ class CellData(H5ContextManager):
 
     @property
     def astrocyte_point_data(self):
+        """ Returns stacked astrocyte positions and radii
+        """
         return np.column_stack((self.astrocyte_positions, self.astrocyte_radii))
 
     @property
     def n_cells(self):
+        """ Number of cells """
         return len(self.astrocyte_positions)
 
 
@@ -44,11 +46,14 @@ class CellDataInfo(CellData):
         self._config = ngv_config
 
     def morphology_path(self, astrocyte_index):
-        cell_name = self.astrocyte_names[astrocyte_index]
-        return os.path.join(self.config.morphology_directory, '{}.h5'.format(cell_name))
+        """ Absolute path to the astrocyte morphology corresponding
+        to the given index.
+        """
+        cell_filename = self.astrocyte_names[astrocyte_index] + '.h5'
+        return os.path.join(self._config.morphology_directory, cell_filename)
 
     def morphology_object(self, astrocyte_index):
-        import morphio
-        return morphio.Morphology(self.morphology_path(astrocyte_index))
-
-
+        """ Readonly morphology object using morphio
+        """
+        from morphio import Morphology
+        return Morphology(self.morphology_path(astrocyte_index))

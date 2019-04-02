@@ -1,25 +1,15 @@
-import os
-import h5py
-import logging
-import collections
-from enum import Enum
-
-import numpy as np
-
-from collections import namedtuple
-from itertools import groupby
-from copy import deepcopy
-
-
+""" Data structures for connectivity between neurons and astrocytes
+"""
 from .common import H5ContextManager
 
 
-L = logging.getLogger(__name__)
-
-
 class NeuroglialConnectivity(H5ContextManager):
-
-
+    """
+    Attributes:
+        astrocyte: AtrocyteEntry
+            Astrocyte point of view. Allow access of connections
+            to synapses and neurons.
+    """
     def __init__(self, filepath):
         super(NeuroglialConnectivity, self).__init__(filepath)
 
@@ -29,23 +19,44 @@ class NeuroglialConnectivity(H5ContextManager):
 
     @property
     def n_astrocytes(self):
-        return len(self.astrocyte._offsets) - 1
+        """ Number of astrocytes"""
+        return len(self.astrocyte)
 
     @property
     def n_neurons(self):
-        return len(self.neuron._offsets) - 1
+        """ Number of neurons """
+        return len(self.neuron)
 
     @property
     def n_synapses(self):
+        """ Number of synapses """
         raise NotImplementedError
 
 
 class NeuronEntry(object):
 
+    """ Astrocytic point of view. Allows access to all its
+    neighbors.
+
+    Attributes:
+        offsets : hdf5 Dataset[init, (M + 1, 1)]
+            The connectivity corresponding to the i-th
+            astrocyte can be accesed as
+            connectivity[offsets[i]: offsets[i + 1]].
+            Note that for M astrocytes there are M + 1 rows
+            as the end offest of the last astrocyte is contained
+            as well. This is different than the usual h5v1 spec where
+            it is left to the user to extract the last section from the
+            number of points.
+    """
     def __init__(self, fd):
 
         self._offsets = fd['/Neuron/offsets']
         self._astrocyte = fd['/Neuron/astrocyte']
+
+    def __len__(self):
+        """ Size """
+        return len(self._offsets) - 1
 
     def _offset_slice(self, neuron_index):
          return self._offsets[neuron_index], \
@@ -89,6 +100,10 @@ class AstrocyteEntry(object):
         self._offsets = fd['/Astrocyte/offsets']
         self._synapse = fd['/Astrocyte/synapse']
         self._neuron = fd['/Astrocyte/neuron']
+
+    def __len__(self):
+        """ Size """
+        return len(self._offsets) - 1
 
     def _offset_slice(self, astrocyte_index, offset_type):
         return self._offsets[astrocyte_index, offset_type], \
