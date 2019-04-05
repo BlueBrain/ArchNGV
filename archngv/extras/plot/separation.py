@@ -12,7 +12,6 @@ from ...analysis.histograms import points_included_in_bin_1D
 from morphmath import normalize_vectors
 
 from morphspatial.shapes import Sphere
-from morphspatial.spatial_index_special_cases import RTreeSpheres as SphereSpatialIndex
 
 L = logging.getLogger(__name__)
 

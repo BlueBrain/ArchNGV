@@ -74,6 +74,5 @@ def create_positions(parameters,
     L.info('Placement Generator Initializes.')
 
     pgen.run()
-    L.info('Placement Generator finished running')
 
     return pgen.pattern.coordinates, pgen.pattern.radii

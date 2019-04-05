@@ -199,7 +199,7 @@ def test_generator_run():
         coordinates = p_gen.pattern.coordinates
         radii = p_gen.pattern.radii
 
-        assert len(coordinates) == len(radii) == 10
+        assert len(coordinates) == len(radii) == 20, (coordinates, radii)
 
         assert np.allclose(coordinates - mock_point, 0.0)
         assert np.allclose(radii, mock_radius)

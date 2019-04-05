@@ -240,14 +240,9 @@ class Vasculature(object):
         """ Returns bb object """
         return BoundingBox.from_points(self.points)
 
-    def spatial_index(self, output_name):
-        from morphspatial import shapes
-        from morphspatial import RTree
-
-        it = (shapes.Sphere(center, radius) for center, radius \
-              in zip(self.points, self.radii))
-
-        return RTree.create_from_bulk(it, name=output_name)
+    def spatial_index(self):
+        from spatial_index import sphere_rtree
+        return sphere_rtree(self.points, self.radii)
 
     def save(self, filename):
         """ Save vasculature to h5 file """

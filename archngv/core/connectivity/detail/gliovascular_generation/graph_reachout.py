@@ -58,7 +58,7 @@ def deploy(input_strategy, available_strategies):
 
         warn_msg = 'Strategy {} is not available.'.format(input_strategy)
         info_msg = 'Available strategies: {}'.format(available_strategies)
-        L.warning(warn_msg + '\n' info_msg)
+        L.warning(warn_msg + '\n' + info_msg)
         raise KeyError(warn_msg + '\n' + info_msg)
 
     return selected_strategy

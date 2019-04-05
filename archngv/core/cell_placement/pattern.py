@@ -76,21 +76,21 @@ class SpatialSpherePattern(object):
         """
         return self._si.is_intersecting(new_position[0], new_position[1], new_position[2], new_radius)
 
-    def nearest_neighbor(self, new_position, new_radius):
+    def nearest_neighbor(self, trial_position, trial_radius):
         """ Yields the nearest neighbor index of the sphere (new_position, new_radius)
 
         Args:
-            new_position: 1D array
-            new_radius: float
+            trial_position: 1D array
+            trial_radius: float
 
         Returns:
             Index of the nearest neighbor.
         """
-        return self._si.nearest(new_position[0], new_position[1], new_position[2], 1)
+        return self._si.nearest(trial_position[0], trial_position[1], trial_position[2], 1)
 
 
-    def distance_to_nearest_neighbor(self, new_position, new_radius):
+    def distance_to_nearest_neighbor(self, trial_position, trial_radius):
         """ Distance to nearest neighbor
         """
-        index = self.nearest_neighbour(trial_position, trial_radius)
-        return np.linalg.norm(self.coordinates[index] - trial_position)
+        index = self.nearest_neighbor(trial_position, trial_radius)
+        return numpy.linalg.norm(self.coordinates[index] - trial_position)

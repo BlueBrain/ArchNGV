@@ -12,123 +12,11 @@ from archngv.core.cell_placement.positions import create_positions
 from archngv.core.util.bounding_box import BoundingBox
 from archngv.core.exporters import export_cell_placement_data
 
+from spatial_index import sphere_rtree
 
 
 L = logging.getLogger(__name__)
 
-
-def get_spatial_index_list(ngv_config):
-
-    from morphspatial import RTree
-    from rtree.core import RTreeError
-
-    static_spatial_indexes = []
-
-    try:
-
-        static_spatial_indexes.append(RTree.load(ngv_config.output_paths('vasculature_index')))
-
-    except KeyError:
-        L.info('Vasculature spatial index path not found. Proceeding without it.')
-    except RTreeError:
-        L.info('Vasculature Index Failed to be read. Proceeding without it')
-    except AttributeError:
-        L.info('Vasculature Index Failed to be read. Proceeding without it')
-
-    if ngv_config._config['use_somata_geometry']:
-
-        L.info('Neuronal somata geometry for indexing is enabled.')
-
-        try:
-
-            static_spatial_indexes.append(RTree.load(ngv_config.output_paths('neuronal_somata_index')))
-
-        except KeyError:
-            L.info('Neuronal somata index was not found. Proceeding without it.')
-        except RTreeError:
-            L.info('Neuronal Somata Index Failed to be read. Proceeding without it')
-        except AttributeError:
-            L.info('Neuronal Somata Index Failed to be read. Proceeding without it')
-
-    return static_spatial_indexes
-
-
-class OnSSDs(object):
-    """ Decorator for automatically running an out of core index on the ssd disk drives
-    of bb5. One has to allocate with --Cnvme to gain access to the /nvme directory.
-    Spatial indexes on hdds are copied to the ssds and symbolic links are made at the index
-    local directory that map to the nvme ones. The paths are modified in the config and then
-    modified back when the processing is done. This way the project itself is agnostic on where
-    the indexes really are located.
-    """
-
-    def __init__(self, config, index_keys):
-
-        self._config = config
-        self._keys = index_keys
-
-    @property
-    def ssd_directory(self):
-        return os.path.join('/nvme', getuser(), os.environ["SLURM_JOB_ID"])
-
-    @property
-    def hdd_directory(self):
-        return self._config.spatial_index_directory
-
-    def config_entry(self, key):
-        return self._config._config['output_paths'][key]
-
-    def copy_with_ext(self, source, target, ext):
-        cmd = 'rsync --ignore-existing {0}.{2} {1}.{2}'.format(source, target, ext)
-
-        L.info('Executing command: ' + cmd)
-        os.system('rsync --ignore-existing {0}.{2} {1}.{2}'.format(source, target, ext))
-
-    def create_link(self, source, target, ext):
-
-        try:
-            # unlink any stray links
-            os.unlink(target + '_ssd.' + ext)
-
-        except OSError:
-            pass
-
-        L.info('Link {} -> {}'.format(source + '.dat', target + '_ssd.dat'))
-
-        # create symbolic link in order for the files to be seen local to the project
-        os.symlink(source + '.' + ext, target + '_ssd.' + ext)
-
-
-    def __enter__(self):
-
-        for key in self._keys:
-
-            index_corpus = self.config_entry(key).replace('spatial_index/', '')
-
-            L.info('Index Corpus: {}'.format(index_corpus))
-
-            ssd_path = os.path.join(self.ssd_directory, index_corpus)
-            hdd_path = os.path.join(self.hdd_directory, index_corpus)
-
-            self.copy_with_ext(hdd_path, ssd_path, 'dat')
-            self.copy_with_ext(hdd_path, ssd_path, 'idx')
-
-            self.create_link(ssd_path, hdd_path, 'dat')
-            self.create_link(ssd_path, hdd_path, 'idx')
-
-            self._config._config['output_paths'][key] += '_ssd'
-
-    def __exit__(self, *args):
-
-        for key in self._keys:
-
-            index_corpus = self.config_entry(key).replace('spatial_index/', '')
-
-            hdd_link_path = os.path.join(self.hdd_directory, index_corpus)
-            self._config._config['output_paths'][key] = self._config._config['output_paths'][key].replace('_ssd', '')
-
-            os.unlink(hdd_link_path + '.dat')
-            os.unlink(hdd_link_path + '.idx')
 
 def create_cell_positions(ngv_config, run_parallel):
     """
@@ -165,13 +53,12 @@ def create_cell_positions(ngv_config, run_parallel):
 
     voxelized_intensity.raw = voxelized_intensity.raw.astype(np.float)
 
-    static_spatial_indexes = get_spatial_index_list(ngv_config)
-
+    index_list = [vasculature.spatial_index()]
     # astro somata pos and radii
     somata_positions, somata_radii = create_positions(cell_placement_parameters,
                                                       voxelized_intensity,
                                                       voxelized_bnregions,
-                                                      spatial_indexes=static_spatial_indexes)
+                                                      spatial_indexes=index_list)
 
     cell_names = ['GLIA_{:013d}'.format(index) for index in range(len(somata_positions))]
     cell_ids =  range(len(cell_names))

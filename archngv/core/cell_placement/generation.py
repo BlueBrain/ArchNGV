@@ -82,9 +82,12 @@ class PlacementGenerator:
             return True
 
         if self.index_list:
-            sphere = shapes.Sphere(trial_position, trial_radius)
+            #sphere = shapes.Sphere(trial_position, trial_radius)
             for static_index in self.index_list:
-                if static_index.is_intersecting(sphere):
+                if static_index.is_intersecting(trial_position[0],
+                                                trial_position[1],
+                                                trial_position[2],
+                                                trial_radius):
                     return True
 
         return self.pattern.is_intersecting(trial_position, trial_radius)
@@ -174,9 +177,11 @@ class PlacementGenerator:
         """
         groups_generator = nonzero_intensity_groups(self.vdata.voxelized_intensity)
 
-        k = 0
         for group_total_counts, voxel_centers in groups_generator:
-            while k < group_total_counts and len(self.pattern) < self._total_spheres:
+            for _ in range(group_total_counts):
+
+                if len(self.pattern) == self._total_spheres:
+                    break
 
                 new_position, new_radius = self.method(voxel_centers)
                 self.pattern.add(new_position, new_radius)
@@ -185,8 +190,8 @@ class PlacementGenerator:
                 if len(self.pattern) % 1000 == 0:
                     L.info('Current Number: {}'.format(len(self.pattern)))
 
-                k += 1
-
+        L.debug('Total spheres: %s', self._total_spheres)
+        L.debug('Created spheres: %s', len(self.pattern))
 
 def proposal(voxel_centers, voxel_edge_length):
     """
@@ -257,6 +262,7 @@ def counts_per_group(intensity_per_group, voxels_per_group, voxel_volume):
     """ Returns the counts per group
     """
     counts = 1e-9 * intensity_per_group * voxels_per_group * voxel_volume
+    L.debug('Counts per group: %s, Total %s', counts, counts.sum())
     return counts.astype(np.intp)
 
 
@@ -272,6 +278,7 @@ def nonzero_intensity_groups(voxelized_intensity):
     cnts_per_group = \
         counts_per_group(intensity_per_group, voxels_per_group, voxelized_intensity.voxel_volume)
 
-    for i, group_intensity in enumerate(intensity_per_group):
-        if not np.isclose(group_intensity, 0.0):
-            yield cnts_per_group[i], vox_centers_per_group[i]
+    not_zero = lambda tup: not np.isclose(tup[1], 0.0)
+
+    for i, group_intensity in filter(not_zero, enumerate(intensity_per_group)):
+        yield cnts_per_group[i], vox_centers_per_group[i]
