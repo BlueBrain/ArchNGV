@@ -13,13 +13,14 @@ function h5_compare() {
 
 function h5_compare_all() {
     local dirname="$1"
-    h5_files=$(find "$EXPECTED/$dirname" -name "*.h5" -printf '%f\n' | sort)
+    h5_files=$(find "$EXPECTED/$dirname" -maxdepth 1 -name "*.h5" -printf '%f\n' | sort)
     for fname in $h5_files; do
         h5_compare "$dirname/$fname"
     done
 }
 
-h5_compare_all intermediate
-h5_compare_all morphology
+h5_compare_all "."
+h5_compare_all "./microdomains"
+h5_compare_all "./morphologies"
 
 echo "OK!"

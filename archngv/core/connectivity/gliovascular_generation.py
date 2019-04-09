@@ -55,7 +55,7 @@ def generate_gliovascular(cell_ids,
     astrocyte_graph_edges = domains_to_vasculature(
         cell_ids,
         vasculature,
-        strategy(params['connection']['Reachout Strategy']),
+        strategy(params['connection']['reachout_strategy']),
         graph_positions,
         graph_vasculature_segment,
         astrocytic_domains,

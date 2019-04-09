@@ -13,14 +13,9 @@ def create_neuron_synapse_maps(ngv_config, run_parallel):
 
     L.info('Neuronal Circuit: {}'.format(path))
 
-    connectome = circuit.v2.connectome
-    neuronal_gidx = circuit.v2.cells.ids()
-
     L.info('Started exporting associations.')
-
     export_neuron_synapse_association(
-                                        ngv_config,
-                                        neuronal_gidx,
-                                        connectome
-                                     )
-
+        circuit.v2,
+        output_path_connectivity=ngv_config.output_paths('synaptic_connectivity'),
+        output_path_data=ngv_config.output_paths('synaptic_data')
+    )

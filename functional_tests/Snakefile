@@ -1,0 +1,221 @@
+import os
+import datetime
+
+
+BIONAME = os.path.realpath(config.get('bioname', 'bioname'))
+
+LOGS_DIR = 'logs'
+
+MORPH_DIR = 'morphologies'
+
+
+def bioname_path(filename):
+    return os.path.join(BIONAME, filename)
+
+
+def log_path(name):
+    timestamp = datetime.datetime.now().strftime("%Y%m%dT%H%M%S")
+    return os.path.abspath(os.path.join(LOGS_DIR, "%s.%s.log" % (name, timestamp)))
+
+
+# Load MANIFEST.yaml into workflow config
+workflow.configfile(bioname_path('MANIFEST.yaml'))
+
+
+ATLAS = config['common']['atlas']
+ATLAS_CACHE_DIR = ".atlas"
+VASCULATURE = config['common']['vasculature']
+BASE_CIRCUIT = config['common']['base_circuit']
+
+
+rule default:
+    input:
+        'cell_data.h5',
+        'microdomains/overlapping_structure.h5',
+        'gliovascular_connectivity.h5',
+        'gliovascular_data.h5',
+        'neuroglial_connectivity.h5',
+        'synaptic_connectivity.h5',
+        'synaptic_data.h5',
+        MORPH_DIR + '/_DONE',
+
+
+rule cell_placement:
+    output:
+        'cell_data.h5'
+
+    log:
+        log_path('cell_placement')
+
+    shell:
+        ' '.join([
+            'ngv cell-placement',
+                '--config',
+                    bioname_path('cell_placement.yaml'),
+                '--atlas',
+                    ATLAS,
+                '--atlas-cache',
+                    ATLAS_CACHE_DIR,
+                '--vasculature',
+                    VASCULATURE,
+                '--output',
+                    '{output}',
+                '2>&1 | tee {log}'
+        ])
+
+
+rule microdomains:
+    input:
+        'cell_data.h5'
+
+    output:
+        'microdomains/structure.h5',
+        'microdomains/structure_global.h5',
+        'microdomains/tesselation.stl',
+        'microdomains/overlapping_structure.h5',
+        'microdomains/overlapping_structure_global.h5',
+        'microdomains/overlapping_tesselation.stl',
+
+    log:
+        log_path('microdomains')
+
+    shell:
+        ' '.join([
+            'ngv microdomains',
+                '--config',
+                    bioname_path('microdomains.yaml'),
+                '--cell-data',
+                    '{input}',
+                '--atlas',
+                    ATLAS,
+                '--atlas-cache',
+                    ATLAS_CACHE_DIR,
+                '--output-dir',
+                    'microdomains',
+                '2>&1 | tee {log}'
+        ])
+
+
+rule synaptic_connectivity:
+    output:
+        data = 'synaptic_data.h5',
+        connectivity = 'synaptic_connectivity.h5'
+
+    log:
+        log_path('synaptic_connectivity')
+
+    shell:
+        ' '.join([
+            'ngv synaptic-connectivity',
+                '--circuit',
+                    BASE_CIRCUIT,
+                '--output-data',
+                    '{output[data]}',
+                '--output-connectivity',
+                    '{output[connectivity]}',
+                '2>&1 | tee {log}'
+        ])
+
+
+rule gliovascular_connectivity:
+    input:
+        cell_data = 'cell_data.h5',
+        microdomains = 'microdomains/overlapping_structure.h5',
+
+    output:
+        data = 'gliovascular_data.h5',
+        connectivity = 'gliovascular_connectivity.h5',
+
+    log:
+        log_path('gliovascular_connectivity')
+
+    shell:
+        ' '.join([
+            'ngv gliovascular-connectivity',
+                '--config',
+                    bioname_path('gliovascular_connectivity.yaml'),
+                '--cell-data',
+                    '{input[cell_data]}',
+                '--microdomains',
+                    '{input[microdomains]}',
+                '--vasculature',
+                    VASCULATURE,
+                '--output-data',
+                    '{output[data]}',
+                '--output-connectivity',
+                    '{output[connectivity]}',
+                '2>&1 | tee {log}'
+        ])
+
+
+rule neuroglial_connectivity:
+    input:
+        cell_data = 'cell_data.h5',
+        microdomains = 'microdomains/overlapping_structure.h5',
+        synaptic_data = 'synaptic_data.h5',
+        synaptic_connectivity = 'synaptic_connectivity.h5',
+
+    output:
+        connectivity = 'neuroglial_connectivity.h5',
+
+    log:
+        log_path('neuroglial_connectivity')
+
+    shell:
+        ' '.join([
+            'ngv neuroglial-connectivity',
+                '--cell-data',
+                    '{input[cell_data]}',
+                '--microdomains',
+                    '{input[microdomains]}',
+                '--synaptic-data',
+                    '{input[synaptic_data]}',
+                '--synaptic-connectivity',
+                    '{input[synaptic_connectivity]}',
+                '--output-connectivity',
+                    '{output[connectivity]}',
+                '2>&1 | tee {log}'
+        ])
+
+
+rule synthesis:
+    input:
+        cell_data = 'cell_data.h5',
+        microdomains = 'microdomains/overlapping_structure.h5',
+        gliovascular_connectivity = 'gliovascular_connectivity.h5',
+        gliovascular_data = 'gliovascular_data.h5',
+        neuroglial_connectivity = 'neuroglial_connectivity.h5',
+        synaptic_data = 'synaptic_data.h5',
+
+    output:
+        touch(MORPH_DIR + '/_DONE'),
+
+    log:
+        log_path('synthesis')
+
+    shell:
+        ' '.join([
+            'ngv synthesis',
+                '--config',
+                    bioname_path('synthesis.yaml'),
+                '--tns-distributions',
+                    bioname_path('tns_distributions.json'),
+                '--tns-parameters',
+                    bioname_path('tns_parameters.json'),
+                '--cell-data',
+                    '{input[cell_data]}',
+                '--microdomains',
+                    '{input[microdomains]}',
+                '--gliovascular-connectivity',
+                    '{input[gliovascular_connectivity]}',
+                '--gliovascular-data',
+                    '{input[gliovascular_data]}',
+                '--neuroglial-connectivity',
+                    '{input[neuroglial_connectivity]}',
+                '--synaptic-data',
+                    '{input[synaptic_data]}',
+                '--out-morph-dir',
+                    MORPH_DIR,
+                '--parallel',
+                '2>&1 | tee {log}'
+        ])

@@ -3,24 +3,15 @@
 set -euo pipefail
 
 BUILD_DIR=build
-NGV_CONFIG=$BUILD_DIR/ngv_config.json
 
-rm -rf $BUILD_DIR
+module load nix/py36/snakemake
 
-mkdir $BUILD_DIR
-mkdir $BUILD_DIR/intermediate
-mkdir $BUILD_DIR/morphology
+rm -rf $BUILD_DIR && mkdir $BUILD_DIR
 
-sed 's;$BASE_DIR;'$(pwd)';g' ngv_config.json.template > $NGV_CONFIG
+pushd $BUILD_DIR
 
-python ../archngv/workflow/apps/ngv_input_generation.py $NGV_CONFIG \
-    --neuron_synapse_connectivity
+snakemake --snakefile '../Snakefile' --config bioname='../bioname'
 
-python ../archngv/workflow/apps/ngv_main_workflow.py $NGV_CONFIG \
-    --cell_placement \
-    --microdomains \
-    --gliovascular_connectivity \
-    --neuroglial_connectivity \
-    --synthesis
+popd
 
 ./compare.sh expected $BUILD_DIR

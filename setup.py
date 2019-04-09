@@ -71,6 +71,7 @@ setup(
       ],
 
       install_requires = [
+                            'Click>=7.0',
                             'morphmath',
                             'morphspatial',
                             'spatial_index',
@@ -80,10 +81,12 @@ setup(
                             'jenkspy>=0.1.4',
                             'openmesh>=1.1.2',
                             'pandas>=0.16.2',
+                            'pyyaml>=5.0',
                             'numpy-stl>=2.7',
                             'scipy>=1.0.0',
                             'tess>=0.2.2',
-                            'trimesh>=2.21.15'
+                            'trimesh>=2.21.15',
+                            'voxcell>=2.5.6',
       ],
 
       packages = find_packages(),
@@ -95,6 +98,12 @@ setup(
                   'archngv/workflow/apps/ngv_preprocessing.py',
                   'archngv/workflow/apps/ngv_postprocessing.py'
       ],
+
+      entry_points={
+          'console_scripts': [
+              'ngv=archngv.app.__main__:main'
+          ]
+      },
 
       cmdclass = {'build_ext': CustomBuildExtCommand},
       ext_modules = create_extensions('archngv'),

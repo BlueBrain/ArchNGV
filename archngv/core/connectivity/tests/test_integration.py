@@ -103,8 +103,8 @@ def check_map_graph_points_to_vasculature_surface(GV, expected):
 def evaluate_simple_connectivity(convex_shape, vasculature, expected):
 
     options = {'graph_targeting': {'linear_density': 1.},
-               'connection': {'Reachout Strategy': "maximum_reachout",
-                              'Endfeet Distribution': (10, 1, 0, 3)},
+               'connection': {'reachout_strategy': "maximum_reachout",
+                              'endfeet_distribution': (10, 1, 0, 3)},
                'surface_targeting': {}}
 
     GV = Gliovascular([convex_shape], vasculature, options)

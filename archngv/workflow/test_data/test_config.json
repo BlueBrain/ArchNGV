@@ -64,7 +64,7 @@
         },
         "microdomain_tesselation": {
                 "overlap_distribution": {
-                    "type": "normal", 
+                    "type": "normal",
                     "values": [0.1, 0.0000001]
                 }
         },
@@ -74,8 +74,8 @@
                                 "linear_density": 0.17
             },
             "connection": {
-                            "Reachout Strategy": "maximum_reachout",
-                            "Endfeet Distribution": [2, 2, 0, 15],
+                            "reachout_strategy": "maximum_reachout",
+                            "endfeet_distribution": [2, 2, 0, 15],
                             "endfeet_minimum_distance_with_neighbors": 0.1
             },
             "surface_targeting": {}

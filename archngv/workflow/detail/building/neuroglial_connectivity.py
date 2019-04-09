@@ -29,8 +29,7 @@ def create_neuroglial_connectivity(ngv_config, run_parallel):
         data_iterator = generate_neuroglial(astrocyte_ids,
                                             microdomains,
                                             synaptic_data,
-                                            synaptic_connectivity,
-                                            None)
+                                            synaptic_connectivity)
 
         n_unique_synapses = synaptic_connectivity.n_synapses
         n_unique_neurons = synaptic_connectivity.n_neurons

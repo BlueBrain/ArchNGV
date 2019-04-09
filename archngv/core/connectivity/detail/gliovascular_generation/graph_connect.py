@@ -134,9 +134,9 @@ def domains_to_vasculature(cell_ids,
     target_radii = _radius_approx_from_segments(vasculature,
                                                 target_vasculature_segments)
 
-    L.info('Endfeet Distribution Paremeters %s', properties['Endfeet Distribution'])
+    L.info('Endfeet Distribution Paremeters %s', properties['endfeet_distribution'])
 
-    n_distr = _num_endfeet_distribution(*properties['Endfeet Distribution'])
+    n_distr = _num_endfeet_distribution(*properties['endfeet_distribution'])
 
     domain_target_edges = []
 

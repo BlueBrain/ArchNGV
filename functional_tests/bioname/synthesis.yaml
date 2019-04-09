@@ -1,0 +1,4 @@
+attraction_field: 'lambda distance: 0.20968752 * np.exp(- 0.02084375 * distance)'
+point_cloud: [5.0, 2.0]
+segment_length: 1.0
+randomness: 0.6

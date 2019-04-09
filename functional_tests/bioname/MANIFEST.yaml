@@ -1,0 +1,4 @@
+common:
+  atlas: '/gpfs/bbp.cscs.ch/project/proj67/usr/share/test-build/src/atlas/'
+  vasculature: '/gpfs/bbp.cscs.ch/project/proj67/usr/share/test-build/src/atlas/vasculature.h5'
+  base_circuit: '/gpfs/bbp.cscs.ch/project/proj67/usr/share/test-build/src/circuit/CircuitConfig'
