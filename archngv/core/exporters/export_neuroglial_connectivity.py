@@ -42,14 +42,11 @@ def export_neuroglial_connectivity(data_iterator,
                                    n_unique_astrocytes,
                                    n_unique_synapses,
                                    n_unique_neurons,
-                                   config):
+                                   neuroglial_connectivity_filepath):
     """
     Write the connectivity between neurons, synapses and astrocytes to file
     """
-
-    neuroglial_connectivity_path = config.output_paths('neuroglial_connectivity')
-
-    with h5py.File(neuroglial_connectivity_path, 'w') as fd:
+    with h5py.File(neuroglial_connectivity_filepath, 'w') as fd:
 
         astrocyte_group = fd.create_group('/Astrocyte')
 
@@ -70,9 +67,7 @@ def export_neuroglial_connectivity(data_iterator,
         neuron_astrocytes = [set() for _ in range(n_unique_neurons)]
 
         synapse_offset = neuron_offset = 0
-        for index, domain_data in enumerate(data_iterator):
-
-            synapse_indices = domain_data['domain_synapses']
+        for index, (synapse_indices, neuronal_indices) in enumerate(data_iterator):
 
             N = len(synapse_indices)
 
@@ -85,8 +80,6 @@ def export_neuroglial_connectivity(data_iterator,
                 astrocyte_synapse_dset.resize((synapse_offset + 10 * N,))
 
             ####################################################
-
-            neuronal_indices = domain_data['domain_neurons']
 
             M = len(neuronal_indices)
 

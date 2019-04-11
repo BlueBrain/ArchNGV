@@ -62,8 +62,7 @@ def export_neuron_synapse_association(ngv_config,
 
             positions = connectome.synapse_positions(gs_pairs, 'pre', 'center').values
 
-            dset_syn_pos[offset: offset + n_synapses] = \
-                connectome.synapse_positions(gs_pairs, 'pre', 'center').values
+            dset_syn_pos[offset: offset + n_synapses] = positions
 
             dset_syn2gid[offset: offset + n_synapses] = \
                 neuron_index * np.ones(n_synapses, dtype=np.uintp)

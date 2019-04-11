@@ -1,22 +1,53 @@
-import os
-import sys
-import h5py
-from getpass import getuser
+""" Neuroglial Connectivity
+"""
+
 import logging
 
-import shutil
-from archngv import NGVConfig
 from archngv.core.data_structures.data_cells import CellData
 from archngv.core.data_structures.data_synaptic import SynapticData
 from archngv.core.data_structures.data_microdomains import MicrodomainTesselation
 from archngv.core.data_structures.connectivity_synaptic import SynapticConnectivity
-
 from archngv.core.connectivity.neuroglial_generation import generate_neuroglial
 from archngv.core.exporters.export_neuroglial_connectivity import export_neuroglial_connectivity
+
 
 L = logging.getLogger(__name__)
 
 
+#@run_spatial_index_on_SSDs
+def create_neuroglial_connectivity(ngv_config, run_parallel):
+
+    with \
+        SynapticData(ngv_config.output_paths('synaptic_data')) as synaptic_data, \
+        SynapticConnectivity(ngv_config.output_paths('synaptic_connectivity')) as synaptic_connectivity, \
+        CellData(ngv_config.output_paths('cell_data')) as cell_data, \
+        MicrodomainTesselation(ngv_config.output_paths('overlapping_microdomain_structure')) as microdomains:
+
+        astrocyte_ids = cell_data.astrocyte_gids[:]
+
+        L.info('Generating neuroglial connectivity')
+        data_iterator = generate_neuroglial(astrocyte_ids,
+                                            microdomains,
+                                            synaptic_data,
+                                            synaptic_connectivity,
+                                            None)
+
+        n_unique_synapses = synaptic_connectivity.n_synapses
+        n_unique_neurons = synaptic_connectivity.n_neurons
+        n_unique_astrocytes = len(astrocyte_ids)
+
+        neuroglial_connectivity_path = \
+            ngv_config.output_paths('neuroglial_connectivity')
+
+        L.info('Exporting the per astrocyte files...')
+        export_neuroglial_connectivity(data_iterator,
+                                       n_unique_astrocytes,
+                                       n_unique_synapses,
+                                       n_unique_neurons,
+                                       neuroglial_connectivity_path)
+
+
+"""
 def ensure_index_existence(ngv_config):
 
     # path to the index director on the HDD
@@ -101,25 +132,4 @@ def run_spatial_index_on_SSDs(old_function):
         os.unlink(symbolic_link_ssd_to_hdd_idx)
 
     return new_function
-
-
-#@run_spatial_index_on_SSDs
-def create_neuroglial_connectivity(ngv_config, run_parallel):
-
-    with CellData(ngv_config.output_paths('cell_data')) as cell_data:
-         n_unique_astrocytes = cell_data.n_cells
-
-
-    with \
-        MicrodomainTesselation(ngv_config.output_paths('overlapping_microdomain_structure')) as mdom, \
-        SynapticData(ngv_config.output_paths('synaptic_data')) as syn_data, \
-        SynapticConnectivity(ngv_config.output_paths('synaptic_connectivity')) as syn_conn:
-
-        n_unique_synapses = syn_conn.n_synapses
-        n_unique_neurons = syn_conn.n_neurons
-
-        L.info('Generating neuroglial connectivity')
-        data_iterator = generate_neuroglial(n_unique_astrocytes, mdom, syn_data, syn_conn, map)
-
-        L.info('Exporting the per astrocyte files...')
-        export_neuroglial_connectivity(data_iterator, n_unique_astrocytes, n_unique_synapses, n_unique_neurons, ngv_config)
+"""

@@ -1,4 +1,4 @@
-""" Facade classes for NGV connectivity
+""" Neuroglial Connectivity
 """
 import time
 import logging
@@ -12,30 +12,56 @@ from morphspatial.collision import convex_shape_with_spheres
 L = logging.getLogger(__name__)
 
 
-def generate_neuroglial(n_astrocytes, mdom, syn_data, syn_conn, map_func):  # pylint: disable = unused-argument
-    """ Yields the connectivity of the i-th astrocyte with synapses and neurons
+def astrocyte_neuroglial_connectivity(microdomain, synapses_spatial_index, synapse_coordinates, synapse_to_neuron):
     """
-    synapse_coordinates = syn_data.synapse_coordinates[:]
-    synapse2neuron = syn_conn.synapse.to_afferent_neuron_map[:]
+    Args:
+        microdomain: ConvexPolygon
+        synapses_spatial_index: point_rtree
+        synapse_to_neuron: array[int, (N,)]
+
+    Returns:
+        synapses_ids: array[int, (M,)]
+        neuron_ids: array[int, (M, )]
+
+        The M synapses ids that lie inside microdomain geometry and their respective neuron ids.
+    """
+    synapses_ids = spheres_inside_domain(synapses_spatial_index, synapse_coordinates, microdomain)
+    neuron_ids = numpy.unique(synapse_to_neuron[synapses_ids])
+    return synapses_ids, neuron_ids
+
+
+def generate_neuroglial(astrocyte_ids, microdomains, synaptic_data, synaptic_connectivity, parameters):  # pylint: disable = unused-argument
+    """ Yields the connectivity of the astrocyte ids with synapses and neurons
+
+    Args:
+
+        astrocyte_ids: array[int, (N,)]
+        microdomains: MicrodomainTesselation
+        synaptic_data: SynapticData
+        sybaptic_connectivity: SynapticConnectivity
+        parameters: dict - placeholder atm
+
+    """
+    synapse_coordinates = synaptic_data.synapse_coordinates[:]
+    synapse_to_neuron = synaptic_connectivity.synapse.to_afferent_neuron_map[:]
 
     index = point_rtree(synapse_coordinates)
 
-    for astrocyte_index in range(n_astrocytes):
+    for astrocyte_index in astrocyte_ids:
+
+        domain = microdomains[astrocyte_index]
 
         start_time = time.time()
 
-        domain = mdom.domain_object(astrocyte_index)
+        synapses_ids, neuron_ids = \
+            astrocyte_neuroglial_connectivity(domain, index, synapse_coordinates, synapse_to_neuron)
 
-        masked_idx = spheres_inside_domain(index, synapse_coordinates, domain)
-        neuron_indices = numpy.unique(synapse2neuron[masked_idx])
-
-        yield {'domain_synapses': masked_idx,
-               'domain_neurons': neuron_indices}
+        yield synapses_ids, neuron_ids
 
         elapsed_time = time.time() - start_time
         L.info('Index: %s, Ninside: %s, Nneurons: %s, ET: %s', astrocyte_index,
-                                                               len(masked_idx),
-                                                               len(neuron_indices),
+                                                               len(synapses_ids),
+                                                               len(neuron_ids),
                                                                elapsed_time)
 
 
