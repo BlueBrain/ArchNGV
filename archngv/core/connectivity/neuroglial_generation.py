@@ -8,43 +8,35 @@ import numpy
 from spatial_index import point_rtree
 from morphspatial.collision import convex_shape_with_spheres
 
-from ..data_structures.data_synaptic import SynapticData
-from ..data_structures.data_microdomains import MicrodomainTesselation
-from ..data_structures.connectivity_synaptic import SynapticConnectivity
-
 
 L = logging.getLogger(__name__)
 
 
-def generate_neuroglial(n_astrocytes, ngv_config, map_func):  # pylint: disable = unused-argument
+def generate_neuroglial(n_astrocytes, mdom, syn_data, syn_conn, map_func):  # pylint: disable = unused-argument
     """ Yields the connectivity of the i-th astrocyte with synapses and neurons
     """
-    with MicrodomainTesselation(ngv_config.output_paths('overlapping_microdomain_structure')) as mdom, \
-         SynapticData(ngv_config.output_paths('synaptic_data')) as syn_data, \
-         SynapticConnectivity(ngv_config.output_paths('synaptic_connectivity')) as syn_conn:
+    synapse_coordinates = syn_data.synapse_coordinates[:]
+    synapse2neuron = syn_conn.synapse.to_afferent_neuron_map[:]
 
-        synapse_coordinates = syn_data.synapse_coordinates[:]
-        synapse2neuron = syn_conn.synapse.to_afferent_neuron_map[:]
+    index = point_rtree(synapse_coordinates)
 
-        index = point_rtree(synapse_coordinates)
+    for astrocyte_index in range(n_astrocytes):
 
-        for astrocyte_index in range(n_astrocytes):
+        start_time = time.time()
 
-            start_time = time.time()
+        domain = mdom.domain_object(astrocyte_index)
 
-            domain = mdom.domain_object(astrocyte_index)
+        masked_idx = spheres_inside_domain(index, synapse_coordinates, domain)
+        neuron_indices = numpy.unique(synapse2neuron[masked_idx])
 
-            masked_idx = spheres_inside_domain(index, synapse_coordinates, domain)
-            neuron_indices = numpy.unique(synapse2neuron[masked_idx])
+        yield {'domain_synapses': masked_idx,
+               'domain_neurons': neuron_indices}
 
-            yield {'domain_synapses': masked_idx,
-                   'domain_neurons': neuron_indices}
-
-            elapsed_time = time.time() - start_time
-            L.info('Index: %s, Ninside: %s, Nneurons: %s, ET: %s', astrocyte_index,
-                                                                   len(masked_idx),
-                                                                   len(neuron_indices),
-                                                                   elapsed_time)
+        elapsed_time = time.time() - start_time
+        L.info('Index: %s, Ninside: %s, Nneurons: %s, ET: %s', astrocyte_index,
+                                                               len(masked_idx),
+                                                               len(neuron_indices),
+                                                               elapsed_time)
 
 
 def spheres_inside_domain(index, synapse_coordinates, domain):

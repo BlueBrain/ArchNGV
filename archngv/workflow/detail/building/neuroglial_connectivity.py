@@ -7,7 +7,10 @@ import logging
 import shutil
 from archngv import NGVConfig
 from archngv.core.data_structures.data_cells import CellData
+from archngv.core.data_structures.data_synaptic import SynapticData
+from archngv.core.data_structures.data_microdomains import MicrodomainTesselation
 from archngv.core.data_structures.connectivity_synaptic import SynapticConnectivity
+
 from archngv.core.connectivity.neuroglial_generation import generate_neuroglial
 from archngv.core.exporters.export_neuroglial_connectivity import export_neuroglial_connectivity
 
@@ -103,17 +106,20 @@ def run_spatial_index_on_SSDs(old_function):
 #@run_spatial_index_on_SSDs
 def create_neuroglial_connectivity(ngv_config, run_parallel):
 
-    with SynapticConnectivity(ngv_config.output_paths('synaptic_connectivity')) as syn_conn, \
-         CellData(ngv_config.output_paths('cell_data')) as cell_data:
+    with CellData(ngv_config.output_paths('cell_data')) as cell_data:
+         n_unique_astrocytes = cell_data.n_cells
+
+
+    with \
+        MicrodomainTesselation(ngv_config.output_paths('overlapping_microdomain_structure')) as mdom, \
+        SynapticData(ngv_config.output_paths('synaptic_data')) as syn_data, \
+        SynapticConnectivity(ngv_config.output_paths('synaptic_connectivity')) as syn_conn:
 
         n_unique_synapses = syn_conn.n_synapses
         n_unique_neurons = syn_conn.n_neurons
-        n_unique_astrocytes = cell_data.n_cells
 
-    L.info('Generating neuroglial connectivity')
-    data_iterator = generate_neuroglial(n_unique_astrocytes, ngv_config, map)
+        L.info('Generating neuroglial connectivity')
+        data_iterator = generate_neuroglial(n_unique_astrocytes, mdom, syn_data, syn_conn, map)
 
-    L.info('Exporting the per astrocyte files...')
-    export_neuroglial_connectivity(data_iterator, n_unique_astrocytes, n_unique_synapses, n_unique_neurons, ngv_config)
-
-
+        L.info('Exporting the per astrocyte files...')
+        export_neuroglial_connectivity(data_iterator, n_unique_astrocytes, n_unique_synapses, n_unique_neurons, ngv_config)

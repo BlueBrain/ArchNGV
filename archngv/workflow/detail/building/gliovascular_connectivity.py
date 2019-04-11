@@ -6,6 +6,7 @@ from voxcell import VoxelData
 from archngv.core.vasculature_morphology import Vasculature
 from archngv.core.connectivity.gliovascular_generation import generate_gliovascular
 from archngv.core.data_structures.data_cells import CellData
+from archngv.core.data_structures.data_microdomains import MicrodomainTesselation
 from archngv.core.exporters import export_gliovascular_data
 from archngv.core.exporters import export_gliovascular_connectivity
 
@@ -16,7 +17,9 @@ L = logging.getLogger(__name__)
 
 def create_gliovascular_connectivity(ngv_config, run_parallel):
 
-    assert run_parallel == False 
+    assert run_parallel == False
+
+    params = ngv_config.parameters['gliovascular_connectivity']
 
     vasculature_path = ngv_config.input_paths('vasculature')
 
@@ -24,7 +27,9 @@ def create_gliovascular_connectivity(ngv_config, run_parallel):
 
     vasculature = Vasculature.load(vasculature_path)
 
-    with CellData(ngv_config.output_paths('cell_data')) as data:
+    with \
+        CellData(ngv_config.output_paths('cell_data')) as data, \
+        MicrodomainTesselation(ngv_config.output_paths('overlapping_microdomain_structure')) as microdomains:
 
         somata_positions = data.astrocyte_positions[:]
 
@@ -36,7 +41,7 @@ def create_gliovascular_connectivity(ngv_config, run_parallel):
         endfeet_graph_positions, \
         endfeet_to_astrocyte_mapping, \
         endfeet_to_vasculature_mapping = \
-        generate_gliovascular(somata_idx, somata_positions, vasculature, ngv_config, map)
+        generate_gliovascular(somata_idx, somata_positions, microdomains, vasculature, params, map)
 
     L.info('Exporting gliovascular data...')
 

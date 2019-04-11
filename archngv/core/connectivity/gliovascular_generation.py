@@ -15,25 +15,19 @@ from .detail.gliovascular_generation.surface_intersection import surface_interse
 L = logging.getLogger(__name__)
 
 
-def _validate_input(astrocytic_positions, astrocytic_domains, vasculature, options):
-    """ Validate the inputs
-    """
-    check.equal_length(astrocytic_positions, astrocytic_domains)
-    check.keys(('graph_targeting', 'connection'), options)
-    check.points_inside_polyhedra(astrocytic_positions, astrocytic_domains)
-
-
 def generate_gliovascular(cell_ids,
                           astrocytic_positions,
+                          astrocytic_domains,
                           vasculature,
-                          ngv_config, map_func):
+                          params, map_func):
     """ For each astrocyte id find the connections to the vasculature
 
     Args:
         cell_ids: array[int, (N,)]
         astrocyte_positions: array[float, (N, 3)]
+        astrocytic_domains: MicrodomainTesselation
         vasculature: Vasculature
-        ngv_config: NGVConfig
+        params: gliovascular parameters dict
 
     Returns:
         endfeet_positions: array[float, (M, 3)]
@@ -41,22 +35,18 @@ def generate_gliovascular(cell_ids,
         endfeet_to_astrocyte_mapping: array[int, (M,)]
         endfeet_to_vasculature_mapping: array[int, (M,)]
     """
-    options = ngv_config.parameters['gliovascular_connectivity']
-
-    microdomains_filepath = ngv_config.output_paths('overlapping_microdomain_structure')
-
     L.info('STEP 1: Generation of potential targets started.')
 
     graph_positions,\
     graph_vasculature_segment = create_targets(
                                                 vasculature.points,
                                                 vasculature.edges,
-                                                options['graph_targeting']
+                                                params['graph_targeting']
     )
 
     L.info('STEP 1: Generation of potential targets completed.')
     L.info('%s potential targets generated.', len(graph_positions))
-    L.debug('Parameters: %s', options['graph_targeting'])
+    L.debug('Parameters: %s', params['graph_targeting'])
     L.debug('Positions: %d\nVasculature Edges: %d', graph_positions,
                                                     graph_vasculature_segment)
 
@@ -65,11 +55,11 @@ def generate_gliovascular(cell_ids,
     astrocyte_graph_edges = domains_to_vasculature(
         cell_ids,
         vasculature,
-        strategy(options['connection']['Reachout Strategy']),
+        strategy(params['connection']['Reachout Strategy']),
         graph_positions,
         graph_vasculature_segment,
-        microdomains_filepath,
-        options['connection']
+        astrocytic_domains,
+        params['connection']
     )
 
     L.info('STEP 2: Connection of astrocytes with vasculature completed.')
