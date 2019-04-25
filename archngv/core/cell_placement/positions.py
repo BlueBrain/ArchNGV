@@ -20,7 +20,8 @@ L = logging.getLogger(__name__)
 def total_number_of_cells(voxelized_intensity):
     """ Given a 3D intensity array return the total number of cells
     """
-    return int(np.round(voxelized_intensity.voxel_volume * voxelized_intensity.raw.sum() * 1e-9))
+    values = voxelized_intensity.raw[~np.isnan(voxelized_intensity.raw)]
+    return int(np.round(voxelized_intensity.voxel_volume * np.sum(values) * 1e-9))
 
 
 def create_placement_parameters(user_params):

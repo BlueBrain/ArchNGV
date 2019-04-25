@@ -62,7 +62,7 @@ def convert_to_overlappping_tesselation(microdomain_tesselation, overlap_distrib
     for index, reg in enumerate(new_regions):
         reg.points = convex_polygon_with_overlap(reg.centroid, reg.points, overlaps[index])
 
-    L.debug("convert: {}, {}".format(new_regions[100].volume, microdomain_tesselation[100].volume))
-    L.debug("convert: {}, {}".format(new_regions[100].points, microdomain_tesselation[100].points))
+    #L.debug("convert: {}, {}".format(new_regions[100].volume, microdomain_tesselation[100].volume))
+    #L.debug("convert: {}, {}".format(new_regions[100].points, microdomain_tesselation[100].points))
 
     return microdomain_tesselation.with_regions(new_regions)

@@ -25,6 +25,10 @@ class GliovascularData(H5ContextManager):
         self.endfoot_surface_coordinates = \
             self._fd['/endfoot_surface_coordinates']
 
+    @property
+    def n_endfeet(self):
+        return len(self.endfoot_graph_coordinates)
+
 
 class GliovascularDataInfo(GliovascularData):
     """ Rich access to the endfeet contact points

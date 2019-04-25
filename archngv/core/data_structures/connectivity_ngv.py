@@ -23,6 +23,18 @@ class NGVConnectome(object):
         self._ngc.close()
         self._gvc.close()
 
+    @property
+    def gliovascular(self):
+        return self._gvc
+
+    @property
+    def neuroglial(self):
+        return self._ngc
+
+    @property
+    def synaptic(self):
+        return self._snc
+
     ############### Astrocyte Stuff ###############
 
     def astrocyte_endfeet(self, astrocyte_index):

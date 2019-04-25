@@ -344,7 +344,7 @@ def _worker(output_directory, gid, path):
 
 def extract_neuronal_somata_information(output_directory, neuronal_microcircuit, map_func=map):
 
-    neuronal_gids = neuronal_microcircuit.gids
+    neuronal_gids = neuronal_microcircuit.v2.cells.ids()
 
     L.info('Getting filepaths...')
 
@@ -363,7 +363,7 @@ def extract_neuronal_somata_information(output_directory, neuronal_microcircuit,
     L.info('calculating volumes')
     calc_time = time.time()
 
-    outputs = map_func(volume_stats, paths)
+    outputs = list(map_func(volume_stats, paths))
 
     somata_geom_path = os.path.join(output_directory, 'microcircuit_somata_geometries_by_revolution.h5')
 

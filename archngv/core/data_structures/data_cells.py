@@ -23,6 +23,15 @@ class CellData(H5ContextManager):
         self.astrocyte_gids = self._fd['/ids']
         self.astrocyte_names = self._fd['/names']
 
+        assert len(self.astrocyte_gids) == \
+               len(self.astrocyte_names) == \
+               len(self.astrocyte_radii) == \
+               len(self.astrocyte_positions), 'hdf5 datasets are not of the same size'
+
+    def __len__(self):
+        "return cell data size"
+        return len(self.astrocyte_positions)
+
     @property
     def astrocyte_point_data(self):
         """ Returns stacked astrocyte positions and radii
@@ -32,7 +41,7 @@ class CellData(H5ContextManager):
     @property
     def n_cells(self):
         """ Number of cells """
-        return len(self.astrocyte_positions)
+        return self.__len__()
 
 
 class CellDataInfo(CellData):

@@ -9,7 +9,6 @@ import numpy as np
 
 from archngv.core.vasculature_morphology import Vasculature
 from archngv.core.cell_placement.positions import create_positions
-from archngv.core.util.bounding_box import BoundingBox
 from archngv.core.exporters import export_cell_placement_data
 
 from spatial_index import sphere_rtree
@@ -20,19 +19,13 @@ L = logging.getLogger(__name__)
 
 def create_cell_positions(ngv_config, run_parallel):
     """
-    Given the vasculature, bounding_box and the config generate positions and radii
+    Given the config, generate positions and radii
     of astrocytes.
 
     Args:
         ngv_config (NGVConfig):
             Contains the parameters, input and output absolute paths that
             are required for the circuit generation.
-
-        vasculature (Vasculature):
-            Vasculature Data structure.
-
-        bounding_box (BoundingBox):
-            The placement will take place in this bounding space
 
     Returns:
         positions (2D array)
@@ -46,14 +39,14 @@ def create_cell_positions(ngv_config, run_parallel):
     voxelized_intensity = VoxelData.load_nrrd(ngv_config.input_paths('voxelized_intensity'))
     voxelized_bnregions = VoxelData.load_nrrd(ngv_config.input_paths('voxelized_brain_regions'))
 
-    vasculature = Vasculature.load(ngv_config.input_paths('vasculature'))
-
-    # placement bounding box
-    bounding_box = BoundingBox.from_voxel_data(voxelized_bnregions)
-
     voxelized_intensity.raw = voxelized_intensity.raw.astype(np.float)
 
-    index_list = [vasculature.spatial_index()]
+    index_list = []
+
+    vasculature_path = ngv_config.input_paths('vasculature')
+    if vasculature_path is not None:
+        index_list.append(Vasculature.load(vasculature_path).spatial_index())
+
     # astro somata pos and radii
     somata_positions, somata_radii = create_positions(cell_placement_parameters,
                                                       voxelized_intensity,

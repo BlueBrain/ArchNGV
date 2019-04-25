@@ -10,10 +10,13 @@ class SynapticData(H5ContextManager):
         """ Coordinates xyz """
         return self._fd['/synapse_coordinates']
 
+    def __len__(self):
+        return len(self.synapse_coordinates)
+
     @property
     def n_synapses(self):
         """ Number of synapses """
-        return len(self.synapse_coordinates)
+        return self.__len__()
 
 
 class SynapticDataInfo(SynapticData):
