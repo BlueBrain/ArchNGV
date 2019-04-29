@@ -7,6 +7,7 @@ import numpy as np
 from .detail.tns_wrapper import TNSGrowerWrapper
 from .detail.annotation import export_endfoot_location
 from .detail.annotation import export_synapse_location
+from .detail.synaptic_seeds import PointCloud
 
 from .detail.data_extraction import obtain_endfeet_data
 from .detail.data_extraction import obtain_synapse_data
@@ -29,6 +30,9 @@ def synthesize_astrocyte(astrocyte_index,
                          parameters):
     """ Synthesize the endfeet for one astrocyte
     """
+    # initialize tns grower adapter
+    astro_grower = TNSGrowerWrapper(tns_parameters_path, tns_distributions_path)
+
     # astrocyte properties
     cell_name, soma_pos, soma_rad, microdomain = \
         obtain_cell_properties(astrocyte_index,
@@ -40,9 +44,19 @@ def synthesize_astrocyte(astrocyte_index,
                                    synaptic_data_path,
                                    neuroglial_conn_path)
 
-    # initialize tns grower adapter
-    astro_grower = TNSGrowerWrapper(tns_parameters_path,
-                                    tns_distributions_path)
+    if synapses is not None:
+
+        # space colonization point cloud parameters
+        radius_of_influence, removal_radius = parameters['point_cloud']
+
+        # create point cloud
+        point_cloud = PointCloud(synapses, radius_of_influence, removal_radius)
+    else:
+
+        point_cloud = None
+
+    # register point cloud if exists
+    astro_grower.add_point_cloud(point_cloud)
 
     # set soma position and radius
     astro_grower.set_soma_properties(soma_pos, soma_rad)
@@ -79,12 +93,6 @@ def synthesize_astrocyte(astrocyte_index,
                                                           microdomain,
                                                           targets)
 
-    # space colonization point cloud parameters
-    radius_of_influence, removal_radius = parameters['point_cloud']
-
-    # add synapse coordinates as a point cloud
-    astro_grower.add_point_cloud(synapses, radius_of_influence, removal_radius)
-
     astro_grower.grow()
 
     morphology_output_file = os.path.join(morphology_directory, cell_name + '.h5')
@@ -95,7 +103,8 @@ def synthesize_astrocyte(astrocyte_index,
         # reload cell in readonly to extract indices to targets
         export_endfoot_location(morphology_output_file, targets)
 
-    # get the location of the synapse in the morphology
-    export_synapse_location(morphology_output_file, synapses)
+    if synapses is not None:
+        # get the location of the synapse in the morphology
+        export_synapse_location(morphology_output_file, synapses)
 
 

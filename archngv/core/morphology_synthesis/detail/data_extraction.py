@@ -26,12 +26,11 @@ def obtain_endfeet_data(astrocyte_index,
         if len(endfeet_indices) == 0:
             L.warning('No endfeet found for astrocyte index {}'.format(astrocyte_index))
             return None
-        else:
-            L.debug('Found endfeet {} for astrocyte index {}'.format(endfeet_indices, astrocyte_index))
 
         targets = gliovascular_data.endfoot_surface_coordinates[sorted(endfeet_indices)]
 
-    L.debug('Endfeet Targets: {}'.format(targets))
+    L.debug('Found endfeet {} for astrocyte index {}'.format(endfeet_indices, astrocyte_index))
+    L.debug('Endfeet Coordinates: {}'.format(targets))
     return targets
 
 
@@ -65,8 +64,13 @@ def obtain_synapse_data(astrocyte_index, synaptic_data_filepath, neuroglial_conn
         SynapticData(synaptic_data_filepath) as synaptic_data, \
         NeuroglialConnectivity(neuroglial_conn_filepath) as neuroglial_connectivity:
 
-        sorted_synapse_idx = sorted(neuroglial_connectivity.astrocyte.to_synapse(astrocyte_index))
-        synapse_positions = synaptic_data.synapse_coordinates[sorted_synapse_idx]
+        synapse_ids = neuroglial_connectivity.astrocyte.to_synapse(astrocyte_index)
+
+        if len(synapse_ids) == 0:
+            L.warning('No synapses found for astrocyte index %d', astrocyte_index)
+            return None
+
+        synapse_positions = synaptic_data.synapse_coordinates[sorted(synapse_ids)]
 
     L.debug('Number of synapses for astro index {}: {}'.format(astrocyte_index, len(synapse_positions)))
     return synapse_positions

@@ -77,16 +77,24 @@ class TNSGrowerWrapper(object):
         self._parameters['origin'] = np.asarray(soma_position, dtype=np.float)
         self._distributions['soma']['size'] = {'norm': {'mean': soma_radius, 'std': 0.0}}
 
-    def add_microdomain_boundary(self, microdomain):
+    def add_microdomain_boundary(self, microdomain=None):
         """ Assigns the microdomain boundary as a collision bounding hull
         that will contain the grower.
         """
-        # one point per face that belongs to that plane
-        face_points = microdomain.face_points
-        face_normals = microdomain.face_normals
 
-        collision_handle = \
-            lambda point: not convex_shape_with_point(face_points, face_normals, point)
+        if microdomain is not None:
+
+            # one point per face that belongs to that plane
+            face_points = microdomain.face_points
+            face_normals = microdomain.face_normals
+
+            collision_handle = \
+                lambda point: not convex_shape_with_point(face_points, face_normals, point)
+        else:
+
+            collision_handle = lambda point: False
+
+            L.warning('No microdomain boundary provided.')
 
         self.add_collision_handle(collision_handle)
 
@@ -119,11 +127,17 @@ class TNSGrowerWrapper(object):
 
         self._context['field'] = PointAttractionField(field_function)
 
-    def add_point_cloud(self, coordinates, radius_of_influence, removal_radius):
+    def add_point_cloud(self, point_cloud=None):
         """ Add point cloud in synthesis context
         """
-        point_cloud = PointCloud(coordinates, radius_of_influence, removal_radius)
-        self._context['point_cloud'] = point_cloud
+        if point_cloud is not None:
+            self._context['point_cloud'] = point_cloud
+            self._parameters[PROCESS_TYPE]['growth_method'] = 'tmd_space_colonization'
+            self._parameters[ENDFOOT_TYPE]['growth_method'] = 'tmd_space_colonization_target'
+        else:
+            self._parameters[PROCESS_TYPE]['growth_method'] = 'tmd'
+            self._parameters[ENDFOOT_TYPE]['growth_method'] = 'tmd_target'
+            L.warning('No point cloud provided. Switched to regular synthesis')
 
     def remove_endfeet_properties(self):
         """ If no endfeet targets are available, make sure that

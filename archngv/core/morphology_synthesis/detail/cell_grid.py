@@ -2,6 +2,7 @@ import collections
 import numpy as np
 
 def _squared_distance(p0, p1):
+    """ returns the squared distance of the two points """
     return (p0.x - p1.x) ** 2 + (p0.y - p1.y) ** 2 + (p0.z - p1.z) ** 2
 
 def _shell_neighborhood(level):
@@ -100,7 +101,8 @@ class GridPointRegistry(collections.MutableMapping):
 
         self.store = {index: set() for index in indices}
 
-        for (i, point) in enumerate(map(Point, point_array)):
+        for (i, point_coordinates) in enumerate(point_array):
+            point = Point(point_coordinates)
             self.store[indices[i]].add(point)
 
     def __getitem__(self, key):
