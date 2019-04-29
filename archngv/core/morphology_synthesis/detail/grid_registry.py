@@ -96,12 +96,11 @@ class GridPointRegistry(collections.MutableMapping):
 
         self._NMAX = self._sx * self._sy * self._sz
 
-        indices = list(map(self.point_to_index, points))
+        indices = list(map(self.point_to_index, point_array))
 
         self.store = {index: set() for index in indices}
 
-        points = map(Point, point_array)
-        for (i, point) in enumerate(points):
+        for (i, point) in enumerate(map(Point, point_array)):
             self.store[indices[i]].add(point)
 
     def __getitem__(self, key):
@@ -131,9 +130,9 @@ class GridPointRegistry(collections.MutableMapping):
         return np.array([(p.x ,p.y, p.z) for p in self.point_objects])
 
     def point_to_ijk(self, point):
-        i = int((point.x - self._offx) * self._inv_dl)
-        j = int((point.y - self._offy) * self._inv_dl)
-        k = int((point.z - self._offz) * self._inv_dl)
+        i = int((point[0] - self._offx) * self._inv_dl)
+        j = int((point[1] - self._offy) * self._inv_dl)
+        k = int((point[2] - self._offz) * self._inv_dl)
         return (i, j, k)
 
     def ijk_to_index(self, i, j, k):

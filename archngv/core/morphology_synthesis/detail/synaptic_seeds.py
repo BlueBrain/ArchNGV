@@ -14,6 +14,8 @@ class PointCloud(object):
 
         self.__rr = removal_radius
 
+        self._influence_radius = radius_of_influence
+
     @property
     def coordinates(self):
         return self._grid.point_array
@@ -22,6 +24,8 @@ class PointCloud(object):
         return self.__size
 
     def nearest_neighbor(self, point):
+        """ Return the nearest neighbor to the given point
+        """
         return np.array(self._grid.nearest_neighbor(point))
 
     def ball_query(self, point, radius, return_distances=False):
@@ -57,6 +61,13 @@ class PointCloud(object):
         u_dirs = dirs / np.linalg.norm(dirs, axis=1)[:, np.newaxis]
         average_direction = u_dirs.mean(axis=0)
         return average_direction / np.linalg.norm(average_direction)
+
+    def direction(self, point):
+        """ Get average direction from the points around the given point
+        which lie inside the incluence_radius
+        """
+        direction = self.average_direction(point, self._influence_radius)
+        return direction
 
     def remove(self, point):
         """ Note: mask on points, i.e. on the already sliced array

@@ -1,14 +1,17 @@
 import os
+import json
 import logging
 from copy import deepcopy
 import numpy as np
 
-from .detail.tns_wrapper import TNSEndfeetGrower
+from .detail.tns_wrapper import TNSGrowerWrapper
 from .detail.data_extraction import obtain_endfeet_data
+from .detail.data_extraction import obtain_synapse_data
 from .detail.data_extraction import obtain_cell_properties
 from .detail.annotation import export_endfoot_location
 
 from tns import extract_input
+
 
 L = logging.getLogger(__name__)
 
@@ -16,7 +19,10 @@ L = logging.getLogger(__name__)
 def synthesize_endfeet_for_astrocyte(args):
     """ Synthesize the endfeet for one astrocyte
     """
-    astrocyte_index, ngv_config, distributions = args
+    astrocyte_index, ngv_config = args
+
+    parameters_path = ngv_config.input_paths('tns_astrocyte_parameters')
+    distributions_path = ngv_config.input_paths('tns_astrocyte_distributions')
 
     targets = obtain_endfeet_data(ngv_config, astrocyte_index)
 
@@ -25,10 +31,11 @@ def synthesize_endfeet_for_astrocyte(args):
         cell_name, soma_pos, soma_rad, microdomain = \
             obtain_cell_properties(ngv_config, astrocyte_index)
 
-        params = ngv_config.parameters['synthesis']
+        # extract synapses coordinates
+        synapses = obtain_synapse_data(ngv_config, astrocyte_index)
 
         # initialize tns grower adapter
-        endfeet_grower = TNSEndfeetGrower(distributions, params)
+        endfeet_grower = TNSGrowerWrapper(parameters_path, distributions_path)
 
         # set soma position and radius
         endfeet_grower.set_soma_properties(soma_pos, soma_rad)
@@ -36,12 +43,23 @@ def synthesize_endfeet_for_astrocyte(args):
         # constrain the grower to its microdomain extent
         endfeet_grower.add_microdomain_boundary(microdomain)
 
-        # add the targets to grow to
-        endfeet_grower.set_targets(targets)
+        # lambda function is passed from config as string
+        lambda_string = \
+            ngv_config.parameters['synthesis']['attraction_field']
+
+        # add the targets to grow to and the attraction field
+        # function which depends on the distance to the target
+        endfeet_grower.set_endfeet_targets(targets, eval(lambda_string))
+
+        radius_of_influence, \
+        removal_radius = ngv_config.parameters['synthesis']['point_cloud']
+
+        # add synapse coordinates as a point cloud
+        endfeet_grower.add_point_cloud(synapses, radius_of_influence, removal_radius)
 
         # we need to make sure that our extracted homology will suffice
         # in order to reach the target. If they are shorter, we scale them.
-        endfeet_grower.enable_barcode_scaling()
+        endfeet_grower.enable_endfeet_barcode_scaling()
 
         endfeet_grower.grow()
 
@@ -56,17 +74,12 @@ def synthesize_astrocyte_endfeet(ngv_config, astrocyte_ids, apply_func):
     """ Launch the endfeet synthesizer with all astrocyte_ids using the respective
     apply_func
     """
-    def data_generator(ngv_config, ids, distributions):
+    def data_generator(ngv_config, ids):
         for astro_id in ids:
-            yield astro_id, ngv_config, deepcopy(distributions)
-
-    raw_astrocytic_morphologies = ngv_config.input_paths('raw_morphology')
-
-    tns_distributions = \
-        extract_input.distributions(raw_astrocytic_morphologies, feature='path_distances')
+            yield astro_id, ngv_config
 
     apply_func(
                 synthesize_endfeet_for_astrocyte,
-                data_generator(ngv_config, astrocyte_ids, tns_distributions)
+                data_generator(ngv_config, astrocyte_ids)
               )
 

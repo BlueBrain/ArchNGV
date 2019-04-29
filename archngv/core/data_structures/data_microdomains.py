@@ -2,6 +2,7 @@
 Data structures for accessing information of astrocytic microdomains
 """
 import os
+import numpy as np
 
 from .common import H5ContextManager
 
@@ -38,6 +39,15 @@ class MicrodomainTesselation(H5ContextManager):
     def __len__(self):
         """ Number of Microdomains """
         return len(self._offsets - 1)
+
+    def __getitem__(self, key):
+        """ list getter """
+        if isinstance(key, slice):
+            return [self.domain_object(i) for i in range(key.start, key.stop, key.step)]
+        elif isinstance(key, (np.integer, int)):
+            return self.domain_object(key)
+        else:
+            raise TypeError("Invalid argument type: ({}, {})".format(type(key), key))
 
     @property
     def n_microdomains(self):
