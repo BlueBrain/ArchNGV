@@ -1,76 +1,76 @@
+""" Point cloud class for synapses
+"""
+
 import numpy as np
 
-from morphmath import rowwise_dot
+from morphmath import normalize_vectors
+from .cell_grid import PointGrid
 
-from .cell_grid import GridPointRegistry
 
+class PointCloud(PointGrid):
+    """ Point cloud data structure with internal gridding for ball and
+    nearest neighbor queries.
 
-class PointCloud(object):
-    """ 
+    The points that are removed are not removed from memory, but invalidated.
+
+    Args:
+        point_array: float[N, 3]
+            Array of 3D points to store in the point cloud.
+        cutoff_radius: float
+            The radius from which the bin size of the grid will be calculated.
+        removal_radius: float
+            Radius that will be used for default removal. See attribute below.
+
+    Attributes:
+        default_removal_radius: float
+            A default radius that will be used for the remove_points_around if
+            an explicit value is not passed in the method.
+        default_radius_of_influence: float
+            A default radius for the calculation of the average direction if
+            an explicit value is not passed in the method.
     """
-    def __init__(self, point_array, radius_of_influence, removal_radius):
+    def __init__(self, point_array, cutoff_radius, removal_radius):
+        super(PointCloud, self).__init__(cutoff_radius)
 
-        self._grid = GridPointRegistry(point_array, radius_of_influence)
+        self.add_points(point_array)
+        self.default_removal_radius = removal_radius
+        self.default_radius_of_influence = cutoff_radius
 
-        self._size = len(point_array)
-
-        self.radius_of_influence = radius_of_influence
-        self.removal_radius = removal_radius
-
-    @property
-    def coordinates(self):
-        """ Coordinates stored in the point cloud """
-        return self._grid.point_array
-
-    def __len__(self):
-        """ size """
-        return self._size
-
-    def nearest_neighbor(self, point):
-        """ Return the nearest neighbor to the given point
-        """
-        return np.asarray(self._grid.nearest_neighbor(point), dtype=np.intp)
-
-    def ball_query(self, point, radius):
-        """ Returns points around sphere with center point and radius """
-        points = list(self._grid.ball_query(point, radius))
-        return np.asarray(points, dtype=np.float)
-
-    def expanding_ball_query(self, point, number_of_points):
-        return np.asarray(list(self._grid.expanding_ball_query(point, number_of_points)), dtype=np.float)
-
-    def average_direction(self, point):
+    def average_direction(self, point,
+                          radius_of_influence=None):
         """ Get average direction from the points around the given point
         which lie inside the incluence_radius
         """
-        points = self.ball_query(point, self.radius_of_influence)
+        radius_of_influence = \
+            self.default_radius_of_influence if radius_of_influence is None else \
+            radius_of_influence
 
-        if len(points) == 0:
+        point_ids = self.ball_query(point, radius_of_influence)
+
+        if point_ids.size == 0:
             return None
 
-        vectors = points - point
+        vectors = normalize_vectors(self.data[point_ids] - point)
 
-        u_dirs = vectors / np.linalg.norm(vectors, axis=1)[:, np.newaxis]
-        average_direction = u_dirs.mean(axis=0)
-        return average_direction / np.linalg.norm(average_direction)
+        average_direction = vectors.mean(axis=0)
+        average_direction /= np.linalg.norm(average_direction)
+
+        return average_direction
 
     def at_least_n_points_around(self, point, radius, n_points):
         """ Check if there are n_points in the ball located at point with
         radius.
         """
-        for n, _ in enumerate(self.ball_query(point, radius)):
-            if n == n_points - 1:
-                return True
-        return False
+        return len(self.ball_query(point, radius)) >= n_points
 
-    def remove(self, point):
-        """ Note: mask on points, i.e. on the already sliced array
-        """
-        self._grid.remove_point(point)
-        self._size -= 1
-
-    def remove_points_around(self, point):
+    def remove_points_around(self, point, removal_radius=None):
         """ Remove the points in the sphere located at point with removal_radius """
-        point_list = list(self._grid.ball_query(point, self.removal_radius))
-        for point in point_list:
-            self.remove(point)
+        removal_radius = \
+            self.default_removal_radius if removal_radius is None else removal_radius
+
+        point_ids = self.ball_query(point, removal_radius)
+
+        for point_id in point_ids:
+            self.remove(point_id)
+
+        return point_ids

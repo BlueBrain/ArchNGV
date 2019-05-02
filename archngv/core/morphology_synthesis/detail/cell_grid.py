@@ -1,260 +1,231 @@
-import collections
+""" Point grid data structure and helpers
+"""
 import numpy as np
 
-def _squared_distance(p0, p1):
-    """ returns the squared distance of the two points """
-    return (p0.x - p1.x) ** 2 + (p0.y - p1.y) ** 2 + (p0.z - p1.z) ** 2
 
-def _shell_neighborhood(level):
-    """ Returns the ijk indices that correspond to 
+def squared_distance(p0, p1):
+    """ returns the squared distance of the two points """
+    vector = p1 - p0
+    return np.dot(vector, vector)
+
+
+def shell_neighborhood(level):
+    """ Returns the ijk indices that correspond to
     a cubic shell of specific level. For example level 1
     will return the ijk for the 26 grid neighbors from the
     grid origin, level 2 the next cell of 98 neighbors etc.
     It does not include the ijk of the previous level (I.e. it's a shell).
- 
+
                2
-      1    . . . . . 
+      1    . . . . .
     . . .  .       .
     .   .  .       .
     . . .  .       .
            . . . . .
-           
+
     """
-
     if level == 0:
-
         yield (0, 0, 0)
+        return
 
-    else:
+    n_range = list(range(-level, level + 1))
 
-        n_range = list(range(-level, level + 1))
-
-        for i in (-level, level):
-            for j in n_range:
-                for k in n_range:
-                    yield (i, j, k)
-
-
-        r_range = list(range(-level + 1, level))
-
-        for j in (-level, level):
-            for i in r_range:
-                for k in n_range:
-                    yield (i, j, k)
-
-        for k in (-level, level):
-            for i in r_range:
-                for j in r_range:
-                    yield (i, j, k)
+    for i in (-level, level):
+        for j in n_range:
+            for k in n_range:
+                yield (i, j, k)
 
 
-class Point(object):
-    __slots__=['x', 'y', 'z', 'neighbors', '__weakref__']
-    def __init__(self, point):
+    r_range = list(range(-level + 1, level))
 
-        self.x = point[0]
-        self.y = point[1]
-        self.z = point[2]
+    for j in (-level, level):
+        for i in r_range:
+            for k in n_range:
+                yield (i, j, k)
 
-        self.neighbors = None
-
-    def __getitem__(self, index):
-        return (self.x, self.y, self.z)[index]
-
-
-    def __hash__(self):
-        return hash((round(self.x, 2),
-                     round(self.y, 2),
-                     round(self.z, 2)))
-
-    def __eq__(self, othr):
-        return abs(self.x - othr.x) < 1e-2 and \
-               abs(self.y - othr.y) < 1e-2 and \
-               abs(self.z - othr.z) < 1e-2
-
-    def __str__(self):
-        return "Point({}, {}, {})".format(self.x, self.y, self.z)
-
-    __repr__ = __str__
+    for k in (-level, level):
+        for i in r_range:
+            for j in r_range:
+                yield (i, j, k)
 
 
-class GridPointRegistry(collections.MutableMapping):
+class PointGrid(object):
+    """ Grid datastructure to store points
 
-    def __init__(self, point_array, cutoff_distance):
+    Args:
+        cutoff_distance: float
+            The distance which will be used to calculate
+            the voxel width
 
-        ex, ey, ez = np.ptp(point_array, axis=0)
-        self._offx, self._offy, self._offz = np.min(point_array, axis=0)
+    Attributes:
+        data:
+            The array of the points stored in the grid.
+        store:
+            Dictionary of the grid cells where the point ids are stored.
+    """
+    def __init__(self, cutoff_distance):
 
-        self._rc2 = cutoff_distance ** 2
+        # cutoff radius is the diagonal of the voxel
+        voxel_width = 2. * cutoff_distance / np.sqrt(3)
 
-        self._dl = 2. * cutoff_distance / np.sqrt(2)
-        self._inv_dl = 1. / self._dl
+        self._inv_dl = 1. / voxel_width
 
-        self._sx = int(np.ceil(ex * self._inv_dl))
-        self._sy = int(np.ceil(ey * self._inv_dl))
-        self._sz = int(np.ceil(ez * self._inv_dl))
-        self._sxsy = self._sx * self._sy
+        self.data = np.empty((0, 3), dtype=np.float)
+        self._n_points = 0
 
-        self._NMAX = self._sx * self._sy * self._sz
+        self.store = {}
 
-        indices = list(map(self.point_to_index, point_array))
+    def __contains__(self, point_id):
+        """ Check if point_id or array of ids are inside the grid """
+        return np.all(np.isin(point_id, self.available_ids))
 
-        self.store = {index: set() for index in indices}
-
-        for (i, point_coordinates) in enumerate(point_array):
-            point = Point(point_coordinates)
-            self.store[indices[i]].add(point)
-
-    def __getitem__(self, key):
-        return self.store[self.__keytransform__(key)]
-
-    def __setitem__(self, key, value):
-        self.store[self.__keytransform__(key)] = value
-
-    def __delitem__(self, key):
-        del self.store[self.__keytransform__(key)]
-
-    def __iter__(self):
-        return iter(self.store)
-
-    def __len__(self):
-        return len(self.store)
-
-    def __keytransform__(self, index):
-        return index
+    def _number_of_indices(self):
+        """ Number of available indices """
+        return sum(len(p_set) for p_set in self.store.values())
 
     @property
-    def point_objects(self):
-        return tuple(p for cell in self.store.values() for p in cell)
+    def number_of_points(self):
+        """ Number of available points """
+        return self._n_points
 
     @property
-    def point_array(self):
-        return np.array([(p.x ,p.y, p.z) for p in self.point_objects])
+    def voxel_width(self):
+        """ Grid voxel width """
+        return 1. / self._inv_dl
 
-    def point_to_ijk(self, point):
-        i = int((point[0] - self._offx) * self._inv_dl)
-        j = int((point[1] - self._offy) * self._inv_dl)
-        k = int((point[2] - self._offz) * self._inv_dl)
-        return (i, j, k)
+    @property
+    def cutoff_distance(self):
+        """ input cutoff distance """
+        return np.sqrt(3) * 0.5 * self.voxel_width
 
-    def ijk_to_index(self, i, j, k):
-        return i + self._sx * j + self._sxsy * k
+    @property
+    def available_ids(self):
+        """ Available point ids in the grid """
+        return np.fromiter((i for i_set in self.store.values() for i in i_set), np.uintp)
 
-    def point_to_index(self, point):
-        return  self.ijk_to_index(*self.point_to_ijk(point))
+    @property
+    def available_points(self):
+        """ Available points in the grid """
+        return self.data[self.available_ids]
 
-    def is_index_valid(self, index):
-        return index in self.store and 0 <= index < self._NMAX
+    def add_points(self, points):
+        """ Add point array to the grid
+        """
+        cells_ijk = [self._point_to_ijk(point) for point in points]
+
+        self.store = {ijk: set() for ijk in set(cells_ijk)}
+
+        index_offset = len(self.data)
+
+        for (i, ijk) in enumerate(cells_ijk):
+            self.store[ijk].add(i + index_offset)
+
+        self.data = np.vstack((self.data, points))
+        self._n_points = self._number_of_indices()
+
+    def _point_to_ijk(self, point):
+        """ Convert point to i, j, k """
+        ijk_float = point * self._inv_dl
+        return int(ijk_float[0]), int(ijk_float[1]), int(ijk_float[2])
 
     def upper_level_from_radius(self, radius):
-        return int(np.ceil(2. * radius) / self._dl)
+        """ Get the level that includes the radius """
+        return int(np.ceil(2. * radius) * self._inv_dl)
+
+    def _level_query(self, point, radius, levels):
+        """ Get the points in the neighborhood cell defined by the level
+        which are inside the sphere (point, radius)
+        """
+        squared_radius = radius ** 2
+        i_c, j_c, k_c = self._point_to_ijk(point)
+        for level in levels:
+            for i, j, k in shell_neighborhood(level):
+                new_ijk = (i_c + i, j_c + j, k_c + k)
+                if new_ijk in self.store:
+                    for point_id in self.store[new_ijk]:
+                        if squared_distance(point, self.data[point_id]) < squared_radius:
+                            yield point_id
 
     def ball_query(self, point, radius):
-
-        r2 = radius ** 2
-
-        p_object_i = Point(point)
-        current_index = self.point_to_index(p_object_i)
-
-        visited = set()
-
-        for level in range(self.upper_level_from_radius(radius) + 1):
-            for i, j, k in _shell_neighborhood(level):
-                new_index = current_index + self.ijk_to_index(i, j, k)
-                if new_index not in visited and self.is_index_valid(new_index):
-                    for p_object_j in self.store[new_index]:
-                        if _squared_distance(p_object_i, p_object_j) <= r2:
-                            yield (p_object_j.x, p_object_j.y, p_object_j.z)
-                    visited.add(new_index)
+        """ Retreive all the points in the sphere (point, radius)
+        Note: generator
+        """
+        levels = range(self.upper_level_from_radius(radius) + 1)
+        return np.fromiter(self._level_query(point, radius, levels), dtype=np.intp)
 
     def expanding_ball_query(self, point, number_of_points):
+        """ Expand the neighborhood and find the closest point ids to the
+        given point
+        """
+        number_of_points = min(number_of_points, self.number_of_points)
 
-        p_object_i = Point(point)
-        current_index = self.point_to_index(p_object_i)
+        results = np.empty(number_of_points, dtype=np.intp)
 
+        i_c, j_c, k_c = self._point_to_ijk(point)
 
-        visited = set()
-        level = 0
         n = 0
+        level = 0
 
         while n < number_of_points:
-            for i, j, k in _shell_neighborhood(level):
-                new_index = current_index + self.ijk_to_index(i, j, k)
-                if new_index not in visited and self.is_index_valid(new_index):
-                    for p_object_j in self.store[new_index]:
-                        yield (p_object_j.x, p_object_j.y, p_object_j.z)
-                        n += 1
-                    visited.add(new_index)
+
+            level_ids = []
+
+            for i, j, k in shell_neighborhood(level):
+                new_ijk = (i_c + i, j_c + j, k_c + k)
+                if new_ijk in self.store:
+                    level_ids.extend(self.store[new_ijk])
+
+            dists = np.linalg.norm(self.data[level_ids] - point, axis=1)
+
+            ids = np.argsort(dists)
+            for index in ids:
+
+                results[n] = level_ids[index]
+                n += 1
+                if n == number_of_points:
+                    return results
+
             level += 1
 
+        return results[:n]
 
+    def nearest_neighbor(self, point):
+        """ Return the id and the distance of the closest
+        neighbor to the point
+        """
+        i_c, j_c, k_c = self._point_to_ijk(point)
 
+        closest_sq_distance = np.inf
+        closest_point_id = None
 
-    def nearest_neighbor(self, point, return_distance=False):
+        for level in [0, 1]:
 
-        p_object_i = Point(point)
+            for i, j, k in shell_neighborhood(level):
 
-        index = self.point_to_index(p_object_i)
+                ijk = (i_c + i, j_c + j, k_c + k)
 
-        closest_distance = np.inf
-        closest_point = None
+                if ijk in self.store:
+                    for point_id in self.store[ijk]:
+                        sq_dist = squared_distance(point, self.data[point_id])
+                        if sq_dist < closest_sq_distance:
+                            closest_sq_distance = sq_dist
+                            closest_point_id = point_id
 
-        if index in self.store:
+            if closest_point_id is not None:
+                return closest_point_id, np.sqrt(closest_sq_distance)
 
-            for p_object_j in self.store[index]:
+        return closest_point_id, np.sqrt(closest_sq_distance)
 
-                d2 = _squared_distance(p_object_i, p_object_j)
+    def remove(self, point_id):
+        """ Remove a point from the grid if it exists
+        """
+        ijk = self._point_to_ijk(self.data[point_id])
 
-                if d2 < closest_distance:
-                    closest_distance = d2
-                    closest_point = p_object_j
+        point_set = self.store[ijk]
+        point_set.remove(point_id)
 
-        else:
-
-            visited = set([index])
-
-            level = 1
-
-            while 1:
-
-                for i, j, k in _shell_neighborhood(level):
-
-                    new_index = \
-                    index + self.ijk_to_index(i, j, k)
-
-                    if new_index not in visited and \
-                       self.is_index_valid(new_index):
-
-                        for p_object_j in self.store[new_index]:
-
-                            d2 = _squared_distance(p_object_i, p_object_j)
-
-                            if d2 < closest_distance:
-                                closest_distance = d2
-                                closest_point = p_object_j
-
-                        visited.add(new_index)
-
-                if closest_point is not None:
-                    break
-
-                level += 1
-
-
-        if return_distance:
-            return (closest_point.x, closest_point.y, closest_point.z), np.srt(closest_distance)
-        else:
-            return (closest_point.x, closest_point.y, closest_point.z)
-
-    def remove_point(self, point):
-
-        point_object = Point(point)
-
-        index = self.point_to_index(point_object)
-
-        point_set = self.store[index]
-        point_set.remove(point_object)
+        self._n_points -= 1
 
         # if set is empty, delete the cell altogether
         if not point_set:
-            del self.store[index]
+            del self.store[ijk]
