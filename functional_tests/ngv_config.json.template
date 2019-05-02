@@ -1,0 +1,115 @@
+{
+    "seed": 0,
+    "comment": "Test circuit",
+    "experiment_name": "build",
+    "parent_directory": "$BASE_DIR",
+    "include_neuronal_somata": false,
+    "neuronal_subsample": 0.2,
+    "use_somata_geometry": false,
+    "use_existing_astrocyte_morphologies": true,
+    "input_paths": {
+        "voxelized_intensity": "/gpfs/bbp.cscs.ch/project/proj67/usr/share/test-build/src/atlas/[density]astrocytes.nrrd",
+        "voxelized_brain_regions": "/gpfs/bbp.cscs.ch/project/proj67/usr/share/test-build/src/atlas/brain_regions.nrrd",
+        "vasculature": "/gpfs/bbp.cscs.ch/project/proj67/usr/share/test-build/src/atlas/vasculature.h5",
+        "microcircuit_path": "/gpfs/bbp.cscs.ch/project/proj67/usr/share/test-build/src/circuit/",
+        "tns_astrocyte_distributions": "$BASE_DIR/bioname/tns_distributions.json",
+        "tns_astrocyte_parameters": "$BASE_DIR/bioname/tns_parameters.json",
+        "raw_morphology": "N/A",
+        "vasculature_mesh": "N/A",
+        "synthesis_input_cells": "N/A"
+    },
+    "output_paths": {
+        "morphology": "morphology",
+        "endfeetome": "endfeetome",
+        "vasculature": "vasculature.h5",
+        "intermediate": "intermediate",
+        "spatial_index": "spatial_index",
+        "neuronal_data": "neuronal_data",
+        "circuit": "circuit.mvd3",
+        "microcircuit_neuronal_point_data": "neuronal_data/microcircuit_point_data_mean_radii.npy",
+        "microcircuit_neuronal_somata_geometries": "neuronal_data/microcircuit_somata_geometries_by_revolution.npy",
+        "cell_data": "intermediate/cell_data.h5",
+        "synaptic_connectivity": "/gpfs/bbp.cscs.ch/project/proj67/usr/share/test-build/src/circuit/connectome/functional/synaptic_connectivity.h5",
+        "synaptic_data": "/gpfs/bbp.cscs.ch/project/proj67/usr/share/test-build/src/circuit/connectome/functional/synaptic_data.h5",
+        "gliovascular_connectivity": "intermediate/gliovascular_connectivity.h5",
+        "gliovascular_data": "intermediate/gliovascular_data.h5",
+        "neuroglial_connectivity": "intermediate/neuroglial_connectivity.h5",
+        "neuroglial_data": "intermediate/neuroglial_data.h5",
+        "ngv_connectome": "ngv_connectome.h5",
+        "circuit_config": "CircuitConfig",
+        "vasculature_index": "spatial_index/si_vasculature",
+        "vasculature_mesh_data": "vasculature_mesh_data.h5",
+        "astrocytic_somata_index": "spatial_index/si_astrocytic_somata",
+        "neuronal_somata_index": "spatial_index/si_neuronal_somata",
+        "synapses_index": "spatial_index/si_synapses",
+        "endfeet_areas": "endfeet_areas.pkl",
+        "microdomain_mesh": "intermediate/microdomain_tesselation.stl",
+        "microdomain_structure": "intermediate/microdomain_structure.h5",
+        "overlapping_microdomain_mesh": "intermediate/overlapping_microdomain_tesselation.stl",
+        "overlapping_microdomain_structure": "intermediate/overlapping_microdomain_structure.h5",
+        "ngv_connectivity_table": "ngv_connectivity_table.h5",
+        "joined_mesh_filename": "intermediate/endfeetome_surfaces.stl"
+    },
+    "parameters": {
+        "cell_placement": {
+            "soma_radius": [
+                5.6,
+                0.74,
+                0.1,
+                20
+            ],
+            "Energy": {
+                "potentials": {
+                    "spring": [
+                        32.0,
+                        1.0
+                    ]
+                }
+            },
+            "MetropolisHastings": {
+                "n_initial": 10,
+                "beta": 0.01,
+                "ntrials": 3,
+                "cutoff_radius": 60.0
+            }
+        },
+        "microdomain_tesselation": {
+            "overlap_distribution": {
+                "type": "normal",
+                "values": [
+                    0.1,
+                    1e-07
+                ]
+            }
+        },
+        "gliovascular_connectivity": {
+            "graph_targeting": {
+                "linear_density": 0.17
+            },
+            "connection": {
+                "Reachout Strategy": "maximum_reachout",
+                "Endfeet Distribution": [
+                    2,
+                    2,
+                    0,
+                    15
+                ],
+                "endfeet_minimum_distance_with_neighbors": 0.1
+            },
+            "surface_targeting": {}
+        },
+        "neuroglial_connectivity": {},
+        "synthesis": {
+                       "attraction_field": "lambda distance: 0.20968752 * np.exp(- 0.02084375 * distance)",
+                       "point_cloud": [5.0, 2.0],
+                       "segment_length": 1.0,
+                        "randomness": 0.6,
+                        "endfeet_area_reconstruction": {
+                                                            "area_constraints": {"type": "distribution", "values": ["norm", 200.0, 10.0]},
+                                                            "thickness_distribution": {},
+                                                            "join_endfeet_meshes": false,
+                                                            "max_endfoot_area": 1000.0
+                                                        }
+        }
+    }
+}
