@@ -28,7 +28,6 @@ def _execute_step(step, ngv_config, map_func):
 
     te = time.time()
 
-    L.info('{} completed. Elapsed time: {}'.format(step.name, ts - te))
     L.info('\n')
 
 

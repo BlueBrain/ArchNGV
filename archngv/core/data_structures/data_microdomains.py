@@ -38,7 +38,7 @@ class MicrodomainTesselation(H5ContextManager):
 
     def __len__(self):
         """ Number of Microdomains """
-        return len(self._offsets - 1)
+        return len(self._offsets) - 1
 
     def __getitem__(self, key):
         """ list getter """

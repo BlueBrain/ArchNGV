@@ -53,7 +53,7 @@ def create_cell_positions(ngv_config, run_parallel):
                                                       voxelized_bnregions,
                                                       spatial_indexes=index_list)
 
-    cell_names = ['GLIA_{:013d}'.format(index) for index in range(len(somata_positions))]
+    cell_names = np.array(['GLIA_{:013d}'.format(index) for index in range(len(somata_positions))], dtype=bytes)
     cell_ids =  range(len(cell_names))
 
     export_cell_placement_data(ngv_config.output_paths('cell_data'), cell_ids, cell_names, somata_positions, somata_radii)

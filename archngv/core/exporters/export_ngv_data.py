@@ -1,13 +1,16 @@
 import h5py
-
+import numpy as np
 
 def export_cell_placement_data(filepath, cell_ids, cell_names, somata_positions, somata_radii):
+
+    cell_names = np.asarray(cell_names, dtype=bytes)
 
     with h5py.File(filepath, 'w') as fd:
 
         fd.create_dataset('ids', data=cell_ids)
 
-        fd.create_dataset('names', data=[name.encode('ascii') for name in cell_names])
+        dt = h5py.special_dtype(vlen=bytes)
+        fd.create_dataset('names', data=cell_names, dtype=dt)
 
         fd.create_dataset('positions', data=somata_positions)
         fd.create_dataset('radii', data=somata_radii)

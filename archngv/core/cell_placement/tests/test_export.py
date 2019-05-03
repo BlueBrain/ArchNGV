@@ -10,7 +10,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 L = logging.getLogger(__name__)
 
-
+"""
 class Payloads:
 
     n_astrocytes = 10
@@ -64,3 +64,5 @@ def test_basalt_exporter():
             assert np.allclose(expected_pos[1], payload.soma_center.y)
             assert np.allclose(expected_pos[2], payload.soma_center.z)
             assert np.isclose(payloads.radii[i], payload.soma_radius)
+
+"""

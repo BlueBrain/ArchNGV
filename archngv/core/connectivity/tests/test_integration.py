@@ -7,7 +7,7 @@ from ...vasculature_morphology import Vasculature
 #from ..gliovascular_core import Gliovascular
 
 #from archngv.util.graph.graphs import DirectedGraph
-
+'''
 
 def create_continuous_point_data():
 
@@ -119,7 +119,6 @@ def evaluate_simple_connectivity(convex_shape, vasculature, expected):
     GV.map_graph_points_to_vasculature_surface()
     check_map_graph_points_to_vasculature_surface(GV, expected)
 
-'''
 def test_integration_only_one_in_the_corner():
     """ In this case there is only one point, that of (0,0,0) that
     intersects with the convex shape
