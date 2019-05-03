@@ -1,5 +1,6 @@
 import os
 import h5py
+import numpy as np
 import logging
 from functools import partial
 
@@ -17,7 +18,6 @@ L = logging.getLogger(__name__)
 def apply_func(func, data_generator):
     for data in data_generator:
         func(data)
-
 
 
 class Worker(object):
@@ -43,6 +43,10 @@ class Worker(object):
         gliovascular_conn_filepath = ngv_config.output_paths('gliovascular_connectivity')
         neuroglial_connectivity_filepath = ngv_config.output_paths('neuroglial_connectivity')
         parameters = ngv_config.parameters['synthesis']
+
+        if 'seed' in ngv_config._config:
+            seed = hash((ngv_config._config['seed'], astrocyte_index)) % (2 ** 32)
+            np.random.seed(seed)
 
         synthesize_astrocyte(astrocyte_index,
                              cell_data_filepath,

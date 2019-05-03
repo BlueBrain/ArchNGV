@@ -18,8 +18,10 @@ def process_random_seed(ngv_config):
 
 def _execute_step(step, ngv_config, map_func):
 
+    process_random_seed(ngv_config)
+
     L.info('\n{} started.'.format(step.name))
-    
+
     ts = time.time()
 
     step.func(ngv_config, map_func)
@@ -36,8 +38,6 @@ def execute_steps(steps, args, type_of_execution):
 
     ngv_config = NGVConfig.from_file(args.config)
 
-    process_random_seed(ngv_config)
-    
     L.info('{} of Experiment {} started.'.format(type_of_execution, ngv_config.experiment_name))
 
     msg = 'Selected steps: ' + ', '.join([step.name for step in steps if step.is_enabled ^ args.all])
