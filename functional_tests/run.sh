@@ -13,6 +13,9 @@ mkdir $BUILD_DIR/morphology
 
 sed 's;$BASE_DIR;'$(pwd)';g' ngv_config.json.template > $NGV_CONFIG
 
+python ../archngv/workflow/apps/ngv_input_generation.py $NGV_CONFIG \
+    --neuron_synapse_connectivity
+
 python ../archngv/workflow/apps/ngv_main_workflow.py $NGV_CONFIG \
     --cell_placement \
     --microdomains \
