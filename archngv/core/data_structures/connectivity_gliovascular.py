@@ -85,7 +85,7 @@ class AstrocyteEntry(object):
 
     def __len__(self):
         """ Size """
-        return len(self._offsets - 1)
+        return len(self._offsets) - 1
 
     def _offset_slice(self, astrocyte_index, offset_type):
         # right now the array is 1d because there is only

@@ -1,3 +1,7 @@
+""" Data structures for ngv data and connectivity
+"""
+
+
 from .ngv_config import NGVConfig
 
 from .data_ngv import NGVData
