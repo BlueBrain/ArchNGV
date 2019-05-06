@@ -8,7 +8,6 @@ egg-info/
 *checkpoints
 *.run*
 *.pkl
-*.mvd*
 output/
 *profile_benchmark*
 *stdout

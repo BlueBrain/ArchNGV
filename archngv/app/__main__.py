@@ -12,6 +12,7 @@ from archngv.app import (
     neuroglial_connectivity,
     synaptic_connectivity,
     synthesis,
+    convert,
 )
 from archngv.app.logger import LOGGER
 from archngv.version import VERSION
@@ -36,6 +37,7 @@ def main():
         'neuroglial-connectivity': neuroglial_connectivity.cmd,
         'synaptic-connectivity': synaptic_connectivity.cmd,
         'synthesis': synthesis.cmd,
+        'convert': convert.app,
     })
     app = click.version_option(VERSION)(app)
     app()

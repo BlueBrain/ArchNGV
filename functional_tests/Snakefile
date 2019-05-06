@@ -31,6 +31,7 @@ BASE_CIRCUIT = config['common']['base_circuit']
 rule default:
     input:
         'cell_data.h5',
+        'glia.mvd3',
         'microdomains/overlapping_structure.h5',
         'gliovascular_connectivity.h5',
         'gliovascular_data.h5',
@@ -218,4 +219,23 @@ rule synthesis:
                     MORPH_DIR,
                 '--parallel',
                 '2>&1 | tee {log}'
+        ])
+
+
+rule cell_data_mvd3:
+    input:
+        'cell_data.h5',
+
+    output:
+        'glia.mvd3'
+
+    shell:
+        ' '.join([
+            'ngv convert cell-data',
+                '--input',
+                    '{input}',
+                '--output',
+                    '{output}',
+                '--output-format',
+                    'mvd3',
         ])
