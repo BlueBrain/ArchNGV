@@ -5,11 +5,13 @@ import logging
 import multiprocessing
 
 import numpy as np
+from scipy import stats
 
 from .detail.endfoot import create_endfoot_from_global_data
 from .detail.area_fitting import fit_area
 from .detail.fmm_growing import FastMarchingEikonalSolver
 
+from ..data_structures import GliovascularData
 from ..data_structures import GliovascularConnectivity
 from ..util.parallel import distribute_batches
 
@@ -22,9 +24,25 @@ def _dispatch_data(n_cells,
                    mark_offsets,
                    target_areas,
                    target_thicknesses,
-                   ngv_config):
+                   gliovascular_connectivity_path):
+    """ Dispatch the data for one astrocyte endfoot
 
-    with GliovascularConnectivity(ngv_config.output_paths('gliovascular_connectivity')) as gv_conn:
+    Args:
+        mark_indices: int[N, 1]
+            Vasculature indices for all endfoot mesh vertices.
+        mark_offsets: int[M + 1, 1]
+            The vasculature indices of the i-th endfoot (total M) can be retrieved as
+            mark_indices[mark_offsets[i]: mark_offsets[i + 1]]
+        target_areas: float[M, 1]
+            Target area for each endfoot mesh.
+        target_thicknesses: float[M, 1]
+            Target thickness for each endfoot mesh (Not implemented)
+        gliovascular_connectivity_path: string
+            Path to gliovascular connectivity.
+
+    Returns: dict
+    """
+    with GliovascularConnectivity(gliovascular_connectivity_path) as gv_conn:
 
         for endfoot_index in range(n_cells):
 
@@ -34,8 +52,7 @@ def _dispatch_data(n_cells,
             endfoot_data = {
                                 'index': endfoot_index,
                                 'astrocyte_index': gv_conn.endfoot.to_astrocyte(endfoot_index),
-                                'vasculature_mesh_vertices': vasculature_mesh_vertices.astype(np.uintp),
-                                'config': ngv_config
+                                'vasculature_mesh_vertices': vasculature_mesh_vertices.astype(np.uintp)
             }
 
             if target_areas is not None:
@@ -48,9 +65,8 @@ def _dispatch_data(n_cells,
 
 
 def process_endfoot(endfoot_data):
-
-    ngv_config = endfoot_data['config']
-
+    """ Shrink endfoot area if needed.
+    """
     mesh_coordinates = shared_data['mesh_points']
     mesh_triangles = shared_data['mesh_triangles']
     travel_times = shared_data['vertex_travel_times']
@@ -76,39 +92,39 @@ def process_endfoot(endfoot_data):
         if 'target_thickness' in endfoot_data:
             raise NotImplementedError
 
-    filepath = os.path.join(ngv_config.endfeetome_directory,
-                            'endfoot_{}_{}.stl'.format(endfoot_data['index'],
-                                                       endfoot_data['astrocyte_index']))
+    return endfoot_data['index'], endfoot.coordinates_array, endfoot.triangle_array
 
-    #io.export_endfoot_mesh(endfoot, filepath)
-
-    return endfoot_data['index'], endfoot_data['astrocyte_index'], endfoot.coordinates_array, endfoot.triangle_array
 
 shared_data = {}
 
 
-def run_fast_marching_method(ngv_config, mesh, endfeet_points):
-
+def run_fast_marching_method(mesh, endfeet_points, max_area):
+    """
+    Args:
+        mesh: TriMesh
+            Vasculature mesh
+        endfeet_points: array[float, 3]
+            The coordinates of the endfeet contacts on the surface
+            of the vasculature.
+        max_area: float
+            Maximum permitted area for the growht of the endfeet.
+    """
     L.info('fmm started.')
 
-    max_area = ngv_config.parameters["synthesis"]["endfeet_area_reconstruction"]["max_endfoot_area"] 
 
     threshold_radius = np.sqrt(max_area / 3.1415)
 
     solver = FastMarchingEikonalSolver(
                                            mesh, 
-                                           endfeet_points.astype(np.float32),
+                                           endfeet_points,
                                            threshold_radius
                                       )
     solver.solve()
 
-
     L.info('Extract travel times..')
-
     travel_times = solver.travel_times()
 
     L.info('Extract groups..')
-
     mark_seeds, mark_indices, mark_offsets = solver.groups()
 
     L.info('fmm completed')
@@ -116,16 +132,32 @@ def run_fast_marching_method(ngv_config, mesh, endfeet_points):
 
 
 def endfeet_area_generation(mesh,
-                            endfeet_points,
-                            ngv_config,
-                            area_fitting_data=None,
-                            thickness_data=None,
+                            parameters,
+                            gliovascular_data_path,
+                            gliovascular_connectivity_path,
                             parallel=False):
+    """ Generate endfeet areas
+
+    Args:
+        mesh: Trimesh
+            The mesh of the vasculature
+        parameters: dict
+            The parameters for the algorithms
+        gliovascular_data_path: string
+            Path to gliovascular data h5
+        gliovascular_connectivity_path: string
+            Path to gliovascular connectivity h5
+        parallel: bool
+            Enable parallel run for the endfeet areas
+    """
+
+    with GliovascularData(gliovascular_data_path) as gdata:
+        endfeet_points = gdata.endfoot_surface_coordinates[:].astype(np.float32)
 
     n_endfeet = len(endfeet_points)
 
     mark_seeds, mark_indices, mark_offsets, travel_times = \
-    run_fast_marching_method(ngv_config, mesh, endfeet_points)
+        run_fast_marching_method(mesh, endfeet_points, parameters['max_endfoot_area'])
 
     L.info('Generating groups...')
 
@@ -136,13 +168,23 @@ def endfeet_area_generation(mesh,
     shared_data['mesh_triangles'] = mesh_triangles.astype(np.uintp)
     shared_data['vertex_travel_times'] = travel_times.astype(np.float32)
 
-    endfeet_data_it = \
-    _dispatch_data(n_endfeet,
-                   mark_indices,
-                   mark_offsets,
-                   area_fitting_data,
-                   thickness_data,
-                   ngv_config)
+    if 'area_constraints' in parameters:
+        endfeet_target_areas = \
+            endfeet_area_extraction(parameters["area_constraints"], n_endfeet)
+    else:
+        endfeet_target_areas = None
+
+    if 'thickness_constraints' in parameters:
+        raise NotImplementedError
+    else:
+        endfeet_target_thicknesses = None
+
+    endfeet_data_it = _dispatch_data(n_endfeet,
+                                     mark_indices,
+                                     mark_offsets,
+                                     endfeet_target_areas,
+                                     endfeet_target_thicknesses,
+                                     gliovascular_connectivity_path)
 
     L.info('Processing Endfeet..')
 
@@ -158,36 +200,34 @@ def endfeet_area_generation(mesh,
                                         processes=n_processes
                                    )
 
-        data = pool.imap_unordered(process_endfoot, endfeet_data_it)
+        return pool.imap_unordered(process_endfoot, endfeet_data_it)
+
+    return [process_endfoot(d) for d in endfeet_data_it]
+
+
+def endfeet_area_extraction(area_distribution_dict, n_endfeet):
+    """ Create endfeet area distribution or get values from config
+    """
+    entry_type = area_distribution_dict['type']
+    entry_data = area_distribution_dict['values']
+
+    if entry_type == 'number':
+
+        endfeet_areas = np.ones(n_endfeet) * entry_data
+        L.info('Area distribution entry type is number. Broadcastng..')
+
+    elif entry_type == 'list':
+
+        endfeet_areas = np.asarray(map(float, entry_data), dtype=np.float)
+        L.info('Area contraints entry is list. Using as is..')
+
+    elif entry_type == 'distribution':
+
+        endfeet_areas = getattr(stats, entry_data[0])(*(float(entry_data[1]), float(entry_data[2]))).rvs(n_endfeet)
+        L.info('Area constraints entry is a distribution. Sampling...')
 
     else:
 
-        #init_hared(mesh_points, mesh_triangles, travel_times)
-        data = [process_endfoot(d) for d in endfeet_data_it]
+        raise TypeError("Area constraints type is unknown")
 
-
-    export_data(ngv_config, data)
-
-
-def export_data(ngv_config, data):
-
-    filepath = os.path.join(ngv_config.endfeetome_directory, 'endfeetome.h5')
-
-    with h5py.File(filepath, 'w') as fd:
-
-        metadata = fd.create_group('metadata')
-
-        metadata.attrs['object_type'] = 'endfoot_mesh'
-
-        meshes = fd.create_group('objects')
-
-        for index, astrocyte_index, points, triangles in data:
-
-            mesh_group = meshes.create_group('endfoot_{}'.format(index))
-
-            mesh_group.create_dataset('points', data=points)
-            mesh_group.create_dataset('triangles', data=triangles)
-
-            mesh_group.attrs['astrocyte_index'] = astrocyte_index
-
-            L.info('written {}'.format(index))
+    return endfeet_areas

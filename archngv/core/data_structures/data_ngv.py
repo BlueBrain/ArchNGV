@@ -7,6 +7,7 @@ from .data_synaptic import SynapticDataInfo
 from .data_spatial_index import SpatialIndexInfo
 from .data_gliovascular import GliovascularDataInfo
 from .data_microdomains import MicrodomainTesselationInfo
+from .data_endfeetome import Endfeetome
 
 from ..vasculature_morphology import Vasculature
 
@@ -15,17 +16,17 @@ class NGVData(object):
     """ Composition of all the ngv rich data structures
     """
     def __init__(self, ngv_config):
-
         self._config = ngv_config
 
-        self.cells = CellDataInfo(ngv_config)
-        self.synapses = SynapticDataInfo(ngv_config)
+    @cached_property
+    def astrocytes(self):
+        """ Returns cell data """
+        return CellDataInfo(self._config)
 
-        #self.neuroglial   = NeuroglialData(ngv_config.output_paths('NeuroglialData'))
-
-        self.gliovascular = GliovascularDataInfo(ngv_config)
-
-        self.microdomains = MicrodomainTesselationInfo(ngv_config)
+    @cached_property
+    def synapses(self):
+        """ Returns synaptic data """
+        return SynapticDataInfo(self._config)
 
     @cached_property
     def vasculature(self):
@@ -33,9 +34,26 @@ class NGVData(object):
         return Vasculature.load(self._config.input_paths('vasculature'))
 
     @cached_property
-    def spatial_index(self):
-        """ Spatial index information """
-        return SpatialIndexInfo(self._config)
+    def vasculature_mesh(self):
+        """ Returns vasculature mesh object """
+        import trimesh
+        return trimesh.load(self.config.input_paths('vasculature_mesh'))
+
+    @cached_property
+    def microdomains(self):
+        """ Returns microdomain tesselation """
+        return MicrodomainTesselationInfo(self._config)
+
+    @cached_property
+    def endfeetome(self):
+        """ Returns endfeetome data """
+        path = self._config.output_paths('endfeetome')
+        return Endfeetome(path)
+
+    @cached_property
+    def voxelized_intensity(self):
+        path = self.config.input_paths('voxelized_intensity')
+        return VoxelData.load_nrrd(path)
 
     def __enter__(self):
         """ Composition context manager """

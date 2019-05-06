@@ -52,7 +52,7 @@ class Endfeetome(H5ContextManager):
     def _object(self, endfoot_index):
         """ Returns endfoot object from its index """
         entry = self._entry(_index_to_key(endfoot_index))
-        return EndfootMesh(endfoot_index, entry['points'], entry['triangles'])
+        return EndfootMesh(endfoot_index, entry['points'][:], entry['triangles'][:])
 
     def __getitem__(self, index):
         """ Endfoot mesh object getter """
@@ -66,8 +66,8 @@ class Endfeetome(H5ContextManager):
 
     def mesh_points(self, endfoot_index):
         """ Return the points of the endfoot mesh """
-        return self._entry(_index_to_key(endfoot_index))['points']
+        return self._entry(_index_to_key(endfoot_index))['points'][:]
 
     def mesh_triangles(self, endfoot_index):
         """ Return the triangles of the endfoot mesh """
-        return self._entry(_index_to_key(endfoot_index))['triangles']
+        return self._entry(_index_to_key(endfoot_index))['triangles'][:]

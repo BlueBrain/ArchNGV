@@ -1,5 +1,6 @@
 import os
 import logging
+from cached_property import cached_property
 
 import numpy as np
 
@@ -15,9 +16,43 @@ class NGVConnectome(object):
 
     def __init__(self, ngv_config):
 
-        self.synaptic = SynapticConnectivity(ngv_config.output_paths('synaptic_connectivity'))
-        self.neuroglial = NeuroglialConnectivity(ngv_config.output_paths('neuroglial_connectivity'))
-        self.gliovascular = GliovascularConnectivity(ngv_config.output_paths('gliovascular_connectivity'))
+        self._config = ngv_config
+
+        self._connectivities = {'neuroglial': self._neuroglial,
+                                'gliovascular': self._gliovascular,
+                                'synaptic': self._synaptic}
+    @property
+    def connectivities(self):
+        """ Available connectivities """
+        return self._connectivities.keys()
+
+    def __getitem__(self, connectivity_name):
+        return self._connectivities[connectivity_name]()
+
+    def _gliovascular(self):
+        """ Return gliovascular connectivity """
+        filepath = self._config.output_paths('gliovascular_connectivity')
+        return GliovascularConnectivity(filepath)
+
+    @cached_property
+    def gliovascular(self):
+        return self._gliovascular()
+
+    def _neuroglial(self):
+        filepath = self._config.output_paths('neuroglial_connectivity')
+        return NeuroglialConnectivity(filepath)
+
+    @cached_property
+    def neuroglial(self):
+        return self._neuroglial()
+
+    def _synaptic(self):
+        filepath = self._config.ouput_paths('synaptic_connectivity')
+        return SynapticConnectivity(filepath)
+
+    @cached_property
+    def synaptic(self):
+        return self._synaptic()
 
     def __enter__(self):
         """ Composition context manager """
@@ -34,18 +69,6 @@ class NGVConnectome(object):
         self.synaptic.close()
         self.neuroglial.close()
         self.gliovascular.close()
-
-    @property
-    def gliovascular(self):
-        return self._gvc
-
-    @property
-    def neuroglial(self):
-        return self._ngc
-
-    @property
-    def synaptic(self):
-        return self._snc
 
     ############### Astrocyte Stuff ###############
 
@@ -81,7 +104,6 @@ class NGVConnectome(object):
 
     def vasculature_segment_astrocyte(self, vasculature_segment_index):
         return self.gliovascular.vasculature_segment.to_astrocyte(vasculature_segment_index)
-
 
     ############### Pairwise Combinations ###############
 

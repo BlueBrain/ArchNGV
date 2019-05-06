@@ -20,8 +20,3 @@ class NGVCircuit(object):
     @property
     def neuronal_microcircuit_path(self):
         return self.config.input_paths('neuronal_microcircuit')
-
-    def close(self):
-        self.data.close()
-        self.connectome.close()
-
