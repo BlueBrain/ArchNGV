@@ -78,12 +78,12 @@ def connect_components(graph, points, checkpoint=None, continue_from_checkpoint=
     else:
 
 
-    components, bc, labels = connected_components(dA)
+        components, bc, labels = connected_components(dA)
 
-    ptp = np.linalg.norm(np.ptp(points, axis=0))
+        ptp = np.linalg.norm(np.ptp(points, axis=0))
 
 
-    edges = np.zeros((len(components), 2))
+        edges = np.zeros((len(components), 2))
 
 
         n = 0

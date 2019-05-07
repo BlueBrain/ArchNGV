@@ -30,7 +30,7 @@ def create_extensions(directory):
     for filepath in scandir(directory):
 
         dotted_path = filepath.replace(os.path.sep, '.')[:-4]
-        extension = Extension(dotted_path, sources=[filepath], language='c++', extra_compile_args=["-O2"])
+        extension = Extension(dotted_path, sources=[filepath], language='c++', extra_compile_args=["--std=c++11", "-O2"])
         extensions.append(extension)
 
     return extensions

@@ -30,7 +30,7 @@ def create_endfeet_areas(ngv_config, map_func):
 
     problematic = [item[::-1] for item in reg.items() if len(item[1]) > 1]
 
-    print problematic
+    print(problematic)
 
 if __name__ == '__main__':
     import sys
