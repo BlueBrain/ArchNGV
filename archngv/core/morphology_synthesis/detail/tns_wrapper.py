@@ -8,14 +8,12 @@ import numpy as np
 import scipy.stats
 
 from tns import AstrocyteGrower
-from tns.morphmath import sample
 from tns.morphmath.field import PointTarget
 from tns.morphmath.field import PointAttractionField
 
 from morphspatial.collision import convex_shape_with_point
 
-from .ph_modification import scale_barcode 
-from .synaptic_seeds import PointCloud
+from .ph_modification import scale_barcode
 from .domain_orientation import orientations_from_domain
 
 

@@ -2,10 +2,8 @@
 from the geometry of the microdomain
 """
 
-import numpy as np
 import logging
-
-from morphmath import rowwise_dot
+import numpy as np
 
 
 L = logging.getLogger(__name__)
@@ -14,7 +12,7 @@ L = logging.getLogger(__name__)
 def orientations_from_domain(soma_center,
                              domain,
                              n_trunks,
-                             fixed_targets=[],
+                             fixed_targets=None,
                              face_interpolation=True):
     """ Given the domain shape and the number of apical directions, find
     from the trunk directions. It uses kmeans of the vectors from the center
@@ -35,9 +33,6 @@ def orientations_from_domain(soma_center,
         face_interpolation: bool
             If enabled it adds the centroids of the faces into the point list in order to create
             more orientations to choose from.
-
-    Returns:
-        
     """
     if face_interpolation:
         domain_vectors = interpolate_triangles(domain.points, domain.triangles) - soma_center
@@ -65,7 +60,6 @@ def orientations_from_domain(soma_center,
 
     chosen_idx = choose_orientations(n_trunks,
                                      domain_orientations,
-                                     domain_vector_lengths,
                                      fixed_orientations,
                                      objective_function)
 
@@ -101,8 +95,7 @@ def available_domain_orientations(orientations, fixed_orientations):
     return available_idx
 
 
-def choose_orientations(total_number, domain_orientations,
-                        domain_vector_lengths, fixed_orientations, objective_function):
+def choose_orientations(total_number, domain_orientations, fixed_orientations, objective_function):
     """ Choose the domain orientations that maximize the objective function
     """
 
@@ -114,7 +107,7 @@ def choose_orientations(total_number, domain_orientations,
 
     for _ in range(total_number):
 
-        best_value= 0.0
+        best_value = 0.0
         best_index = None
 
         for available_index in available:

@@ -1,3 +1,6 @@
+""" Barcode scaling
+"""
+
 import numpy as np
 
 from tmd.Topology.transformations import tmd_scale

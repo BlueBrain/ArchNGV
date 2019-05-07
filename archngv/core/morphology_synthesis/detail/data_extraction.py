@@ -1,3 +1,7 @@
+""" Data extraction for synthesis workers
+"""
+
+import logging
 
 from ...data_structures.data_cells import CellData
 from ...data_structures.data_gliovascular import GliovascularData
@@ -6,7 +10,6 @@ from ...data_structures.data_microdomains import MicrodomainTesselation
 from ...data_structures.connectivity_gliovascular import GliovascularConnectivity
 from ...data_structures.connectivity_neuroglial import NeuroglialConnectivity
 
-import logging
 
 
 L = logging.getLogger(__name__)
@@ -24,13 +27,13 @@ def obtain_endfeet_data(astrocyte_index,
         endfeet_indices = gliovascular_connectivity.astrocyte.to_endfoot(astrocyte_index)
 
         if len(endfeet_indices) == 0:
-            L.warning('No endfeet found for astrocyte index {}'.format(astrocyte_index))
+            L.warning('No endfeet found for astrocyte index %d', astrocyte_index)
             return None
 
         targets = gliovascular_data.endfoot_surface_coordinates[sorted(endfeet_indices)]
 
-    L.debug('Found endfeet {} for astrocyte index {}'.format(endfeet_indices, astrocyte_index))
-    L.debug('Endfeet Coordinates: {}'.format(targets))
+    L.debug('Found endfeet %s for astrocyte index %d', endfeet_indices, astrocyte_index)
+    L.debug('Endfeet Coordinates: %s', targets)
     return targets
 
 
@@ -51,7 +54,7 @@ def obtain_cell_properties(astrocyte_index,
 
         microdomain = microdomains[astrocyte_index]
 
-    L.debug('Index: {}, Name: {}, Pos: {}, Rad: {}'.format(astrocyte_index, cell_name, soma_position, soma_radius))
+    L.debug('Index: %d, Name: %s, Pos: %s, Rad: %f', astrocyte_index, cell_name, soma_position, soma_radius)
     return cell_name, soma_position, soma_radius, microdomain
 
 
@@ -72,6 +75,5 @@ def obtain_synapse_data(astrocyte_index, synaptic_data_filepath, neuroglial_conn
 
         synapse_positions = synaptic_data.synapse_coordinates[sorted(synapse_ids)]
 
-    L.debug('Number of synapses for astro index {}: {}'.format(astrocyte_index, len(synapse_positions)))
+    L.debug('Number of synapses for astro index %d: %d', astrocyte_index, len(synapse_positions))
     return synapse_positions
-
