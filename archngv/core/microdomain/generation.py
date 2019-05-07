@@ -1,17 +1,17 @@
+""" Tesselation generation and overlap
+"""
+
 import logging
 from copy import deepcopy
 
-import numpy
 import numpy as np
 import tess
 
 from morphspatial import ConvexPolygon
-from morphmath import vectorized_tetrahedron_volume
 
 from .tesselation import MicrodomainTesselation
 from .overlap import convex_polygon_with_overlap
 
-from scipy.spatial import ConvexHull
 
 L = logging.getLogger(__name__)
 
@@ -19,15 +19,18 @@ L = logging.getLogger(__name__)
 def _shape_from_cell(cell):
     """ Returns a shape from a tess cell
     """
-    points = numpy.asarray(cell.vertices())
-    face_vertices = numpy.asarray(cell.face_vertices())
+    points = np.asarray(cell.vertices())
+    face_vertices = np.asarray(cell.face_vertices())
     return ConvexPolygon(points, face_vertices)
 
 
 def _connectivity_from_cells(cells):
     """ Returns the connectivity between the tesselation cells
     """
-    return tuple(tuple(neighbor for neighbor in cell.neighbors() if neighbor >= 0) for cell in cells)
+    extract_neighbors = \
+        lambda cell: tuple(neighbor for neighbor in cell.neighbors() if neighbor >= 0)
+
+    return tuple(extract_neighbors(cell) for cell in cells)
 
 
 def generate_microdomain_tesselation(generator_points, generator_radii, bounding_box):
@@ -54,15 +57,11 @@ def convert_to_overlappping_tesselation(microdomain_tesselation, overlap_distrib
     Returns a new tesselation with the scaled domains and same connectivity as the input
     one.
     """
-
     overlaps = overlap_distribution.rvs(size=len(microdomain_tesselation))
 
     new_regions = list(map(deepcopy, microdomain_tesselation.regions))
 
     for index, reg in enumerate(new_regions):
         reg.points = convex_polygon_with_overlap(reg.centroid, reg.points, overlaps[index])
-
-    #L.debug("convert: {}, {}".format(new_regions[100].volume, microdomain_tesselation[100].volume))
-    #L.debug("convert: {}, {}".format(new_regions[100].points, microdomain_tesselation[100].points))
 
     return microdomain_tesselation.with_regions(new_regions)

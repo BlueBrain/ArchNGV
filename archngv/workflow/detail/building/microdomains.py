@@ -4,7 +4,8 @@ from scipy import stats
 
 from archngv.core.microdomain import generate_microdomain_tesselation
 from archngv.core.microdomain import convert_to_overlappping_tesselation
-from archngv.core.microdomain.io import export_mesh
+from archngv.core.exporters.export_microdomains import export_mesh
+from archngv.core.exporters.export_microdomains import export_structure
 from archngv.core.data_structures.data_cells import CellData
 from voxcell import VoxelData
 from archngv.core.util.bounding_box import BoundingBox
@@ -36,8 +37,14 @@ def create_microdomains(ngv_config, run_parallel):
 
     L.info('Generating Microdomains')
  
-    microdomain_tesselation.save(ngv_config.output_paths('microdomain_structure'), global_coordinate_system=False)
-    microdomain_tesselation.save(ngv_config.output_paths('microdomain_structure').replace('.h5', '_global.h5'), global_coordinate_system=True)
+    export_structure(ngv_config.output_paths('microdomain_structure'),
+                     microdomain_tesselation,
+                     global_coordinate_system=False)
+
+    export_structure(ngv_config.output_paths('microdomain_structure').replace('.h5', '_global.h5'),
+                     microdomain_tesselation,
+                     global_coordinate_system=True)
+
     export_mesh(microdomain_tesselation, ngv_config.output_paths('microdomain_mesh'))
 
     overlap_distr = parameters['overlap_distribution']['values']
@@ -46,8 +53,12 @@ def create_microdomains(ngv_config, run_parallel):
     L.info('Generating overlapping microdomains')
 
     overlapping_tesselation = convert_to_overlappping_tesselation(microdomain_tesselation, overlap_distribution)
+    export_structure(ngv_config.output_paths('overlapping_microdomain_structure'),
+                     overlapping_tesselation,
+                     global_coordinate_system=False)
+
+    export_structure(ngv_config.output_paths('overlapping_microdomain_structure').replace('.h5', '_global.h5'),
+                     overlapping_tesselation,
+                     global_coordinate_system=True)
+
     export_mesh(overlapping_tesselation, ngv_config.output_paths('overlapping_microdomain_mesh'))
-    overlapping_tesselation.save(ngv_config.output_paths('overlapping_microdomain_structure'), global_coordinate_system=False)
-    overlapping_tesselation.save(ngv_config.output_paths('overlapping_microdomain_structure').replace('.h5', '_global.h5'), global_coordinate_system=True)
-
-

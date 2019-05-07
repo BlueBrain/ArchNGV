@@ -35,6 +35,7 @@ def convex_polygon_with_overlap(centroid, points, overlap_factor):
 
     return scaling_factor * (points - centroid) + centroid
 
+
 def convex_polygon_with_overlap2(centroid, points, overlap_factor):
     """ Given the centroid of a convex polygon and its points,
     uniformly dilate in order to expand by the overlap factor
