@@ -1,10 +1,5 @@
-import numpy
-import h5py
-import tess
-
-from .io import export_mesh
-#from .io import load_structure
-from .io import export_structure
+""" In memory container of microdomain tesselation
+"""
 
 import logging
 
@@ -35,6 +30,7 @@ class MicrodomainTesselation(object):
 
     @property
     def regions(self):
+        """ Returns regions """
         return self._regions
 
     @property
@@ -48,14 +44,3 @@ class MicrodomainTesselation(object):
         but has new regions
         """
         return MicrodomainTesselation(regions, self.connectivity)
-
-    def save(self, filename, global_coordinate_system=False):
-        """ writes the tesselation to file
-        """
-        export_structure(filename, self, global_coordinate_system)
-
-    def export_cell_surface_meshes(self, filepath):
-        """ Exports either all the faces of the laguerre cells separately or as one object in stl format
-        """
-        export_mesh(filepath, self)
-
