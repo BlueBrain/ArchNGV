@@ -38,6 +38,7 @@ rule default:
         'neuroglial_connectivity.h5',
         'synaptic_connectivity.h5',
         'synaptic_data.h5',
+        'endfeetome.h5',
         MORPH_DIR + '/_DONE',
 
 
@@ -218,6 +219,34 @@ rule synthesis:
                 '--out-morph-dir',
                     MORPH_DIR,
                 '--parallel',
+                '2>&1 | tee {log}'
+        ])
+
+
+rule endfeet_area:
+    input:
+        gliovascular_connectivity = 'gliovascular_connectivity.h5',
+        gliovascular_data = 'gliovascular_data.h5',
+
+    output:
+        'endfeetome.h5'
+
+    log:
+        log_path('endfeet_area')
+
+    shell:
+        ' '.join([
+            'ngv endfeet-area',
+                '--config',
+                    bioname_path('endfeet_area.yaml'),
+                '--vasculature-mesh',
+                    config['common']['vasculature_mesh'],
+                '--gliovascular-connectivity',
+                    '{input[gliovascular_connectivity]}',
+                '--gliovascular-data',
+                    '{input[gliovascular_data]}',
+                '--output',
+                    '{output}',
                 '2>&1 | tee {log}'
         ])
 

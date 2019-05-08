@@ -1,0 +1,6 @@
+area_constraints:
+    type: 'distribution'
+    values: ['norm', 200.0, 10.0]
+thickness_distribution: {}
+join_endfeet_meshes: false
+max_endfoot_area: 1000.0
