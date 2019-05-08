@@ -4,8 +4,6 @@ set -euo pipefail
 
 BUILD_DIR=build
 
-module load nix/py36/snakemake
-
 rm -rf $BUILD_DIR && mkdir $BUILD_DIR
 
 pushd $BUILD_DIR

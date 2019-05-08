@@ -71,6 +71,7 @@ setup(
       ],
 
       install_requires = [
+                            'bluepy[sonata]>=0.13.5',
                             'Click>=7.0',
                             'morphmath',
                             'morphspatial',
