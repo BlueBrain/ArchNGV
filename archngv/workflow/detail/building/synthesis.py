@@ -5,7 +5,6 @@ import logging
 from functools import partial
 
 from archngv.core.morphology_synthesis.full_astrocyte import synthesize_astrocyte
-from archngv.core.morphology_synthesis.projections import synthesize_astrocyte_endfeet
 
 from archngv.core.data_structures.data_cells import CellData
 from archngv.core.data_structures.data_ngv import NGVData
@@ -85,14 +84,3 @@ def create_synthesized_morphologies(ngv_config, run_parallel):
     worker = Worker(ngv_config)
 
     map_func(worker, astrocyte_ids)
-
-
-def create_endfeet_morphologies(ngv_config, run_parallel):
-
-    map_func = apply_parallel_func if run_parallel else apply_func
-
-    with CellData(ngv_config.output_paths('cell_data')) as cell_data:
-
-        cell_ids = cell_data.astrocyte_gids[:]
-
-    synthesize_astrocyte_endfeet(ngv_config, cell_ids, map_func)

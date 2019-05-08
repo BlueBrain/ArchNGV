@@ -18,9 +18,11 @@ def cmd(config, cell_data, atlas, atlas_cache, seed, output_dir):
     from voxcell.nexus.voxelbrain import Atlas
 
     from archngv.core.data_structures.data_cells import CellData
-    from archngv.core.microdomain import generate_microdomain_tesselation
-    from archngv.core.microdomain import convert_to_overlappping_tesselation
-    from archngv.core.microdomain.io import export_mesh
+    from archngv.core.exporters.export_microdomains import export_mesh, export_structure
+    from archngv.core.microdomain import (
+        generate_microdomain_tesselation,
+        convert_to_overlappping_tesselation,
+    )
     from archngv.core.util.bounding_box import BoundingBox
 
     from archngv.app.logger import LOGGER
@@ -49,9 +51,20 @@ def cmd(config, cell_data, atlas, atlas_cache, seed, output_dir):
     )
 
     LOGGER.info('Export structure / mesh...')
-    microdomain_tesselation.save(_output_path('structure.h5'), global_coordinate_system=False)
-    microdomain_tesselation.save(_output_path('structure_global.h5'), global_coordinate_system=True)
-    export_mesh(microdomain_tesselation, _output_path('tesselation.stl'))
+    export_structure(
+        _output_path('structure.h5'),
+        microdomain_tesselation,
+        global_coordinate_system=False
+    )
+    export_structure(
+        _output_path('structure_global.h5'),
+        microdomain_tesselation,
+        global_coordinate_system=True
+    )
+    export_mesh(
+        microdomain_tesselation,
+        _output_path('tesselation.stl')
+    )
 
     LOGGER.info('Generating overlapping microdomains...')
     overlap_distr = config['overlap_distribution']['values']
@@ -59,8 +72,19 @@ def cmd(config, cell_data, atlas, atlas_cache, seed, output_dir):
     overlapping_tesselation = convert_to_overlappping_tesselation(microdomain_tesselation, overlap_distribution)
 
     LOGGER.info('Export structure / mesh...')
-    overlapping_tesselation.save(_output_path('overlapping_structure.h5'), global_coordinate_system=False)
-    overlapping_tesselation.save(_output_path('overlapping_structure_global.h5'), global_coordinate_system=True)
-    export_mesh(overlapping_tesselation, _output_path('overlapping_tesselation.stl'))
+    export_structure(
+        _output_path('overlapping_structure.h5'),
+        overlapping_tesselation,
+        global_coordinate_system=False
+    )
+    export_structure(
+        _output_path('overlapping_structure_global.h5'),
+        overlapping_tesselation,
+        global_coordinate_system=True
+    )
+    export_mesh(
+        overlapping_tesselation,
+        _output_path('overlapping_tesselation.stl')
+    )
 
     LOGGER.info('Done!')

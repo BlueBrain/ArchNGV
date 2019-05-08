@@ -44,7 +44,6 @@ def get_arguments():
         'microdomains',
         'gliovascular_connectivity',
         'neuroglial_connectivity',
-        'endfeet_synthesis',
         'synthesis',
         'area_reconstruction'
     ]
@@ -65,7 +64,6 @@ def selected_steps_iterator(args):
     BStep('Gliovascular Connectivity'  , args.gliovascular_connectivity, _bld.gliovascular_connectivity),
     BStep('Neuroglial Connectivity'    , args.neuroglial_connectivity  , _bld.neuroglial_connectivity)  ,
     BStep('Morphology Synthesis'       , args.synthesis                , _bld.morphology_synthesis)     ,
-    BStep('Endfeet only synthesis'     , args.endfeet_synthesis        , _bld.astrocyte_endfeet_morphology_synthesis),
     BStep('Endfoot Area Reconstruction', args.area_reconstruction      , _bld.astrocyte_endfeet_area_reconstruction)
     ]
 

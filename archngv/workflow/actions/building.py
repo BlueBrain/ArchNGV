@@ -28,12 +28,6 @@ def neuroglial_connectivity(config, run_parallel):
     from ..detail.building.neuroglial_connectivity import create_neuroglial_connectivity
     create_neuroglial_connectivity(config, run_parallel)
 
-@log_start_end
-@log_elapsed_time
-def astrocyte_endfeet_morphology_synthesis(config, run_parallel):
-    from ..detail.building.synthesis import create_endfeet_morphologies
-    create_endfeet_morphologies(config, run_parallel)
-
 
 @log_start_end
 @log_elapsed_time
