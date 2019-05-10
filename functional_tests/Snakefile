@@ -31,7 +31,6 @@ BASE_CIRCUIT = config['common']['base_circuit']
 rule default:
     input:
         'cell_data.h5',
-        'glia.mvd3',
         'microdomains/overlapping_structure.h5',
         'gliovascular_connectivity.h5',
         'gliovascular_data.h5',
@@ -40,6 +39,7 @@ rule default:
         'synaptic_data.h5',
         'endfeetome.h5',
         MORPH_DIR + '/_DONE',
+        'sonata/glia.nodes.h5',
 
 
 rule cell_placement:
@@ -251,12 +251,12 @@ rule endfeet_area:
         ])
 
 
-rule cell_data_mvd3:
+rule cell_data_sonata:
     input:
         'cell_data.h5',
 
     output:
-        'glia.mvd3'
+        'sonata/glia.nodes.h5'
 
     shell:
         ' '.join([
@@ -265,6 +265,6 @@ rule cell_data_mvd3:
                     '{input}',
                 '--output',
                     '{output}',
-                '--output-format',
-                    'mvd3',
+                '--population',
+                    'glia',
         ])

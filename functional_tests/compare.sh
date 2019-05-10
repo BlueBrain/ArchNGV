@@ -19,10 +19,9 @@ function h5_compare_all() {
     done
 }
 
-h5_compare "./glia.mvd3"
-
 h5_compare_all "."
 h5_compare_all "./microdomains"
 h5_compare_all "./morphologies"
+h5_compare_all "./sonata"
 
 echo "OK!"

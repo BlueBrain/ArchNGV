@@ -85,7 +85,7 @@ setup(
                             'scipy>=1.0.0',
                             'tess>=0.2.2',
                             'trimesh>=2.21.15',
-                            'voxcell>=2.5.6',
+                            'voxcell[sonata]>=2.6',
       ],
 
       packages = find_packages(),
