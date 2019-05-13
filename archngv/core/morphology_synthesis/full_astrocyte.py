@@ -7,7 +7,7 @@ import numpy as np
 from .detail.tns_wrapper import TNSGrowerWrapper
 from .detail.annotation import export_endfoot_location
 from .detail.annotation import export_synapse_location
-from .detail.synaptic_seeds import PointCloud
+from tns.spatial.point_cloud import PointCloud
 
 from .detail.data_extraction import obtain_endfeet_data
 from .detail.data_extraction import obtain_synapse_data
