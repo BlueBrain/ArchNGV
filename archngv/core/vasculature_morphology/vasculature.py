@@ -5,7 +5,7 @@ import numpy as np
 from .section import Section
 from .types import pmap, emap, sconmap
 from ..util.bounding_box import BoundingBox
-from ..util.graph.graphs import DirectedGraph
+from .graph.graphs import DirectedGraph
 from .transformations import remap_edge_vertices
 #from ..point_cloud import AssociativePointCloud
 
