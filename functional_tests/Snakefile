@@ -256,7 +256,7 @@ rule cell_data_sonata:
         'cell_data.h5',
 
     output:
-        'sonata/glia.nodes.h5'
+        'sonata/glia.morphologies.nodes.h5'
 
     shell:
         ' '.join([
@@ -267,4 +267,23 @@ rule cell_data_sonata:
                     '{output}',
                 '--population',
                     'glia',
+        ])
+
+
+rule assign_emodels:
+    input:
+        'sonata/glia.morphologies.nodes.h5'
+
+    output:
+        'sonata/glia.nodes.h5'
+
+    shell:
+        ' '.join([
+            'ngv assign-emodels',
+                '--input',
+                    '{input}',
+                '--output',
+                    '{output}',
+                '--hoc',
+                    config['assign_emodels']['hoc_template'],
         ])

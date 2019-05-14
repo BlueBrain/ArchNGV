@@ -12,6 +12,7 @@ from archngv.app import (
     neuroglial_connectivity,
     synaptic_connectivity,
     synthesis,
+    assign_emodels,
     endfeet_area,
     convert,
 )
@@ -38,6 +39,7 @@ def main():
         'neuroglial-connectivity': neuroglial_connectivity.cmd,
         'synaptic-connectivity': synaptic_connectivity.cmd,
         'synthesis': synthesis.cmd,
+        'assign-emodels': assign_emodels.cmd,
         'endfeet-area': endfeet_area.cmd,
         'convert': convert.app,
     })

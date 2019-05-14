@@ -3,3 +3,7 @@ common:
   vasculature: '/gpfs/bbp.cscs.ch/project/proj67/usr/share/test-build/src/atlas/vasculature.h5'
   vasculature_mesh: '/gpfs/bbp.cscs.ch/project/proj67/usr/share/test-build/src/atlas/vasculature.mesh.obj'
   base_circuit: '/gpfs/bbp.cscs.ch/project/proj67/usr/share/test-build/src/circuit/CircuitConfig'
+
+assign_emodels:
+  templates_dir: '/gpfs/bbp.cscs.ch/project/proj67/entities/dev/emodels/'
+  hoc_template: 'astrocyte.hoc'
