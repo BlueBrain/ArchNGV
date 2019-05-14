@@ -1,7 +1,11 @@
+"""
+Generate microdomain tesselation
+"""
+
 import click
 
 
-@click.command()
+@click.command(help=__doc__)
 @click.option("--config", help="Path to astrocyte microdomains YAML config", required=True)
 @click.option("--cell-data", help="Path to HDF5 with somata positions and radii", required=True)
 @click.option("--atlas", help="Atlas URL / path", required=True)
@@ -9,7 +13,7 @@ import click
 @click.option("--seed", help="Pseudo-random generator seed", type=int, default=0, show_default=True)
 @click.option("-o", "--output-dir", help="Path to output MVD3", required=True)
 def cmd(config, cell_data, atlas, atlas_cache, seed, output_dir):
-    """Generate microdomain tesselations"""
+    # pylint: disable=missing-docstring,too-many-locals
     import os
 
     import numpy as np

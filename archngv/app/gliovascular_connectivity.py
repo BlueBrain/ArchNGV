@@ -1,7 +1,11 @@
+"""
+Generate gliovascular (G-V) connectivity
+"""
+
 import click
 
 
-@click.command()
+@click.command(help=__doc__)
 @click.option("--config", help="Path to astrocyte placement YAML config", required=True)
 @click.option("--cell-data", help="Path to HDF5 with somata positions and radii", required=True)
 @click.option("--microdomains", help="Path to microdomains structure (HDF5)", required=True)
@@ -10,7 +14,7 @@ import click
 @click.option("--output-data", help="Path to output HDF5 (data)", required=True)
 @click.option("--output-connectivity", help="Path to output HDF5 (connectivity)", required=True)
 def cmd(config, cell_data, microdomains, vasculature, seed, output_data, output_connectivity):
-    """Generate astrocyte positions and radii"""
+    # pylint: disable=missing-docstring,redefined-argument-from-local,too-many-locals
     import numpy as np
 
     from archngv.core.connectivity.gliovascular_generation import generate_gliovascular
@@ -36,11 +40,12 @@ def cmd(config, cell_data, microdomains, vasculature, seed, output_data, output_
     somata_idx = np.arange(len(somata_positions), dtype=np.uintp)
 
     with MicrodomainTesselation(microdomains) as microdomains:
-        endfeet_surface_positions, \
-        endfeet_graph_positions, \
-        endfeet_to_astrocyte_mapping, \
-        endfeet_to_vasculature_mapping = \
-            generate_gliovascular(somata_idx, somata_positions, microdomains, vasculature, params, map)
+        (
+            endfeet_surface_positions,
+            endfeet_graph_positions,
+            endfeet_to_astrocyte_mapping,
+            endfeet_to_vasculature_mapping
+        ) = generate_gliovascular(somata_idx, somata_positions, microdomains, vasculature, params, map)
 
         LOGGER.info('Exporting gliovascular data...')
         export_gliovascular_data(

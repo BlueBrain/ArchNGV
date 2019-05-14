@@ -68,3 +68,4 @@ ignore-docstrings=yes
 # and thus existing member attributes cannot be deduced by static analysis. It
 # supports qualified module names, as well as Unix pattern matching.
 ignored-modules=numpy,numpy.*,scipy.stats,scipy.spatial
+extension-pkg-whitelist=openmesh

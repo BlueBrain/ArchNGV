@@ -1,5 +1,5 @@
 """
-Collection of ArchNGV tools.
+Collection of tools for NGV building
 """
 
 import logging
@@ -30,7 +30,7 @@ def _setup_logging():
 
 
 def main():
-    """ Collection of tools for NGV building """
+    # pylint: disable=missing-docstring
     _setup_logging()
     app = click.Group('ngv', {
         'cell-placement': cell_placement.cmd,
@@ -42,7 +42,7 @@ def main():
         'assign-emodels': assign_emodels.cmd,
         'endfeet-area': endfeet_area.cmd,
         'convert': convert.app,
-    })
+    }, help=__doc__)
     app = click.version_option(VERSION)(app)
     app()
 

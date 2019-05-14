@@ -1,6 +1,11 @@
+"""
+Generate neuroglial (N-G) connectivity
+"""
+
 import click
 
-@click.command()
+
+@click.command(help=__doc__)
 @click.option("--cell-data", help="Path to HDF5 with somata positions and radii", required=True)
 @click.option("--microdomains", help="Path to microdomains structure (HDF5)", required=True)
 @click.option("--synaptic-connectivity", help="Path to synaptic connectivity (HDF5)", required=True)
@@ -8,9 +13,8 @@ import click
 @click.option("--seed", help="Pseudo-random generator seed", type=int, default=0, show_default=True)
 @click.option("--output-connectivity", help="Path to output HDF5 (connectivity)", required=True)
 def cmd(cell_data, microdomains, synaptic_connectivity, synaptic_data, seed, output_connectivity):
+    # pylint: disable=missing-docstring,redefined-argument-from-local,too-many-locals
     import numpy as np
-
-    from bluepy.sonata import Circuit
 
     from archngv.core.data_structures.data_cells import CellData
     from archngv.core.data_structures.data_microdomains import MicrodomainTesselation
@@ -28,10 +32,9 @@ def cmd(cell_data, microdomains, synaptic_connectivity, synaptic_data, seed, out
     with CellData(cell_data) as cell_data:
         astrocyte_ids = cell_data.astrocyte_gids[:]
 
-    with \
-        MicrodomainTesselation(microdomains) as microdomains, \
-        SynapticConnectivity(synaptic_connectivity) as syn_conn, \
-        SynapticData(synaptic_data) as syn_data:
+    with MicrodomainTesselation(microdomains) as microdomains, \
+         SynapticConnectivity(synaptic_connectivity) as syn_conn, \
+         SynapticData(synaptic_data) as syn_data:
 
         data_iterator = generate_neuroglial(
             astrocyte_ids=astrocyte_ids,

@@ -1,9 +1,14 @@
+"""
+Back and forth format conversion
+"""
+
 import click
 
 
-@click.group()
+@click.group(help=__doc__)
 def app():
-    """Back and forth format conversion"""
+    # pylint: disable=missing-docstring
+    pass
 
 
 @app.command()
@@ -11,8 +16,8 @@ def app():
 @click.option("--population", help="Population name", required=True)
 @click.option("-o", "--output", help="Path to output file (SONATA Nodes HDF5)", required=True)
 def cell_data(input, population, output):
+    """Convert CellData to SONATA Nodes"""
     import numpy as np
-    import pandas as pd
 
     from voxcell.sonata import NodePopulation
     from archngv.core.data_structures.data_cells import CellData

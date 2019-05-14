@@ -1,7 +1,11 @@
+"""
+Generate endfeet area geometry
+"""
+
 import click
 
 
-@click.command()
+@click.command(help=__doc__)
 @click.option("--config", help="Path to YAML config", required=True)
 @click.option("--vasculature-mesh", help="Path to vasculature mesh", required=True)
 @click.option("--gliovascular-connectivity", help="Path to gliovascular connectivity (HDF5)", required=True)
@@ -10,6 +14,7 @@ import click
 @click.option("--parallel", help="Parallelize with 'multiprocessing'", is_flag=True, default=False)
 @click.option("-o", "--output", help="Path to output file (HDF5)", required=True)
 def cmd(config, vasculature_mesh, gliovascular_connectivity, gliovascular_data, seed, parallel, output):
+    # pylint: disable=missing-docstring
     import numpy as np
     import openmesh
 
@@ -32,7 +37,7 @@ def cmd(config, vasculature_mesh, gliovascular_connectivity, gliovascular_data, 
         parameters=config,
         gliovascular_data_path=gliovascular_data,
         gliovascular_connectivity_path=gliovascular_connectivity,
-        parallel=False
+        parallel=parallel
     )
 
     LOGGER.info("Export to HDF5...")

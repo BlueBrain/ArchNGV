@@ -1,8 +1,12 @@
+"""
+Synthesize astrocyte morphologies
+"""
+
 import click
 
 
 class Worker(object):
-
+    """Morphology synthesis helper"""
     def __init__(self, config, kwargs):
         self._config = config
         self._kwargs = kwargs
@@ -39,13 +43,13 @@ def _apply_parallel_func(func, data_generator):
     import multiprocessing
     from archngv.app.logger import LOGGER
     n_cores = multiprocessing.cpu_count()
-    LOGGER.info('Run in parallel enabled. N cores: {}'.format(n_cores))
+    LOGGER.info('Run in parallel enabled. N cores: %d', n_cores)
     with multiprocessing.Pool(n_cores) as p:
         for _ in p.imap_unordered(func, data_generator):
             pass
 
 
-@click.command()
+@click.command(help=__doc__)
 @click.option("--config", help="Path to synthesis YAML config", required=True)
 @click.option("--tns-distributions", help="Path to TNS distributions (JSON)", required=True)
 @click.option("--tns-parameters", help="Path to TNS parameters (JSON)", required=True)
@@ -59,6 +63,7 @@ def _apply_parallel_func(func, data_generator):
 @click.option("--parallel", help="Parallelize with 'multiprocessing'", is_flag=True, default=False)
 @click.option("--out-morph-dir", help="Path to output morphology folder", required=True)
 def cmd(config, **kwargs):
+    # pylint: disable=missing-docstring
     from archngv.core.data_structures.data_cells import CellData
     from archngv.app.utils import load_yaml, ensure_dir
 

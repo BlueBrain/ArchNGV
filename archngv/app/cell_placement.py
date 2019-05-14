@@ -1,7 +1,11 @@
+"""
+Generate astrocyte positions and radii
+"""
+
 import click
 
 
-@click.command()
+@click.command(help=__doc__)
 @click.option("--config", help="Path to astrocyte placement YAML config", required=True)
 @click.option("--atlas", help="Atlas URL / path", required=True)
 @click.option("--atlas-cache", help="Path to atlas cache folder", default=None, show_default=True)
@@ -9,7 +13,7 @@ import click
 @click.option("--seed", help="Pseudo-random generator seed", type=int, default=0, show_default=True)
 @click.option("-o", "--output", help="Path to output HDF5", required=True)
 def cmd(config, atlas, atlas_cache, vasculature, seed, output):
-    """Generate astrocyte positions and radii"""
+    # pylint: disable=missing-docstring,too-many-locals
     import numpy as np
 
     from voxcell.nexus.voxelbrain import Atlas
@@ -46,7 +50,7 @@ def cmd(config, atlas, atlas_cache, vasculature, seed, output):
     )
 
     cell_names = ['GLIA_{:013d}'.format(index) for index in range(len(somata_positions))]
-    cell_ids =  np.arange(len(cell_names))
+    cell_ids = np.arange(len(cell_names))
 
     LOGGER.info('Export to CellData...')
     export_cell_placement_data(output, cell_ids, cell_names, somata_positions, somata_radii)
