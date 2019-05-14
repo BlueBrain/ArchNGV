@@ -1,3 +1,5 @@
+""" HDF5 types and offsets """
+
 
 pmap = {'xyz': (0, 1, 2), 'r': 3}
 

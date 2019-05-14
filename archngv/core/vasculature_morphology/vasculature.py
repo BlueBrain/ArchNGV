@@ -9,6 +9,7 @@ from .graph.graphs import DirectedGraph
 from .transformations import remap_edge_vertices
 #from ..point_cloud import AssociativePointCloud
 
+
 class Vasculature(object):
     """ Class container for vasculature datasets
     """
@@ -26,20 +27,7 @@ class Vasculature(object):
             sections_structure = h5f['chains']['structure'][:]
 
             sections_connectivity = h5f['chains']['connectivity'][:]
-            """
-            try:
 
-                annotations = {}
-                for key, data in h5f['annotations'].items():
-
-                    annot_dict = {'edge_index': data['edge_index'][:],
-                                  'section_index': data['section_index'][:]}
-
-                    annotations[key] = AssociativePointCloud(data['points'][:],
-                                                             annot_dict)
-            except KeyError:
-                annotations = None
-            """
         return cls(point_data, edge_data, sections_structure, sections_connectivity, annotations=None)
 
     def __init__(self, point_data,
@@ -67,6 +55,7 @@ class Vasculature(object):
 
     @property
     def annotations(self):
+        """ annotations property """
         return self._annotations
 
     @property
@@ -91,6 +80,7 @@ class Vasculature(object):
 
     @points.setter
     def points(self, values):
+        """ xyz """
         assert self.points.shape == values.shape
         self.point_data[:, pmap['xyz']] = values
 
@@ -121,7 +111,7 @@ class Vasculature(object):
 
     @property
     def map_edges_to_sections(self):
-
+        """ Returns section connectivity based on edges """
         connectivity = np.zeros(len(self.edges), dtype=np.intp)
 
         so = self.section_structure
@@ -132,6 +122,7 @@ class Vasculature(object):
 
             connectivity[so[i]: so[i + 1]] = i
 
+        # use the last i that has bled from the loop
         connectivity[so[n_sections - 1]::] = i + 1
 
         return connectivity
@@ -197,9 +188,6 @@ class Vasculature(object):
 
         return sec_objs
 
-    def add_endfeet_contacts(self, associative_point_cloud):
-        self._annotations['endfeet_contacts'] = associative_point_cloud
-
 
     @property
     def point_graph(self):
@@ -241,6 +229,7 @@ class Vasculature(object):
         return BoundingBox.from_points(self.points)
 
     def spatial_index(self):
+        """ Returns vasculature spatial index """
         from spatial_index import sphere_rtree
         return sphere_rtree(self.points, self.radii)
 
@@ -260,18 +249,3 @@ class Vasculature(object):
                                        data=self.section_structure.astype(np.intp))
             chain_group.create_dataset('connectivity',
                                        data=self._section_connectivity.astype(np.intp))
-
-            annotation_group =  h5f.create_group('annotations')
-
-            edges_to_sections = self.map_edges_to_sections
-
-            for annotation, point_cloud in self.annotations.items():
-                ann_subgroup = annotation_group.create_group(annotation)
-
-                ann_subgroup.create_dataset('points',
-                                           data=point_cloud.points)
-                edge_index = point_cloud.properties['edge_index'].values.astype(np.intp)
-                ann_subgroup.create_dataset('edge_index',
-                                           data=edge_index)
-                ann_subgroup.create_dataset('section_index',
-                                            data=edges_to_sections[edge_index])

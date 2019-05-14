@@ -6,7 +6,7 @@ import h5py
 import numpy as np
 from scipy.spatial import cKDTree
 
-from .morphology_types import MAP_TO_NEURONAL
+from archngv.core.types import ASTROCYTE_TO_NEURON
 
 
 MORPHIO_MAP = \
@@ -65,7 +65,7 @@ def annotate_endfoot_location(filepath, endfoot_points):
             - Closest section id
             - Closest point index
     """
-    endfoot_type = MORPHIO_MAP[MAP_TO_NEURONAL['endfoot']]
+    endfoot_type = MORPHIO_MAP[ASTROCYTE_TO_NEURON['endfoot']]
 
     points_section_idx, points = _morphology_unwrapped(filepath, neurite_filter=lambda s: s.type == endfoot_type)
 

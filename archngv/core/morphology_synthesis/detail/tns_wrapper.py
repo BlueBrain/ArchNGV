@@ -13,6 +13,8 @@ from tns.morphmath.field import PointAttractionField
 
 from morphspatial.collision import convex_shape_with_point
 
+from archngv.core.types import ASTROCYTE_TO_NEURON
+
 from .ph_modification import scale_barcode
 from .domain_orientation import orientations_from_domain
 
@@ -20,8 +22,12 @@ from .domain_orientation import orientations_from_domain
 L = logging.getLogger(__name__)
 
 
-ENDFOOT_TYPE = 'axon'
-PROCESS_TYPE = 'basal'
+ENDFOOT_TYPE = ASTROCYTE_TO_NEURON['endfoot']
+PROCESS_TYPE = ASTROCYTE_TO_NEURON['domain_process']
+
+
+L.info('Map: %s -> %s', 'endfoot', ENDFOOT_TYPE)
+L.info('Map: %s -> %s', 'domain_process', PROCESS_TYPE)
 
 
 class TNSGrowerWrapper(object):

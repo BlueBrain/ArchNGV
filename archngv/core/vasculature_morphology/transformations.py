@@ -1,8 +1,13 @@
+""" Remap """
+
 import numpy as np
-from copy import deepcopy
+
 
 def remap_edge_vertices(edge_data):
-
+    """ Remap edge indices to account
+    for removed edges and indices that are not
+    used after the removal.
+    """
     new_data = edge_data.copy()
 
     edges = new_data[:, 0:3]

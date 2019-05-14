@@ -1,5 +1,8 @@
-class IncidenceMatrix(object):
+""" Incidence Matrix """
 
+class IncidenceMatrix(object):
+    """ Incidence matrix constructed from scipy csgraph
+    """
     def __init__(self, csgraph):
 
         self.M = csgraph

@@ -1,16 +1,23 @@
+""" Adjacency matric for graph operations """
+
 import numpy as np
 from scipy import sparse
 
 
 def _create_sparse_matrix(edges, n_vertices, weights):
+    """ Create a sparse matric from and edge list """
     return sparse.csr_matrix((weights, edges.T), shape=(n_vertices, n_vertices))
 
 
 def _return_index(mask, enabled=True):
-
+    """ Return indices where mask is True """
     return np.where(mask)[0] if enabled else mask
 
+
 class AdjacencyMatrix(object):
+    """ Adjacency Matrix using a double sparse representation,
+    one for fast column and one for fast row queries.
+    """
 
     def __init__(self, edges, labels=None, weights=None):
 
@@ -23,10 +30,10 @@ class AdjacencyMatrix(object):
 
         self.M = _create_sparse_matrix(edges, n_vertices, weights)
 
-        self._idx   = self.M.indices
+        self._idx = self.M.indices
 
         # indpointer from csr sparse matrix
-        self._idp   = self.M.indptr
+        self._idp = self.M.indptr
 
         # transposed csr matrix
         csgraph_T = self.M.T.tocsr()
@@ -39,6 +46,7 @@ class AdjacencyMatrix(object):
 
     @property
     def labels(self):
+        """ Vertex labels if any """
         return self._labels
 
     @property
@@ -69,18 +77,22 @@ class AdjacencyMatrix(object):
         return self.indegrees + self.outdegrees
 
     def forks(self, return_index=True):
+        """ Forking vertices """
         mask = self.outdegrees >= 2
         return _return_index(mask, enabled=return_index)
 
     def sources(self, return_index=True):
+        """ Source vertices """
         mask = self.indegrees == 0
         return _return_index(mask, enabled=return_index)
 
     def sinks(self, return_index=True):
+        """ Sink vertices """
         mask = self.outdegrees == 0
         return _return_index(mask, enabled=return_index)
 
     def terminations(self, return_index=True):
+        """ Termination vertices """
         mask = self.degrees == 1
         return _return_index(mask, enabled=return_index)
 
@@ -90,6 +102,7 @@ class AdjacencyMatrix(object):
         return  _return_index(mask, enabled=return_index)
 
     def isolated_vertices(self, return_index=True):
+        """ Unconnected vertices """
         mask = self.degrees == 0
         return _return_index(mask, enabled=return_index)
 
@@ -114,9 +127,9 @@ class AdjacencyMatrix(object):
         return sorted(list(vertices))
 
     def connected_components(self, condition=None):
-
+        """ Returns connected components in the matrix """
         # number of components and component label array
-        nc, cc = sparse.csgraph.connected_components(self.M, return_labels=True)
+        _, cc = sparse.csgraph.connected_components(self.M, return_labels=True)
 
         # counts of the frequency of the integer values
         bc = np.bincount(cc)
@@ -131,7 +144,8 @@ class AdjacencyMatrix(object):
         # components, frequencies, labels
         return sc[mask], bc[sc][mask], cc
 
-    def fast_traversal(self, start_node=0, method='dfs', return_predecessors=False, condition=None, directed=False):
+    def fast_traversal(self, start_node=0, method='dfs', return_predecessors=False, directed=False):
+        """ Perform fast traversal """
         _SEARCH_ORDER = {'dfs': sparse.csgraph.depth_first_order,
                          'bfs': sparse.csgraph.breadth_first_order}
 
@@ -157,4 +171,4 @@ def directed_to_undirected(dA):
     Convert a directed adjacency boolean matrix to an undirected one. The transpose is added
     to the matrix and the lower triangular values are returned.
     """
-    return sp.sparse.tril(dA + dA.T, format=dA.format)
+    return sparse.tril(dA + dA.T, format=dA.format)
