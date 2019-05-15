@@ -1,22 +1,16 @@
 """
-Back and forth format conversion
+Convert CellData to SONATA Nodes
 """
 
 import click
 
 
-@click.group(help=__doc__)
-def app():
-    # pylint: disable=missing-docstring
-    pass
-
-
-@app.command()
+@click.command(help=__doc__)
 @click.option("-i", "--input", help="Path to cell data (HDF5)", required=True)
 @click.option("--population", help="Population name", required=True)
 @click.option("-o", "--output", help="Path to output file (SONATA Nodes HDF5)", required=True)
-def cell_data(input, population, output):
-    """Convert CellData to SONATA Nodes"""
+def cmd(input, population, output):
+    # pylint: disable=missing-docstring
     import numpy as np
 
     from voxcell.sonata import NodePopulation

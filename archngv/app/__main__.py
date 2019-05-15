@@ -41,7 +41,7 @@ def main():
         'synthesis': synthesis.cmd,
         'assign-emodels': assign_emodels.cmd,
         'endfeet-area': endfeet_area.cmd,
-        'convert': convert.app,
+        'convert': convert.group,
     }, help=__doc__)
     app = click.version_option(VERSION)(app)
     app()

@@ -26,6 +26,7 @@ ATLAS = config['common']['atlas']
 ATLAS_CACHE_DIR = ".atlas"
 VASCULATURE = config['common']['vasculature']
 BASE_CIRCUIT = config['common']['base_circuit']
+BASE_CIRCUIT_SONATA = config['common']['base_circuit_sonata']
 
 
 rule default:
@@ -40,6 +41,7 @@ rule default:
         'endfeetome.h5',
         MORPH_DIR + '/_DONE',
         'sonata/glia.nodes.h5',
+        'sonata/neuroglial.edges.h5',
 
 
 rule cell_placement:
@@ -286,4 +288,31 @@ rule assign_emodels:
                     '{output}',
                 '--hoc',
                     config['assign_emodels']['hoc_template'],
+        ])
+
+
+rule neuroglial_connectivity_sonata:
+    input:
+        connectivity = 'neuroglial_connectivity.h5',
+        astrocytes = 'sonata/glia.nodes.h5',
+        morphologies = MORPH_DIR + '/_DONE',
+
+    output:
+        'sonata/neuroglial.edges.h5'
+
+    shell:
+        ' '.join([
+            'ngv convert neuroglial-connectivity',
+                '--connectivity',
+                    '{input[connectivity]}',
+                '--circuit',
+                    BASE_CIRCUIT_SONATA,
+                '--astrocytes',
+                    '{input[astrocytes]}',
+                '--morph-dir',
+                    MORPH_DIR,
+                '--population',
+                    'neuroglial',
+                '--output',
+                    '{output}'
         ])
