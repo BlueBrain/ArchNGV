@@ -2,6 +2,7 @@
 """
 
 import logging
+import pandas as pd
 
 from ...data_structures.data_cells import CellData
 from ...data_structures.data_gliovascular import GliovascularData
@@ -67,13 +68,14 @@ def obtain_synapse_data(astrocyte_index, synaptic_data_filepath, neuroglial_conn
         SynapticData(synaptic_data_filepath) as synaptic_data, \
         NeuroglialConnectivity(neuroglial_conn_filepath) as neuroglial_connectivity:
 
-        synapse_ids = neuroglial_connectivity.astrocyte.to_synapse(astrocyte_index)
+        synapse_ids = sorted(neuroglial_connectivity.astrocyte.to_synapse(astrocyte_index))
 
         if len(synapse_ids) == 0:
             L.warning('No synapses found for astrocyte index %d', astrocyte_index)
             return None
 
-        synapse_positions = synaptic_data.synapse_coordinates[sorted(synapse_ids)]
+        positions = synaptic_data.synapse_coordinates[synapse_ids]
 
-    L.debug('Number of synapses for astro index %d: %d', astrocyte_index, len(synapse_positions))
-    return synapse_positions
+    L.debug('Number of synapses for astro index %d: %d', astrocyte_index, len(positions))
+
+    return pd.DataFrame(index=synapse_ids, data=positions, columns=['x', 'y', 'z'])

@@ -45,12 +45,11 @@ def synthesize_astrocyte(astrocyte_index,
                                    neuroglial_conn_path)
 
     if synapses is not None:
-
         # space colonization point cloud parameters
         radius_of_influence, removal_radius = parameters['point_cloud']
 
         # create point cloud
-        point_cloud = PointCloud(synapses, radius_of_influence, removal_radius)
+        point_cloud = PointCloud(synapses.values, radius_of_influence, removal_radius)
     else:
 
         point_cloud = None

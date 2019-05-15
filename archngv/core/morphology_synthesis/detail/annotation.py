@@ -4,6 +4,7 @@ import morphio
 
 import h5py
 import numpy as np
+import pandas as pd
 from scipy.spatial import cKDTree
 
 from archngv.core.types import ASTROCYTE_TO_NEURON
@@ -26,27 +27,29 @@ def _morphology_unwrapped(filepath, neurite_filter=lambda s: True):
         filepath: string
 
     Returns:
-        Tuple of two lists:
-            - section ids of morphology points
-            - coordinates of morphology points
+        Tuple of two elements:
+            - N x 3 NumPy array with segment midpoints
+            - N-row Pandas DataFrame with section ID / segment ID / segment midpoint offset
     """
-    morphology = morphio.Morphology(filepath)
+    morphology = morphio.Morphology(filepath, options=morphio.Option.nrn_order)
 
-    points_section_idx = []
     points = []
+    locations = []
 
     for root_section in filter(neurite_filter, morphology.root_sections):
         for section in root_section.iter():
-
-            section_id = section.id
-            for point in section.points:
-
-                points_section_idx.append(section_id)
-                points.append(point)
+            p0 = section.points[:-1]
+            p1 = section.points[1:]
+            midpoints = 0.5 * (p0 + p1)
+            offsets = np.linalg.norm(midpoints - p0, axis=1)
+            for segment_id, (midpoint, offset) in enumerate(zip(midpoints, offsets)):
+                points.append(midpoint)
+                locations.append((section.id, segment_id, offset))
 
     points = np.asarray(points)
+    locations = pd.DataFrame(locations, columns=['section_id', 'segment_id', 'segment_offset'])
 
-    return points_section_idx, points
+    return points, locations
 
 
 def annotate_endfoot_location(filepath, endfoot_points):
@@ -60,20 +63,15 @@ def annotate_endfoot_location(filepath, endfoot_points):
             Coordinates of the endfeet touch points
 
     Returns:
-        A list of tuples, where the i-th entry corresponds to
-        the i-th row in the endfoot_points and each tuple contains:
-            - Closest section id
-            - Closest point index
+        Pandas DataFrame with section ID / segment ID / segment offset of closest astrocyte segment midpoint
     """
     endfoot_type = MORPHIO_MAP[ASTROCYTE_TO_NEURON['endfoot']]
 
-    points_section_idx, points = _morphology_unwrapped(filepath, neurite_filter=lambda s: s.type == endfoot_type)
+    points, locations = _morphology_unwrapped(filepath, neurite_filter=lambda s: s.type == endfoot_type)
 
     _, idx = cKDTree(points, copy_data=False).query(endfoot_points)
 
-    endfeet_annotation = [(points_section_idx[index], index) for index in idx]
-
-    return endfeet_annotation
+    return locations.loc[idx]
 
 
 def export_endfoot_location(filepath, endfoot_points):
@@ -84,7 +82,9 @@ def export_endfoot_location(filepath, endfoot_points):
     data_filepath = filepath.replace('.h5', '_endfeet_annotation.h5')
 
     with h5py.File(data_filepath, 'w') as fd:
-        fd.create_dataset('endfeet_location', data=endfeet_annotation, dtype=np.intp)
+        root = fd.create_group('endfeet_location')
+        for prop, column in endfeet_annotation.iteritems():
+            root[prop] = column.values
 
 
 def annotate_synapse_location(filepath, synapse_points):
@@ -98,25 +98,23 @@ def annotate_synapse_location(filepath, synapse_points):
             Coordinates of the synapses
 
     Returns:
-        A list of tuples, where the i-th entry corresponds to
-        the i-th row in the endfoot_points and each tuple contains:
-            - Closest section id
-            - Closest point index
+        Pandas DataFrame with section ID / segment ID / segment offset of closest astrocyte segment midpoint
     """
-    points_section_idx, points = _morphology_unwrapped(filepath)
+    points, locations = _morphology_unwrapped(filepath)
 
     _, idx = cKDTree(points, copy_data=False).query(synapse_points)
 
-    synapse_annotation = [(points_section_idx[index], index) for index in idx]
-
-    return synapse_annotation
+    return locations.loc[idx]
 
 
-def export_synapse_location(filepath, synapse_points):
+def export_synapse_location(filepath, synapses):
     """ Calculate the synapses annotation and export them to file
     """
-    synapse_location = annotate_synapse_location(filepath, synapse_points)
+    synapse_location = annotate_synapse_location(filepath, synapses.values)
 
     data_filepath = filepath.replace('.h5', '_synapse_annotation.h5')
     with h5py.File(data_filepath, 'w') as fd:
-        fd.create_dataset('synapse_location', data=synapse_location, dtype=np.intp)
+        fd['synapse_id'] = synapses.index
+        root = fd.create_group('synapse_location')
+        for prop, column in synapse_location.iteritems():
+            root[prop] = column.values
