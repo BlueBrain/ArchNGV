@@ -1,5 +1,13 @@
-"""
+r"""
 Collection of tools for NGV building
+
+{esc}
+   _____                .__      _______    ____________   ____
+  /  _  \_______   ____ |  |__   \      \  /  _____/\   \ /   /
+ /  /_\  \_  __ \_/ ___\|  |  \  /   |   \/   \  ___ \   Y   /
+/    |    \  | \/\  \___|   Y  \/    |    \    \_\  \ \     /
+\____|__  /__|    \___  >___|  /\____|__  /\______  /  \___/
+        \/            \/     \/         \/        \/
 """
 
 import logging
@@ -42,7 +50,7 @@ def main():
         'assign-emodels': assign_emodels.cmd,
         'endfeet-area': endfeet_area.cmd,
         'convert': convert.group,
-    }, help=__doc__)
+    }, help=__doc__.format(esc='\b'))
     app = click.version_option(VERSION)(app)
     app()
 
