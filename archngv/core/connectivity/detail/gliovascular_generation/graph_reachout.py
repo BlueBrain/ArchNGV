@@ -35,7 +35,7 @@ def random_selection(val_arr, n_classes):
     """ Returns a random subsample on n_classes elements from
     the distance array
     """
-    idx = numpy.arange(len(var_arr))
+    idx = numpy.arange(len(val_arr))
     return numpy.random.choice(idx, size=n_classes, replace=False)
 
 
@@ -44,22 +44,20 @@ REACHOUT_STRATEGIES = {'maximum_reachout': maximum_reachout,
 
 
 def deploy(input_strategy, available_strategies):
-    """ Deploys a strategy function while checking its existence from 
+    """ Deploys a strategy function while checking its existence from
     the dict of available strategies.
     """
     try:
-
         selected_strategy = available_strategies[input_strategy]
         L.info('Strategy %s is selected', input_strategy)
-
     except KeyError:
-
         available_strategies = list(available_strategies.keys())
-
-        warn_msg = 'Strategy {} is not available.'.format(input_strategy)
-        info_msg = 'Available strategies: {}'.format(available_strategies)
-        L.warning(warn_msg + '\n' + info_msg)
-        raise KeyError(warn_msg + '\n' + info_msg)
+        msg = (
+            'Strategy {} is not available.'.format(input_strategy) + '\n' +
+            'Available strategies: {}'.format(available_strategies)
+        )
+        L.warning(msg)
+        raise KeyError(msg)
 
     return selected_strategy
 

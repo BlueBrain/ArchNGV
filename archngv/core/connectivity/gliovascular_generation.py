@@ -1,11 +1,11 @@
 """ Facade classes for NGV connectivity
 """
+
 # pylint: disable = no-name-in-module
 
 import logging
 import numpy as np
 
-from .detail.gliovascular_generation import check
 from .detail.gliovascular_generation.graph_reachout import strategy
 from .detail.gliovascular_generation.graph_targeting import create_targets
 from .detail.gliovascular_generation.graph_connect import domains_to_vasculature
@@ -19,7 +19,7 @@ def generate_gliovascular(cell_ids,
                           astrocytic_positions,
                           astrocytic_domains,
                           vasculature,
-                          params, map_func):
+                          params):
     """ For each astrocyte id find the connections to the vasculature
 
     Args:
@@ -37,11 +37,10 @@ def generate_gliovascular(cell_ids,
     """
     L.info('STEP 1: Generation of potential targets started.')
 
-    graph_positions,\
-    graph_vasculature_segment = create_targets(
-                                                vasculature.points,
-                                                vasculature.edges,
-                                                params['graph_targeting']
+    graph_positions, graph_vasculature_segment = create_targets(
+        vasculature.points,
+        vasculature.edges,
+        params['graph_targeting']
     )
 
     L.info('STEP 1: Generation of potential targets completed.')
@@ -72,9 +71,11 @@ def generate_gliovascular(cell_ids,
 
     astrocyte_idx, graph_target_idx = astrocyte_graph_edges.T
 
-    endfeet_positions,\
-    endfeet_to_astrocyte_mapping,\
-    endfeet_to_vasculature_mapping = surface_intersect(
+    (
+        endfeet_positions,
+        endfeet_to_astrocyte_mapping,
+        endfeet_to_vasculature_mapping
+    ) = surface_intersect(
         astrocytic_positions.astype(np.float64),
         graph_positions.astype(np.float64),
         segments_beg.astype(np.float64),

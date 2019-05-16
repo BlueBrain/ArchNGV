@@ -3,7 +3,7 @@
 
 import logging
 
-import numpy
+import numpy as np
 import scipy.stats
 import scipy.sparse
 
@@ -45,21 +45,21 @@ def points_inside_bounding_box(bbox, target_positions):
     Returns: array[bool, (N,)]
         True if point inside bounding box
     """
-    return (bbox[0] <= target_positions[:, 0])  & (target_positions[:, 0] <= bbox[3]) & \
-           (bbox[1] <= target_positions[:, 1])  & (target_positions[:, 1] <= bbox[4]) & \
-           (bbox[2] <= target_positions[:, 2])  & (target_positions[:, 2] <= bbox[5])
+    return (bbox[0] <= target_positions[:, 0]) & (target_positions[:, 0] <= bbox[3]) & \
+           (bbox[1] <= target_positions[:, 1]) & (target_positions[:, 1] <= bbox[4]) & \
+           (bbox[2] <= target_positions[:, 2]) & (target_positions[:, 2] <= bbox[5])
 
 
 def _find_available_targets(domain_shape, bb_idx, target_positions, target_radii):
-
 
     # spheres inside domain are accepted without checks
     center, radius = domain_shape.inscribed_sphere
 
     assert radius > 0.
 
-    mask_inscribed_sphere = \
-    inclusion.spheres_in_sphere(target_positions[bb_idx], target_radii[bb_idx], center, radius)
+    mask_inscribed_sphere = inclusion.spheres_in_sphere(
+        target_positions[bb_idx], target_radii[bb_idx], center, radius
+    )
 
     # now we need to check the spheres that are outside
     # the inscribed sphere, and inside the bounding box
@@ -75,7 +75,7 @@ def _find_available_targets(domain_shape, bb_idx, target_positions, target_radii
 
     if mask_intersecting.any():
 
-        targets_idx = numpy.hstack((masked_idx[mask_intersecting], bb_idx[mask_inscribed_sphere]))
+        targets_idx = np.hstack((masked_idx[mask_intersecting], bb_idx[mask_inscribed_sphere]))
 
     else:
 
@@ -94,14 +94,13 @@ def _filter_according_to_strategy(domain_position,
 
     if number_of_endfeet < n_targets:
 
-        effective_distances = \
-        numpy.linalg.norm(domain_position - target_positions, axis=1)
+        effective_distances = np.linalg.norm(domain_position - target_positions, axis=1)
 
         effective_distances -= target_radii
 
         if number_of_endfeet == 1:
 
-            idx = numpy.array([[numpy.argmin(effective_distances)]])
+            idx = np.array([[np.argmin(effective_distances)]])
 
         else:
 
@@ -109,7 +108,7 @@ def _filter_according_to_strategy(domain_position,
 
     else:
 
-        idx = numpy.arange(n_targets, dtype=numpy.intp)
+        idx = np.arange(n_targets, dtype=np.intp)
 
     return idx
 
@@ -140,11 +139,11 @@ def domains_to_vasculature(cell_ids,
 
     domain_target_edges = []
 
-    idx = numpy.arange(len(target_positions), dtype=numpy.intp)
+    idx = np.arange(len(target_positions), dtype=np.intp)
 
     for domain_index, cell_id in enumerate(cell_ids):
 
-        number_of_endfeet = numpy.round(n_distr.rvs()).astype(numpy.int)
+        number_of_endfeet = np.round(n_distr.rvs()).astype(np.int)
 
         if number_of_endfeet == 0:
             continue
@@ -169,4 +168,4 @@ def domains_to_vasculature(cell_ids,
         targets_idx = targets_idx[sliced]
         domain_target_edges.extend([(domain_index, target_index) for target_index in targets_idx])
 
-    return numpy.asarray(domain_target_edges)
+    return np.asarray(domain_target_edges)

@@ -45,7 +45,7 @@ def cmd(config, cell_data, microdomains, vasculature, seed, output_data, output_
             endfeet_graph_positions,
             endfeet_to_astrocyte_mapping,
             endfeet_to_vasculature_mapping
-        ) = generate_gliovascular(somata_idx, somata_positions, microdomains, vasculature, params, map)
+        ) = generate_gliovascular(somata_idx, somata_positions, microdomains, vasculature, params)
 
         LOGGER.info('Exporting gliovascular data...')
         export_gliovascular_data(
