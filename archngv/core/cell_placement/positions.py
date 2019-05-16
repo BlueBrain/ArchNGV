@@ -2,8 +2,6 @@
 Entry fucntions to use cell placement
 """
 
-# pylint: disable = logging-format-interpolation
-
 import logging
 import numpy as np
 
@@ -28,11 +26,11 @@ def create_placement_parameters(user_params):
     """ Create placement parameters named tuple
     """
     return PlacementParameters(
-                                beta = user_params['beta'],
-                                number_of_trials = user_params['ntrials'],
-                                cutoff_radius = user_params['cutoff_radius'],
-                                initial_sample_size = user_params['n_initial']
-                              )
+        beta=user_params['beta'],
+        number_of_trials=user_params['ntrials'],
+        cutoff_radius=user_params['cutoff_radius'],
+        initial_sample_size=user_params['n_initial']
+    )
 
 
 def create_positions(parameters,
@@ -47,20 +45,23 @@ def create_positions(parameters,
     soma_data = parameters['soma_radius']
 
     spatial_indexes = [] if spatial_indexes is None else spatial_indexes
-    L.info('Number of other Indexes: {}'.format(len(spatial_indexes)))
+    L.info('Number of other Indexes: %d', len(spatial_indexes))
 
     total_cells = total_number_of_cells(voxelized_intensity)
-    L.info('Total number of cells: {}'.format(total_cells))
+    L.info('Total number of cells: %d', total_cells)
 
     energy_operator = EnergyOperator(voxelized_intensity, parameters['Energy'])
-    L.info('Energy operator with parameters: {}'.format(parameters['Energy']))
+    L.info('Energy operator with parameters: %s', parameters['Energy'])
 
     soma_distribution = truncated_normal_distribution(soma_data)
-    L.info('Truncated Normal Soma Distr: mean: {}, std: {}, low: {}, high: {}'.format(*soma_data))
+    L.info('Truncated Normal Soma Distr: mean: %.3f, std: %.3f, low: %.3f, high: %.3f', *soma_data)
 
     placement_data = PlacementVoxelData(voxelized_intensity, voxelized_brain_regions)
-    L.info('Voxelized Intensity, Brain Regions shapes: {}, {}'.format(voxelized_intensity.raw.shape,
-                                                                      voxelized_brain_regions.raw.shape))
+    L.info(
+        'Voxelized Intensity, Brain Regions shapes: %s, %s',
+        voxelized_intensity.raw.shape,
+        voxelized_brain_regions.raw.shape
+    )
 
     placement_parameters = \
         create_placement_parameters(parameters['MetropolisHastings'])

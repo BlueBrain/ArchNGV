@@ -1,13 +1,12 @@
 """
 Generation algorithms for spatial point pattern
 """
-# pylint: disable = too-many-locals, too-many-arguments, too-many-instance-attributes
 
 import logging
+
 from collections import namedtuple
 
 import numpy as np
-from morphspatial import shapes
 
 from .pattern import SpatialSpherePattern
 
@@ -82,7 +81,6 @@ class PlacementGenerator:
             return True
 
         if self.index_list:
-            #sphere = shapes.Sphere(trial_position, trial_radius)
             for static_index in self.index_list:
                 if static_index.is_intersecting(trial_position[0],
                                                 trial_position[1],
@@ -129,7 +127,7 @@ class PlacementGenerator:
         current_position, current_radius = self.first_order(voxel_centers)
 
         pairwise_distance = \
-            self.pattern.distance_to_nearest_neighbor(current_position, current_radius)
+            self.pattern.distance_to_nearest_neighbor(current_position)
 
         if pairwise_distance > self.parameters.cutoff_radius:
             return current_position, current_radius
@@ -148,7 +146,7 @@ class PlacementGenerator:
             trial_position, trial_radius = self.first_order(voxel_centers)
 
             pairwise_distance = \
-                self.pattern.distance_to_nearest_neighbor(trial_position, trial_radius)
+                self.pattern.distance_to_nearest_neighbor(trial_position)
 
             if pairwise_distance > self.parameters.cutoff_radius:
                 return trial_position, trial_radius
@@ -188,10 +186,11 @@ class PlacementGenerator:
 
                 # some logging for iteration info
                 if len(self.pattern) % 1000 == 0:
-                    L.info('Current Number: {}'.format(len(self.pattern)))
+                    L.info('Current Number: %d', len(self.pattern))
 
         L.debug('Total spheres: %s', self._total_spheres)
         L.debug('Created spheres: %s', len(self.pattern))
+
 
 def proposal(voxel_centers, voxel_edge_length):
     """
@@ -278,7 +277,6 @@ def nonzero_intensity_groups(voxelized_intensity):
     cnts_per_group = \
         counts_per_group(intensity_per_group, voxels_per_group, voxelized_intensity.voxel_volume)
 
-    not_zero = lambda tup: not np.isclose(tup[1], 0.0)
-
-    for i, group_intensity in filter(not_zero, enumerate(intensity_per_group)):
-        yield cnts_per_group[i], vox_centers_per_group[i]
+    for i, group_intensity in enumerate(intensity_per_group):
+        if not np.isclose(group_intensity, 0.0):
+            yield cnts_per_group[i], vox_centers_per_group[i]

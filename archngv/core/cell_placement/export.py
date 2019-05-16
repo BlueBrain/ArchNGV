@@ -30,10 +30,10 @@ def basalt_exporter(filepath, astrocyte_ids, somata_positions, somata_radii):
         somata_positions: array[float, (N, 3)]
         somata_radii: array[float, (N,)]
     """
-    from basalt.ngv import NGVGraph, Point
+    from basalt.ngv import NGVGraph, Point  # pylint: disable=import-error
 
     ngv_graph = NGVGraph(path=filepath)
-    astrocytes = ngv_graph.astrocytes  # pylint: disable = no-member
+    astrocytes = ngv_graph.astrocytes
 
     for i, astrocyte_id in enumerate(astrocyte_ids):
 

@@ -24,17 +24,13 @@ def _init_potentials(options):
     pots = []
 
     for name, params in options['potentials'].items():
-
         try:
-
+            # pylint: disable=cell-var-from-loop
             pots.append(lambda r: POTENTIALS[name](r, *params))
-
-            L.info('Potential {} added with parameters {}'.format(name, params))
-
+            L.info('Potential %s added with parameters %s', name, params)
         except KeyError:
-
             available = list(POTENTIALS.keys())
-            L.warning('Key {} does not exist in potentials {}'.format(name, available))
+            L.warning('Key %s does not exist in potentials %s', name, available)
             raise
 
     return pots
