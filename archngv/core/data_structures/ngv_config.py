@@ -3,23 +3,22 @@ import time
 
 
 def _create_dir(directory):
-
     if not os.path.exists(directory):
-         os.makedirs(directory)
+        os.makedirs(directory)
 
 
 class NGVConfig(object):
-
     @classmethod
     def create_template(cls, parent_directory, experiment_name, config_name='ngv_config'):
-
         config = {}
 
         config['experiment_name'] = experiment_name
         config['parent_directory'] = parent_directory
 
-        config['output_paths'] = {'morphology': 'morphology',
-                                  'figures'   : 'figures'}
+        config['output_paths'] = {
+            'morphology': 'morphology',
+            'figures': 'figures'
+        }
 
         config['metadata'] = {'creation_data': time.strftime("%S%M%H")}
 
@@ -27,7 +26,6 @@ class NGVConfig(object):
         config['parameters'] = {}
 
         return cls(config, config_name)
-
 
     @classmethod
     def from_file(cls, file_path):
@@ -38,14 +36,11 @@ class NGVConfig(object):
 
         return cls(config_dict, 'ngv_config')
 
-
     def __init__(self, config_dict, config_name):
-
         self._config = config_dict
         self._name = config_name
 
     def create_directories(self):
-
         _create_dir(self.parent_directory)
         _create_dir(self.experiment_directory)
         _create_dir(self.morphology_directory)
@@ -55,11 +50,8 @@ class NGVConfig(object):
         _create_dir(self.neuronal_data_directory)
 
         try:
-
             _create_dir(self.figures_directory)
-
         except KeyError:
-
             pass
 
     def __str__(self):
@@ -117,7 +109,6 @@ class NGVConfig(object):
         ppath = self.parent_directory
         return os.path.join(ppath, ename)
 
-
     @property
     def circuit_path(self):
         return self.output_paths('circuit')
@@ -148,19 +139,15 @@ class NGVConfig(object):
 
     def save(self):
         import json
-
         file_path = self.self_path + '.json'
-
         with open(file_path, 'w') as fp:
             json.dump(self._config, fp, indent=4)
 
     def generate_circuit_config(self):
-
         string = 'Run Default\n'
         string += '{\n'
         string += '    MorphologyPath {}\n'.format(self.output_paths('morphology'))
         string += '    CircuitPath {}\n'.format(self.experiment_directory)
         string += '}'
-
         with open(self.output_paths('circuit_config'), 'w') as f:
             f.write(string)

@@ -2,6 +2,7 @@
 and the vasculature
 """
 import numpy as np
+
 from .common import H5ContextManager
 
 
@@ -69,14 +70,12 @@ class AstrocyteEntry(object):
     """
     def __init__(self, fd):
 
-        self._target_t = \
-        {
+        self._target_t = {
             'endfoot': 0,
             'vasculature_segment': 1
         }
 
-        self._offset_t = \
-        {
+        self._offset_t = {
             'endfoot': 0
         }
 
@@ -87,7 +86,7 @@ class AstrocyteEntry(object):
         """ Size """
         return len(self._offsets) - 1
 
-    def _offset_slice(self, astrocyte_index, offset_type):
+    def _offset_slice(self, astrocyte_index, _):
         # right now the array is 1d because there is only
         # one offset
         return self._offsets[astrocyte_index], \
@@ -116,8 +115,7 @@ class EndfootEntry(object):
     """
     def __init__(self, fd):
 
-        self._target_t = \
-        {
+        self._target_t = {
             'astrocyte': 0,
             'vasculature_segment': 1
         }
@@ -159,8 +157,7 @@ class VasculatureSegmentEntry(object):
     """
     def __init__(self, fd):
 
-        self._target_t = \
-        {
+        self._target_t = {
             'endfoot': 0,
             'astrocyte': 1
         }

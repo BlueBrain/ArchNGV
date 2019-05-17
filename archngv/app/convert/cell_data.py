@@ -10,7 +10,7 @@ import click
 @click.option("--population", help="Population name", required=True)
 @click.option("-o", "--output", help="Path to output file (SONATA Nodes HDF5)", required=True)
 def cmd(input, population, output):
-    # pylint: disable=missing-docstring
+    # pylint: disable=missing-docstring,redefined-builtin
     import numpy as np
 
     from voxcell.sonata import NodePopulation

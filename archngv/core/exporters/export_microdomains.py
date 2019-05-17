@@ -1,6 +1,4 @@
-import os
 import h5py
-
 import numpy
 
 
@@ -48,34 +46,23 @@ def export_structure(filename, tesselation, global_coordinate_system=False):
         data_group.create_dataset('neighbors', data=data_neighbors, dtype=numpy.uintp)
 
         offsets_dset = fd.create_dataset('offsets', data=offsets, dtype=numpy.uintp)
-        offsets_dset.attrs["column_names"] = \
-        numpy.array(['points', 'triangles', 'neighbors'], dtype=h5py.special_dtype(vlen=str))
+        offsets_dset.attrs["column_names"] = numpy.array(
+            ['points', 'triangles', 'neighbors'],
+            dtype=h5py.special_dtype(vlen=str)
+        )
 
         conn_dset = fd.create_dataset('connectivity', data=flat_connectivity, dtype=numpy.uintp)
-        conn_dset.attrs["column_names"] = \
-        numpy.array(['i_domain_index', 'j_domain_index'], dtype=h5py.special_dtype(vlen=str))
+        conn_dset.attrs["column_names"] = numpy.array(
+            ['i_domain_index', 'j_domain_index'],
+            dtype=h5py.special_dtype(vlen=str)
+        )
 
 
 def export_mesh(tesselation, filepath):
     """ Exports either all the faces of the laguerre cells separately or as one object in stl format
     """
     import stl.mesh
-    """
-    def individual_mesh(cell_id, cell):
 
-        coo_triangles = cell.points[cell.triangles]
-
-        cell_mesh = stl.mesh.Mesh(numpy.zeros(len(coo_triangles), dtype=stl.mesh.Mesh.dtype))
-
-        cell_mesh.vectors = coo_triangles
-
-        cell_mesh.save(path)
-
-        return coo_triangles
-    """
-    #if joined_mesh_path is None:
-    #    map(lambda tup: individual_mesh(*tup), enumerate(tesselation))
-    #else:
     triangles = [triangle for _, cell in enumerate(tesselation) for triangle in cell.points[cell.triangles]]
 
     cell_mesh = stl.mesh.Mesh(numpy.zeros(len(triangles), dtype=stl.mesh.Mesh.dtype))

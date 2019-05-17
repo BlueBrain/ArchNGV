@@ -1,5 +1,5 @@
-import numpy
 import json
+import numpy
 
 
 class CutPointData(object):

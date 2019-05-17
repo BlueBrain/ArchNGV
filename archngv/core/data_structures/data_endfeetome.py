@@ -1,6 +1,7 @@
 """ Data structures for endfeet meshes
 """
 import numpy as np
+
 from .common import H5ContextManager
 
 
@@ -13,6 +14,7 @@ class EndfootMesh:
         triangles: array[float, (M, 3)]
     """
     __slots__ = 'index', 'points', 'triangles'
+
     def __init__(self, index, points, triangles):
         self.index = index
         self.points = points

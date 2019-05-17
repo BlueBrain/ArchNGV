@@ -1,4 +1,3 @@
-import os
 import h5py
 import numpy as np
 
@@ -53,8 +52,6 @@ def write_vasculature_segment_perspective(fd, endfeet_to_astrocyte, endfeet_to_v
 
     max_segment_index = np.max(endfeet_to_vasculature)
     min_segment_index = np.min(endfeet_to_vasculature)
-
-    n_endfeet = len(endfeet_to_vasculature)
 
     index_range = int(max_segment_index - min_segment_index + 1)
 

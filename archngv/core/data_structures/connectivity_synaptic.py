@@ -1,4 +1,3 @@
-import os
 import logging
 
 import numpy as np
@@ -10,27 +9,26 @@ L = logging.getLogger(__name__)
 
 
 class SynapticConnectivity(H5ContextManager):
-
-
     def __init__(self, filepath):
         super(SynapticConnectivity, self).__init__(filepath)
-
         self.synapse = SynapseEntry(self._fd)
         self.afferent_neuron = AfferentNeuronEntry(self._fd)
 
     @property
     def n_neurons(self):
-        return len(self.afferent_neuron._offsets) - 1
+        return len(self.afferent_neuron)
 
     @property
     def n_synapses(self):
-        return len(self.synapse._afferent_neuron)
+        return len(self.synapse)
 
 
 class SynapseEntry(object):
-
     def __init__(self, fd):
         self._afferent_neuron = fd['/Synapse/Afferent Neuron']
+
+    def __len__(self):
+        return len(self._afferent_neuron)
 
     def to_afferent_neuron(self, synapse_index):
         return self._afferent_neuron[synapse_index]
@@ -41,10 +39,11 @@ class SynapseEntry(object):
 
 
 class AfferentNeuronEntry(object):
-
     def __init__(self, fd):
-
         self._offsets = fd['/Afferent Neuron/offsets']
+
+    def __len__(self):
+        return len(self._offsets) - 1
 
     def _offset_slice(self, neuron_index):
         return self._offsets[neuron_index], \

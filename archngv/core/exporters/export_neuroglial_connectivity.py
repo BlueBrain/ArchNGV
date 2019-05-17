@@ -1,41 +1,21 @@
-import os
-import h5py
-import logging
-import numpy as np
-
 from builtins import range
 
-from ..data_structures import NeuroglialConnectivity
+import os
+import logging
+
+import h5py
+import numpy as np
 
 
 L = logging.getLogger(__name__)
 
 
-_PART_FILENAME = lambda index: 'ng_{}.h5'.format(index)
+def _part_filename(index):
+    return 'ng_{}.h5'.format(index)
 
 
 def cell_output_path(directory_path, index):
-    return os.path.join(directory_path, _PART_FILENAME(index))
-
-
-def count_data(fd, directory_path, n_astrocytes):
-    """ Find the total number of synapses
-    """
-    def synapse_count(index):
-        with h5py.File(cell_output_path(directory_path, index), 'r') as sf:
-            return len(sf['domain_synapses']), len(sf['domain_neurons'])
-
-    n_synapses = 0
-    n_neurons = 0
-
-    for index in range(n_astrocytes):
-
-        N, M = synapse_count(index)
-
-        n_synapses += N
-        n_neurons += M
-
-    return n_synapses, n_neurons
+    return os.path.join(directory_path, _part_filename(index))
 
 
 def export_neuroglial_connectivity(data_iterator,
@@ -100,13 +80,11 @@ def export_neuroglial_connectivity(data_iterator,
                 neuron_astrocytes[int(nid - 1)].add(index)
 
         if len(astrocyte_synapse_dset) > synapse_offset:
-
-            L.info('Resizing astrocyte_synapse_dset {} -> {}'.format(len(astrocyte_synapse_dset), synapse_offset))
+            L.info('Resizing astrocyte_synapse_dset %d -> %d', len(astrocyte_synapse_dset), synapse_offset)
             astrocyte_synapse_dset.resize((synapse_offset,))
 
         if len(astrocyte_neuron_dset) > neuron_offset:
-
-            L.info('Resizing astrocyte_synapse_dset {} -> {}'.format(len(astrocyte_neuron_dset), neuron_offset))
+            L.info('Resizing astrocyte_synapse_dset %d -> %d', len(astrocyte_neuron_dset), neuron_offset)
             astrocyte_neuron_dset.resize((neuron_offset,))
 
         assert synapse_offset == len(astrocyte_synapse_dset)
@@ -163,7 +141,7 @@ def export_synapse_morphology_association(ngv_config, cell_data):
 
         for cell_path in cell_paths:
 
-            L.info('Extracting location from {}'.format(cell_path))
+            L.info('Extracting location from %s', cell_path)
 
             with h5py.File(cell_path, 'r') as fd:
 

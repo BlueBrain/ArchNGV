@@ -4,7 +4,7 @@ import logging
 # TODO: used by `eval` below; remove along with `eval`
 import numpy as np  # pylint: disable=unused-import
 
-from tns.spatial.point_cloud import PointCloud
+from tns.spatial.point_cloud import PointCloud  # pylint: disable=import-error
 
 from .detail.annotation import export_endfoot_location
 from .detail.annotation import export_synapse_location

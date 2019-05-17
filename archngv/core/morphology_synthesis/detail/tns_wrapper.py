@@ -9,9 +9,9 @@ import scipy.stats
 
 from morphspatial.collision import convex_shape_with_point
 
-from tns import AstrocyteGrower
-from tns.morphmath.field import PointTarget
-from tns.morphmath.field import PointAttractionField
+from tns import AstrocyteGrower  # pylint: disable=import-error
+from tns.morphmath.field import PointTarget  # pylint: disable=import-error
+from tns.morphmath.field import PointAttractionField  # pylint: disable=import-error
 
 from archngv.core.types import ASTROCYTE_TO_NEURON
 

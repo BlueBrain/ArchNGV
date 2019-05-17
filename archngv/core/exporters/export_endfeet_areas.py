@@ -1,5 +1,6 @@
-import h5py
 import logging
+
+import h5py
 
 
 L = logging.getLogger(__name__)
@@ -22,4 +23,4 @@ def export_endfeet_areas(filepath, data_generator):
             mesh_group.create_dataset('points', data=points)
             mesh_group.create_dataset('triangles', data=triangles)
 
-            L.info('written {}'.format(endfoot_index))
+            L.info('written %d', endfoot_index)

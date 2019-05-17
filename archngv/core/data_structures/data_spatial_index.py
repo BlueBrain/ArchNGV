@@ -1,6 +1,7 @@
 """ Spatial index info
 """
 
+
 class SpatialIndexInfo(object):
     """ Access to out of core spatial indexes
     """

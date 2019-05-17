@@ -1,8 +1,6 @@
-import os
 import logging
-from cached_property import cached_property
 
-import numpy as np
+from cached_property import cached_property
 
 from .connectivity_gliovascular import GliovascularConnectivity
 from .connectivity_neuroglial import NeuroglialConnectivity
@@ -21,6 +19,7 @@ class NGVConnectome(object):
         self._connectivities = {'neuroglial': self._neuroglial,
                                 'gliovascular': self._gliovascular,
                                 'synaptic': self._synaptic}
+
     @property
     def connectivities(self):
         """ Available connectivities """
@@ -70,8 +69,6 @@ class NGVConnectome(object):
         self.neuroglial.close()
         self.gliovascular.close()
 
-    ############### Astrocyte Stuff ###############
-
     def astrocyte_endfeet(self, astrocyte_index):
         return self.gliovascular.astrocyte.to_endfoot(astrocyte_index)
 
@@ -81,15 +78,11 @@ class NGVConnectome(object):
     def astrocyte_synapses(self, astrocyte_index):
         return self.neuroglial.astrocyte.to_synapse(astrocyte_index)
 
-    ############### Endfoot Stuff ###############
-
     def endfoot_vasculature_segment(self, endfoot_index):
         return self.gliovascular.endfoot.to_vasculature_segment(endfoot_index)
 
     def endfoot_astrocyte(self, endfoot_index):
-        return self.gliovascular.endfoot.to_astrocyte(endfoot_index) 
-
-    ############### Synapse Stuff ###############
+        return self.gliovascular.endfoot.to_astrocyte(endfoot_index)
 
     def synapse_afferent_neuron(self, synapse_index):
         return self.synaptic.synapse.to_afferent_neuron(synapse_index)
@@ -97,15 +90,11 @@ class NGVConnectome(object):
     def synapse_astrocyte(self, synapse_index):
         return self.neuroglial.synapse.to_astrocyte(synapse_index)
 
-    ############### Vasculature Segment Stuff ###############
-
     def vasculature_segment_endfoot(self, vasculature_segment_index):
         return self.gliovascular.vasculature_segment.to_endfoot(vasculature_segment_index)
 
     def vasculature_segment_astrocyte(self, vasculature_segment_index):
         return self.gliovascular.vasculature_segment.to_astrocyte(vasculature_segment_index)
-
-    ############### Pairwise Combinations ###############
 
     def astrocyte_afferent_neurons(self, astrocyte_index):
         syn_idx = self.astrocyte_synapses(astrocyte_index)

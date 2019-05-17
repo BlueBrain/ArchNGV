@@ -9,19 +9,12 @@ ignore=tests
 #R0903 - Too Few public methods
 #W0511 - TODO in code
 #W0232 - Class has no __init__ method
-#R0922 - Abstract class is only referenced 1 times
-#R0801 - Similar lines in %d files
-#R0921 - Abstract class not referenced
-#W0141 - Used builtin function 'map'
-#R0401 - cyclic-import
-#I0013 - Ignore the 'Ignoring entire file' warning
-#W0142 - Used * or ** magic
-#W0622 - redefined-builti
 #C0325 - superfluous-parens
 #R0205 - useless-object-inheritance
+#C0330 - bad-continuation
 #C1801 - len-as-condition
 #R1705 - no-else-return
-disable=C0103,R0904,R0903,W0511,W0232,R0922,R0801,R0921,W0141,R0401,I0013,W0142,W0622,C0325,R0205,C0330,C1801,R1705
+disable=C0103,R0904,R0903,W0511,W0232,C0325,R0205,C0330,C1801,R1705
 
 [FORMAT]
 # Maximum number of characters on a single line.

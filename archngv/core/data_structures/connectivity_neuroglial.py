@@ -12,10 +12,13 @@ class NeuroglialConnectivity(H5ContextManager):
     """
     def __init__(self, filepath):
         super(NeuroglialConnectivity, self).__init__(filepath)
-
-        #self.neuron = self._NeuronEntry(self._fd)
-        #self.synapse = self._SynapseEntry(self._fd)
+        # TODO self.neuron = NeuronEntry(self._fd)
+        # TODO self.synapse = SynapseEntry(self._fd)
         self.astrocyte = AstrocyteEntry(self._fd)
+
+    @property
+    def synapse(self):
+        raise NotImplementedError
 
     @property
     def n_astrocytes(self):
@@ -25,7 +28,8 @@ class NeuroglialConnectivity(H5ContextManager):
     @property
     def n_neurons(self):
         """ Number of neurons """
-        return len(self.neuron)
+        # TODO return len(self.neuron)
+        raise NotImplementedError
 
     @property
     def n_synapses(self):
@@ -59,8 +63,10 @@ class NeuronEntry(object):
         return len(self._offsets) - 1
 
     def _offset_slice(self, neuron_index):
-         return self._offsets[neuron_index], \
-                self._offsets[neuron_index + 1]
+        return (
+            self._offsets[neuron_index],
+            self._offsets[neuron_index + 1]
+        )
 
     def to_astrocyte(self, neuron_index):
         beg, end = self._offset_slice(neuron_index)
@@ -71,8 +77,7 @@ class SynapseEntry(object):
 
     def __init__(self, fd):
 
-        self._offset_t = \
-        {
+        self._offset_t = {
             'astrocyte': 0
         }
 
@@ -80,21 +85,23 @@ class SynapseEntry(object):
         self._astrocyte = fd['/Synapse/astrocyte']
 
     def _offset_slice(self, synapse_index, offset_type):
-         return self._offsets[neuron_index, offset_type], \
-                self._offsets[neuron_index + 1, offset_type]
+        return (
+            self._offsets[synapse_index, offset_type],
+            self._offsets[synapse_index + 1, offset_type]
+        )
 
     def to_astrocyte(self, synapse_index):
-        return self._connectivity[synapse_index, self._target_t['astrocyte']]
+        # return self._connectivity[synapse_index, self._target_t['astrocyte']]
+        raise NotImplementedError
 
 
 class AstrocyteEntry(object):
 
     def __init__(self, fd):
 
-        self._offset_t = \
-        {
+        self._offset_t = {
             'synapse': 0,
-            'neuron' : 1
+            'neuron': 1
         }
 
         self._offsets = fd['/Astrocyte/offsets']

@@ -1,5 +1,6 @@
 import h5py
 
+
 class H5ContextManager(object):
 
     def __init__(self, filepath):

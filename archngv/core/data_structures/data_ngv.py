@@ -2,10 +2,10 @@
 """
 from cached_property import cached_property
 
+from voxcell import VoxelData
+
 from .data_cells import CellDataInfo
 from .data_synaptic import SynapticDataInfo
-from .data_spatial_index import SpatialIndexInfo
-from .data_gliovascular import GliovascularDataInfo
 from .data_microdomains import MicrodomainTesselationInfo
 from .data_endfeetome import Endfeetome
 
@@ -37,7 +37,7 @@ class NGVData(object):
     def vasculature_mesh(self):
         """ Returns vasculature mesh object """
         import trimesh
-        return trimesh.load(self.config.input_paths('vasculature_mesh'))
+        return trimesh.load(self._config.input_paths('vasculature_mesh'))
 
     @cached_property
     def microdomains(self):
@@ -52,16 +52,17 @@ class NGVData(object):
 
     @cached_property
     def voxelized_intensity(self):
-        path = self.config.input_paths('voxelized_intensity')
+        path = self._config.input_paths('voxelized_intensity')
         return VoxelData.load_nrrd(path)
 
     def __enter__(self):
         """ Composition context manager """
         self.synapses.__enter__()
-        self.cells.__enter__()
-        #self.neuroglial.__enter__()
+        self.astrocytes.__enter__()
         self.microdomains.__enter__()
-        self.gliovascular.__enter__()
+        # TODO
+        # self.neuroglial.__enter__()
+        # self.gliovascular.__enter__()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -71,7 +72,8 @@ class NGVData(object):
     def close(self):
         """ Composition context manager close """
         self.synapses.close()
-        self.cells.close()
-        #self.neuroglial.close()
+        self.astrocytes.close()
         self.microdomains.close()
-        self.gliovascular.close()
+        # TODO
+        # self.neuroglial.close()
+        # self.gliovascular.close()

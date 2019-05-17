@@ -1,12 +1,12 @@
 import os
-import time
-import h5py
 import logging
+
+import h5py
 import numpy as np
 
 from scipy.spatial import ConvexHull, Delaunay
-
 from scipy.spatial.distance import cdist
+
 
 L = logging.getLogger(__name__)
 
@@ -75,8 +75,6 @@ def find_matching(point_array1, point_array2):
     """ Finds the best match between two arrays of points
     """
     smallest_group, biggest_group = sorted((point_array1, point_array2), key=len)
-
-    available = np.ones(len(biggest_group), dtype=np.bool)
 
     distx = cdist(smallest_group, biggest_group)
 
@@ -160,7 +158,7 @@ def apply_edge_matching(edges, small_group, big_group):
 def generate_soma_points(contour_points):
     """ Better ask me for this part, it's a little bit complicated :)
     """
-    max_dir, vrt_dir, min_dir = principal_directions(contour_points)
+    max_dir, _, min_dir = principal_directions(contour_points)
 
     small_group, big_group = separate_contour_points_in_two_groups(max_dir, min_dir, contour_points)
 
@@ -241,26 +239,6 @@ def estimate_convex_hull_volume(points):
     return volumes.sum()
 
 
-"""
-def estimate_convex_hull_volume(points):
-
-    cv_points = points[ConvexHull(points).vertices]
-
-    xmin, ymin, zmin = cv_points.min(axis=0).T
-    xmax, ymax, zmax = cv_points.max(axis=0).T
-
-
-    t_points = np.column_stack((np.random.uniform(xmin, xmax, size=100000),
-                               np.random.uniform(ymin, ymax, size=100000),
-                               np.random.uniform(zmin, zmax, size=100000)))
-
-
-    in_hull = Delaunay(cv_points).find_simplex(t_points) > 0
-
-    return float(in_hull.sum()) * (xmax - xmin) * (ymax - ymin) * (zmax - zmin) / float(len(t_points))
-"""
-
-
 def get_soma_data(filename):
     """ Soma info from h5 file
     """
@@ -301,7 +279,7 @@ def volume_stats(filename):
     the contour points and their convex hull estimation.
     NOTE: if the morphology is not at the origin the center must be taken into account
     """
-    contour_points, trunk_starts, trunk_type = get_soma_data(filename)
+    contour_points, trunk_starts, _ = get_soma_data(filename)
 
     trunk_starts = filter_distant_neurite_starts(contour_points, trunk_starts)
 
@@ -361,7 +339,6 @@ def extract_neuronal_somata_information(output_directory, neuronal_microcircuit,
             'volume_revolution_solid': np.zeros(n_cells, dtype=np.float)}
 
     L.info('calculating volumes')
-    calc_time = time.time()
 
     outputs = list(map_func(volume_stats, paths))
 
@@ -369,7 +346,7 @@ def extract_neuronal_somata_information(output_directory, neuronal_microcircuit,
 
     L.info('Writing to h5 file.')
     with h5py.File(somata_geom_path, 'w') as f:
-        for n, index in enumerate(neuronal_gids):
+        for n in range(len(neuronal_gids)):
 
             output = outputs[n]
 
@@ -379,8 +356,6 @@ def extract_neuronal_somata_information(output_directory, neuronal_microcircuit,
             data['volume_contour_trunks'] = output[3]
             data['volume_revolution_solid'] = output[4]
             points = output[5]
-
-            index = "{0:010d}".format(n)
 
             f.create_dataset(str(n), data=convex_envelope(points))
 

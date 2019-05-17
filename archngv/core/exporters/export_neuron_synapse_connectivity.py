@@ -1,6 +1,6 @@
-import os
-import h5py
 import logging
+
+import h5py
 import numpy as np
 
 
@@ -28,7 +28,6 @@ def create_synaptic_connectivity_fields(fd_conn, total_neurons, total_synapses):
                                              shape=(total_neurons + 1,),
                                              dtype='f16', chunks=None)
     dset_afferent_neuron_offsets[0] = 0
-    #dset_afferent_neuron_offsets.attrs['column_names'] = ['Synapse']
 
     return dset_afferent_neuron, dset_afferent_neuron_offsets
 
@@ -41,7 +40,7 @@ def export_neuron_synapse_association(circuit, output_path_connectivity, output_
     n_neurons = len(neuron_gids)
     total_synapses = sum(len(connectome.afferent_synapses(gid)) for gid in neuron_gids)
 
-    L.info('{} total synapses. Started extraction.'.format(total_synapses))
+    L.info('%d total synapses. Started extraction.', total_synapses)
 
     with h5py.File(output_path_data, 'w') as fd_data, \
          h5py.File(output_path_connectivity, 'w') as fd_conn:
@@ -69,4 +68,4 @@ def export_neuron_synapse_association(circuit, output_path_connectivity, output_
             offset += n_synapses
             dset_gid2off[neuron_index + 1] = offset
 
-            L.info('Processed neuron {}, synapes: {}'.format(neuron_index, n_synapses))
+            L.info('Processed neuron %d, synapes: %d', neuron_index, n_synapses)

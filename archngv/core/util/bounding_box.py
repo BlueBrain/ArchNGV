@@ -42,7 +42,6 @@ class BoundingBox(object):
         self._bb = np.array((min_coordinates,
                              max_coordinates), dtype=np.float)
 
-
     def __add__(self, other):
         return BoundingBox(np.min((self.min_point, other.min_point), axis=0),
                            np.max((self.max_point, other.max_point), axis=0))
@@ -64,7 +63,6 @@ class BoundingBox(object):
     @property
     def max_point(self):
         return self._bb[1]
-
 
     @property
     def center(self):

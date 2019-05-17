@@ -15,13 +15,12 @@ class MicrodomainTesselation(H5ContextManager):
     def __init__(self, filepath):
         super(MicrodomainTesselation, self).__init__(filepath)
 
-        self._offset_t = \
-        {
-            "points"    : 0,
-            "triangles" : 1,
-            "neighbors" : 2,
-            "all"       : None,
-            "domain_data" : slice(0, 1)
+        self._offset_t = {
+            "points": 0,
+            "triangles": 1,
+            "neighbors": 2,
+            "all": None,
+            "domain_data": slice(0, 1)
         }
 
         self._offsets = self._fd['/offsets']
@@ -71,7 +70,7 @@ class MicrodomainTesselation(H5ContextManager):
         """ Returns the indices of the neighboring microdomains.
         """
         beg, end = self._offset_slice(astrocyte_index, self._offset_t['neighbors'])
-        return  self._raw_neighbors[beg: end]
+        return self._raw_neighbors[beg: end]
 
     def domain_points(self, astrocyte_index):
         """ The coordinates of the vertices of the microdomain.
