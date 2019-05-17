@@ -1,7 +1,7 @@
 import numpy as np
 import pylab as plt
 from .common import remove_spines
-from ..analysis.nearest_neighbor import nearest_neighbor_distances
+from archngv.extras.analysis.nearest_neighbor import nearest_neighbor_distances
 
 
 def plot_nearest_neighbor_distances(ax, datasets_to_plot, literature_data):

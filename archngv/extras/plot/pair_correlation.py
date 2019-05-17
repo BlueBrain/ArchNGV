@@ -2,7 +2,7 @@ import numpy as np
 import logging
 from .common import remove_spines
 from .common import smooth_convolve
-from ..analysis.pair_correlation import pairCorrelationFunction_3D
+from archngv.extras.analysis.pair_correlation import pairCorrelationFunction_3D
 
 
 L = logging.getLogger(__name__)

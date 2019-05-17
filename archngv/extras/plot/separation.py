@@ -6,9 +6,9 @@ from .common import bin_centers
 from .common import plot_oriented
 from .common import smooth
 from .common import LAYERS
-from ...analysis.histograms import wiring_histogram
-from ...analysis.histograms import vectors_included_in_bin_1D
-from ...analysis.histograms import points_included_in_bin_1D
+from archngv.extras.analysis.histograms import wiring_histogram
+from archngv.extras.analysis.histograms import vectors_included_in_bin_1D
+from archngv.extras.analysis.histograms import points_included_in_bin_1D
 from morphmath import normalize_vectors
 
 from morphspatial.shapes import Sphere
@@ -201,7 +201,7 @@ def plot_per_layer_separation_distribution(axes, circuit, plt_options, bounding_
 def plot_per_layer_astrocyte_endfeet_separation(axes, circuit, plt_options):
 
     assert len(axes) == 6
- 
+
     astro_pos = circuit.astrocyte_positions
     astro_rad = circuit.astrocyte_radii
 
@@ -251,7 +251,7 @@ def _plot_separation_single(axis, circuit):
 
     bounding_box = circuit.vasculature.bounding_box
 
-    surface_targeting_results = circuit.gliovascular_connectivity['surface_targeting'] 
+    surface_targeting_results = circuit.gliovascular_connectivity['surface_targeting']
 
 
     bin_centers, separations = laminar_astrocyte_capillary_separation(astro_positions,

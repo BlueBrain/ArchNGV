@@ -1,6 +1,7 @@
 from .common import smooth
 from .common import bin_centers
-from ...analysis.histograms import laminar_histogram
+
+from archngv.extras.analysis.histograms import laminar_histogram
 
 
 def cortical_depth_plot(ax, seg_starts, seg_ends, rad_starts, rad_ends, bounding_box, n_bins,  xz_shape, measurement=None, orientation='vertical', scale=1., **kwargs):

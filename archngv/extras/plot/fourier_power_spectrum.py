@@ -1,8 +1,9 @@
 import numpy as np
 import pylab as plt
-from archngv.analysis.fourier_transform import azimuthal_average
-from archngv.analysis.fourier_transform import histogram_bin_centers
-from archngv.analysis.fourier_transform import fourier_power_spectrum
+
+from archngv.extras.analysis.fourier_transform import azimuthal_average
+from archngv.extras.analysis.fourier_transform import histogram_bin_centers
+from archngv.extras.analysis.fourier_transform import fourier_power_spectrum
 
 def plot_fourier_power_spectrum(points, normalize_intensity=True):
 

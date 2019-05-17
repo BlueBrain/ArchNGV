@@ -2,7 +2,7 @@ import numpy as np
 from .common import smooth
 from .common import bin_centers
 from .common import plot_oriented
-from ...analysis.histograms import mass_histogram
+from archngv.extras.analysis.histograms import mass_histogram
 
 
 def plot_laminar_mass_density(axis, positions, bounding_box, options, plt_options):

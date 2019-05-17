@@ -9,8 +9,8 @@ from voxcell import CellCollection
 from morphmath import rand_rotation_matrix
 
 from archngv import NGVConfig
-from archngv.analysis.density import read_densities_from_file
-from archngv.analysis.density import create_density_from_laminar_densities
+from archngv.extras.analysis.density import read_densities_from_file
+from archngv.extras.analysis.density import create_density_from_laminar_densities
 
 L = logging.getLogger(__name__)
 
