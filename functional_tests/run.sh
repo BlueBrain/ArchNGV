@@ -8,7 +8,10 @@ rm -rf $BUILD_DIR && mkdir $BUILD_DIR
 
 pushd $BUILD_DIR
 
-snakemake --snakefile '../Snakefile' --config bioname='../bioname'
+snakemake \
+	--snakefile '../Snakefile' \
+	--config bioname='../bioname' \
+	-- default sonata
 
 popd
 

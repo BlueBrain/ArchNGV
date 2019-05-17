@@ -40,6 +40,10 @@ rule default:
         'synaptic_data.h5',
         'endfeetome.h5',
         MORPH_DIR + '/_DONE',
+
+
+rule sonata:
+    input:
         'sonata/glia.nodes.h5',
         'sonata/neuroglial.edges.h5',
 
