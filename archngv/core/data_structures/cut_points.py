@@ -1,9 +1,13 @@
+""" Data structure for cut point representation
+"""
+
 import json
 import numpy
 
 
 class CutPointData(object):
-
+    """ Cut plane data for cut astrocytes
+    """
     @classmethod
     def load_file(cls, file_path):
         """ Load cut plane data file

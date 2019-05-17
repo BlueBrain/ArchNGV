@@ -1,3 +1,5 @@
+""" Neuroglial connectivity expoerters functions """
+
 from builtins import range
 
 import os
@@ -8,14 +10,6 @@ import numpy as np
 
 
 L = logging.getLogger(__name__)
-
-
-def _part_filename(index):
-    return 'ng_{}.h5'.format(index)
-
-
-def cell_output_path(directory_path, index):
-    return os.path.join(directory_path, _part_filename(index))
 
 
 def export_neuroglial_connectivity(data_iterator,

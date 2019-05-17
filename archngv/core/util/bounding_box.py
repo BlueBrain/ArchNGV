@@ -7,23 +7,8 @@ class BoundingBox(object):
     """ Bounding box data object"""
 
     @classmethod
-    def from_voxel_data(cls, voxel_data):
-
-        voxel_dimensions = voxel_data.voxel_dimensions
-
-        shape = voxel_data.raw.shape
-
-        offset = voxel_data.offset
-
-        min_coordinates = offset
-
-        max_coordinates = shape * voxel_dimensions + offset
-
-        return cls(min_coordinates, max_coordinates)
-
-    @classmethod
     def from_points(cls, points):
-
+        """ bbox constructor from point cloud """
         min_coordinates = points.min(axis=0)
         max_coordinates = points.max(axis=0)
 
@@ -31,7 +16,7 @@ class BoundingBox(object):
 
     @classmethod
     def from_spheres(cls, points, radii):
-
+        """ bbox constructor from spheres """
         min_coordinates = (points - radii[:, np.newaxis]).min(axis=0)
         max_coordinates = (points + radii[:, np.newaxis]).max(axis=0)
 
@@ -42,7 +27,13 @@ class BoundingBox(object):
         self._bb = np.array((min_coordinates,
                              max_coordinates), dtype=np.float)
 
+    def __eq__(self, other):
+        """ Equality of bboxes"""
+        return np.allclose(self.min_point, other.min_point) and \
+               np.allclose(self.max_point, other.max_point)
+
     def __add__(self, other):
+        """ Create a new bbox that is the support of both bboxes"""
         return BoundingBox(np.min((self.min_point, other.min_point), axis=0),
                            np.max((self.max_point, other.max_point), axis=0))
 
@@ -58,10 +49,12 @@ class BoundingBox(object):
 
     @property
     def min_point(self):
+        """ Return the min point """
         return self.offset
 
     @property
     def max_point(self):
+        """ Return the max point """
         return self._bb[1]
 
     @property
@@ -98,6 +91,7 @@ class BoundingBox(object):
 
     @property
     def volume(self):
+        """ Volume of bbox """
         xmin, ymin, zmin = self.min_point
         xmax, ymax, zmax = self.max_point
 
@@ -108,9 +102,11 @@ class BoundingBox(object):
         return np.abs(np.dot(np.cross(a, b), c))
 
     def translate(self, point):
+        """ Translate by point coordinates """
         self._bb += point
 
     def scale(self, triplet):
+        """ Scale bbox """
         center = self.center
         self.translate(-center)
         self._bb *= triplet

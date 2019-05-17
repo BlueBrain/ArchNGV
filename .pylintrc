@@ -1,7 +1,7 @@
 ## look at http://docutils.sourceforge.net/sandbox/py-rest-doc/utils/pylintrc
 # for some of the options that are available
 [MASTER]
-ignore=tests
+ignore=extras,workflow,tests
 
 [MESSAGES CONTROL]
 #C0103 -  Invalid name "%s" (should match %s) - matches too many things, like variables w/ single char names
@@ -65,4 +65,4 @@ ignore-docstrings=yes
 # and thus existing member attributes cannot be deduced by static analysis. It
 # supports qualified module names, as well as Unix pattern matching.
 ignored-modules=numpy,numpy.*,scipy.stats,scipy.spatial
-extension-pkg-whitelist=openmesh
+extension-pkg-whitelist=openmesh,morphio,cKDTree

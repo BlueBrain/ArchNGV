@@ -1,4 +1,4 @@
-
+""" Astrocyte and neuron type mappings """
 
 ASTROCYTE_TO_NEURON = {
     'soma': 'soma',

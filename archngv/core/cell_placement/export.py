@@ -33,7 +33,7 @@ def basalt_exporter(filepath, astrocyte_ids, somata_positions, somata_radii):
     from basalt.ngv import NGVGraph, Point  # pylint: disable=import-error
 
     ngv_graph = NGVGraph(path=filepath)
-    astrocytes = ngv_graph.astrocytes
+    astrocytes = ngv_graph.astrocytes  # pylint: disable=no-member
 
     for i, astrocyte_id in enumerate(astrocyte_ids):
 

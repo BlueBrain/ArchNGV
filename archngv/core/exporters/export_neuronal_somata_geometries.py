@@ -1,3 +1,5 @@
+""" Extract an accurate representation of the geometry of the neuronal somata """
+
 import os
 import logging
 
@@ -295,16 +297,18 @@ def volume_stats(filename):
 
 
 def convex_envelope(points):
+    """ Returns convex envelope of points """
     cv = ConvexHull(points)
     return cv.points[cv.vertices]
 
 
 def _output_path(output_directory, gid):
+    """ Output path """
     return os.path.join(output_directory, 'soma_' + str(gid) + '.h5')
 
 
 def _worker(output_directory, gid, path):
-
+    """ Write data worker """
     mean_radius, max_radius, min_radius, rot_vol, sim_vol, soma_points = volume_stats(path)
 
     output_path = _output_path(output_directory, gid)
@@ -321,7 +325,7 @@ def _worker(output_directory, gid, path):
 
 
 def extract_neuronal_somata_information(output_directory, neuronal_microcircuit, map_func=map):
-
+    """ summary function """
     neuronal_gids = neuronal_microcircuit.v2.cells.ids()
 
     L.info('Getting filepaths...')

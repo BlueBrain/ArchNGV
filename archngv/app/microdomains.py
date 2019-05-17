@@ -38,7 +38,8 @@ def cmd(config, cell_data, atlas, atlas_cache, seed, output_dir):
     config = load_yaml(config)
 
     atlas = Atlas.open(atlas, cache_dir=atlas_cache)
-    bounding_box = BoundingBox.from_voxel_data(atlas.load_data('brain_regions'))
+    bbox = atlas.load_data('brain_regions').bbox
+    bounding_box = BoundingBox(bbox[0], bbox[1])
 
     with CellData(cell_data) as data:
         somata_positions = data.astrocyte_positions[:]

@@ -27,6 +27,7 @@ class GliovascularData(H5ContextManager):
 
     @property
     def n_endfeet(self):
+        """ Total number of endfeet """
         return len(self.endfoot_graph_coordinates)
 
 

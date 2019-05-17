@@ -1,3 +1,5 @@
+""" Synthesis entry function """
+
 import os
 import logging
 

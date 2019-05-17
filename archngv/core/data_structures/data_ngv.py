@@ -52,6 +52,7 @@ class NGVData(object):
 
     @cached_property
     def voxelized_intensity(self):
+        """ Returns atlas voxelized intensity """
         path = self._config.input_paths('voxelized_intensity')
         return VoxelData.load_nrrd(path)
 

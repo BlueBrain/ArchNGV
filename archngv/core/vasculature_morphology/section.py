@@ -34,10 +34,12 @@ class Section(object):
 
     @property
     def start_point(self):
+        """ Start point of the section """
         return self.points[self.edges[0][0]]
 
     @property
     def end_point(self):
+        """ End point of the section """
         return self.points[self.edges[-1][1]]
 
     @property

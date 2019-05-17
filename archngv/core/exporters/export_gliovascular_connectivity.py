@@ -1,3 +1,5 @@
+""" Gliovascular connectivity exporters functions """
+
 import h5py
 import numpy as np
 

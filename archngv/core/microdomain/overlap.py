@@ -1,3 +1,5 @@
+""" Overalap for microdomain geometry """
+
 import logging
 import numpy as np
 

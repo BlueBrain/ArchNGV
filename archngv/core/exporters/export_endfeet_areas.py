@@ -1,3 +1,4 @@
+""" Endfeetome exporters """
 import logging
 
 import h5py
@@ -7,7 +8,7 @@ L = logging.getLogger(__name__)
 
 
 def export_endfeet_areas(filepath, data_generator):
-
+    """ Endfeetome """
     with h5py.File(filepath, 'w') as fd:
 
         metadata = fd.create_group('metadata')

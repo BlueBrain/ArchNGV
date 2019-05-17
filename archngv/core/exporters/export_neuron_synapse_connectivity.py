@@ -1,3 +1,4 @@
+"""" Neuron synapse connectivity exporters """
 import logging
 
 import h5py

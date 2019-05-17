@@ -18,6 +18,7 @@ class NeuroglialConnectivity(H5ContextManager):
 
     @property
     def synapse(self):
+        """ Synapse point of view """
         raise NotImplementedError
 
     @property
@@ -63,18 +64,21 @@ class NeuronEntry(object):
         return len(self._offsets) - 1
 
     def _offset_slice(self, neuron_index):
+        """ Offset slice for neuron index """
         return (
             self._offsets[neuron_index],
             self._offsets[neuron_index + 1]
         )
 
     def to_astrocyte(self, neuron_index):
+        """ Astrocyte indices for neuron index """
         beg, end = self._offset_slice(neuron_index)
         return self._astrocyte[beg: end]
 
 
 class SynapseEntry(object):
-
+    """ Synapse view
+    """
     def __init__(self, fd):
 
         self._offset_t = {
@@ -85,18 +89,20 @@ class SynapseEntry(object):
         self._astrocyte = fd['/Synapse/astrocyte']
 
     def _offset_slice(self, synapse_index, offset_type):
+        """ Ofsset slice for offset_type column
+        """
         return (
             self._offsets[synapse_index, offset_type],
             self._offsets[synapse_index + 1, offset_type]
         )
 
     def to_astrocyte(self, synapse_index):
-        # return self._connectivity[synapse_index, self._target_t['astrocyte']]
+        """ Astrocyte indices for synapse index """
         raise NotImplementedError
 
 
 class AstrocyteEntry(object):
-
+    """ Astrocyte view """
     def __init__(self, fd):
 
         self._offset_t = {
@@ -113,13 +119,16 @@ class AstrocyteEntry(object):
         return len(self._offsets) - 1
 
     def _offset_slice(self, astrocyte_index, offset_type):
+        """ Offset slice for astrocyte index for column offset_type """
         return self._offsets[astrocyte_index, offset_type], \
                self._offsets[astrocyte_index + 1, offset_type]
 
     def to_synapse(self, astrocyte_index):
+        """ Synapse indices for astrocyte index """
         beg, end = self._offset_slice(astrocyte_index, self._offset_t['synapse'])
         return self._synapse[beg: end]
 
     def to_neuron(self, astrocyte_index):
+        """ Neuron indices for astrocyte index """
         beg, end = self._offset_slice(astrocyte_index, self._offset_t['neuron'])
         return self._neuron[beg: end]

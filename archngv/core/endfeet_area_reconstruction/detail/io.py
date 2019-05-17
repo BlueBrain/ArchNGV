@@ -1,3 +1,5 @@
+""" IO for meshes """
+
 import logging
 
 import numpy as np
@@ -28,7 +30,7 @@ def export_endfoot_mesh(endfoot, filepath):
 
 
 def export_joined_endfeet_meshes(endfoot_iterator, filepath):
-
+    """ Exports the joined meshes """
     vectors = np.array([
         triangle.tolist()
         for endfoot in endfoot_iterator

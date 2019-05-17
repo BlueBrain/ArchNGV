@@ -1,3 +1,5 @@
+""" Endfeet areas generation processing """
+
 import logging
 import multiprocessing
 

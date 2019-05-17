@@ -1,6 +1,5 @@
 """ Annotations for synapses and endfeet surface targets
 """
-import morphio
 
 import h5py
 import numpy as np
@@ -8,6 +7,7 @@ import pandas as pd
 
 from scipy.spatial import cKDTree
 
+import morphio
 from archngv.core.types import ASTROCYTE_TO_NEURON
 
 
@@ -69,7 +69,7 @@ def annotate_endfoot_location(filepath, endfoot_points):
 
     points, locations = _morphology_unwrapped(filepath, neurite_filter=lambda s: s.type == endfoot_type)
 
-    _, idx = cKDTree(points, copy_data=False).query(endfoot_points)
+    _, idx = cKDTree(points, copy_data=False).query(endfoot_points)  # pylint: disable=not-callable
 
     return locations.loc[idx]
 
@@ -102,7 +102,7 @@ def annotate_synapse_location(filepath, synapse_points):
     """
     points, locations = _morphology_unwrapped(filepath)
 
-    _, idx = cKDTree(points, copy_data=False).query(synapse_points)
+    _, idx = cKDTree(points, copy_data=False).query(synapse_points)  # pylint: disable=not-callable
 
     return locations.loc[idx]
 

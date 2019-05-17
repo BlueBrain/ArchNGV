@@ -1,9 +1,12 @@
+""" Microdomain expoerters functions """
+
 import h5py
 import numpy
 
 
 def export_structure(filename, tesselation, global_coordinate_system=False):
-
+    """ Export microdomain tesselation structure
+    """
     n_cells = len(tesselation)
 
     neighbors = tesselation.connectivity
