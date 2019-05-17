@@ -2,6 +2,7 @@
 
 from .types import emap, pmap
 
+
 class Section(object):
     """ Section data structure """
 

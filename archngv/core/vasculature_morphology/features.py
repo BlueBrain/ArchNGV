@@ -17,7 +17,7 @@ def segment_volumes(vasc):
 
     seg_lengths = segment_lengths(vasc)
 
-    return (1. / 3.) * np.pi * (radii_starts ** 2 + \
+    return (1. / 3.) * np.pi * (radii_starts ** 2 +
            radii_starts * radii_ends + radii_ends ** 2) * seg_lengths
 
 

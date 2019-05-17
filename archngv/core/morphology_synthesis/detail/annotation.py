@@ -5,18 +5,18 @@ import morphio
 import h5py
 import numpy as np
 import pandas as pd
+
 from scipy.spatial import cKDTree
 
 from archngv.core.types import ASTROCYTE_TO_NEURON
 
 
-MORPHIO_MAP = \
-    {
-         'soma'   : morphio.SectionType.soma,
-         'axon'   : morphio.SectionType.axon,
-         'basal'  : morphio.SectionType.basal_dendrite,
-         'apical' : morphio.SectionType.apical_dendrite
-    }
+MORPHIO_MAP = {
+    'soma': morphio.SectionType.soma,
+    'axon': morphio.SectionType.axon,
+    'basal': morphio.SectionType.basal_dendrite,
+    'apical': morphio.SectionType.apical_dendrite
+}
 
 
 def _morphology_unwrapped(filepath, neurite_filter=lambda s: True):

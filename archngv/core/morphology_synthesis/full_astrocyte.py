@@ -1,17 +1,17 @@
 import os
 import logging
 
-import scipy.stats
-import numpy as np
+# TODO: used by `eval` below; remove along with `eval`
+import numpy as np  # pylint: disable=unused-import
 
-from .detail.tns_wrapper import TNSGrowerWrapper
-from .detail.annotation import export_endfoot_location
-from .detail.annotation import export_synapse_location
 from tns.spatial.point_cloud import PointCloud
 
+from .detail.annotation import export_endfoot_location
+from .detail.annotation import export_synapse_location
 from .detail.data_extraction import obtain_endfeet_data
 from .detail.data_extraction import obtain_synapse_data
 from .detail.data_extraction import obtain_cell_properties
+from .detail.tns_wrapper import TNSGrowerWrapper
 
 
 L = logging.getLogger(__name__)
@@ -30,6 +30,8 @@ def synthesize_astrocyte(astrocyte_index,
                          parameters):
     """ Synthesize the endfeet for one astrocyte
     """
+    # pylint: disable=too-many-arguments
+
     # initialize tns grower adapter
     astro_grower = TNSGrowerWrapper(tns_parameters_path, tns_distributions_path)
 
@@ -75,7 +77,9 @@ def synthesize_astrocyte(astrocyte_index,
 
         # add the targets to grow to and the attraction field
         # function which depends on the distance to the target
-        astro_grower.set_endfeet_targets(targets, eval(lambda_string))
+        # TODO: consider using Equation instead of `eval`?
+        field_function = eval(lambda_string)  # pylint: disable=eval-used
+        astro_grower.set_endfeet_targets(targets, field_function)
 
         # we need to make sure that our extracted homology will suffice
         # in order to reach the target. If they are shorter, we scale them.
@@ -84,7 +88,6 @@ def synthesize_astrocyte(astrocyte_index,
     else:
 
         astro_grower.remove_endfeet_properties()
-
 
     # determine the orientations of the primary processes by using
     # the geometry of the microdomain and its respective anisotropy
@@ -105,5 +108,3 @@ def synthesize_astrocyte(astrocyte_index,
     if synapses is not None:
         # get the location of the synapse in the morphology
         export_synapse_location(morphology_output_file, synapses)
-
-

@@ -2,6 +2,7 @@
 """
 
 import logging
+
 import pandas as pd
 
 from ...data_structures.data_cells import CellData
@@ -12,7 +13,6 @@ from ...data_structures.connectivity_gliovascular import GliovascularConnectivit
 from ...data_structures.connectivity_neuroglial import NeuroglialConnectivity
 
 
-
 L = logging.getLogger(__name__)
 
 
@@ -21,9 +21,8 @@ def obtain_endfeet_data(astrocyte_index,
                         gliovascular_connectivity_path):
     """ Extract the endfeet information from astrocyte_index if any, otherwise return None
     """
-    with \
-        GliovascularData(gliovascular_data_path) as gliovascular_data, \
-        GliovascularConnectivity(gliovascular_connectivity_path) as gliovascular_connectivity:
+    with GliovascularData(gliovascular_data_path) as gliovascular_data, \
+         GliovascularConnectivity(gliovascular_connectivity_path) as gliovascular_connectivity:
 
         endfeet_indices = gliovascular_connectivity.astrocyte.to_endfoot(astrocyte_index)
 
@@ -45,9 +44,8 @@ def obtain_cell_properties(astrocyte_index,
     via the ngv_config and its index.
     """
 
-    with \
-        CellData(cell_data_filepath) as cell_data, \
-        MicrodomainTesselation(microdomains_filepath) as microdomains:
+    with CellData(cell_data_filepath) as cell_data, \
+         MicrodomainTesselation(microdomains_filepath) as microdomains:
 
         cell_name = str(cell_data.astrocyte_names[astrocyte_index], 'utf-8')
         soma_position = cell_data.astrocyte_positions[astrocyte_index]
@@ -64,9 +62,8 @@ def obtain_synapse_data(astrocyte_index, synaptic_data_filepath, neuroglial_conn
     of astrocyte_index
     """
 
-    with \
-        SynapticData(synaptic_data_filepath) as synaptic_data, \
-        NeuroglialConnectivity(neuroglial_conn_filepath) as neuroglial_connectivity:
+    with SynapticData(synaptic_data_filepath) as synaptic_data, \
+         NeuroglialConnectivity(neuroglial_conn_filepath) as neuroglial_connectivity:
 
         synapse_ids = sorted(neuroglial_connectivity.astrocyte.to_synapse(astrocyte_index))
 

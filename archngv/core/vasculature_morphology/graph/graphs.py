@@ -85,8 +85,8 @@ class DirectedGraph(BaseGraph):
             values = np.tile((-1, 1), N_E)
             connec = np.column_stack((e2, e1)).T
 
-            I = sp.sparse.csr_matrix((values, connec), shape=(N_V, N_E), dtype=np.int)
+            _I = sp.sparse.csr_matrix((values, connec), shape=(N_V, N_E), dtype=np.int)
 
-            self._I = IncidenceMatrix(I)
+            self._I = IncidenceMatrix(_I)
 
         return self._I

@@ -1,5 +1,6 @@
 """ Incidence Matrix """
 
+
 class IncidenceMatrix(object):
     """ Incidence matrix constructed from scipy csgraph
     """

@@ -99,7 +99,7 @@ class AdjacencyMatrix(object):
     def continuations(self, return_index=True):
         """ Vertices that have one parent and one child """
         mask = (self.indegrees == 1) & (self.outdegrees == 1)
-        return  _return_index(mask, enabled=return_index)
+        return _return_index(mask, enabled=return_index)
 
     def isolated_vertices(self, return_index=True):
         """ Unconnected vertices """

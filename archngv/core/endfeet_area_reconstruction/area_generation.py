@@ -1,19 +1,16 @@
-import os
-import json
-import h5py
 import logging
 import multiprocessing
 
 import numpy as np
+
 from scipy import stats
 
-from .detail.endfoot import create_endfoot_from_global_data
-from .detail.area_fitting import fit_area
-from .detail.fmm_growing import FastMarchingEikonalSolver
+from .detail.endfoot import create_endfoot_from_global_data  # pylint: disable=no-name-in-module
+from .detail.area_fitting import fit_area  # pylint: disable=no-name-in-module
+from .detail.fmm_growing import FastMarchingEikonalSolver  # pylint: disable=no-name-in-module
 
 from ..data_structures import GliovascularData
 from ..data_structures import GliovascularConnectivity
-from ..util.parallel import distribute_batches
 
 
 L = logging.getLogger(__name__)
@@ -46,8 +43,9 @@ def _dispatch_data(n_cells,
 
         for endfoot_index in range(n_cells):
 
-            vasculature_mesh_vertices = \
-            mark_indices[mark_offsets[endfoot_index]: mark_offsets[endfoot_index + 1]]
+            vasculature_mesh_vertices = mark_indices[
+                mark_offsets[endfoot_index]:mark_offsets[endfoot_index + 1]
+            ]
 
             endfoot_data = {
                                 'index': endfoot_index,
@@ -82,12 +80,13 @@ def process_endfoot(endfoot_data):
 
         if 'target_area' in endfoot_data:
 
-            endfoot.extra = \
-            {'vertex': {'travel_times': travel_times[endfoot.vasculature_vertices]}}
+            endfoot.extra = {
+                'vertex': {
+                    'travel_times': travel_times[endfoot.vasculature_vertices]
+                }
+            }
 
-            #L.info('Endfeet area fiting data provided.')
             fit_area(endfoot, endfoot_data['target_area'])
-
 
         if 'target_thickness' in endfoot_data:
             raise NotImplementedError
@@ -111,11 +110,10 @@ def run_fast_marching_method(mesh, endfeet_points, max_area):
     """
     L.info('fmm started.')
 
-
     threshold_radius = np.sqrt(max_area / 3.1415)
 
     solver = FastMarchingEikonalSolver(
-                                           mesh, 
+                                           mesh,
                                            endfeet_points,
                                            threshold_radius
                                       )
@@ -156,7 +154,7 @@ def endfeet_area_generation(mesh,
 
     n_endfeet = len(endfeet_points)
 
-    mark_seeds, mark_indices, mark_offsets, travel_times = \
+    _, mark_indices, mark_offsets, travel_times = \
         run_fast_marching_method(mesh, endfeet_points, parameters['max_endfoot_area'])
 
     L.info('Generating groups...')
@@ -174,7 +172,7 @@ def endfeet_area_generation(mesh,
     else:
         endfeet_target_areas = None
 
-    if 'thickness_constraints' in parameters:
+    if 'thickness_constraints' in parameters:  # pylint: disable=no-else-raise
         raise NotImplementedError
     else:
         endfeet_target_thicknesses = None
@@ -192,13 +190,7 @@ def endfeet_area_generation(mesh,
 
         n_processes = multiprocessing.cpu_count()
 
-        n_chunks = int(np.ceil(n_endfeet / n_processes))
-
-        pool = multiprocessing.Pool(
-                                        #iinitializer=init_shared,
-                                        #initargs=(mesh_points, mesh_triangles, travel_times),
-                                        processes=n_processes
-                                   )
+        pool = multiprocessing.Pool(processes=n_processes)
 
         return pool.imap_unordered(process_endfoot, endfeet_data_it)
 

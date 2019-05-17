@@ -42,15 +42,16 @@ def orientations_from_domain(soma_center,
     domain_vector_lengths = np.linalg.norm(domain_vectors, axis=1)
     domain_orientations = domain_vectors / domain_vector_lengths[:, np.newaxis]
 
-    if fixed_targets is not None and \
-       len(fixed_targets) > 0:
+    if fixed_targets is not None and len(fixed_targets) > 0:
 
         fixed_orientations = fixed_targets - soma_center
         fixed_orientations /= np.linalg.norm(fixed_orientations, axis=1)[:, np.newaxis]
 
         # smallest angle to a fixed orientation
-        objective_function = lambda index: min(vector_angle(domain_orientations[index], fixed_orientation) \
-                                               for fixed_orientation in fixed_orientations)
+        objective_function = lambda index: min(
+            vector_angle(domain_orientations[index], fixed_orientation)
+            for fixed_orientation in fixed_orientations
+        )
 
     else:
 

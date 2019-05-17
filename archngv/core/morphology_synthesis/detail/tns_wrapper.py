@@ -7,11 +7,11 @@ import logging
 import numpy as np
 import scipy.stats
 
+from morphspatial.collision import convex_shape_with_point
+
 from tns import AstrocyteGrower
 from tns.morphmath.field import PointTarget
 from tns.morphmath.field import PointAttractionField
-
-from morphspatial.collision import convex_shape_with_point
 
 from archngv.core.types import ASTROCYTE_TO_NEURON
 

@@ -2,12 +2,12 @@
 
 import h5py
 import numpy as np
+
 from .section import Section
 from .types import pmap, emap, sconmap
 from ..util.bounding_box import BoundingBox
 from .graph.graphs import DirectedGraph
 from .transformations import remap_edge_vertices
-#from ..point_cloud import AssociativePointCloud
 
 
 class Vasculature(object):
@@ -187,7 +187,6 @@ class Vasculature(object):
         sec_objs[n_offsets - 1] = Section(last_pdata, last_rdata, last_eidx, sec_annotation)
 
         return sec_objs
-
 
     @property
     def point_graph(self):

@@ -28,10 +28,12 @@ def convex_polygon_with_overlap(centroid, points, overlap_factor):
 
     scaling_factor = np.real(r[~np.iscomplex(r)])[0]
 
-
     predicted = (scaling_factor ** 3 - (2. - scaling_factor) ** 3) / scaling_factor ** 3
 
-    L.debug('Overlap Factor: {}, Scaling Factor: {}, Predicted Overlap: {}'.format(overlap_factor, scaling_factor, predicted))
+    L.debug(
+        'Overlap Factor: %.3f, Scaling Factor: %.3f, Predicted Overlap: %.3f',
+        overlap_factor, scaling_factor, predicted
+    )
 
     return scaling_factor * (points - centroid) + centroid
 
