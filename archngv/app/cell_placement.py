@@ -21,7 +21,9 @@ def cmd(config, atlas, atlas_cache, vasculature, seed, output):
     from archngv.core.vasculature_morphology import Vasculature
     from archngv.core.cell_placement.positions import create_positions
     from archngv.core.exporters import export_cell_placement_data
+    from archngv.core.checks import assert_bbox_alignment
 
+    from archngv.core.util.bounding_box import BoundingBox
     from archngv.app.logger import LOGGER
     from archngv.app.utils import load_yaml
 
@@ -35,9 +37,16 @@ def cmd(config, atlas, atlas_cache, vasculature, seed, output):
 
     spatial_indexes = []
     if vasculature is not None:
-        spatial_indexes.append(
-            Vasculature.load(vasculature).spatial_index()
+
+        vasc = Vasculature.load(vasculature)
+
+        assert_bbox_alignment(
+            BoundingBox.from_points(vasc.points),
+            BoundingBox(voxelized_intensity.bbox[0],
+                        voxelized_intensity.bbox[1])
         )
+
+        spatial_indexes.append(vasc.spatial_index())
 
     np.random.seed(seed)
 
