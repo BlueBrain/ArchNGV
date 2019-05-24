@@ -9,7 +9,7 @@ rm -rf $BUILD_DIR && mkdir $BUILD_DIR
 pushd $BUILD_DIR
 
 snakemake \
-	--snakefile '../Snakefile' \
+	--snakefile '../../snakemake/Snakefile' \
 	--config bioname='../bioname' \
 	-- default sonata
 
