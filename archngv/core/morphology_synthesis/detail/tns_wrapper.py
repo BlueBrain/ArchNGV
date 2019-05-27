@@ -118,7 +118,8 @@ class TNSGrowerWrapper(object):
 
         # n_trunks = sample.n_neurites(self._distributions[PROCESS_TYPE]['num_trees'])
         orientations, _ = orientations_from_domain(soma_center,
-                                                   microdomain,
+                                                   microdomain.points,
+                                                   microdomain.triangles,
                                                    n_trunks,
                                                    fixed_targets=endfeet_targets)
         self._parameters[PROCESS_TYPE]['orientation'] = orientations
