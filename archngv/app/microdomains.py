@@ -27,7 +27,7 @@ def cmd(config, cell_data, atlas, atlas_cache, seed, output_dir):
         generate_microdomain_tesselation,
         convert_to_overlappping_tesselation,
     )
-    from archngv.core.util.bounding_box import BoundingBox
+    from morphspatial import BoundingBox
 
     from archngv.app.logger import LOGGER
     from archngv.app.utils import ensure_dir, load_yaml

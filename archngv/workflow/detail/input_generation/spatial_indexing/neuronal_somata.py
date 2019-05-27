@@ -7,7 +7,7 @@ import numpy
 
 from .spatial_index_adapter import spatial_index
 
-from archngv.core.util.bounding_box import BoundingBox
+from morphspatial import BoundingBox
 from voxcell import VoxelData
 
 import helpers

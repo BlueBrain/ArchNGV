@@ -2,10 +2,10 @@
 
 import h5py
 import numpy as np
+from morphspatial import BoundingBox
 
 from .section import Section
 from .types import pmap, emap, sconmap
-from ..util.bounding_box import BoundingBox
 from .graph.graphs import DirectedGraph
 from .transformations import remap_edge_vertices
 

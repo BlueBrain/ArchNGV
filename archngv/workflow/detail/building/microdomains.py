@@ -8,7 +8,7 @@ from archngv.core.exporters.export_microdomains import export_mesh
 from archngv.core.exporters.export_microdomains import export_structure
 from archngv.core.data_structures.data_cells import CellData
 from voxcell import VoxelData
-from archngv.core.util.bounding_box import BoundingBox
+from morphspatial import BoundingBox
 
 
 from . import helpers
