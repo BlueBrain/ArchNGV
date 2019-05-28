@@ -9,7 +9,7 @@ from scipy.spatial import cKDTree
 
 import morphio
 from archngv.core.types import ASTROCYTE_TO_NEURON
-
+from archngv.core.exceptions import NeuriteNotCreatedError
 
 MORPHIO_MAP = {
     'soma': morphio.SectionType.soma,
@@ -19,7 +19,7 @@ MORPHIO_MAP = {
 }
 
 
-def _morphology_unwrapped(filepath, neurite_filter=lambda s: True):
+def _morphology_unwrapped(filepath, neurite_type=None):
     """ Unwrap a MorphIO morphology into points and their
     respective section id they belong too.
 
@@ -32,11 +32,20 @@ def _morphology_unwrapped(filepath, neurite_filter=lambda s: True):
             - N-row Pandas DataFrame with section ID / segment ID / segment midpoint offset
     """
     morphology = morphio.Morphology(filepath, options=morphio.Option.nrn_order)
+    root_sections = morphology.root_sections
+
+    if neurite_type is not None:
+        root_sections = list(filter(
+            lambda s: s.type == neurite_type,
+            root_sections
+        ))
+        if not root_sections:
+            raise NeuriteNotCreatedError(neurite_type)
 
     points = []
     locations = []
 
-    for root_section in filter(neurite_filter, morphology.root_sections):
+    for root_section in root_sections:
         for section in root_section.iter():
             p0 = section.points[:-1]
             p1 = section.points[1:]
@@ -66,8 +75,7 @@ def annotate_endfoot_location(filepath, endfoot_points):
         Pandas DataFrame with section ID / segment ID / segment offset of closest astrocyte segment midpoint
     """
     endfoot_type = MORPHIO_MAP[ASTROCYTE_TO_NEURON['endfoot']]
-
-    points, locations = _morphology_unwrapped(filepath, neurite_filter=lambda s: s.type == endfoot_type)
+    points, locations = _morphology_unwrapped(filepath, neurite_type=endfoot_type)
 
     _, idx = cKDTree(points, copy_data=False).query(endfoot_points)  # pylint: disable=not-callable
 

@@ -7,8 +7,6 @@ import logging
 import numpy as np
 import scipy.stats
 
-from morphspatial.collision import convex_shape_with_point
-
 from tns import AstrocyteGrower  # pylint: disable=import-error
 from tns.morphmath.field import PointTarget  # pylint: disable=import-error
 from tns.morphmath.field import PointAttractionField  # pylint: disable=import-error
@@ -17,6 +15,7 @@ from archngv.core.types import ASTROCYTE_TO_NEURON
 
 from .ph_modification import scale_barcode
 from .domain_orientation import orientations_from_domain
+from .domain_boundary import StopAtConvexBoundary
 
 
 L = logging.getLogger(__name__)
@@ -87,13 +86,11 @@ class TNSGrowerWrapper(object):
         """
 
         if microdomain is not None:
-
-            # one point per face that belongs to that plane
-            face_points = microdomain.face_points
-            face_normals = microdomain.face_normals
-
-            collision_handle = \
-                lambda point: not convex_shape_with_point(face_points, face_normals, point)
+            collision_handle = StopAtConvexBoundary(
+                microdomain.points,
+                microdomain.triangles,
+                microdomain.face_normals
+            )
         else:
 
             collision_handle = lambda point: False
