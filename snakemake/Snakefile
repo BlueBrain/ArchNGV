@@ -40,6 +40,7 @@ rule default:
         'synaptic_data.h5',
         'endfeetome.h5',
         MORPH_DIR + '/_DONE',
+        'ngv_config.json',
 
 
 rule sonata:
@@ -319,4 +320,18 @@ rule neuroglial_connectivity_sonata:
                     'neuroglial',
                 '--output',
                     '{output}'
+        ])
+
+
+rule ngv_config:
+    output:
+        'ngv_config.json'
+
+    shell:
+        ' '.join([
+            'ngv convert ngv-config .',
+                '--bioname',
+                    BIONAME,
+                '--output',
+                    '{output}',
         ])
