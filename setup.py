@@ -74,7 +74,7 @@ setup(
                             'bluepy[sonata]>=0.13.5',
                             'Click>=7.0',
                             'morphmath>=0.0.3',
-                            'morphspatial>=0.0.6',
+                            'morphspatial>=0.0.7',
                             'spatial-index',
                             'cached-property>=1.3.1',
                             'h5py>=2.3.1',
