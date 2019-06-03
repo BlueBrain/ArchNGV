@@ -104,7 +104,7 @@ setup(
 
       entry_points={
           'console_scripts': [
-              'ngv=archngv.app.__main__:main'
+              'ngv=archngv.app.__main__:app'
           ]
       },
 

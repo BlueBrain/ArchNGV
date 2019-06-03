@@ -28,6 +28,8 @@ VASCULATURE = config['common']['vasculature']
 BASE_CIRCUIT = config['common']['base_circuit']
 BASE_CIRCUIT_SONATA = config['common']['base_circuit_sonata']
 
+NGV_APP = 'ngv -v {cmd}'
+
 
 rule default:
     input:
@@ -58,7 +60,7 @@ rule cell_placement:
 
     shell:
         ' '.join([
-            'ngv cell-placement',
+            NGV_APP.format(cmd='cell-placement'),
                 '--config',
                     bioname_path('cell_placement.yaml'),
                 '--atlas',
@@ -90,7 +92,7 @@ rule microdomains:
 
     shell:
         ' '.join([
-            'ngv microdomains',
+            NGV_APP.format(cmd='microdomains'),
                 '--config',
                     bioname_path('microdomains.yaml'),
                 '--cell-data',
@@ -115,7 +117,7 @@ rule synaptic_connectivity:
 
     shell:
         ' '.join([
-            'ngv synaptic-connectivity',
+            NGV_APP.format(cmd='synaptic-connectivity'),
                 '--circuit',
                     BASE_CIRCUIT,
                 '--output-data',
@@ -140,7 +142,7 @@ rule gliovascular_connectivity:
 
     shell:
         ' '.join([
-            'ngv gliovascular-connectivity',
+            NGV_APP.format(cmd='gliovascular-connectivity'),
                 '--config',
                     bioname_path('gliovascular_connectivity.yaml'),
                 '--cell-data',
@@ -172,7 +174,7 @@ rule neuroglial_connectivity:
 
     shell:
         ' '.join([
-            'ngv neuroglial-connectivity',
+            NGV_APP.format(cmd='neuroglial-connectivity'),
                 '--cell-data',
                     '{input[cell_data]}',
                 '--microdomains',
@@ -204,7 +206,7 @@ rule synthesis:
 
     shell:
         ' '.join([
-            'ngv synthesis',
+            NGV_APP.format(cmd='synthesis'),
                 '--config',
                     bioname_path('synthesis.yaml'),
                 '--tns-distributions',
@@ -243,7 +245,7 @@ rule endfeet_area:
 
     shell:
         ' '.join([
-            'ngv endfeet-area',
+            NGV_APP.format(cmd='endfeet-area'),
                 '--config',
                     bioname_path('endfeet_area.yaml'),
                 '--vasculature-mesh',
@@ -267,7 +269,7 @@ rule cell_data_sonata:
 
     shell:
         ' '.join([
-            'ngv convert cell-data',
+            NGV_APP.format(cmd='convert cell-data'),
                 '--input',
                     '{input}',
                 '--output',
@@ -286,7 +288,7 @@ rule assign_emodels:
 
     shell:
         ' '.join([
-            'ngv assign-emodels',
+            NGV_APP.format(cmd='assign-emodels'),
                 '--input',
                     '{input}',
                 '--output',
@@ -307,7 +309,7 @@ rule neuroglial_connectivity_sonata:
 
     shell:
         ' '.join([
-            'ngv convert neuroglial-connectivity',
+            NGV_APP.format(cmd='convert neuroglial-connectivity'),
                 '--connectivity',
                     '{input[connectivity]}',
                 '--circuit',
@@ -329,7 +331,8 @@ rule ngv_config:
 
     shell:
         ' '.join([
-            'ngv convert ngv-config .',
+            NGV_APP.format(cmd='convert ngv-config'),
+                '.',
                 '--bioname',
                     BIONAME,
                 '--output',
