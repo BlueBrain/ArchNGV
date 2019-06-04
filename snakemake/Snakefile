@@ -25,8 +25,9 @@ workflow.configfile(bioname_path('MANIFEST.yaml'))
 ATLAS = config['common']['atlas']
 ATLAS_CACHE_DIR = ".atlas"
 VASCULATURE = config['common']['vasculature']
-BASE_CIRCUIT = config['common']['base_circuit']
+
 BASE_CIRCUIT_SONATA = config['common']['base_circuit_sonata']
+BASE_CIRCUIT_CONNECTOME = config['common']['base_circuit_connectome']
 
 NGV_APP = 'ngv -v {cmd}'
 
@@ -38,8 +39,6 @@ rule default:
         'gliovascular_connectivity.h5',
         'gliovascular_data.h5',
         'neuroglial_connectivity.h5',
-        'synaptic_connectivity.h5',
-        'synaptic_data.h5',
         'endfeetome.h5',
         MORPH_DIR + '/_DONE',
         'ngv_config.json',
@@ -107,27 +106,6 @@ rule microdomains:
         ])
 
 
-rule synaptic_connectivity:
-    output:
-        data = 'synaptic_data.h5',
-        connectivity = 'synaptic_connectivity.h5'
-
-    log:
-        log_path('synaptic_connectivity')
-
-    shell:
-        ' '.join([
-            NGV_APP.format(cmd='synaptic-connectivity'),
-                '--circuit',
-                    BASE_CIRCUIT,
-                '--output-data',
-                    '{output[data]}',
-                '--output-connectivity',
-                    '{output[connectivity]}',
-                '2>&1 | tee {log}'
-        ])
-
-
 rule gliovascular_connectivity:
     input:
         cell_data = 'cell_data.h5',
@@ -163,8 +141,6 @@ rule neuroglial_connectivity:
     input:
         cell_data = 'cell_data.h5',
         microdomains = 'microdomains/overlapping_structure.h5',
-        synaptic_data = 'synaptic_data.h5',
-        synaptic_connectivity = 'synaptic_connectivity.h5',
 
     output:
         connectivity = 'neuroglial_connectivity.h5',
@@ -180,9 +156,7 @@ rule neuroglial_connectivity:
                 '--microdomains',
                     '{input[microdomains]}',
                 '--synaptic-data',
-                    '{input[synaptic_data]}',
-                '--synaptic-connectivity',
-                    '{input[synaptic_connectivity]}',
+                    BASE_CIRCUIT_CONNECTOME,
                 '--output-connectivity',
                     '{output[connectivity]}',
                 '2>&1 | tee {log}'
@@ -196,7 +170,6 @@ rule synthesis:
         gliovascular_connectivity = 'gliovascular_connectivity.h5',
         gliovascular_data = 'gliovascular_data.h5',
         neuroglial_connectivity = 'neuroglial_connectivity.h5',
-        synaptic_data = 'synaptic_data.h5',
 
     output:
         touch(MORPH_DIR + '/_DONE'),
@@ -224,7 +197,7 @@ rule synthesis:
                 '--neuroglial-connectivity',
                     '{input[neuroglial_connectivity]}',
                 '--synaptic-data',
-                    '{input[synaptic_data]}',
+                    BASE_CIRCUIT_CONNECTOME,
                 '--out-morph-dir',
                     MORPH_DIR,
                 '--parallel',

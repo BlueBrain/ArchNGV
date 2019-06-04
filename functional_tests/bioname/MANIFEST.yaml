@@ -4,6 +4,7 @@ common:
   vasculature_mesh: '/gpfs/bbp.cscs.ch/project/proj67/usr/share/test-build/src/atlas/vasculature.mesh.obj'
   base_circuit: '/gpfs/bbp.cscs.ch/project/proj67/usr/share/test-build/src/circuit/CircuitConfig'
   base_circuit_sonata: '/gpfs/bbp.cscs.ch/project/proj67/usr/share/test-build/src/circuit/sonata/circuit_config.json'
+  base_circuit_connectome: '/gpfs/bbp.cscs.ch/project/proj67/usr/share/test-build/src/circuit/sonata/networks/edges/functional/All/edges.h5'
 
 assign_emodels:
   templates_dir: '/gpfs/bbp.cscs.ch/project/proj67/entities/dev/emodels/'

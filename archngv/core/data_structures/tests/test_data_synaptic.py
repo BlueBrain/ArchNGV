@@ -1,52 +1,38 @@
 import os
-import h5py
-import pytest
-import numpy as np
+
+import numpy.testing as npt
 
 from ..data_synaptic import SynapticData
 
 
-N_SYNAPSES = 7
+TEST_FILE = os.path.join(os.path.dirname(__file__), 'data', 'synaptic_data.h5')
 
 
-class MockSynapticData(object):
-
-    synapse_coordinates = np.random.random((N_SYNAPSES, 3))
-
-    n_synapses = N_SYNAPSES
-
-    def export(self, filepath):
-        with h5py.File(filepath, 'w') as fd:
-            fd.create_dataset('synapse_coordinates', data=self.synapse_coordinates)
-
-
-@pytest.fixture(scope='session')
-def syn_path(tmpdir_factory):
-
-    directory_path = tmpdir_factory.getbasetemp()
-
-    path = os.path.join(directory_path, 'synaptic_data.h5')
-    return path
-
-
-@pytest.fixture(scope='module')
-def syn_mock(syn_path):
-
-    mock_data = MockSynapticData()
-    mock_data.export(syn_path)
-
-    return mock_data
-
-
-@pytest.fixture(scope='module')
-def syn_data(syn_path, syn_mock):
-    return SynapticData(syn_path)
-
-
-def test_n_synapses(syn_data, syn_mock):
-    assert syn_data.n_synapses == syn_mock.n_synapses
-
-
-def test_synapse_coordinates(syn_data, syn_mock):
-    assert np.allclose(syn_data.synapse_coordinates[:], syn_mock.synapse_coordinates)
-
+def test_all():
+    with SynapticData(TEST_FILE) as syn_data:
+        assert syn_data.n_synapses == 4
+        assert syn_data.n_neurons == 2
+        npt.assert_equal(
+            syn_data.afferent_gids(),
+            [0, 1, 1, 1]
+        )
+        npt.assert_equal(
+            syn_data.afferent_gids([0, 2]),
+            [0, 1]
+        )
+        npt.assert_almost_equal(
+            syn_data.synapse_coordinates(),
+            [
+                [2110., 2120., 2130.],
+                [2111., 2121., 2131.],
+                [2112., 2122., 2132.],
+                [2113., 2123., 2133.],
+            ]
+        )
+        npt.assert_almost_equal(
+            syn_data.synapse_coordinates([0, 2]),
+            [
+                [2110., 2120., 2130.],
+                [2112., 2122., 2132.],
+            ]
+        )

@@ -18,7 +18,6 @@ from archngv.app import (
     microdomains,
     gliovascular_connectivity,
     neuroglial_connectivity,
-    synaptic_connectivity,
     synthesis,
     assign_emodels,
     endfeet_area,
@@ -45,7 +44,6 @@ app.add_command(name='cell-placement', cmd=cell_placement.cmd)
 app.add_command(name='microdomains', cmd=microdomains.cmd)
 app.add_command(name='gliovascular-connectivity', cmd=gliovascular_connectivity.cmd)
 app.add_command(name='neuroglial-connectivity', cmd=neuroglial_connectivity.cmd)
-app.add_command(name='synaptic-connectivity', cmd=synaptic_connectivity.cmd)
 app.add_command(name='synthesis', cmd=synthesis.cmd)
 app.add_command(name='assign-emodels', cmd=assign_emodels.cmd)
 app.add_command(name='endfeet-area', cmd=endfeet_area.cmd)

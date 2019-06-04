@@ -6,7 +6,6 @@ import logging
 from archngv.core.data_structures.data_cells import CellData
 from archngv.core.data_structures.data_synaptic import SynapticData
 from archngv.core.data_structures.data_microdomains import MicrodomainTesselation
-from archngv.core.data_structures.connectivity_synaptic import SynapticConnectivity
 from archngv.core.connectivity.neuroglial_generation import generate_neuroglial
 from archngv.core.exporters.export_neuroglial_connectivity import export_neuroglial_connectivity
 
@@ -19,7 +18,6 @@ def create_neuroglial_connectivity(ngv_config, run_parallel):
 
     with \
         SynapticData(ngv_config.output_paths('synaptic_data')) as synaptic_data, \
-        SynapticConnectivity(ngv_config.output_paths('synaptic_connectivity')) as synaptic_connectivity, \
         CellData(ngv_config.output_paths('cell_data')) as cell_data, \
         MicrodomainTesselation(ngv_config.output_paths('overlapping_microdomain_structure')) as microdomains:
 
@@ -28,11 +26,10 @@ def create_neuroglial_connectivity(ngv_config, run_parallel):
         L.info('Generating neuroglial connectivity')
         data_iterator = generate_neuroglial(astrocyte_ids,
                                             microdomains,
-                                            synaptic_data,
-                                            synaptic_connectivity)
+                                            synaptic_data)
 
-        n_unique_synapses = synaptic_connectivity.n_synapses
-        n_unique_neurons = synaptic_connectivity.n_neurons
+        n_unique_synapses = synaptic_data.n_synapses
+        n_unique_neurons = synaptic_data.n_neurons
         n_unique_astrocytes = len(astrocyte_ids)
 
         neuroglial_connectivity_path = \

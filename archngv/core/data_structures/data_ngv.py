@@ -5,7 +5,6 @@ from cached_property import cached_property
 from voxcell import VoxelData
 
 from .data_cells import CellDataInfo
-from .data_synaptic import SynapticDataInfo
 from .data_microdomains import MicrodomainTesselationInfo
 from .data_endfeetome import Endfeetome
 
@@ -26,7 +25,7 @@ class NGVData(object):
     @cached_property
     def synapses(self):
         """ Returns synaptic data """
-        return SynapticDataInfo(self._config)
+        raise NotImplementedError
 
     @cached_property
     def vasculature(self):

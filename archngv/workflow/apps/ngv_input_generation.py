@@ -25,7 +25,6 @@ def get_arguments():
         'vasculature_spatial_index',
         'neuronal_somata_spatial_index',
         'neuronal_synapses_spatial_index',
-        'neuron_synapse_connectivity'
     ]
 
     for name in names:
@@ -44,7 +43,6 @@ def selected_steps_iterator(args):
     BStep('Vasculature Spatial Index'     , args.vasculature_spatial_index        , _inp.vasculature_spatial_index),
     BStep('Neu Somata Spatial Index'      , args.neuronal_somata_spatial_index    , _inp.neuronal_somata_spatial_index),
     BStep('Synapses Spatial Index'        , args.neuronal_synapses_spatial_index  , _inp.neuronal_synapses_spatial_index),
-    BStep('Neuron - Synapse Connectivity' , args.neuron_synapse_connectivity      , _inp.neuron_synapse_connectivity)
     ]
 
     return steps

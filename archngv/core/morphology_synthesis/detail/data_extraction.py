@@ -71,7 +71,7 @@ def obtain_synapse_data(astrocyte_index, synaptic_data_filepath, neuroglial_conn
             L.warning('No synapses found for astrocyte index %d', astrocyte_index)
             return None
 
-        positions = synaptic_data.synapse_coordinates[synapse_ids]
+        positions = synaptic_data.synapse_coordinates(synapse_ids)
 
     L.debug('Number of synapses for astro index %d: %d', astrocyte_index, len(positions))
 

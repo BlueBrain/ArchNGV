@@ -72,6 +72,7 @@ setup(
 
       install_requires = [
                             'bluepy[sonata]>=0.13.5',
+                            'cached-property>=1.5',
                             'Click>=7.0',
                             'morphmath>=0.0.3',
                             'morphspatial>=0.0.7',
@@ -79,6 +80,7 @@ setup(
                             'cached-property>=1.3.1',
                             'h5py>=2.3.1',
                             'jenkspy>=0.1.4',
+                            'libsonata>=0.0.2',
                             'morphio>=2.0.6',
                             'openmesh>=1.1.2',
                             'pandas>=0.16.2',
