@@ -80,7 +80,7 @@ setup(
                             'cached-property>=1.3.1',
                             'h5py>=2.3.1',
                             'jenkspy>=0.1.4',
-                            'libsonata>=0.0.2',
+                            'libsonata>=0.0.3',
                             'morphio>=2.0.6',
                             'openmesh>=1.1.2',
                             'pandas>=0.16.2',

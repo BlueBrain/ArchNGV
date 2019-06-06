@@ -65,7 +65,7 @@ def obtain_synapse_data(astrocyte_index, synaptic_data_filepath, neuroglial_conn
     with SynapticData(synaptic_data_filepath) as synaptic_data, \
          NeuroglialConnectivity(neuroglial_conn_filepath) as neuroglial_connectivity:
 
-        synapse_ids = sorted(neuroglial_connectivity.astrocyte.to_synapse(astrocyte_index))
+        synapse_ids = sorted(neuroglial_connectivity.astrocyte_synapses(astrocyte_index))
 
         if len(synapse_ids) == 0:
             L.warning('No synapses found for astrocyte index %d', astrocyte_index)

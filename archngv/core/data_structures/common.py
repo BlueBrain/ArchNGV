@@ -1,5 +1,19 @@
-""" H5 context manager """
+""" Commonly used context managers. """
+
 import h5py
+import libsonata
+
+from archngv.core.exceptions import NGVError
+
+
+def _open_population(h5_filepath):
+    storage = libsonata.EdgeStorage(h5_filepath)
+    populations = storage.population_names
+    if len(populations) != 1:
+        raise NGVError(
+            "Only single-population edge collections are supported (found: %d)" % len(populations)
+        )
+    return storage.open_population(list(populations)[0])
 
 
 class H5ContextManager(object):
@@ -19,3 +33,16 @@ class H5ContextManager(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         """ And exit """
         self.close()
+
+
+class EdgesContextManager(object):
+    """ Context manager for accessing SONATA Edges """
+    def __init__(self, filepath):
+        self.filepath = filepath
+
+    def __enter__(self):
+        self._impl = _open_population(self.filepath)  # pylint: disable=attribute-defined-outside-init
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        del self._impl

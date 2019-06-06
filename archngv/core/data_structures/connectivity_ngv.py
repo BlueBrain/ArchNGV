@@ -5,7 +5,6 @@ import logging
 from cached_property import cached_property
 
 from .connectivity_gliovascular import GliovascularConnectivity
-from .connectivity_neuroglial import NeuroglialConnectivity
 
 
 L = logging.getLogger(__name__)
@@ -43,8 +42,7 @@ class NGVConnectome(object):
 
     def _neuroglial(self):
         """ Get neuroglial connectivity """
-        filepath = self._config.output_paths('neuroglial_connectivity')
-        return NeuroglialConnectivity(filepath)
+        raise NotImplementedError
 
     @cached_property
     def neuroglial(self):

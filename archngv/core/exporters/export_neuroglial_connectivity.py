@@ -1,148 +1,146 @@
 """ Neuroglial connectivity expoerters functions """
 
-from builtins import range
-
 import os
-import logging
 
 import h5py
+import libsonata
 import numpy as np
+import pandas as pd
+import six
+
+from archngv.core.data_structures.connectivity_neuroglial import POPULATION_NAME
 
 
-L = logging.getLogger(__name__)
+def _create_appendable_dataset(root, name, dtype, chunksize=1000):
+    root.create_dataset(
+        name, dtype=dtype, chunks=(chunksize,), shape=(0,), maxshape=(None,)
+    )
 
 
-def export_neuroglial_connectivity(data_iterator,
-                                   n_unique_astrocytes,
-                                   n_unique_synapses,
-                                   n_unique_neurons,
-                                   neuroglial_connectivity_filepath):
+def _append_to_dataset(dset, values):
+    dset.resize(dset.shape[0] + len(values), axis=0)
+    dset[-len(values):] = values
+
+
+def export_neuroglial_connectivity(data_iterator, neurons, astrocytes, output_path):
     """
-    Write the connectivity between neurons, synapses and astrocytes to file
+    Export the connectivity between neurons and astrocytes to SONATA Edges HDF5.
+
+    Args:
+        data_iterator: iterator yielding (astrocyte_id, synapses) pair,
+            where `synapses` is pandas DataFrame with columns:
+                - 'synapse_id' (as seen in the `synaptic_data`)
+                - 'neuron_id' (postsynaptic neuron GID)
+            `astrocyte_id`s appear in increasing order.
+        neurons: voxcell.NodePopulation
+        astrocytes: voxcell.NodePopulation
+
+        output_path: path to output HDF5 file.
     """
-    with h5py.File(neuroglial_connectivity_filepath, 'w') as fd:
+    with h5py.File(output_path, 'w') as h5f:
+        h5root = h5f.create_group('/edges/%s/' % POPULATION_NAME)
+        h5group = h5root.create_group('0')
 
-        astrocyte_group = fd.create_group('/Astrocyte')
+        # 'edge_type_id' is a required attribute storing index into CSV which we don't use
+        _create_appendable_dataset(h5root, 'edge_type_id', dtype=np.int32)
 
-        astrocyte_offsets_dset = \
-            astrocyte_group.create_dataset('offsets', shape=(n_unique_astrocytes + 1, 2), dtype=np.uintp)
+        _create_appendable_dataset(h5root, 'source_node_id', dtype=np.uint64)
+        _create_appendable_dataset(h5root, 'target_node_id', dtype=np.uint64)
+        _create_appendable_dataset(h5group, 'synapse_id', dtype=np.uint64)
 
-        astrocyte_offsets_dset.attrs['column_names'] = \
-            np.array(['synapse', 'neuron'], dtype=h5py.special_dtype(vlen=str))
+        prev_astrocyte_id = -1
+        for astrocyte_id, synapses in data_iterator:
+            assert astrocyte_id < astrocytes.size, 'astrocyte ID not within expected range'
 
-        astrocyte_synapse_dset = \
-            astrocyte_group.create_dataset('synapse', shape=(n_unique_synapses * 2,),
-                                            dtype=np.uintp, chunks=(100000,), maxshape=(None,))
+            assert astrocyte_id > prev_astrocyte_id, 'astrocyte IDs do not appear in increasing order'
+            prev_astrocyte_id = astrocyte_id
 
-        astrocyte_neuron_dset = \
-            astrocyte_group.create_dataset('neuron', shape=(n_unique_neurons * 2,),
-                                            dtype=np.uintp, chunks=(1000,), maxshape=(None,))
+            if synapses.empty:
+                continue
 
-        neuron_astrocytes = [set() for _ in range(n_unique_neurons)]
+            assert synapses['neuron_id'].min() >= 0, 'neuron IDs not within expected range'
+            assert synapses['neuron_id'].max() < neurons.size, 'neuron IDs not within expected range'
 
-        synapse_offset = neuron_offset = 0
-        for index, (synapse_indices, neuronal_indices) in enumerate(data_iterator):
+            synapses = synapses.sort_values(['neuron_id', 'synapse_id'])
 
-            N = len(synapse_indices)
+            _append_to_dataset(
+                h5root['edge_type_id'],
+                np.full(len(synapses), -1, dtype=np.int32)
+            )
+            _append_to_dataset(
+                h5root['target_node_id'],
+                np.full(len(synapses), astrocyte_id, dtype=np.uint64)
+            )
+            _append_to_dataset(
+                h5root['source_node_id'],
+                synapses['neuron_id'].values
+            )
+            _append_to_dataset(
+                h5group['synapse_id'],
+                synapses['synapse_id'].values
+            )
 
-            astrocyte_synapse_dset[synapse_offset: synapse_offset + N] = synapse_indices
+        h5root['source_node_id'].attrs['node_population'] = six.text_type(neurons.name)
+        h5root['target_node_id'].attrs['node_population'] = six.text_type(astrocytes.name)
 
-            synapse_offset += N
-
-            # resize dataset
-            if synapse_offset > len(astrocyte_synapse_dset):
-                astrocyte_synapse_dset.resize((synapse_offset + 10 * N,))
-
-            ####################################################
-
-            M = len(neuronal_indices)
-
-            # resize dataset
-            if neuron_offset + M > len(astrocyte_neuron_dset):
-                astrocyte_neuron_dset.resize((neuron_offset + 10 * M,))
-
-            astrocyte_neuron_dset[neuron_offset: neuron_offset + M] = neuronal_indices
-
-            neuron_offset += M
-
-            ####################################################
-
-            astrocyte_offsets_dset[index + 1, 0] = synapse_offset
-            astrocyte_offsets_dset[index + 1, 1] = neuron_offset
-
-            for nid in neuronal_indices:
-                neuron_astrocytes[int(nid - 1)].add(index)
-
-        if len(astrocyte_synapse_dset) > synapse_offset:
-            L.info('Resizing astrocyte_synapse_dset %d -> %d', len(astrocyte_synapse_dset), synapse_offset)
-            astrocyte_synapse_dset.resize((synapse_offset,))
-
-        if len(astrocyte_neuron_dset) > neuron_offset:
-            L.info('Resizing astrocyte_synapse_dset %d -> %d', len(astrocyte_neuron_dset), neuron_offset)
-            astrocyte_neuron_dset.resize((neuron_offset,))
-
-        assert synapse_offset == len(astrocyte_synapse_dset)
-        assert neuron_offset == len(astrocyte_neuron_dset)
-
-        #######################################################
-
-        n_astrocytes = sum(len(el) for el in neuron_astrocytes)
-
-        neuron_group = fd.create_group('/Neuron')
-        neuron_offsets_dset = neuron_group.create_dataset('offsets', shape=(n_unique_neurons + 1,), dtype=np.uintp)
-        neuron_offsets_dset.attrs['column_names'] = np.array(['astrocyte'], dtype=h5py.special_dtype(vlen=str))
-        neuron_offsets_dset[0] = 0
-
-        neuron_astrocyte_dset = neuron_group.create_dataset('astrocyte', shape=(n_astrocytes,), dtype=np.uintp)
-
-        offset = 0
-        for i, astrocytes in enumerate(neuron_astrocytes):
-
-            N = len(astrocytes)
-
-            neuron_astrocyte_dset[offset: (offset + N)] = sorted(astrocytes)
-
-            offset += N
-
-            neuron_offsets_dset[i + 1] = offset
-
-        L.info('Neuroglial connectivity was written.')
+    # above, edge population has been sorted by (target_id, source_id)
+    libsonata.EdgePopulation.write_indices(
+        output_path,
+        POPULATION_NAME,
+        source_node_count=neurons.size,
+        target_node_count=astrocytes.size
+    )
 
 
-def export_synapse_morphology_association(ngv_config, cell_data):
-    """ Export the synapses that each astrocyte morphology incorporates
-    """
-    morph_dir = ngv_config.morphology_directory
+def bind_annotations(h5_filepath, astrocytes, annotation_dir):
+    """ Bind synapse annotations with closest astrocyte sections. """
+    def _load_annotations(astrocyte_id):
+        morph_name = astrocytes.attributes.loc[astrocyte_id, 'morphology']
+        filepath = os.path.join(annotation_dir, '%s_synapse_annotation.h5' % morph_name)
+        if not os.path.exists(filepath):
+            return None
+        with h5py.File(filepath, 'r') as h5f:
+            loc = h5f['synapse_location']
+            synapse_ids = h5f['synapse_id'][:]
+            assert len(np.unique(synapse_ids)) == len(synapse_ids), 'duplicate synapse IDs per astrocyte'
+            return pd.DataFrame(
+                {
+                    'section_id': loc['section_id'][:],
+                    'segment_id': loc['segment_id'][:],
+                    'segment_offset': loc['segment_offset'][:],
+                },
+                index=synapse_ids
+            )
 
-    annotation_suffix = "_synapse_annotation"
+    # TODO: read / write with `libsonata` rather than direct HDF5 access
+    with h5py.File(h5_filepath, 'a') as h5f:
+        h5root = h5f['/edges/%s' % POPULATION_NAME]
+        h5group = h5root['0']
+        h5index = h5root['indices/target_to_source']
 
-    cell_path = lambda cell_name: os.path.join(morph_dir, cell_name + annotation_suffix + '.h5')
+        edge_count = len(h5group['synapse_id'])
 
-    cell_paths = map(cell_path, cell_data.astrocyte_names[:])
+        h5group.create_dataset('morpho_section_id_post', shape=(edge_count,), dtype=np.int32)
+        h5group.create_dataset('morpho_segment_id_post', shape=(edge_count,), dtype=np.int32)
+        h5group.create_dataset('morpho_offset_segment_post', shape=(edge_count,), dtype=np.float32)
 
-    with h5py.File(ngv_config.output_paths('neuroglial_connectivity'), 'r+') as ng_conn:
+        for astrocyte_id, (r10, r11) in enumerate(h5index['node_id_to_ranges']):
+            annotations = _load_annotations(astrocyte_id)
 
-        astrocyte_group = ng_conn['Astrocyte']
+            if r10 == r11:
+                assert annotations is None, 'annotations exist for astrocyte with no synapses'
+                continue
 
-        n_synapses = ng_conn['Astrocyte']['offsets'][-1, 0]
+            assert r11 == r10 + 1, 'invalid edge range'
+            r20, r21 = h5index['range_to_edge_id'][r10]
+            assert r21 > r20, 'invalid edge range'
 
-        if 'morphology' in astrocyte_group:
-            del astrocyte_group['morphology']
+            synapse_ids = h5group['synapse_id'][r20:r21]
 
-        morphology_dset = astrocyte_group.create_dataset('morphology', shape=(n_synapses, 2), dtype=np.uintp)
+            assert annotations is not None, 'no annotations for astrocyte with synapses'
 
-        offset = 0
+            assert np.all(sorted(synapse_ids) == sorted(annotations.index)), 'annotations mismatch synapse IDs'
 
-        for cell_path in cell_paths:
-
-            L.info('Extracting location from %s', cell_path)
-
-            with h5py.File(cell_path, 'r') as fd:
-
-                synapse_locations = fd['synapse_location']
-
-                n = len(synapse_locations)
-
-                morphology_dset[offset: offset + n] = synapse_locations
-
-                offset += n
+            h5group['morpho_section_id_post'][r20:r21] = annotations.loc[synapse_ids, 'section_id']
+            h5group['morpho_segment_id_post'][r20:r21] = annotations.loc[synapse_ids, 'segment_id']
+            h5group['morpho_offset_segment_post'][r20:r21] = annotations.loc[synapse_ids, 'segment_offset']
