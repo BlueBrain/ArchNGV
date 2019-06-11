@@ -7,9 +7,8 @@ import click
 
 @click.command(help=__doc__)
 @click.option("-i", "--input", help="Path to cell data (HDF5)", required=True)
-@click.option("--population", help="Population name", required=True)
 @click.option("-o", "--output", help="Path to output file (SONATA Nodes HDF5)", required=True)
-def cmd(input, population, output):
+def cmd(input, output):
     # pylint: disable=missing-docstring,redefined-builtin
     import numpy as np
 
@@ -22,7 +21,7 @@ def cmd(input, population, output):
             data.astrocyte_gids,
             np.arange(n_cells)
         )
-        result = NodePopulation(population, size=n_cells)
+        result = NodePopulation('glia', size=n_cells)
         result.positions = data.astrocyte_positions[:]
         result.attributes['radius'] = data.astrocyte_radii[:]
         result.attributes['morphology'] = data.astrocyte_names[:]

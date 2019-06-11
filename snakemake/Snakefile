@@ -246,9 +246,7 @@ rule cell_data_sonata:
                 '--input',
                     '{input}',
                 '--output',
-                    '{output}',
-                '--population',
-                    'glia',
+                    '{output}'
         ])
 
 
@@ -291,8 +289,6 @@ rule neuroglial_connectivity_sonata:
                     '{input[astrocytes]}',
                 '--morph-dir',
                     MORPH_DIR,
-                '--population',
-                    'neuroglial',
                 '--output',
                     '{output}'
         ])

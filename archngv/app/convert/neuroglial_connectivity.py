@@ -122,9 +122,8 @@ def _write_edge_population(df, name, source, target, filepath):
 @click.option("--morph-dir", help="Path to astrocyte morphologies folder", required=True)
 @click.option("--connectivity", help="Path to neuroglial connectivity HDF5", required=True)
 @click.option("--circuit", help="Path to base circuit config (SONATA)", required=True)
-@click.option("--population", help="Population name", required=True)
 @click.option("-o", "--output", help="Path to output file (SONATA Edges)", required=True)
-def cmd(astrocytes, morph_dir, connectivity, circuit, population, output):
+def cmd(astrocytes, morph_dir, connectivity, circuit, output):
     # pylint: disable=missing-docstring
     from bluepy.sonata import Circuit
     from voxcell.sonata import NodePopulation
@@ -147,7 +146,7 @@ def cmd(astrocytes, morph_dir, connectivity, circuit, population, output):
     df.sort_values(['target_node_id', 'source_node_id', 'synapse_id'], inplace=True)
     _write_edge_population(
         df,
-        name=population,
+        name='neuroglial',
         source=connectome.target,
         target=astrocytes,
         filepath=output
