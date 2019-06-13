@@ -25,9 +25,12 @@ def _extract_connectivity(h5f, connectome):
     from bluepy.sonata.connectome import POST_GID
 
     result = pd.DataFrame()
-    synapse_ids = h5f['/Astrocyte/synapse'][:].astype(np.uint64)
-    result['synapse_id'] = synapse_ids
-    result['source_node_id'] = connectome.synapse_properties(synapse_ids, POST_GID).values.astype(np.uint64)
+    synapse_ids = h5f['/Astrocyte/synapse'][:]
+    neuron_ids = connectome.synapse_properties(synapse_ids, POST_GID).values
+    # use zero-based IDs
+    neuron_ids -= connectome.target._id_offset  # pylint: disable=protected-access
+    result['synapse_id'] = synapse_ids.astype(np.uint64)
+    result['source_node_id'] = neuron_ids.astype(np.uint64)
     result['target_node_id'] = _astrocyte_ids(len(result), h5f['/Astrocyte/offsets'][:, 0])
     return result
 
