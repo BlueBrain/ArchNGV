@@ -46,8 +46,8 @@ rule default:
 
 rule sonata:
     input:
-        'sonata/glia.nodes.h5',
-        'sonata/neuroglial.edges.h5',
+        'sonata/nodes/glia.h5',
+        'sonata/edges/neuroglial.h5',
 
 
 rule cell_placement:
@@ -238,7 +238,7 @@ rule cell_data_sonata:
         'cell_data.h5',
 
     output:
-        'sonata/glia.morphologies.nodes.h5'
+        'sonata.tmp/nodes/glia.h5.somata'
 
     shell:
         ' '.join([
@@ -252,10 +252,10 @@ rule cell_data_sonata:
 
 rule assign_emodels:
     input:
-        'sonata/glia.morphologies.nodes.h5'
+        'sonata.tmp/nodes/glia.h5.somata'
 
     output:
-        'sonata/glia.nodes.h5'
+        'sonata/nodes/glia.h5'
 
     shell:
         ' '.join([
@@ -272,11 +272,11 @@ rule assign_emodels:
 rule neuroglial_connectivity_sonata:
     input:
         connectivity = 'neuroglial_connectivity.h5',
-        astrocytes = 'sonata/glia.nodes.h5',
+        astrocytes = 'sonata.tmp/nodes/glia.h5.somata',
         morphologies = MORPH_DIR + '/_DONE',
 
     output:
-        'sonata/neuroglial.edges.h5'
+        'sonata/edges/neuroglial.h5'
 
     shell:
         ' '.join([

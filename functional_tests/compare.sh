@@ -39,7 +39,8 @@ function morph_compare_all() {
 
 h5_compare_all "."
 h5_compare_all "./microdomains"
-h5_compare_all "./sonata"
+h5_compare_all "./sonata/nodes"
+h5_compare_all "./sonata/edges"
 
 morph_compare_all "./morphologies"
 
