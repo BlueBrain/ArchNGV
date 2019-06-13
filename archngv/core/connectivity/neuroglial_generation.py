@@ -30,12 +30,12 @@ def astrocyte_neuroglial_connectivity(microdomain, synapses_spatial_index, synap
     return synapses_ids, neuron_ids
 
 
-def generate_neuroglial(astrocyte_ids, microdomains, synaptic_data):
+def generate_neuroglial(astrocytes, microdomains, synaptic_data):
     """ Yields the connectivity of the astrocyte ids with synapses and neurons
 
     Args:
 
-        astrocyte_ids: array[int, (N,)]
+        astrocytes: voxcell.NodePopulation
         microdomains: MicrodomainTesselation
         synaptic_data: SynapticData
     """
@@ -44,7 +44,7 @@ def generate_neuroglial(astrocyte_ids, microdomains, synaptic_data):
 
     index = point_rtree(synapse_coordinates)
 
-    for astrocyte_index in astrocyte_ids:
+    for astrocyte_index in numpy.arange(astrocytes.size):
 
         domain = microdomains[astrocyte_index]
 

@@ -139,7 +139,7 @@ rule gliovascular_connectivity:
 
 rule neuroglial_connectivity:
     input:
-        cell_data = 'cell_data.h5',
+        astrocytes = 'sonata/nodes/glia.h5',
         microdomains = 'microdomains/overlapping_structure.h5',
 
     output:
@@ -151,8 +151,8 @@ rule neuroglial_connectivity:
     shell:
         ' '.join([
             NGV_APP.format(cmd='neuroglial-connectivity'),
-                '--cell-data',
-                    '{input[cell_data]}',
+                '--astrocytes',
+                    '{input[astrocytes]}',
                 '--microdomains',
                     '{input[microdomains]}',
                 '--synaptic-data',
