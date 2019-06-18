@@ -31,6 +31,7 @@ BASE_CIRCUIT_CELLS = config['common']['base_circuit_cells']
 BASE_CIRCUIT_CONNECTOME = config['common']['base_circuit_connectome']
 
 NGV_APP = 'ngv -v {cmd}'
+PARALLEL = True
 
 
 rule default:
@@ -202,7 +203,7 @@ rule synthesis:
                     BASE_CIRCUIT_CONNECTOME,
                 '--out-morph-dir',
                     MORPH_DIR,
-                '--parallel',
+                ('--parallel' if PARALLEL else ''),
                 '2>&1 | tee {log}'
         ])
 
@@ -231,6 +232,7 @@ rule endfeet_area:
                     '{input[gliovascular_data]}',
                 '--output',
                     '{output}',
+                ('--parallel' if PARALLEL else ''),
                 '2>&1 | tee {log}'
         ])
 
