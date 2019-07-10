@@ -4,10 +4,10 @@ import h5py
 import numpy as np
 from morphspatial import BoundingBox
 
-from .section import Section
-from .types import pmap, emap, sconmap
-from .graph.graphs import DirectedGraph
-from .transformations import remap_edge_vertices
+from archngv.core.data_structures.vasculature_morphology.section import Section
+from archngv.core.data_structures.vasculature_morphology.types import pmap, emap, sconmap
+from archngv.core.data_structures.vasculature_morphology.graph.graphs import DirectedGraph
+from archngv.core.data_structures.vasculature_morphology.transformations import remap_edge_vertices
 
 
 class Vasculature(object):

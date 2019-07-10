@@ -1,8 +1,9 @@
-import sys
-import logging
-from archngv import NGVConfig
-from archngv.data_structures.ngv_data import CellData
-from archngv.exporters.export_neuroglial_connectivity import export_synapse_morphology_association
+import sys # TODO: Remove
+import logging # TODO: Remove
+from archngv import NGVConfig # TODO: Remove
+from archngv.core.data_structures.data_cells import CellData
+from archngv.core.exporters.export_neuroglial_connectivity \
+    import export_synapse_morphology_association # TODO: does not exist
 
 
 def associate_synapses_with_morphology(cfg):

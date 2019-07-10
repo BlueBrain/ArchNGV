@@ -1,6 +1,6 @@
 import numpy as np
 
-from .. import graph_targeting as _gt
+from archngv.core.connectivity.detail.gliovascular_generation import graph_targeting as _gt
 
 
 def parametric_line(start, u_dir, t):

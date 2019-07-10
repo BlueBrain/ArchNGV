@@ -3,7 +3,7 @@ and the vasculature
 """
 import numpy as np
 
-from .common import H5ContextManager
+from archngv.core.data_structures.common import H5ContextManager
 
 
 class GliovascularConnectivity(H5ContextManager):

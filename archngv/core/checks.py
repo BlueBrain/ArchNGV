@@ -2,7 +2,7 @@
 """
 import logging
 import numpy as np
-from .exceptions import NotAlignedError
+from archngv.core.exceptions import NotAlignedError
 
 
 L = logging.getLogger(__name__)

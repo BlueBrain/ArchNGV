@@ -2,8 +2,8 @@ import os
 import pytest
 import numpy as np
 
-from ..data_endfeetome import Endfeetome
-from ...exporters.export_endfeet_areas import export_endfeet_areas
+from archngv.core.data_structures.data_endfeetome import Endfeetome
+from archngv.core.exporters.export_endfeet_areas import export_endfeet_areas
 
 
 N_ENDFEET = 11

@@ -7,13 +7,13 @@ import numpy as np
 
 from scipy import stats
 
-from .detail.endfoot import create_endfoot_from_global_data  # pylint: disable=no-name-in-module
-from .detail.area_fitting import fit_area  # pylint: disable=no-name-in-module
-from .detail.fmm_growing import FastMarchingEikonalSolver  # pylint: disable=no-name-in-module
+# pylint: disable=no-name-in-module
+from archngv.core.endfeet_area_reconstruction.detail.endfoot import create_endfoot_from_global_data
+from archngv.core.endfeet_area_reconstruction.detail.area_fitting import fit_area
+from archngv.core.endfeet_area_reconstruction.detail.fmm_growing import FastMarchingEikonalSolver
 
-from ..data_structures import GliovascularData
-from ..data_structures import GliovascularConnectivity
-
+from archngv.core.data_structures.data_gliovascular import GliovascularData
+from archngv.core.data_structures.connectivity_gliovascular import GliovascularConnectivity
 
 L = logging.getLogger(__name__)
 
@@ -45,15 +45,13 @@ def _dispatch_data(n_cells,
 
         for endfoot_index in range(n_cells):
 
-            vasculature_mesh_vertices = mark_indices[
-                mark_offsets[endfoot_index]:mark_offsets[endfoot_index + 1]
-            ]
+            slice_ = slice(mark_offsets[endfoot_index], mark_offsets[endfoot_index + 1])
+            vasculature_mesh_vertices = mark_indices[slice_]
 
-            endfoot_data = {
-                                'index': endfoot_index,
-                                'astrocyte_index': gv_conn.endfoot.to_astrocyte(endfoot_index),
-                                'vasculature_mesh_vertices': vasculature_mesh_vertices.astype(np.uintp)
-            }
+            endfoot_data = {'index': endfoot_index,
+                            'astrocyte_index': gv_conn.endfoot.to_astrocyte(endfoot_index),
+                            'vasculature_mesh_vertices': vasculature_mesh_vertices.astype(np.uintp)
+                            }
 
             if target_areas is not None:
                 endfoot_data['target_area'] = target_areas[endfoot_index]
@@ -81,7 +79,6 @@ def process_endfoot(endfoot_data):
     if endfoot.number_of_triangles > 3:
 
         if 'target_area' in endfoot_data:
-
             endfoot.extra = {
                 'vertex': {
                     'travel_times': travel_times[endfoot.vasculature_vertices]
@@ -115,10 +112,10 @@ def run_fast_marching_method(mesh, endfeet_points, max_area):
     threshold_radius = np.sqrt(max_area / 3.1415)
 
     solver = FastMarchingEikonalSolver(
-                                           mesh,
-                                           endfeet_points,
-                                           threshold_radius
-                                      )
+        mesh,
+        endfeet_points,
+        threshold_radius
+    )
     solver.solve()
 
     L.info('Extract travel times..')
@@ -189,7 +186,6 @@ def endfeet_area_generation(mesh,
     L.info('Processing Endfeet..')
 
     if parallel:
-
         n_processes = multiprocessing.cpu_count()
 
         pool = multiprocessing.Pool(processes=n_processes)
@@ -217,7 +213,8 @@ def endfeet_area_extraction(area_distribution_dict, n_endfeet):
 
     elif entry_type == 'distribution':
 
-        endfeet_areas = getattr(stats, entry_data[0])(*(float(entry_data[1]), float(entry_data[2]))).rvs(n_endfeet)
+        endfeet_areas = getattr(stats, entry_data[0])(*(float(entry_data[1]),
+                                                        float(entry_data[2]))).rvs(n_endfeet)
         L.info('Area constraints entry is a distribution. Sampling...')
 
     else:

@@ -1,6 +1,6 @@
 """ Contains Section class """
 
-from .types import emap, pmap
+from archngv.core.data_structures.vasculature_morphology.types import emap, pmap
 
 
 class Section(object):

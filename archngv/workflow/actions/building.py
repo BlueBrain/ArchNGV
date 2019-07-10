@@ -1,4 +1,4 @@
-from .log_actions import log_start_end, log_elapsed_time
+from archngv.workflow.actions.log_actions import log_start_end, log_elapsed_time
 
 
 @log_start_end

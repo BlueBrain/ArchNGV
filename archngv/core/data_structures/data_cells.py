@@ -6,7 +6,7 @@ import os
 
 import numpy as np
 
-from .common import H5ContextManager
+from archngv.core.data_structures.common import H5ContextManager
 
 
 class CellData(H5ContextManager):
@@ -63,6 +63,11 @@ class CellDataInfo(CellData):
 
     def morphology_object(self, astrocyte_index):
         """ Readonly morphology object using morphio
+        Returns:
+            A morphio read only object
+
+        Notes:
+            You need to pip install archngv[core] or archngv[all] to have access to this feature
         """
         from morphio import Morphology
         return Morphology(self.morphology_path(astrocyte_index))

@@ -3,8 +3,9 @@ import logging
 import resource
 from getpass import getuser
 
-from archngv.data_structures.ngv_data import SynapticData
-
+from archngv.core.data_structures.data_synaptic import SynapticData
+from archngv.workflow.detail.input_generation.spatial_indexing.\
+    spatial_index_adapter import spatial_index
 
 L = logging.getLogger(__name__)
 
@@ -36,7 +37,7 @@ def create_synapses_spatial_index(ngv_config, map_func):
 
     with SynapticData(ngv_config.output_paths('synaptic_data')) as syn_data:
 
-        L.info('Number of Synapses: {}'.format(len(syn_data.synapse_coordinates)))
+        L.info('Number of Synapses: {}'.format(len(syn_data.synapse_coordinates())))
 
         L.info('Target path: {}'.format(filepath))
         L.info('Creating the spatial index on SSDs: {}'.format(intermediate_ssd_target))

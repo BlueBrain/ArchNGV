@@ -3,7 +3,8 @@ import sys
 
 import bluepy
 from archngv import NGVConfig
-from archngv.core.exporters.export_neuronal_somata_geometries import extract_neuronal_somata_information
+from archngv.core.exporters.\
+    export_neuronal_somata_geometries import extract_neuronal_somata_information
 
 
 def extract_neuronal_geometry(ngv_config, run_parallel):

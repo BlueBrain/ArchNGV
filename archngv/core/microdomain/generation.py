@@ -9,8 +9,8 @@ import tess
 
 from morphspatial import ConvexPolygon
 
-from .tesselation import MicrodomainTesselation
-from .overlap import convex_polygon_with_overlap
+from archngv.core.microdomain.tesselation import MicrodomainTesselation
+from archngv.core.microdomain.overlap import convex_polygon_with_overlap
 
 
 L = logging.getLogger(__name__)

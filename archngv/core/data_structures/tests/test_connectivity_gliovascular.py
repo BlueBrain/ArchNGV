@@ -4,8 +4,8 @@ import pytest
 import numpy as np
 from unittest.mock import Mock
 
-from ...exporters.export_gliovascular_connectivity import export_gliovascular_connectivity
-from ..connectivity_gliovascular import GliovascularConnectivity
+from archngv.core.exporters.export_gliovascular_connectivity import export_gliovascular_connectivity
+from archngv.core.data_structures.connectivity_gliovascular import GliovascularConnectivity
 
 
 N_ASTROCYTES = 10

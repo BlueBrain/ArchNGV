@@ -3,8 +3,8 @@
 import numpy as np
 import scipy as sp
 
-from .adjacency import AdjacencyMatrix
-from .incidence import IncidenceMatrix
+from archngv.core.data_structures.vasculature_morphology.graph.adjacency import AdjacencyMatrix
+from archngv.core.data_structures.vasculature_morphology.graph.incidence import IncidenceMatrix
 
 
 class BaseGraph(object):

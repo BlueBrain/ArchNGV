@@ -1,4 +1,4 @@
-from ..export import export_cell_placement_data
+from archngv.core.cell_placement.export import export_cell_placement_data
 
 import os
 import logging

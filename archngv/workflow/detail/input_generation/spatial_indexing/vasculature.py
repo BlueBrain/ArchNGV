@@ -1,7 +1,6 @@
-import os
 import logging
 
-from archngv.core.vasculature_morphology import Vasculature
+from archngv.core.data_structures.vasculature_morphology import Vasculature
 
 from .spatial_index_adapter import spatial_index
 

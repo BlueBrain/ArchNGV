@@ -1,7 +1,8 @@
-from .. import generation
 from unittest.mock import patch, Mock, PropertyMock
 from voxcell import VoxelData
 import numpy as np
+
+import archngv.core.cell_placement.generation as generation
 
 
 class MockEnergy:

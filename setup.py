@@ -7,11 +7,10 @@ from setuptools import Extension
 from setuptools import find_packages
 from setuptools.command.build_ext import build_ext as build_ext
 
-
 VERSION = imp.load_source("archngv.version", "archngv/version.py").VERSION
 
-def create_extensions(directory):
 
+def create_extensions(directory):
     def scandir(directory, files=[]):
 
         for f in os.listdir(directory):
@@ -28,9 +27,9 @@ def create_extensions(directory):
     extensions = []
 
     for filepath in scandir(directory):
-
         dotted_path = filepath.replace(os.path.sep, '.')[:-4]
-        extension = Extension(dotted_path, sources=[filepath], language='c++', extra_compile_args=["--std=c++11", "-O2"])
+        extension = Extension(dotted_path, sources=[filepath], language='c++',
+                              extra_compile_args=["--std=c++11", "-O2"])
         extensions.append(extension)
 
     return extensions
@@ -38,8 +37,8 @@ def create_extensions(directory):
 
 class CustomBuildExtCommand(build_ext):
     """build_ext command for use when numpy headers are needed."""
-    def run(self):
 
+    def run(self):
         # Import numpy here, only when headers are needed
         import numpy
 
@@ -50,67 +49,65 @@ class CustomBuildExtCommand(build_ext):
         build_ext.run(self)
 
 
+EXTRA_CORE = [
+    'morphmath>=0.0.3',
+    'tess>=0.2.2',
+    'tmd>=2.0.4',
+    'morphio>=2.0.6',
+    'numpy-stl>=2.7',
+    'trimesh>=2.21.15',
+    'pandas>=0.16.2',
+]
+
+EXTRA_ALL = [
+    'bluepy[sonata]>=0.13.5',
+    'Click>=7.0',
+    'jenkspy>=0.1.4',
+    'openmesh>=1.1.2',
+    'pyyaml>=3.0',
+    # TODO 'tns>=??',
+]
+
 setup(
     classifiers=[
         'Programming Language :: Python :: 3.6',
     ],
-
-      name = 'archngv',
-
-      version = VERSION,
-
-      description = 'NGV Architecture Modules',
-
-      author ='Eleftherios Zisis',
-
-      author_email = 'eleftherios.zisis@epfl.ch',
-
-      setup_requires = [
-                            'numpy>=1.13',
-                            'cython>=0.25.2'
-      ],
-
-      install_requires = [
-                            'bluepy[sonata]>=0.13.5',
-                            'cached-property>=1.5',
-                            'Click>=7.0',
-                            'morphmath>=0.0.3',
-                            'morphspatial>=0.0.7',
-                            'spatial-index',
-                            'cached-property>=1.3.1',
-                            'h5py>=2.3.1',
-                            'jenkspy>=0.1.4',
-                            'libsonata>=0.0.3',
-                            'morphio>=2.0.6',
-                            'openmesh>=1.1.2',
-                            'pandas>=0.16.2',
-                            'pyyaml>=3.0',
-                            'numpy-stl>=2.7',
-                            'scipy>=1.0.0',
-                            'tess>=0.2.2',
-                            'tmd>=2.0.4',
-                            # TODO 'tns>=??',
-                            'trimesh>=2.21.15',
-                            'voxcell[sonata]>=2.6',
-      ],
-
-      packages = find_packages(),
-
-      scripts = [
-                  'archngv/workflow/apps/ngv_initialize_directories.py',
-                  'archngv/workflow/apps/ngv_input_generation.py',
-                  'archngv/workflow/apps/ngv_main_workflow.py',
-                  'archngv/workflow/apps/ngv_preprocessing.py',
-                  'archngv/workflow/apps/ngv_postprocessing.py'
-      ],
-
-      entry_points={
-          'console_scripts': [
-              'ngv=archngv.app.__main__:app'
-          ]
-      },
-
-      cmdclass = {'build_ext': CustomBuildExtCommand},
-      ext_modules = create_extensions('archngv'),
-      include_package_data = True
+    name='archngv',
+    version=VERSION,
+    description='NGV Architecture Modules',
+    author='Eleftherios Zisis',
+    author_email='eleftherios.zisis@epfl.ch',
+    setup_requires=[
+        'numpy>=1.13',
+        'cython>=0.25.2'
+    ],
+    install_requires=[
+        'libsonata>=0.0.3',
+        'h5py>=2.3.1',
+        'cached-property>=1.5',
+        'morphspatial>=0.0.7',
+        'voxcell[sonata]>=2.6',
+        'scipy>=1.0.0',
+        'spatial-index>=0.0.1',
+    ],
+    extras_require={
+        'all': EXTRA_CORE + EXTRA_ALL,
+        'core': EXTRA_CORE,
+    },
+    packages=find_packages(),
+    scripts=[
+        'archngv/workflow/apps/ngv_initialize_directories.py',
+        'archngv/workflow/apps/ngv_input_generation.py',
+        'archngv/workflow/apps/ngv_main_workflow.py',
+        'archngv/workflow/apps/ngv_preprocessing.py',
+        'archngv/workflow/apps/ngv_postprocessing.py'
+    ],
+    entry_points={
+        'console_scripts': [
+            'ngv=archngv.app.__main__:app'
+        ]
+    },
+    cmdclass={'build_ext': CustomBuildExtCommand},
+    ext_modules=create_extensions('archngv'),
+    include_package_data=True
 )

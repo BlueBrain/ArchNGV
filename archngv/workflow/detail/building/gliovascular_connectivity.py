@@ -1,16 +1,12 @@
-import h5py
 import logging
 import numpy as np
 
-from voxcell import VoxelData
-from archngv.core.vasculature_morphology import Vasculature
+from archngv.core.data_structures.vasculature_morphology import Vasculature
 from archngv.core.connectivity.gliovascular_generation import generate_gliovascular
 from archngv.core.data_structures.data_cells import CellData
 from archngv.core.data_structures.data_microdomains import MicrodomainTesselation
 from archngv.core.exporters import export_gliovascular_data
 from archngv.core.exporters import export_gliovascular_connectivity
-
-from . import helpers
 
 L = logging.getLogger(__name__)
 

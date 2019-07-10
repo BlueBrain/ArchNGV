@@ -2,7 +2,7 @@
 Data structures required for gliovascular connectivity
 """
 import os
-from .common import H5ContextManager
+from archngv.core.data_structures.common import H5ContextManager
 
 
 class GliovascularData(H5ContextManager):
@@ -47,6 +47,12 @@ class GliovascularDataInfo(GliovascularData):
 
     def endfoot_mesh_object(self, endfoot_index):
         """ stl object of the endfoot mesh
+
+        Returns:
+            A numpy-stl mesh for the endfoot_index
+
+        Notes:
+            You need to pip install archngv[core] or archngv[all] to have access to this feature
         """
         import stl
         return stl.Mesh.from_file(self.endfoot_mesh_path(endfoot_index))

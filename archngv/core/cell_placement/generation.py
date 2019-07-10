@@ -8,7 +8,7 @@ from collections import namedtuple
 
 import numpy as np
 
-from .pattern import SpatialSpherePattern
+from archngv.core.cell_placement.pattern import SpatialSpherePattern
 
 
 L = logging.getLogger(__name__)

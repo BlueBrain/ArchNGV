@@ -3,7 +3,7 @@ import numpy
 
 from morphspatial import ConvexPolygon
 
-from ...vasculature_morphology import Vasculature
+from archngv.core.data_structures.vasculature_morphology.vasculature import Vasculature
 #from ..gliovascular_core import Gliovascular
 
 #from archngv.util.graph.graphs import DirectedGraph

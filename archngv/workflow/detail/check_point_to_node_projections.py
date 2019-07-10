@@ -8,7 +8,7 @@ L = logging.getLogger(__name__)
 
 def create_endfeet_areas(ngv_config, map_func):
 
-    from archngv.data_structures.ngv_data import GliovascularData
+    from archngv.core.data_structures.data_gliovascular import GliovascularData
     from scipy.spatial import cKDTree
     import openmesh
 

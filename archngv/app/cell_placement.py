@@ -18,7 +18,7 @@ def cmd(config, atlas, atlas_cache, vasculature, seed, output):
 
     from voxcell.nexus.voxelbrain import Atlas
 
-    from archngv.core.vasculature_morphology import Vasculature
+    from archngv.core.data_structures.vasculature_morphology import Vasculature
     from archngv.core.cell_placement.positions import create_positions
     from archngv.core.exporters import export_cell_placement_data
     from archngv.core.checks import assert_bbox_alignment

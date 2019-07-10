@@ -1,7 +1,7 @@
 """ Data structures for connectivity between neurons and astrocytes
 """
 
-from .common import EdgesContextManager
+from archngv.core.data_structures.common import EdgesContextManager
 
 
 POPULATION_NAME = 'neuroglial'

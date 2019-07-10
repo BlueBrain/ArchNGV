@@ -1,18 +1,12 @@
-import os
-import h5py
 import logging
-from . import helpers
-from getpass import getuser
+from archngv.workflow.detail.building import helpers
 from voxcell import VoxelData
 
 import numpy as np
 
-from archngv.core.vasculature_morphology import Vasculature
+from archngv.core.data_structures.vasculature_morphology import Vasculature
 from archngv.core.cell_placement.positions import create_positions
 from archngv.core.exporters import export_cell_placement_data
-
-from spatial_index import sphere_rtree
-
 
 L = logging.getLogger(__name__)
 

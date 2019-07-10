@@ -4,8 +4,8 @@ from collections import namedtuple
 
 import numpy as np
 
-from ..data_microdomains import MicrodomainTesselation
-from ...exporters.export_microdomains import export_structure
+from archngv.core.data_structures.data_microdomains import MicrodomainTesselation
+from archngv.core.exporters.export_microdomains import export_structure
 
 
 N_CELLS = 5

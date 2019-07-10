@@ -10,6 +10,7 @@ import multiprocessing
 from scipy import stats
 from scipy.spatial import cKDTree
 
+# TODO: these imports below are not pointing to anything
 from archngv.synthesis.endfeet_reconstruction.endfoot import create_endfoot_from_global_data
 
 from archngv.synthesis.endfeet_reconstruction.fmm_growing import FastMarchingEikonalSolver

@@ -8,12 +8,12 @@ import numpy as np  # pylint: disable=unused-import
 
 from tns.spatial.point_cloud import PointCloud  # pylint: disable=import-error
 
-from .detail.annotation import export_endfoot_location
-from .detail.annotation import export_synapse_location
-from .detail.data_extraction import obtain_endfeet_data
-from .detail.data_extraction import obtain_synapse_data
-from .detail.data_extraction import obtain_cell_properties
-from .detail.tns_wrapper import TNSGrowerWrapper
+from archngv.core.morphology_synthesis.detail.annotation import export_endfoot_location
+from archngv.core.morphology_synthesis.detail.annotation import export_synapse_location
+from archngv.core.morphology_synthesis.detail.data_extraction import obtain_endfeet_data
+from archngv.core.morphology_synthesis.detail.data_extraction import obtain_synapse_data
+from archngv.core.morphology_synthesis.detail.data_extraction import obtain_cell_properties
+from archngv.core.morphology_synthesis.detail.tns_wrapper import TNSGrowerWrapper
 
 
 L = logging.getLogger(__name__)

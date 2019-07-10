@@ -4,11 +4,10 @@ from cached_property import cached_property
 
 from voxcell import VoxelData
 
-from .data_cells import CellDataInfo
-from .data_microdomains import MicrodomainTesselationInfo
-from .data_endfeetome import Endfeetome
-
-from ..vasculature_morphology import Vasculature
+from archngv.core.data_structures.data_cells import CellDataInfo
+from archngv.core.data_structures.data_microdomains import MicrodomainTesselationInfo
+from archngv.core.data_structures.data_endfeetome import Endfeetome
+from archngv.core.data_structures.vasculature_morphology.vasculature import Vasculature
 
 
 class NGVData(object):

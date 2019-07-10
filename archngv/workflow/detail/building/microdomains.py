@@ -11,7 +11,7 @@ from voxcell import VoxelData
 from morphspatial import BoundingBox
 
 
-from . import helpers
+# from . import helpers
 
 
 L = logging.getLogger(__name__)

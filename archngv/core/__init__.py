@@ -1,5 +1,4 @@
 """ Core modules of ArchNGV
 """
 
-from .data_structures import *
-from .vasculature_morphology import Vasculature
+from archngv.core.data_structures import *

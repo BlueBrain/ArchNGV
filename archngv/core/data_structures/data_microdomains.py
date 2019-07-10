@@ -3,8 +3,9 @@ Data structures for accessing information of astrocytic microdomains
 """
 import os
 import numpy as np
+from morphspatial import ConvexPolygon
 
-from .common import H5ContextManager
+from archngv.core.data_structures.common import H5ContextManager
 
 
 class MicrodomainTesselation(H5ContextManager):
@@ -87,7 +88,6 @@ class MicrodomainTesselation(H5ContextManager):
     def domain_object(self, astrocyte_index):
         """ Microdomain as a ConvexPolygon object.
         """
-        from morphspatial import ConvexPolygon
         return ConvexPolygon(self.domain_points(astrocyte_index),
                              self.domain_triangles(astrocyte_index))
 
@@ -120,6 +120,13 @@ class MicrodomainTesselationInfo(MicrodomainTesselation):
         return os.path.join(self._config.microdomains_directory, '{}.stl'.format(astrocyte_index))
 
     def domain_mesh_object(self, astrocyte_index):
-        """ Microdomain mesh object """
+        """ Microdomain mesh object
+
+        Returns:
+            A numpy-stl mesh for the astrocyte_index
+
+        Notes:
+            You need to pip install archngv[core] or archngv[all] to have access to this feature
+        """
         import stl
         return stl.Mesh.from_file(self.domain_mesh_path(astrocyte_index))

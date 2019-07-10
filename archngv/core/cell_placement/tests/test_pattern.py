@@ -1,4 +1,4 @@
-from ..pattern import SpatialSpherePattern
+from archngv.core.cell_placement.pattern import SpatialSpherePattern
 
 
 def test_constructor():

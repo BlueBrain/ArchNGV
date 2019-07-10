@@ -1,4 +1,4 @@
-
+import os
 import h5py
 import logging
 import numpy as np
@@ -21,7 +21,7 @@ def rewrite_vasculature(ngv_config, map_func):
 
     L.info('Writing Mesh')
 
-    ext = os.path.splittext(filepath)
+    ext = os.path.splitext(filepath)[-1]
 
     new_filepath = filepath.replace(ext, '_fixed' + ext)
 

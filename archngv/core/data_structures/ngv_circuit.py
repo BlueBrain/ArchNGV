@@ -2,8 +2,8 @@
 
 import logging
 
-from .data_ngv import NGVData
-from .connectivity_ngv import NGVConnectome
+from archngv.core.data_structures.data_ngv import NGVData
+from archngv.core.data_structures.connectivity_ngv import NGVConnectome
 
 
 L = logging.getLogger(__name__)

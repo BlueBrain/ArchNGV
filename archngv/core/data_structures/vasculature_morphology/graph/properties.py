@@ -2,7 +2,7 @@
 
 import numpy as _np
 import scipy as _sp
-from .graphs import DirectedGraph as _DiGraph
+from archngv.core.data_structures.vasculature_morphology.graph.graphs import DirectedGraph as _DiGraph
 
 _terms_mask = lambda graph: degrees(graph) == 1
 _forks_mask = lambda graph: outdegrees(graph) >= 2

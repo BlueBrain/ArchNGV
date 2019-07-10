@@ -21,7 +21,7 @@ def cmd(config, cell_data, microdomains, vasculature, seed, output_data, output_
     from archngv.core.data_structures.data_cells import CellData
     from archngv.core.data_structures.data_microdomains import MicrodomainTesselation
     from archngv.core.exporters import export_gliovascular_data, export_gliovascular_connectivity
-    from archngv.core.vasculature_morphology import Vasculature
+    from archngv.core.data_structures.vasculature_morphology import Vasculature
 
     from archngv.app.logger import LOGGER
     from archngv.app.utils import load_yaml

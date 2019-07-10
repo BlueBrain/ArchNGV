@@ -4,7 +4,7 @@ import logging
 
 from cached_property import cached_property
 
-from .connectivity_gliovascular import GliovascularConnectivity
+from archngv.core.data_structures.connectivity_gliovascular import GliovascularConnectivity
 
 
 L = logging.getLogger(__name__)

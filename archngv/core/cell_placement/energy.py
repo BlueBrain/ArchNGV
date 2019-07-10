@@ -6,7 +6,7 @@ spatial point process
 import logging
 import numpy as np
 
-from . import potentials
+from archngv.core.cell_placement import potentials
 
 
 POTENTIALS = {'spring': potentials.spring,

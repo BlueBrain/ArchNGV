@@ -5,11 +5,11 @@ Entry fucntions to use cell placement
 import logging
 import numpy as np
 
-from .energy import EnergyOperator
-from .atlas import PlacementVoxelData
-from .generation import PlacementGenerator
-from .generation import PlacementParameters
-from .soma_generation import truncated_normal_distribution
+from archngv.core.cell_placement.energy import EnergyOperator
+from archngv.core.cell_placement.atlas import PlacementVoxelData
+from archngv.core.cell_placement.generation import PlacementGenerator
+from archngv.core.cell_placement.generation import PlacementParameters
+from archngv.core.cell_placement.soma_generation import truncated_normal_distribution
 
 
 L = logging.getLogger(__name__)

@@ -2,7 +2,7 @@ import os
 
 import numpy.testing as npt
 
-from ..connectivity_neuroglial import NeuroglialConnectivity
+from archngv.core.data_structures.connectivity_neuroglial import NeuroglialConnectivity
 
 
 TEST_FILE = os.path.join(os.path.dirname(__file__), 'data', 'neuroglial_connectivity.h5')

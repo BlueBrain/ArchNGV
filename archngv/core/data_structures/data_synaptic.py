@@ -6,7 +6,7 @@ import numpy as np
 
 from cached_property import cached_property
 
-from .common import EdgesContextManager
+from archngv.core.data_structures.common import EdgesContextManager
 
 
 class SynapticData(EdgesContextManager):

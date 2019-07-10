@@ -6,10 +6,12 @@
 import logging
 import numpy as np
 
-from .detail.gliovascular_generation.graph_reachout import strategy
-from .detail.gliovascular_generation.graph_targeting import create_targets
-from .detail.gliovascular_generation.graph_connect import domains_to_vasculature
-from .detail.gliovascular_generation.surface_intersection import surface_intersect
+from archngv.core.connectivity.detail.gliovascular_generation.graph_reachout import strategy
+from archngv.core.connectivity.detail.gliovascular_generation.graph_targeting import create_targets
+from archngv.core.connectivity.detail.gliovascular_generation.\
+    graph_connect import domains_to_vasculature
+from archngv.core.connectivity.detail.gliovascular_generation.\
+    surface_intersection import surface_intersect
 
 
 L = logging.getLogger(__name__)

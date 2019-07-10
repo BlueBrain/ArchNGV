@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from .. import potentials
+from archngv.core.cell_placement import potentials
 
 
 def test_lenard_jones():

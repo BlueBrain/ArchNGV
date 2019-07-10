@@ -5,12 +5,13 @@ import itertools
 import h5py
 import numpy
 
-from .spatial_index_adapter import spatial_index
+from archngv.workflow.detail.input_generation.spatial_indexing.\
+    spatial_index_adapter import spatial_index
 
 from morphspatial import BoundingBox
 from voxcell import VoxelData
 
-import helpers
+# import helpers TODO: not used and helper does not exists
 
 L = logging.getLogger(__name__)
 
