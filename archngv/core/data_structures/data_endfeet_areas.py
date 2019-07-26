@@ -35,7 +35,7 @@ def _index_to_key(endfoot_index):
     return 'endfoot_' + str(endfoot_index)
 
 
-class Endfeetome(H5ContextManager):
+class EndfeetAreas(H5ContextManager):
     """ Access to the endfeet meshes
     """
     @property

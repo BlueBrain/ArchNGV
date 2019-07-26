@@ -25,15 +25,15 @@ def _num_endfeet_distribution(mean, std, clip_a, clip_b):
 
 
 def _filter_according_to_strategy(domain_position,
-                                  target_positions,
+                                  graph_positions,
                                   number_of_endfeet,
                                   reachout_strategy_function):
 
-    n_targets = len(target_positions)
+    n_targets = len(graph_positions)
 
     if number_of_endfeet < n_targets:
 
-        distances = np.linalg.norm(domain_position - target_positions, axis=1)
+        distances = np.linalg.norm(domain_position - graph_positions, axis=1)
 
         if number_of_endfeet == 1:
 
@@ -52,7 +52,8 @@ def _filter_according_to_strategy(domain_position,
 
 def domains_to_vasculature(cell_ids,
                            reachout_strategy_function,
-                           target_positions,
+                           graph_positions,
+                           graph_radii,
                            microdomains,
                            properties):
     """
@@ -70,7 +71,7 @@ def domains_to_vasculature(cell_ids,
     n_distr = _num_endfeet_distribution(*properties['endfeet_distribution'])
 
     domain_target_edges = []
-    index = point_rtree(target_positions)
+    index = point_rtree(graph_positions)
 
     for domain_index, cell_id in enumerate(cell_ids):
 
@@ -87,14 +88,15 @@ def domains_to_vasculature(cell_ids,
 
         mask = collision.convex_shape_with_spheres(domain.face_points,
                                                    domain.face_normals,
-                                                   target_positions[idx])
+                                                   graph_positions[idx],
+                                                   graph_radii[idx])
         if not mask.any():
             continue
 
         idx = idx[mask]
 
         sliced = _filter_according_to_strategy(domain.centroid,
-                                               target_positions[idx],
+                                               graph_positions[idx],
                                                number_of_endfeet,
                                                reachout_strategy_function)
 

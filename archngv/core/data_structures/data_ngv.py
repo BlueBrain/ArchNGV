@@ -5,8 +5,9 @@ from cached_property import cached_property
 from voxcell import VoxelData
 
 from archngv.core.data_structures.data_cells import CellDataInfo
+from archngv.core.data_structures.data_endfeet_areas import EndfeetAreas
+from archngv.core.data_structures.data_gliovascular import GliovascularData
 from archngv.core.data_structures.data_microdomains import MicrodomainTesselationInfo
-from archngv.core.data_structures.data_endfeetome import Endfeetome
 from archngv.core.data_structures.vasculature_morphology.vasculature import Vasculature
 
 
@@ -44,9 +45,8 @@ class NGVData(object):
 
     @cached_property
     def endfeetome(self):
-        """ Returns endfeetome data """
-        path = self._config.output_paths('endfeetome')
-        return Endfeetome(path)
+        """ Returns endfeet areas data """
+        return Endfeetome(self._config)
 
     @cached_property
     def voxelized_intensity(self):
@@ -54,25 +54,21 @@ class NGVData(object):
         path = self._config.input_paths('voxelized_intensity')
         return VoxelData.load_nrrd(path)
 
-    def __enter__(self):
-        """ Composition context manager """
-        self.synapses.__enter__()
-        self.astrocytes.__enter__()
-        self.microdomains.__enter__()
-        # TODO
-        # self.neuroglial.__enter__()
-        # self.gliovascular.__enter__()
-        return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        """ Called when with goes out of scope """
-        self.close()
+class Endfeetome:
+    """ Endfeetome data for both endfeet areas and target points
+    """
+    def __init__(self, ngv_config):
+        self._config = ngv_config
 
-    def close(self):
-        """ Composition context manager close """
-        self.synapses.close()
-        self.astrocytes.close()
-        self.microdomains.close()
-        # TODO
-        # self.neuroglial.close()
-        # self.gliovascular.close()
+    @cached_property
+    def areas(self):
+        """ Get Endfeet Areas """
+        path = self._config.output_paths('endfeet_areas')
+        return EndfeetAreas(path)
+
+    @cached_property
+    def targets(self):
+        """ Get Endfeet Targets """
+        path = self._config.output_paths('gliovascular_data')
+        return GliovascularData(path)

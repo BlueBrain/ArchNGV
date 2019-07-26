@@ -40,7 +40,7 @@ rule default:
         'microdomains/overlapping_structure.h5',
         'gliovascular_connectivity.h5',
         'gliovascular_data.h5',
-        'endfeetome.h5',
+        'endfeet_areas.h5',
         MORPH_DIR + '/_DONE',
         'ngv_config.json',
 
@@ -214,7 +214,7 @@ rule endfeet_area:
         gliovascular_data = 'gliovascular_data.h5',
 
     output:
-        'endfeetome.h5'
+        'endfeet_areas.h5'
 
     log:
         log_path('endfeet_area')

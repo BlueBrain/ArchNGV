@@ -52,11 +52,16 @@ def generate_gliovascular(cell_ids,
                                                     graph_vasculature_segment)
 
     L.info('STEP 2: Connection of astrocytes with vasculature started.')
+    sg_radii_beg, sg_radii_end = vasculature.segments_radii
+
+    graph_radii = np.min((sg_radii_beg[graph_vasculature_segment],
+                          sg_radii_end[graph_vasculature_segment]), axis=0)
 
     astrocyte_graph_edges = domains_to_vasculature(
         cell_ids,
         strategy(params['connection']['reachout_strategy']),
         graph_positions,
+        graph_radii,
         astrocytic_domains,
         params['connection']
     )
@@ -67,7 +72,6 @@ def generate_gliovascular(cell_ids,
     L.info('STEP 3: Mapping from graph points to vasculature surface started.')
 
     segments_beg, segments_end = vasculature.segments
-    sg_radii_beg, sg_radii_end = vasculature.segments_radii
 
     astrocyte_idx, graph_target_idx = astrocyte_graph_edges.T
 

@@ -1,5 +1,6 @@
 """ NGV Project configuration container """
 
+import json
 import os
 import time
 
@@ -36,8 +37,6 @@ class NGVConfig(object):
     @classmethod
     def from_file(cls, file_path):
         """ Load a json config from file """
-        import json
-
         with open(file_path, 'r') as fp:
             config_dict = json.load(fp)
 
@@ -52,7 +51,6 @@ class NGVConfig(object):
         _create_dir(self.parent_directory)
         _create_dir(self.experiment_directory)
         _create_dir(self.morphology_directory)
-        _create_dir(self.endfeetome_directory)
         _create_dir(self.intermediate_directory)
         _create_dir(self.spatial_index_directory)
         _create_dir(self.neuronal_data_directory)
@@ -154,11 +152,6 @@ class NGVConfig(object):
         return self.output_paths('morphology')
 
     @property
-    def endfeetome_directory(self):
-        """ Path to the endfeetome directory """
-        return self.output_paths('endfeetome')
-
-    @property
     def intermediate_directory(self):
         """ Path to the intermediate directory """
         return self.output_paths('intermediate')
@@ -180,7 +173,6 @@ class NGVConfig(object):
 
     def save(self):
         """ Write config to file """
-        import json
         file_path = self.self_path + '.json'
         with open(file_path, 'w') as fp:
             json.dump(self._config, fp, indent=4)
