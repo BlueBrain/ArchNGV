@@ -22,6 +22,7 @@ from archngv.app import (
     assign_emodels,
     endfeet_area,
     convert,
+    analysis
 )
 from archngv.app.logger import setup_logging
 from archngv.version import VERSION
@@ -48,6 +49,7 @@ app.add_command(name='synthesis', cmd=synthesis.cmd)
 app.add_command(name='assign-emodels', cmd=assign_emodels.cmd)
 app.add_command(name='endfeet-area', cmd=endfeet_area.cmd)
 app.add_command(name='convert', cmd=convert.group)
+app.add_command(name='analysis', cmd=analysis.cmd)
 
 
 if __name__ == '__main__':
