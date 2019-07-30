@@ -50,7 +50,6 @@ def cmd(config, cell_data, atlas, atlas_cache, seed, output_dir):
     np.random.seed(seed)
 
     LOGGER.info('Generating microdomains...')
-    microdomain_tesselation = generate_microdomain_tesselation(somata_positions, somata_radii, bounding_box)
     microdomain_tesselation = generate_microdomain_tesselation(
         somata_positions, somata_radii, bounding_box
     )
