@@ -7,7 +7,7 @@ ACTUAL="$2"
 
 function h5_compare() {
     local relpath="$1"
-    echo "Verifying $relpath..."
+    echo Verifying: h5diff -c "$EXPECTED/$relpath" "$ACTUAL/$relpath"
     h5diff -c "$EXPECTED/$relpath" "$ACTUAL/$relpath"
 }
 
