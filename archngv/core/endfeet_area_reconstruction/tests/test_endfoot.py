@@ -33,7 +33,8 @@ def create_data(height=10, width=10):
                                                    vasculature_mesh_vertices)
 
 def test_EndFoot():
-    ef = create_data()
+    height = width = 10
+    ef = create_data(height, width)
     #ef.coordinates_array
     #ef.triangle_array
     #ef.edges
@@ -42,9 +43,9 @@ def test_EndFoot():
 
     assert list(ef.vasculature_vertices) == list(range(ef.number_of_vertices))
 
-    assert ef.number_of_vertices ==  100
-    assert ef.number_of_triangles == 162
-    assert ef.area == 81.
+    assert ef.number_of_vertices == height * width
+    assert ef.number_of_triangles == (height - 1.) * (width - 1.) * 2.
+    assert ef.area == (height - 1.) * (width - 1.)
 
     assert ef.vertex_neighbors[0] == {1, 10, 11}
     assert ef.vertex_neighbors[11] == {0, 1, 10, 12, 21, 22}
@@ -55,3 +56,20 @@ def test_EndFoot():
 
     assert ef.edge_to_triangles[frozenset((94, 95))] == {157}
     assert ef.edge_to_triangles[frozenset((60, 61))] == {99, 108}
+
+
+def test_EndFoot_shrink():
+    #remove all
+    ef = create_data()
+    ef.shrink(set(range(ef.number_of_vertices)))
+    assert ef.area == 0
+    assert ef.number_of_vertices == 0
+    assert ef.number_of_triangles == 0
+
+    #remove left hand triangle strip
+    height = width = 10
+    ef = create_data(height, width)
+    ef.shrink(set(range(0, height * width, width)))
+    assert ef.area == (height - 1) * (width - 2)
+    assert ef.number_of_vertices == height * (width - 1)
+    assert ef.number_of_triangles == (height - 1) * (width - 2) * 2
