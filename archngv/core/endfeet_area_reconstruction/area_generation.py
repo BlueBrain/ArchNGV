@@ -8,9 +8,7 @@ import numpy as np
 from scipy import stats
 
 # pylint: disable=no-name-in-module
-from archngv.core.endfeet_area_reconstruction.detail.endfoot import create_endfoot_from_global_data
-from archngv.core.endfeet_area_reconstruction.detail.area_fitting import fit_area
-from archngv.core.endfeet_area_reconstruction.detail.fmm_growing import FastMarchingEikonalSolver
+from archngv.core.endfeet_area_reconstruction.detail import endfoot, area_fitting, fmm_growing
 
 from archngv.core.data_structures.data_gliovascular import GliovascularData
 from archngv.core.data_structures.connectivity_gliovascular import GliovascularConnectivity
@@ -63,34 +61,30 @@ def _dispatch_data(n_cells,
 
 
 def process_endfoot(endfoot_data):
-    """ Shrink endfoot area if needed.
-    """
+    """ Shrink endfoot area if needed """
     mesh_coordinates = shared_data['mesh_points']
     mesh_triangles = shared_data['mesh_triangles']
     travel_times = shared_data['vertex_travel_times']
 
     vasculature_mesh_vertices = endfoot_data['vasculature_mesh_vertices']
 
-    endfoot = create_endfoot_from_global_data(endfoot_data['index'],
-                                              mesh_coordinates,
-                                              mesh_triangles,
-                                              vasculature_mesh_vertices)
+    ef = endfoot.Endfoot.create_endfoot_from_global_data(endfoot_data['index'],
+                                                              mesh_coordinates,
+                                                              mesh_triangles,
+                                                              vasculature_mesh_vertices)
 
-    if endfoot.number_of_triangles > 3:
-
+    if ef.number_of_triangles > 3:
         if 'target_area' in endfoot_data:
-            endfoot.extra = {
+            ef.extra = {
                 'vertex': {
-                    'travel_times': travel_times[endfoot.vasculature_vertices]
+                    'travel_times': travel_times[ef.vasculature_vertices]
                 }
             }
-
-            fit_area(endfoot, endfoot_data['target_area'])
+            area_fitting.fit_area(ef, endfoot_data['target_area'])
 
         if 'target_thickness' in endfoot_data:
             raise NotImplementedError
-
-    return endfoot_data['index'], endfoot.coordinates_array, endfoot.triangle_array
+    return endfoot_data['index'], ef.coordinates_array, ef.triangle_array
 
 
 shared_data = {}
@@ -111,7 +105,7 @@ def run_fast_marching_method(mesh, endfeet_points, max_area):
 
     threshold_radius = np.sqrt(max_area / 3.1415)
 
-    solver = FastMarchingEikonalSolver(
+    solver = fmm_growing.FastMarchingEikonalSolver(
         mesh,
         endfeet_points,
         threshold_radius

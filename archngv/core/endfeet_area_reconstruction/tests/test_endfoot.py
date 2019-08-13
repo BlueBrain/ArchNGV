@@ -1,10 +1,11 @@
 from numpy.testing import assert_allclose
+import numpy as np
 import utils
-from archngv.core.endfeet_area_reconstruction.detail import endfoot
+from archngv.core.endfeet_area_reconstruction.detail.endfoot import Endfoot
 
 
 def _create_data(height=10, width=10, world_offset=0):
-    ef = endfoot.create_endfoot_from_global_data(0,
+    ef = Endfoot.create_endfoot_from_global_data(0,
                                                  *utils.create_mesh_data(height,
                                                                          width,
                                                                          world_offset))
@@ -52,6 +53,12 @@ def test_EndFoot_shrink():
     height = width = 10
     world_offset = 111
     ef = _create_data(height, width, world_offset)
+    ef.extra = {'vertex':
+                {'travel_times': np.arange(world_offset + ef.number_of_triangles,
+                                           dtype=np.float32),
+                 },
+                }
+
     ef.shrink(set(range(0, height * width, width)))
     assert ef.area == (height - 1) * (width - 2)
     assert ef.number_of_vertices == height * (width - 1)
@@ -60,3 +67,4 @@ def test_EndFoot_shrink():
     assert_allclose(ef.vasculature_vertices,
                     list(set(range(world_offset, world_offset + height * width)) -
                          {111, 121, 131, 141, 151, 161, 171, 181, 191, 201}))
+    #assert len(ef.extra['vertex']['travel_times']) == ef.number_of_triangles

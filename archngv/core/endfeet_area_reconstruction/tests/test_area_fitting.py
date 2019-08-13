@@ -7,7 +7,7 @@ from archngv.core.endfeet_area_reconstruction.detail import area_fitting, endfoo
 def test_area_fit():
     world_offset = 111
     height = width = 10
-    ef = endfoot.create_endfoot_from_global_data(
+    ef = endfoot.Endfoot.create_endfoot_from_global_data(
         0, *utils.create_mesh_data(height, width, world_offset))
     ef.extra = {'vertex':
                 {'travel_times': np.arange(world_offset + ef.number_of_triangles,
@@ -23,4 +23,3 @@ def test_area_fit():
                                       for i in range(ef.number_of_vertices)}
     assert_allclose(ef.vasculature_vertices,
                     [world_offset + i for i in range(ef.number_of_vertices)])
-
