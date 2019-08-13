@@ -57,24 +57,6 @@ def _edge_to_triangles(triangles):
     return et
 
 
-def _triangle_to_triangles(triangles):
-
-    et = _edge_to_triangles(triangles)
-
-    tt = {}
-
-    for index, (v1, v2, v3) in enumerate(triangles):
-        for edge in ((v1, v2), (v2, v3), (v3, v1)):
-
-            incident_triangle = et[frozenset(edge)].diffence(index)
-
-            try:
-                tt[index].update(incident_triangle)
-            except KeyError:
-                tt[index] = incident_triangle
-    return tt
-
-
 def _remap_triangle_indices(triangles, return_indices=False):
 
     unique_indices = \
@@ -290,8 +272,8 @@ cdef class Endfoot:
             xyz2 = self.coordinates[triangles[n, 1]]
             xyz3 = self.coordinates[triangles[n, 2]]
 
-            area += triangle_area(xyz1[0], xyz1[1], xyz1[2], 
-                                  xyz2[0], xyz2[1], xyz2[2], 
+            area += triangle_area(xyz1[0], xyz1[1], xyz1[2],
+                                  xyz2[0], xyz2[1], xyz2[2],
                                   xyz3[0], xyz3[1], xyz3[2])
         return area
 
@@ -317,10 +299,6 @@ cdef class Endfoot:
     @property
     def vertex_to_triangles(self):
         return _vertex_to_triangles(self.triangles)
-
-    @property
-    def triangle_to_triangles(self):
-        return _triangle_to_triangles(self.triangles)
 
     @property
     def edge_to_triangles(self):
