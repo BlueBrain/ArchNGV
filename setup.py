@@ -96,11 +96,6 @@ setup(
     },
     packages=find_packages(),
     scripts=[
-        'archngv/workflow/apps/ngv_initialize_directories.py',
-        'archngv/workflow/apps/ngv_input_generation.py',
-        'archngv/workflow/apps/ngv_main_workflow.py',
-        'archngv/workflow/apps/ngv_preprocessing.py',
-        'archngv/workflow/apps/ngv_postprocessing.py'
     ],
     entry_points={
         'console_scripts': [
