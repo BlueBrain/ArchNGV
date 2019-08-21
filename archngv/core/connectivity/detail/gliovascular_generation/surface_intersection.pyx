@@ -1,4 +1,4 @@
-from libc.math cimport atan2, acos, sqrt, cos, fabs
+from libc.math cimport atan2, sqrt, cos, fabs
 cimport numpy as np
 import numpy as np
 
@@ -76,7 +76,7 @@ cpdef inline double dot(double[:] V, double[:] W):
 cdef inline double[:, :] _M(double[:] D, double opening_angle):
 
     cdef:
-        double[:, :] R = np.empty((3, 3), dtype=np.float64) 
+        double[:, :] R = np.empty((3, 3), dtype=np.float64)
 
         double cos_angle2 = cos(opening_angle) ** 2
 
@@ -153,7 +153,7 @@ cdef double[:] cone_intersections(double[:] D,
 cdef double[:] cylinder_intersections(double[:] D,
                              double[:] P1,
                              double[:] P,
-                             double[:] U, 
+                             double[:] U,
                              double R2):
 
     cdef:

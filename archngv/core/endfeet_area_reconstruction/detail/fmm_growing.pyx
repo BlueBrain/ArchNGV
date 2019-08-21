@@ -2,34 +2,23 @@
 # cython: wraparound=False
 # cython: boundscheck=False
 
-import time
 import logging
 import numpy as np
 cimport numpy as np
 
+from .local_solvers cimport local_solver_2D
 from .priority_heap cimport MinPriorityHeap
 from .priority_heap cimport PriorityHeapRecord
 
-from libc.math cimport INFINITY, isinf, ceil, sqrt
-from .local_solvers cimport local_solver_2D 
-
+from libc.math cimport isinf
 from libcpp.vector cimport vector
-from libcpp.unordered_map cimport unordered_map
-
-from libcpp.algorithm cimport sort
-from cython.operator cimport dereference as deref, preincrement as inc
-from libc.stdlib cimport malloc, free
-L = logging.getLogger(__name__)
-
+from cpython.array cimport array
 from scipy.spatial import cKDTree
-
-
-from cpython.array cimport array, clone
-
 
 ctypedef np.npy_long SIZE_t
 
 
+L = logging.getLogger(__name__)
 
 
 cdef class FastMarchingEikonalSolver:
@@ -244,7 +233,7 @@ cdef class FastMarchingEikonalSolver:
                 # otherwise add in the priority queue with the travel time
                 # as priority. It starts as a trial vertex.
                 if neighbor_status == self.FAR:
-                    
+
                     if self.close_to_seed(nv, self.group_labels[self.v_group_index[vertex_index]]):
 
                         self.v_group_index[nv] = self.v_group_index[vertex_index]
@@ -277,7 +266,7 @@ cdef class FastMarchingEikonalSolver:
 
         with nogil:
             # expand in a breadth first manner from the smallest
-            # distance node and update the travel times for the 
+            # distance node and update the travel times for the
             # propagation of the wavefront
             while not self.trial_heap.is_empty():
 
@@ -285,7 +274,7 @@ cdef class FastMarchingEikonalSolver:
                 self.trial_heap.pop(&record)
                 travel_time = record.value
                 vertex_index = record.node_id
-        
+
                 if self.v_status[vertex_index] != self.KNOWN:
 
                     self.v_status[vertex_index] = self.KNOWN
@@ -301,7 +290,7 @@ cdef class FastMarchingEikonalSolver:
     cpdef groups(self):
 
         cdef:
-            SIZE_t value, offset, vertex_index, group_index 
+            SIZE_t value, offset, vertex_index, group_index
             SIZE_t[:] idx = np.empty(self.n_vertices, dtype=np.intp)
             SIZE_t[:] offsets = np.zeros(self.n_seeds + 1, dtype=np.intp)
 

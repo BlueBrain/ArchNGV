@@ -3,17 +3,10 @@
 # cython: wraparound=False
 
 
-import numpy as np
-cimport numpy as np
-
 from libc.math cimport fabs, sqrt, fmin
 
 
 DEF EPS = 1e-6
-
-#def triple_product(a, Q, b, is_diagonal):
-#    return diagonal_triple_product(a, b, Q[0, 0], Q[1, 1], Q[2, 2]) if is_diagonal else \
-#           np.dot(a, np.dot(Q, b))
 
 cdef inline float diagonal_triple_product(float ax, float ay, float az,
                                            float Qxx, float Qyy, float Qzz,
@@ -147,7 +140,7 @@ cdef float local_solver_2D(float Ax, float Ay, float Az,
     l2_valid = 0. <= l2 <= 1.
 
     # solutions can be symmetric. In that case pick the one that gives the shortest
-    # travel time (Fermat's principle). 
+    # travel time (Fermat's principle).
     if l1_valid and l2_valid:
 
 
@@ -157,7 +150,7 @@ cdef float local_solver_2D(float Ax, float Ay, float Az,
 
         triple2 = diagonal_triple_product(ACx - l2 * ABx, ACy - l2 * ABy, ACz - l2 * ABz,
                                           Qxx, Qyy, Qzz,
-                                          ACx - l2 * ABx, ACy - l2 * ABy, ACz - l2 * ABz)       
+                                          ACx - l2 * ABx, ACy - l2 * ABy, ACz - l2 * ABz)
 
         T31 = TA + l1 * TAB + sqrt(triple1)
         T32 = TA + l2 * TAB + sqrt(triple2)
@@ -178,8 +171,6 @@ cdef float local_solver_2D(float Ax, float Ay, float Az,
     # triangle. In that case give the smallest travel time through the edges of
     # the triange
     else:
-
-        #T31 = TA + np.sqrt(triple_product(AC, Q, AC, is_diagonal))
 
         T31 = TA + sqrt(Caa)
         T32 = TB + sqrt(diagonal_triple_product(BCx, BCy, BCz,

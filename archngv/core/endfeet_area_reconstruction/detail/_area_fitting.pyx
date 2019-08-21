@@ -23,8 +23,6 @@ cpdef set reduce_surface_area(object endfoot,
 
         SIZE_t index, neighbor, oldest_neighbor
 
-        tuple current_neighbors
-
         list ttimes
 
         frozenset current_edge
@@ -66,8 +64,6 @@ cpdef set reduce_surface_area(object endfoot,
         current_time = r.value
 
         to_remove.add(index)
-
-        current_neighbors = tuple(neighbors[index].difference(visited))
 
         oldest_neighbor= -1
         oldest_time = 0.

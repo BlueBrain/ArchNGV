@@ -2,8 +2,7 @@
 import numpy as np
 cimport numpy as np
 
-cimport cython
-from libc.math cimport sqrt, floor, round
+from libc.math cimport round
 
 
 cpdef create_targets(points, edges, parameters):
@@ -11,13 +10,12 @@ cpdef create_targets(points, edges, parameters):
     account the geometrical characteristics of the data structure such as
     vasculature thickness.
     """
-    seg_begs = points[edges[:, 0]]
-    seg_ends = points[edges[:, 1]]
+    seg_begs = points[edges[:, 0]].astype(np.float64)
+    seg_ends = points[edges[:, 1]].astype(np.float64)
 
-    target_points, edges_idx = \
-    distribution_on_line_graph(seg_begs.astype(np.float64),
-                               seg_ends.astype(np.float64),
-                               float(parameters['linear_density']))
+    target_points, edges_idx = distribution_on_line_graph(seg_begs,
+                                                          seg_ends,
+                                                          float(parameters['linear_density']))
 
     return target_points, edges_idx
 
@@ -46,7 +44,6 @@ cpdef distribution_on_line_graph(double[:, :] segment_starts, double[:, :] segme
     seg_vecs = np.subtract(segment_ends, segment_starts)
     seg_lens = np.linalg.norm(seg_vecs, axis=1)
 
-    #N_targets = <unsigned long>floor(np.sum(seg_lens) * linear_density)
     N_targets = <unsigned long>round(np.sum(seg_lens) * linear_density)
 
     # initialize result array

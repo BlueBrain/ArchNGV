@@ -3,11 +3,7 @@
 # cython: wraparound=False
 
 from libc.stdlib cimport free
-from libc.stdlib cimport malloc
 from libc.stdlib cimport realloc
-
-import numpy as np
-cimport numpy as np
 
 
 cdef realloc_ptr safe_realloc(realloc_ptr* p, size_t nelems) nogil except *:
@@ -115,7 +111,7 @@ cdef class MaxPriorityHeap:
         res[0] = heap[0]
 
         # swap with last element
-        
+
         idmap[heap[0].node_id], idmap[heap[heap_ptr - 1].node_id] = idmap[heap[heap_ptr - 1].node_id], idmap[heap[0].node_id]
 
         heap[0], heap[heap_ptr - 1] = heap[heap_ptr - 1], heap[0]
