@@ -1,6 +1,4 @@
-import numpy as np
 cimport numpy as np
-
 
 
 ctypedef np.npy_float32 DTYPE_t # Type of X
@@ -33,21 +31,6 @@ cdef struct PriorityHeapRecord:
     float value
 
 
-cdef class MaxPriorityHeap:
-
-    cdef SIZE_t capacity
-    cdef SIZE_t heap_ptr
-    cdef PriorityHeapRecord* heap_
-    cdef SIZE_t* idmap_
-
-    cdef bint is_empty(self) nogil
-    cdef int push(self, SIZE_t node_id, float value) nogil except -1
-    cdef int pop(self, PriorityHeapRecord* res) nogil
-    cdef void heapify_up(self, PriorityHeapRecord* heap, SIZE_t* idmap, SIZE_t pos) nogil
-    cdef void heapify_down(self, PriorityHeapRecord* heap, SIZE_t* idmap, SIZE_t pos, SIZE_t heap_length) nogil
-    cdef int update(self, SIZE_t node_id, float new_value) nogil except -1
-
-
 cdef class MinPriorityHeap:
 
     cdef SIZE_t capacity
@@ -61,4 +44,3 @@ cdef class MinPriorityHeap:
     cdef void heapify_up(self, PriorityHeapRecord* heap, SIZE_t* idmap, SIZE_t pos) nogil
     cdef void heapify_down(self, PriorityHeapRecord* heap, SIZE_t* idmap, SIZE_t pos, SIZE_t heap_length) nogil
     cdef int update(self, SIZE_t node_id, float new_value) nogil except -1
-

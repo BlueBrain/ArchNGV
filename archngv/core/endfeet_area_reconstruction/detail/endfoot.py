@@ -118,7 +118,6 @@ class Endfoot(object):
         Note: Frozensets are used so that directionality does not matter
         '''
         et = defaultdict(set)
-        # Contour edges belong to only one triangle
         for index, (v1, v2, v3) in enumerate(self.triangles):
             for c1, c2 in ((v1, v2), (v2, v3), (v3, v1)):
                 et[frozenset((c1, c2))].add(index)
