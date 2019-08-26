@@ -24,8 +24,6 @@ L = logging.getLogger(__name__)
 cdef class FastMarchingEikonalSolver:
 
     cdef:
-        # distance matrix
-        float[:, :] Q
         float squared_cutoff_distance
 
         SIZE_t FAR, TRIAL, KNOWN
@@ -70,10 +68,6 @@ cdef class FastMarchingEikonalSolver:
         # priority heap that sorts vertices according to their stored
         # travel times
         self.trial_heap = MinPriorityHeap(self.n_vertices)
-
-        # distance matrix
-        # TODO: this should be external
-        self.Q = np.array([[1., 0., 0.], [0., 1., 0.], [0., 0., 1.]], dtype=np.float32)
 
         # neighbor offsets
         self.nn_offsets = np.zeros(n_vertices + 1, dtype=np.long)
@@ -192,15 +186,13 @@ cdef class FastMarchingEikonalSolver:
                     TC = local_solver_2D(self.v_xyz[nb1, 0], self.v_xyz[nb1, 1], self.v_xyz[nb1, 2],
                                          self.v_xyz[nb2, 0], self.v_xyz[nb2, 1], self.v_xyz[nb2, 2],
                                          self.v_xyz[ind, 0], self.v_xyz[ind, 1], self.v_xyz[ind, 2],
-                                         TA, TB,
-                                         self.Q[0, 0], self.Q[1, 1], self.Q[2, 2])
+                                         TA, TB)
                 else:
 
                     TC = local_solver_2D(self.v_xyz[nb2, 0], self.v_xyz[nb2, 1], self.v_xyz[nb2, 2],
                                          self.v_xyz[nb1, 0], self.v_xyz[nb2, 1], self.v_xyz[nb1, 2],
                                          self.v_xyz[ind, 0], self.v_xyz[ind, 1], self.v_xyz[ind, 2],
-                                         TB, TA,
-                                         self.Q[0, 0], self.Q[1, 1], self.Q[2, 2])
+                                         TB, TA)
 
                 if TC < min_value:
                     min_value = TC
