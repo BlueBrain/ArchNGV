@@ -39,9 +39,9 @@ class EdgesContextManager(object):
     """ Context manager for accessing SONATA Edges """
     def __init__(self, filepath):
         self.filepath = filepath
+        self._impl = _open_population(self.filepath)  # pylint: disable=attribute-defined-outside-init
 
     def __enter__(self):
-        self._impl = _open_population(self.filepath)  # pylint: disable=attribute-defined-outside-init
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):

@@ -5,6 +5,7 @@ from cached_property import cached_property
 from voxcell import VoxelData
 
 from archngv.core.data_structures.data_cells import CellDataInfo
+from archngv.core.data_structures.data_synaptic import SynapticData
 from archngv.core.data_structures.data_endfeet_areas import EndfeetAreas
 from archngv.core.data_structures.data_gliovascular import GliovascularData
 from archngv.core.data_structures.data_microdomains import MicrodomainTesselationInfo
@@ -25,7 +26,8 @@ class NGVData(object):
     @cached_property
     def synapses(self):
         """ Returns synaptic data """
-        raise NotImplementedError
+        path = self._config.input_paths('synaptic_data')
+        return SynapticData(path)
 
     @cached_property
     def vasculature(self):
