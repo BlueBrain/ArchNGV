@@ -1,5 +1,6 @@
 import os
 import pytest
+import numpy as np
 from collections import namedtuple
 
 import numpy as np
@@ -34,9 +35,11 @@ class MockMicrodomainTesselation(object):
 
     def domain_points(self, index):
         vals = np.arange(10, dtype=np.float)
-        return float(index) + np.column_stack((vals, vals, vals))
+        thetas = np.linspace(0., 1.8 * np.pi, 10)
+        zs = np.full(10, fill_value=float(index))
+        return np.column_stack((np.cos(thetas), np.sin(thetas), zs))
 
-    def domain_triangles(self, index):
+    def domain_triangles(self, _):
         return [(0, 1, 2),
                 (2, 3, 4),
                 (4, 5, 6),

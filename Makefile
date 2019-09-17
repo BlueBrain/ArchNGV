@@ -1,12 +1,12 @@
 
 clean-pyc:
-	find . -type f -name "*.py[co]" -o -name __pychache__ -exec rm -rf {} +
+	find archngv -type f -name "*.py[co]" -o -name __pychache__ -exec rm -rf {} +
 
 clean-cpp:
-	find . -type f -name '*.c' -o -name '*.o' -o -name '*.so' -o -name '*.cpp' -delete
+	find archngv -type f -name '*.c' -delete -o -name '*.o' -delete -o -name '*.so' -delete -o -name '*.cpp' -delete
 
 clean-general:
-	find . -type f -name .DS_Store -o -name .idea -o -name '*~' -delete
+	find archngv -type f -name .DS_Store -delete -o -name .idea -delete -o -name '*~' -delete
 
 clean-build:
 	rm -rf build dist *.egg-info
@@ -17,4 +17,4 @@ clean: clean-build clean-general clean-cpp clean-pyc
 
 .PHONY: install
 install: clean
-	pip install -e .
+	pip3 install --index-url https://bbpteam.epfl.ch/repository/devpi/bbprelman/dev/+simple/ -e .

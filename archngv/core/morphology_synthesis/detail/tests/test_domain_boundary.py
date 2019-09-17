@@ -116,4 +116,4 @@ def test__call__(domain_boundary, convex_polygon):
     # does not stop
     assert not domain_boundary(convex_polygon.centroid)
     # stops
-    assert domain_boundary([np.inf, np.inf, np.inf])
+    assert domain_boundary([1e6, 1e6, 1e6])
