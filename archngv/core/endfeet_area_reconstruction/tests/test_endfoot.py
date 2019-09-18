@@ -1,14 +1,14 @@
 from numpy.testing import assert_allclose
 import numpy as np
 import utils
-from archngv.core.endfeet_area_reconstruction.detail.endfoot import Endfoot
+from archngv.core.endfeet_area_reconstruction.detail.endfoot import create_endfoot_from_global_data
 
 
 def _create_data(height=10, width=10, world_offset=0):
-    ef = Endfoot.create_endfoot_from_global_data(0,
-                                                 *utils.create_mesh_data(height,
-                                                                         width,
-                                                                         world_offset))
+    ef = create_endfoot_from_global_data(0,
+                                         *utils.create_mesh_data(height,
+                                                                 width,
+                                                                 world_offset))
     return ef
 
 

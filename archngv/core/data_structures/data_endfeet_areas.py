@@ -3,6 +3,7 @@
 import numpy as np
 
 from archngv.core.data_structures.common import H5ContextManager
+from archngv.utils.ngons import vectorized_triangle_area
 
 
 class EndfootMesh:
@@ -13,12 +14,11 @@ class EndfootMesh:
         points: array[float, (N, 3)]
         triangles: array[float, (M, 3)]
     """
-    __slots__ = 'index', 'points', 'triangles'
-
-    def __init__(self, index, points, triangles):
+    def __init__(self, index, points, triangles, thickness):
         self.index = index
         self.points = points
         self.triangles = triangles
+        self._thickness = thickness
 
     def __eq__(self, other):
         """ Check if two objects are equal by comparing
@@ -28,6 +28,18 @@ class EndfootMesh:
     def __str__(self):
         """ String repr of the object """
         return 'endfoot_mesh<Index: {}>'.format(self.index)
+
+    @property
+    def thickness(self):
+        """ Returns thickness of the surface """
+        return self._thickness
+
+    @property
+    def area(self):
+        """ Returns the area of the surface """
+        side1_vecs = self.points[self.triangles[:, 1]] - self.points[self.triangles[:, 0]]
+        side2_vecs = self.points[self.triangles[:, 2]] - self.points[self.triangles[:, 0]]
+        return vectorized_triangle_area(side1_vecs, side2_vecs).sum()
 
 
 def _index_to_key(endfoot_index):
@@ -54,7 +66,10 @@ class EndfeetAreas(H5ContextManager):
     def _object(self, endfoot_index):
         """ Returns endfoot object from its index """
         entry = self._entry(_index_to_key(endfoot_index))
-        return EndfootMesh(endfoot_index, entry['points'][:], entry['triangles'][:])
+        points = entry['points'][:]
+        triangles = entry['triangles'][:]
+        thickness = entry.attrs['thickness']
+        return EndfootMesh(endfoot_index, points, triangles, thickness)
 
     def __getitem__(self, index):
         """ Endfoot mesh object getter """

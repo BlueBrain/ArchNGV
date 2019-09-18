@@ -2,23 +2,31 @@
 
 import os
 import logging
-
 # TODO: used by `eval` below; remove along with `eval`
 import numpy as np  # pylint: disable=unused-import
 
+import morphio
 from tns.spatial.point_cloud import PointCloud  # pylint: disable=import-error
 
-from archngv.core.morphology_synthesis.detail.annotation import export_endfoot_location
-from archngv.core.morphology_synthesis.detail.annotation import export_synapse_location
-from archngv.core.morphology_synthesis.detail.data_extraction import obtain_endfeet_data
-from archngv.core.morphology_synthesis.detail.data_extraction import obtain_synapse_data
-from archngv.core.morphology_synthesis.detail.data_extraction import obtain_cell_properties
-from archngv.core.morphology_synthesis.detail.tns_wrapper import TNSGrowerWrapper
+from archngv.utils.decorators import log_execution_time, log_start_end
 
+from .annotation import annotate_endfoot_location
+from .annotation import export_endfoot_location
+from .annotation import annotate_synapse_location
+from .annotation import export_synapse_location
+
+from .data_extraction import obtain_endfeet_data
+from .data_extraction import obtain_synapse_data
+from .data_extraction import obtain_cell_properties
+
+from .tns_wrapper import TNSGrowerWrapper
+from .endfoot_compartment import add_endfeet_compartments
 
 L = logging.getLogger(__name__)
 
 
+@log_start_end
+@log_execution_time
 def synthesize_astrocyte(astrocyte_index,
                          cell_data_path,
                          microdomains_path,
@@ -29,6 +37,7 @@ def synthesize_astrocyte(astrocyte_index,
                          tns_parameters_path,
                          tns_distributions_path,
                          morphology_directory,
+                         endfeet_areas_path,
                          parameters):
     """ Synthesize the endfeet for one astrocyte
     """
@@ -68,11 +77,12 @@ def synthesize_astrocyte(astrocyte_index,
     astro_grower.add_microdomain_boundary(microdomain)
 
     # get endfeet targets on vasculature surface
-    targets = obtain_endfeet_data(astrocyte_index,
-                                  gliovascular_data_path,
-                                  gliovascular_connectivity_path)
+    endfeet_data = obtain_endfeet_data(astrocyte_index,
+                                       gliovascular_data_path,
+                                       gliovascular_connectivity_path,
+                                       endfeet_areas_path)
 
-    if targets is not None:
+    if endfeet_data is not None:
 
         # lambda function is passed from config as string
         lambda_string = parameters['attraction_field']
@@ -81,32 +91,47 @@ def synthesize_astrocyte(astrocyte_index,
         # function which depends on the distance to the target
         # TODO: consider using Equation instead of `eval`?
         field_function = eval(lambda_string)  # pylint: disable=eval-used
-        astro_grower.set_endfeet_targets(targets, field_function)
+        astro_grower.set_endfeet_targets(endfeet_data.targets, field_function)
 
         # we need to make sure that our extracted homology will suffice
         # in order to reach the target. If they are shorter, we scale them.
         astro_grower.enable_endfeet_barcode_scaling()
 
+        # determine the orientations of the primary processes by using
+        # the geometry of the microdomain and its respective anisotropy
+        astro_grower.set_process_orientations_from_microdomain(soma_pos, microdomain, endfeet_data.targets)
+
     else:
 
         astro_grower.remove_endfeet_properties()
 
-    # determine the orientations of the primary processes by using
-    # the geometry of the microdomain and its respective anisotropy
-    astro_grower.set_process_orientations_from_microdomain(soma_pos,
-                                                          microdomain,
-                                                          targets)
+        # determine the orientations of the primary processes by using
+        # the geometry of the microdomain and its respective anisotropy
+        astro_grower.set_process_orientations_from_microdomain(soma_pos, microdomain, None)
 
     astro_grower.grow()
 
-    morphology_output_file = os.path.join(morphology_directory, cell_name + '.h5')
+    if endfeet_data is not None and parameters['generate_endfoot_equivalent_compartment']:
+        L.warning('Endfoot equivalent compartment generation is enabled. Morphogies will be changed.')
+        # adds to children to each endfoot section, one is a placeholder tiny section with
+        # type same as the parent and the other one a compartment representing the endfoot
+        # mehs area geometry for NEURON to load
+        # TODO: add this algorithmically through pyneuron instead of mutating the morphology
+        add_endfeet_compartments(astro_grower.morphology, endfeet_data)
 
+    morphology_output_file = os.path.join(morphology_directory, cell_name + '.h5')
     astro_grower.write(morphology_output_file)
 
-    if targets is not None:
-        # reload cell in readonly to extract indices to targets
-        export_endfoot_location(morphology_output_file, targets)
+    # For the annotations the morphology should be in readonly mode. If it is mutated for any reason
+    # there will be reordering of the sections ids and thus the annotations would be invalid
+    morphology = morphio.Morphology(morphology_output_file, options=morphio.Option.nrn_order)
+
+    if endfeet_data is not None:
+        # annotate the endfeet on the morphology and export
+        endfeet_annotation = annotate_endfoot_location(morphology, endfeet_data.targets)
+        export_endfoot_location(morphology_output_file, endfeet_annotation)
 
     if synapses is not None:
         # get the location of the synapse in the morphology
-        export_synapse_location(morphology_output_file, synapses)
+        synapses_location = annotate_synapse_location(morphology, synapses.values)
+        export_synapse_location(morphology_output_file, synapses, synapses_location)

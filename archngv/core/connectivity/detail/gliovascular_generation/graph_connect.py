@@ -4,23 +4,13 @@
 import logging
 
 import numpy as np
-import scipy.stats
-import scipy.sparse
 
 from spatial_index import point_rtree
 from archngv.spatial import collision
 
+from archngv.utils.statistics import truncated_normal
 
 L = logging.getLogger(__name__)
-
-
-def _num_endfeet_distribution(mean, std, clip_a, clip_b):
-    """ Returns the truncated normal distribution with (mean, std)
-    minimum value clip_a and maximum value clip_b
-    """
-    a, b = (clip_a - mean) / std, (clip_b - mean) / std
-
-    return scipy.stats.truncnorm(a, b, mean, std)
 
 
 def _filter_according_to_strategy(domain_position,
@@ -67,7 +57,7 @@ def domains_to_vasculature(cell_ids,
     """
     L.info('Endfeet Distribution Paremeters %s', properties['endfeet_distribution'])
 
-    n_distr = _num_endfeet_distribution(*properties['endfeet_distribution'])
+    n_distr = truncated_normal(*properties['endfeet_distribution'])
 
     domain_target_edges = []
     index = point_rtree(graph_positions)

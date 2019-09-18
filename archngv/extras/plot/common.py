@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.interpolate import spline
+from scipy.interpolate import interp1d
 
 LAYERS = {'bins': np.array([0.0,
                             674.68206269999996,
@@ -95,7 +95,7 @@ def smooth(x, y, n_points):
 
     ynew = np.linspace(y.min(), y.max(), n_points)
 
-    xnew = spline(y, x, ynew)
+    xnew = interp1d(y, x)(ynew)
 
     return xnew, ynew
 

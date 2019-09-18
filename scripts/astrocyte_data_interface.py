@@ -9,12 +9,12 @@ from cached_property import cached_property
 import h5py
 import numpy as np
 
-import morphio
+import neurom
 from archngv.core import data_structures
 
 # process types
-PERIVASCULAR = 2
-PERISYNAPTIC = 3
+PERIVASCULAR = neurom.AXON
+PERISYNAPTIC = neurom.BASAL_DENDRITE
 
 
 # in the future we will need to add the synapse annotations
@@ -72,11 +72,11 @@ class AstrocyteData:
     @cached_property
     def morphology(self):
         """ Returns morphology object """
-        return morphio.Morphology(self.filepath)
+        return neurom.load_neuron(self.filepath)
 
-    def _filter_roots(self, process_type):
+    def _filter_roots(self, neurite_type):
         """ Filters the astrocyte processes based on the process_type """
-        return filter(lambda s: s.type == process_type, self.morphology.root_sections)
+        return filter(lambda s: s.type == neurite_type, self.morphology.neurites)
 
     @property
     def perivascular_processes(self):

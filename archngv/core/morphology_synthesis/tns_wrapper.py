@@ -14,8 +14,8 @@ from tns.morphmath.field import PointAttractionField  # pylint: disable=import-e
 from archngv.core.types import ASTROCYTE_TO_NEURON
 
 from .ph_modification import scale_barcode
-from .domain_orientation import orientations_from_domain
 from .domain_boundary import StopAtConvexBoundary
+from .domain_orientation import orientations_from_domain
 
 
 L = logging.getLogger(__name__)
@@ -55,7 +55,7 @@ class TNSGrowerWrapper(object):
             self._parameters = json.load(parameters_fd)
             self._distributions = json.load(distributions_fd)
 
-        self._morphology = None
+        self.morphology = None
         self._context = {'collision_handle': lambda _: False}
 
     def add_collision_handle(self, collision_handle):
@@ -163,10 +163,10 @@ class TNSGrowerWrapper(object):
         tns_grower = AstrocyteGrower(input_distributions=self._distributions,
                                      input_parameters=self._parameters,
                                      context=self._context)
-        self._morphology = tns_grower.grow()
+        self.morphology = tns_grower.grow()
 
     def write(self, filepath):
         """ Write morphology to file
         """
-        assert self._morphology is not None
-        self._morphology.write(filepath)
+        assert self.morphology is not None
+        self.morphology.write(filepath)

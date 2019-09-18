@@ -9,7 +9,7 @@ from scipy.spatial import cKDTree
 
 import morphio
 from archngv.core.types import ASTROCYTE_TO_NEURON
-from archngv.core.exceptions import NeuriteNotCreatedError
+from archngv.core.exceptions import NGVError
 
 MORPHIO_MAP = {
     'soma': morphio.SectionType.soma,
@@ -19,7 +19,7 @@ MORPHIO_MAP = {
 }
 
 
-def _morphology_unwrapped(filepath, neurite_type=None):
+def _morphology_unwrapped(morphology, filter_func=None):
     """ Unwrap a MorphIO morphology into points and their
     respective section id they belong too.
 
@@ -31,29 +31,25 @@ def _morphology_unwrapped(filepath, neurite_type=None):
             - N x 3 NumPy array with segment midpoints
             - N-row Pandas DataFrame with section ID / segment ID / segment midpoint offset
     """
-    morphology = morphio.Morphology(filepath, options=morphio.Option.nrn_order)
-    root_sections = morphology.root_sections
+    section_iterator = morphology.iter()
 
-    if neurite_type is not None:
-        root_sections = list(filter(
-            lambda s: s.type == neurite_type,
-            root_sections
-        ))
-        if not root_sections:
-            raise NeuriteNotCreatedError(neurite_type)
+    if filter_func is not None:
+        section_iterator = filter(filter_func, section_iterator)
 
     points = []
     locations = []
 
-    for root_section in root_sections:
-        for section in root_section.iter():
-            p0 = section.points[:-1]
-            p1 = section.points[1:]
-            midpoints = 0.5 * (p0 + p1)
-            offsets = np.linalg.norm(midpoints - p0, axis=1)
-            for segment_id, (midpoint, offset) in enumerate(zip(midpoints, offsets)):
-                points.append(midpoint)
-                locations.append((section.id, segment_id, offset))
+    for section in section_iterator:
+        p0s = section.points[:-1]
+        p1s = section.points[1:]
+        midpoints = 0.5 * (p0s + p1s)
+        offsets = np.linalg.norm(midpoints - p0s, axis=1)
+        for segment_id, (midpoint, offset) in enumerate(zip(midpoints, offsets)):
+            points.append(midpoint)
+            locations.append((section.id, segment_id, offset))
+
+    if not points:
+        raise NGVError("Morphology failed to be unwrapped.")
 
     points = np.asarray(points)
     locations = pd.DataFrame(locations, columns=['section_id', 'segment_id', 'segment_offset'])
@@ -61,7 +57,15 @@ def _morphology_unwrapped(filepath, neurite_type=None):
     return points, locations
 
 
-def annotate_endfoot_location(filepath, endfoot_points):
+def _is_endfoot_termination(section):
+    """ Checks if a sction has the endfoot type and is a termination section,
+        which means it has no children
+    """
+    endfoot_t = MORPHIO_MAP[ASTROCYTE_TO_NEURON['endfoot']]
+    return section.type == endfoot_t and not section.children
+
+
+def annotate_endfoot_location(mutable_morphology, endfoot_points):
     """ Load a morphology in MorphIO and find the closest point, section
     to each endfoot point.
 
@@ -74,19 +78,16 @@ def annotate_endfoot_location(filepath, endfoot_points):
     Returns:
         Pandas DataFrame with section ID / segment ID / segment offset of closest astrocyte segment midpoint
     """
-    endfoot_type = MORPHIO_MAP[ASTROCYTE_TO_NEURON['endfoot']]
-    points, locations = _morphology_unwrapped(filepath, neurite_type=endfoot_type)
+    points, locations = _morphology_unwrapped(mutable_morphology, filter_func=_is_endfoot_termination)
 
     _, idx = cKDTree(points, copy_data=False).query(endfoot_points)  # pylint: disable=not-callable
 
     return locations.loc[idx]
 
 
-def export_endfoot_location(filepath, endfoot_points):
+def export_endfoot_location(filepath, endfeet_annotation):
     """ Calculate the endfeet annotations and export them to filen
     """
-    endfeet_annotation = annotate_endfoot_location(filepath, endfoot_points)
-
     data_filepath = filepath.replace('.h5', '_endfeet_annotation.h5')
 
     with h5py.File(data_filepath, 'w') as fd:
@@ -95,7 +96,7 @@ def export_endfoot_location(filepath, endfoot_points):
             root[prop] = column.values
 
 
-def annotate_synapse_location(filepath, synapse_points):
+def annotate_synapse_location(mutable_morphology, synapse_points):
     """ Load a morphology in MorphIO and find the closest point, section
     to each synapse point.
 
@@ -108,21 +109,19 @@ def annotate_synapse_location(filepath, synapse_points):
     Returns:
         Pandas DataFrame with section ID / segment ID / segment offset of closest astrocyte segment midpoint
     """
-    points, locations = _morphology_unwrapped(filepath)
+    points, locations = _morphology_unwrapped(mutable_morphology)
 
     _, idx = cKDTree(points, copy_data=False).query(synapse_points)  # pylint: disable=not-callable
 
     return locations.loc[idx]
 
 
-def export_synapse_location(filepath, synapses):
+def export_synapse_location(filepath, synapses, synapses_location):
     """ Calculate the synapses annotation and export them to file
     """
-    synapse_location = annotate_synapse_location(filepath, synapses.values)
-
     data_filepath = filepath.replace('.h5', '_synapse_annotation.h5')
     with h5py.File(data_filepath, 'w') as fd:
         fd['synapse_id'] = synapses.index
         root = fd.create_group('synapse_location')
-        for prop, column in synapse_location.iteritems():
+        for prop, column in synapses_location.iteritems():
             root[prop] = column.values

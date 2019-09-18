@@ -4,7 +4,7 @@ import pandas as pd
 import seaborn as sns
 from .common import bin_centers
 from .common import remove_spines
-from archngv.core.cell_placement.density import read_densities_from_file
+from archngv.extras.analysis.density import read_densities_from_file
 
 
 log = logging.getLogger(__name__)

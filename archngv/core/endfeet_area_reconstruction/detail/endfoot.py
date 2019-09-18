@@ -7,6 +7,28 @@ from archngv.core.endfeet_area_reconstruction.detail import _endfoot
 L = logging.getLogger(__name__)
 
 
+def create_endfoot_from_global_data(index,
+                                    all_coordinates,
+                                    all_triangles,
+                                    endfoot_vertices):
+    '''Create an endfoot object in its local coordinate system
+
+    (containing only vertices and triangles that correspond to it) using the
+    global datasets of all coordinates, triangles and vertices per endfoot
+    '''
+    kept_triangles = _endfoot.subset_triangles_that_include_vertices(
+        all_triangles, set(endfoot_vertices))
+
+    coordinates, triangles, local_to_global_map = _arrange_indices(
+        kept_triangles, all_coordinates, all_triangles)
+
+    return Endfoot(index,
+                   coordinates,
+                   triangles,
+                   set(endfoot_vertices),
+                   local_to_global_map)
+
+
 class Endfoot(object):
     '''Endfoot'''
     def __init__(self,
@@ -30,29 +52,6 @@ class Endfoot(object):
                                  np.asarray(self.triangles),
                                  self.local_to_global_map,
                                  self.extra))
-
-    @classmethod
-    def create_endfoot_from_global_data(cls,
-                                        index,
-                                        all_coordinates,
-                                        all_triangles,
-                                        endfoot_vertices):
-        '''Create an endfoot object in its local coordinate system
-
-        (containing only vertices and triangles that correspond to it) using the
-        global datasets of all coordinates, triangles and vertices per endfoot
-        '''
-        kept_triangles = _endfoot.subset_triangles_that_include_vertices(
-            all_triangles, set(endfoot_vertices))
-
-        coordinates, triangles, local_to_global_map = _arrange_indices(
-            kept_triangles, all_coordinates, all_triangles)
-
-        return cls(index,
-                   coordinates,
-                   triangles,
-                   set(endfoot_vertices),
-                   local_to_global_map)
 
     @property
     def coordinates_array(self):

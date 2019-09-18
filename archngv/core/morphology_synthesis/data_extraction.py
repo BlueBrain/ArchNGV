@@ -2,39 +2,48 @@
 """
 
 import logging
+from collections import namedtuple
 
 import pandas as pd
 
-from ...data_structures.data_cells import CellData
-from ...data_structures.data_gliovascular import GliovascularData
-from ...data_structures.data_synaptic import SynapticData
-from ...data_structures.data_microdomains import MicrodomainTesselation
-from ...data_structures.connectivity_gliovascular import GliovascularConnectivity
-from ...data_structures.connectivity_neuroglial import NeuroglialConnectivity
+from archngv import CellData
+from archngv import SynapticData
+from archngv import EndfeetAreas
+from archngv import GliovascularData
+from archngv import MicrodomainTesselation
+from archngv import NeuroglialConnectivity
+from archngv import GliovascularConnectivity
 
 
 L = logging.getLogger(__name__)
 
 
+EndfeetData = namedtuple('EndfeetData', ['targets', 'area_meshes'])
+
+
 def obtain_endfeet_data(astrocyte_index,
                         gliovascular_data_path,
-                        gliovascular_connectivity_path):
+                        gliovascular_connectivity_path,
+                        endfeet_areas_path):
     """ Extract the endfeet information from astrocyte_index if any, otherwise return None
     """
-    with GliovascularData(gliovascular_data_path) as gliovascular_data, \
-         GliovascularConnectivity(gliovascular_connectivity_path) as gliovascular_connectivity:
+    gliovascular_connectivity = GliovascularConnectivity(gliovascular_connectivity_path)
+    endfeet_indices = gliovascular_connectivity.astrocyte.to_endfoot(astrocyte_index)
 
-        endfeet_indices = gliovascular_connectivity.astrocyte.to_endfoot(astrocyte_index)
+    if len(endfeet_indices) == 0:
+        L.warning('No endfeet found for astrocyte index %d', astrocyte_index)
+        return None
 
-        if len(endfeet_indices) == 0:
-            L.warning('No endfeet found for astrocyte index %d', astrocyte_index)
-            return None
+    gliovascular_data = GliovascularData(gliovascular_data_path)
+    targets = gliovascular_data.endfoot_surface_coordinates[sorted(endfeet_indices)]
 
-        targets = gliovascular_data.endfoot_surface_coordinates[sorted(endfeet_indices)]
+    endfeet_areas = EndfeetAreas(endfeet_areas_path)[endfeet_indices]
 
     L.debug('Found endfeet %s for astrocyte index %d', endfeet_indices, astrocyte_index)
     L.debug('Endfeet Coordinates: %s', targets)
-    return targets
+    L.debug('Endfeet Area Meshes: %s', endfeet_areas)
+
+    return EndfeetData(targets=targets, area_meshes=endfeet_areas)
 
 
 def obtain_cell_properties(astrocyte_index,

@@ -27,6 +27,7 @@ class Worker(object):
             gliovascular_data_path=self._kwargs['gliovascular_data'],
             gliovascular_connectivity_path=self._kwargs['gliovascular_connectivity'],
             neuroglial_conn_path=self._kwargs['neuroglial_connectivity'],
+            endfeet_areas_path=self._kwargs['endfeet_areas'],
             tns_parameters_path=self._kwargs['tns_parameters'],
             tns_distributions_path=self._kwargs['tns_distributions'],
             morphology_directory=self._kwargs['out_morph_dir'],
@@ -59,6 +60,7 @@ def _apply_parallel_func(func, data_generator):
 @click.option("--gliovascular-data", help="Path to gliovascular data (HDF5)", required=True)
 @click.option("--neuroglial-connectivity", help="Path to neuroglial connectivity (HDF5)", required=True)
 @click.option("--synaptic-data", help="Path to HDF5 with synapse positions", required=True)
+@click.option("--endfeet-areas", help="Path to HDF5 endfeet areas", required=True)
 @click.option("--seed", help="Pseudo-random generator seed", type=int, default=0, show_default=True)
 @click.option("--parallel", help="Parallelize with 'multiprocessing'", is_flag=True, default=False)
 @click.option("--out-morph-dir", help="Path to output morphology folder", required=True)

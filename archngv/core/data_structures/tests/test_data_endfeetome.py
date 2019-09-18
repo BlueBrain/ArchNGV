@@ -6,82 +6,74 @@ from archngv.core.data_structures.data_endfeet_areas import EndfeetAreas
 from archngv.core.exporters.export_endfeet_areas import export_endfeet_areas
 
 
-N_ENDFEET = 11
-
-
-class MockEndfeetAreas(EndfeetAreas):
-
-    def __init__(self):
-
-        # substitute the h5 file with a nested dict
-        self._fd = {'objects': {}}
-        objects = self._fd['objects']
-
-        test_triangles = np.array([[0, 1, 2],
-                                   [2, 3, 4],
-                                   [4, 5, 0]], dtype=np.uintp)
-
-        for i in range(N_ENDFEET):
-
-            objects['endfoot_' + str(i)] = {
-                'points': np.random.random((6, 3)),
-                'triangles': test_triangles
-            }
-
-    def data_generator(self):
-        for i in range(N_ENDFEET):
-            yield i, self.mesh_points(i), self.mesh_triangles(i)
-
-@pytest.fixture(scope='session')
-def endfeet_areas_path(tmpdir_factory):
-
-    directory_path = tmpdir_factory.getbasetemp()
-    path = os.path.join(directory_path, 'endfeet_areas.h5')
-    return path
+N_ENDFEET = 4
 
 
 @pytest.fixture(scope='module')
-def endfeet_areas_mock(endfeet_areas_path):
-
-    data = MockEndfeetAreas()
-    export_endfeet_areas(endfeet_areas_path, data.data_generator())
-    return data
+def indices_per_entry():
+    return [5, 2, 0, 1]
 
 
 @pytest.fixture(scope='module')
-def endfeet_areas_data(endfeet_areas_path, endfeet_areas_mock): # ensure  mock_data fixture is created first
-    return EndfeetAreas(endfeet_areas_path)
+def points_per_entry():
+    return [
+        np.random.random((3, 3)),
+        np.random.random((4, 3)),
+        np.random.random((5, 3)),
+        np.random.random((6, 3))]
 
 
-def test__len__(endfeet_areas_data):
-    assert len(endfeet_areas_data) == N_ENDFEET
+@pytest.fixture(scope='module')
+def triangles_per_entry():
+    return [
+        np.array([[0, 1, 2]], dtype=np.uintp),
+        np.array([[0, 1, 2],
+                  [2, 3, 0]], dtype=np.uintp),
+        np.array([[0, 1, 2],
+                  [1, 2, 3],
+                  [2, 3, 4]], dtype=np.uintp),
+        np.array([[0, 1, 2],
+                  [2, 3, 4],
+                  [4, 5, 0]], dtype=np.uintp)]
 
 
-def test__getitem__(endfeet_areas_data, endfeet_areas_mock):
-
-    assert not isinstance(endfeet_areas_data[0], list)
-
-    for endfoot_data, endfoot_mock in zip(endfeet_areas_data[1: N_ENDFEET], endfeet_areas_mock[1: N_ENDFEET]):
-        assert endfoot_data == endfoot_mock
-        assert np.allclose(endfoot_data.points, endfoot_mock.points)
-        assert np.allclose(endfoot_data.triangles, endfoot_mock.triangles)
-
-    indices = np.array([1, 5, 2, 0, 8])
-
-    for endfoot_data, endfoot_mock in zip(endfeet_areas_data[indices], endfeet_areas_mock[indices]):
-        assert endfoot_data == endfoot_mock
-        assert np.allclose(endfoot_data.points, endfoot_mock.points)
-        assert np.allclose(endfoot_data.triangles, endfoot_mock.triangles)
+@pytest.fixture(scope='module')
+def thicknesses_per_entry():
+    return np.random.random(N_ENDFEET)
 
 
+@pytest.fixture(scope='module')
+def endfeet_areas(tmpdir_factory, indices_per_entry, points_per_entry, triangles_per_entry, thicknesses_per_entry):
+    path = os.path.join(tmpdir_factory.getbasetemp(), 'enfeet_areas.h5')
+    export_endfeet_areas(path, zip(
+        indices_per_entry,
+        points_per_entry,
+        triangles_per_entry,
+        thicknesses_per_entry))
+    return EndfeetAreas(path)
 
-def test_endfeet_mesh_points(endfeet_areas_data, endfeet_areas_mock):
-    for i in range(N_ENDFEET):
-        assert np.allclose(endfeet_areas_data.mesh_points(i),
-                           endfeet_areas_data.mesh_points(i))
+
+def test__len__(endfeet_areas):
+    assert len(endfeet_areas) == N_ENDFEET
 
 
-def test_endfeet_mesh_triangles(endfeet_areas_data, endfeet_areas_mock):
-    for i in range(N_ENDFEET):
-        assert np.allclose(endfeet_areas_data.mesh_triangles(i),
-                           endfeet_areas_data.mesh_triangles(i))
+def test__getitem__(endfeet_areas, indices_per_entry, points_per_entry, triangles_per_entry, thicknesses_per_entry):
+
+    assert not isinstance(endfeet_areas[0], list)
+
+    for i, endfoot_id in enumerate(indices_per_entry):
+        endfoot = endfeet_areas[endfoot_id]
+        assert endfoot.index == indices_per_entry[i]
+        assert np.allclose(endfoot.points, points_per_entry[i])
+        assert np.allclose(endfoot.triangles, triangles_per_entry[i])
+        assert np.isclose(endfoot.thickness, thicknesses_per_entry[i])
+
+
+def test_endfeet_mesh_points(endfeet_areas, indices_per_entry, points_per_entry):
+    for i, endfoot_id in enumerate(indices_per_entry):
+        assert np.allclose(endfeet_areas.mesh_points(endfoot_id), points_per_entry[i])
+
+
+def test_endfeet_mesh_triangles(endfeet_areas, indices_per_entry, triangles_per_entry):
+    for i, endfoot_id in enumerate(indices_per_entry):
+        assert np.allclose(endfeet_areas.mesh_triangles(endfoot_id), triangles_per_entry[i])

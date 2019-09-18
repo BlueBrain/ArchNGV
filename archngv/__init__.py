@@ -10,6 +10,7 @@ from archngv.core.data_structures.data_cells import CellData
 from archngv.core.data_structures.data_synaptic import SynapticData
 from archngv.core.data_structures.data_gliovascular import GliovascularData
 from archngv.core.data_structures.data_microdomains import MicrodomainTesselation, Microdomain
+from archngv.core.data_structures.data_endfeet_areas import EndfeetAreas
 
 from archngv.core.data_structures.connectivity_neuroglial import NeuroglialConnectivity
 from archngv.core.data_structures.connectivity_gliovascular import GliovascularConnectivity

@@ -162,6 +162,32 @@ rule neuroglial_connectivity:
         ])
 
 
+rule endfeet_area:
+    input:
+        gliovascular_data = 'gliovascular_data.h5',
+
+    output:
+        'endfeet_areas.h5'
+
+    log:
+        log_path('endfeet_area')
+
+    shell:
+        ' '.join([
+            NGV_APP.format(cmd='endfeet-area'),
+                '--config',
+                    bioname_path('endfeet_area.yaml'),
+                '--vasculature-mesh',
+                    config['common']['vasculature_mesh'],
+                '--gliovascular-data',
+                    '{input[gliovascular_data]}',
+                '--output',
+                    '{output}',
+                ('--parallel' if PARALLEL else ''),
+                '2>&1 | tee {log}'
+        ])
+
+
 rule synthesis:
     input:
         cell_data = 'cell_data.h5',
@@ -169,6 +195,7 @@ rule synthesis:
         gliovascular_connectivity = 'gliovascular_connectivity.h5',
         gliovascular_data = 'gliovascular_data.h5',
         neuroglial_connectivity = 'sonata.tmp/edges/neuroglial.h5.connectivity',
+        endfeet_areas = 'endfeet_areas.h5'
 
     output:
         touch(MORPH_DIR + '/_DONE'),
@@ -195,6 +222,8 @@ rule synthesis:
                     '{input[gliovascular_data]}',
                 '--neuroglial-connectivity',
                     '{input[neuroglial_connectivity]}',
+                '--endfeet-areas',
+                    '{input[endfeet_areas]}',
                 '--synaptic-data',
                     BASE_CIRCUIT_CONNECTOME,
                 '--out-morph-dir',
@@ -202,36 +231,6 @@ rule synthesis:
                 ('--parallel' if PARALLEL else ''),
                 '2>&1 | tee {log}'
         ])
-
-
-rule endfeet_area:
-    input:
-        gliovascular_connectivity = 'gliovascular_connectivity.h5',
-        gliovascular_data = 'gliovascular_data.h5',
-
-    output:
-        'endfeet_areas.h5'
-
-    log:
-        log_path('endfeet_area')
-
-    shell:
-        ' '.join([
-            NGV_APP.format(cmd='endfeet-area'),
-                '--config',
-                    bioname_path('endfeet_area.yaml'),
-                '--vasculature-mesh',
-                    config['common']['vasculature_mesh'],
-                '--gliovascular-connectivity',
-                    '{input[gliovascular_connectivity]}',
-                '--gliovascular-data',
-                    '{input[gliovascular_data]}',
-                '--output',
-                    '{output}',
-                ('--parallel' if PARALLEL else ''),
-                '2>&1 | tee {log}'
-        ])
-
 
 rule cell_data_sonata:
     input:
