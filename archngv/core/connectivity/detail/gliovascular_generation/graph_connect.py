@@ -7,9 +7,8 @@ import numpy as np
 import scipy.stats
 import scipy.sparse
 
-from morphspatial import collision
-
 from spatial_index import point_rtree
+from archngv.spatial import collision
 
 
 L = logging.getLogger(__name__)

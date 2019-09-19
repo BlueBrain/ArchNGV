@@ -7,7 +7,7 @@ from copy import deepcopy
 import numpy as np
 import tess
 
-from morphspatial import ConvexPolygon
+from archngv.spatial import ConvexPolygon
 
 from archngv.core.microdomain.tesselation import MicrodomainTesselation
 from archngv.core.microdomain.overlap import convex_polygon_with_overlap
@@ -42,7 +42,7 @@ def generate_microdomain_tesselation(generator_points, generator_radii, bounding
     # calculates the tesselations using voro++ library
     cells = tess.Container(generator_points, limits=limits, radii=generator_radii)
 
-    # convert tess cells to morphspatial shapes
+    # convert tess cells to archngv.spatial shapes
     regions = list(map(_shape_from_cell, cells))
     connectivity = _connectivity_from_cells(cells)
 

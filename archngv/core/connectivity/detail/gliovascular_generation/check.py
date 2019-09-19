@@ -42,9 +42,9 @@ def points_inside_polyhedra(points, polyhedra):
     """ Checks if points inside list of polyhedra.
     Args:
         points: array[float, (N, 3)]
-        polyhedra: list[morphspatial.shapes.ConvexPolyhedron]
+        polyhedra: list[archngv.spatial.shapes.ConvexPolyhedron]
     """
-    from morphspatial.collision import convex_shape_with_point
+    from archngv.spatial.collision import convex_shape_with_point
 
     try:
         for point, polyhedron in zip(points, polyhedra):

@@ -4,7 +4,7 @@ from copy import deepcopy
 from scipy.spatial import ConvexHull
 from ..overlap import convex_polygon_with_overlap
 
-from morphspatial.shapes import ConvexPolygon
+from archngv.spatial.shapes import ConvexPolygon
 
 """
 def test_convex_polygon_with_overlap():

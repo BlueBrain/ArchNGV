@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from morphspatial import ConvexPolygon
+from archngv.spatial import ConvexPolygon
 
 from ..domain_boundary import StopAtConvexBoundary
 

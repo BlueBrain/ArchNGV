@@ -3,7 +3,7 @@ Data structures for accessing information of astrocytic microdomains
 """
 import os
 import numpy as np
-from morphspatial import ConvexPolygon
+from archngv.spatial import ConvexPolygon
 
 from archngv.core.data_structures.common import H5ContextManager
 

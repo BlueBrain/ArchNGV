@@ -4,8 +4,8 @@
 import numpy as np
 from scipy.spatial import cKDTree
 
-from morphspatial.collision import convex_shape_with_point
-from morphmath import subdivide_triangles_by_total_area
+from archngv.spatial.collision import convex_shape_with_point
+from archngv.math_utils import subdivide_triangles_by_total_area
 
 
 class StopAtConvexBoundary:

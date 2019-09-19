@@ -1,7 +1,7 @@
 import pytest
 import numpy
 
-from morphspatial import ConvexPolygon
+from archngv.spatial import ConvexPolygon
 
 from archngv.core.data_structures.vasculature_morphology.vasculature import Vasculature
 #from ..gliovascular_core import Gliovascular

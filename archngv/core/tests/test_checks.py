@@ -1,5 +1,5 @@
 import pytest
-from morphspatial import BoundingBox
+from archngv.spatial import BoundingBox
 
 import numpy as np
 

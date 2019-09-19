@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 
 from spatial_index import point_rtree
-from morphspatial.collision import convex_shape_with_spheres
+from archngv.spatial.collision import convex_shape_with_spheres
 
 
 L = logging.getLogger(__name__)

@@ -23,7 +23,7 @@ def cmd(config, atlas, atlas_cache, vasculature, seed, output):
     from archngv.core.exporters import export_cell_placement_data
     from archngv.core.checks import assert_bbox_alignment
 
-    from morphspatial import BoundingBox
+    from archngv.spatial import BoundingBox
     from archngv.app.logger import LOGGER
     from archngv.app.utils import load_yaml
 

@@ -6,7 +6,7 @@ import numpy as np
 from scipy.spatial import cKDTree
 import morphio
 
-from morphmath import vectorized_triangle_area
+from archngv.math_utils import vectorized_triangle_area
 
 
 L = logging.getLogger(__name__)

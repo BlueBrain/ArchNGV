@@ -2,7 +2,7 @@
 
 import h5py
 import numpy as np
-from morphspatial import BoundingBox
+from archngv.spatial import BoundingBox
 
 from archngv.core.data_structures.vasculature_morphology.section import Section
 from archngv.core.data_structures.vasculature_morphology.types import pmap, emap, sconmap
