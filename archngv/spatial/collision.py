@@ -3,8 +3,8 @@
 
 # pylint: disable = too-many-arguments
 
-import numpy
-from archngv.math_utils import rowwise_dot
+import numpy as np
+from archngv.math_utils.linear_algebra import rowwise_dot
 
 from .gjk_algorithm import GJK
 
@@ -21,8 +21,8 @@ def sphere_with_spheres(center, radius, centers, radii):
         1D array: Bool
             True for i-th row if sphere (center, radius) collides with (centers[i], radii[i])
     """
-    values = numpy.linalg.norm(center - centers, axis=1) - (radii + radius)
-    return (values < 0.) | numpy.isclose(values, 0.)
+    values = np.linalg.norm(center - centers, axis=1) - (radii + radius)
+    return (values < 0.) | np.isclose(values, 0.)
 
 
 def sphere_with_sphere(sphere1_data, sphere2_data):
@@ -34,7 +34,7 @@ def sphere_with_sphere(sphere1_data, sphere2_data):
     x_1, y_1, z_1, r_1 = sphere1_data
     x_2, y_2, z_2, r_2 = sphere2_data
 
-    return numpy.sqrt((x_2 - x_1) ** 2 + (y_2 - y_1) ** 2 + (z_2 - z_1) ** 2) <= r_1 + r_2
+    return np.sqrt((x_2 - x_1) ** 2 + (y_2 - y_1) ** 2 + (z_2 - z_1) ** 2) <= r_1 + r_2
 
 
 def sphere_with_capsule(center, radius, p_0, p_1, r_0, r_1):
@@ -45,21 +45,21 @@ def sphere_with_capsule(center, radius, p_0, p_1, r_0, r_1):
     s_2 = vec[0] ** 2 + vec[1] ** 2 + vec[2] ** 2
 
     # t for closest distance between line and point
-    tau = numpy.dot(center - p_0, vec) / s_2
+    tau = np.dot(center - p_0, vec) / s_2
 
     # clamp for segment extent
-    tau = numpy.clip(tau, 0., 1.)
+    tau = np.clip(tau, 0., 1.)
 
     # closest point on capsule axis to point
     p_t = p_0 + tau * vec
 
     # distance of closest point to sphere center
-    closest_distx = numpy.linalg.norm(p_t - center)
+    closest_distx = np.linalg.norm(p_t - center)
 
     # radius to varying radius capsule for projection to point p_t
     r_c = r_0 + (r_1 - r_0) * tau
 
-    return (closest_distx < radius + r_c) & ~numpy.isclose(closest_distx, radius + r_c)
+    return (closest_distx < radius + r_c) & ~np.isclose(closest_distx, radius + r_c)
 
 
 def sphere_with_capsules(center, radius, p0s, p1s, r0s, r1s):
@@ -76,27 +76,27 @@ def sphere_with_capsules(center, radius, p0s, p1s, r0s, r1s):
     tau = rowwise_dot(center - p0s, vectors) / s_2
 
     # clamp for segment extent
-    tau = numpy.clip(tau, 0., 1.)
+    tau = np.clip(tau, 0., 1.)
 
     # closest point on capsule axis to point
-    p_t = p0s + tau[:, numpy.newaxis] * vectors
+    p_t = p0s + tau[:, np.newaxis] * vectors
 
     # distance of closest point to sphere center
-    closest_distx = numpy.linalg.norm(p_t - center, axis=1)
+    closest_distx = np.linalg.norm(p_t - center, axis=1)
 
     # radius to varying radius capsule for projection to point p_t
-    # mask = ~numpy.isclose(r0s, r1s)
+    # mask = ~np.isclose(r0s, r1s)
 
     r_c = r0s + (r1s - r0s) * tau
 
-    return (closest_distx < radius + r_c) & ~numpy.isclose(closest_distx, radius + r_c)
+    return (closest_distx < radius + r_c) & ~np.isclose(closest_distx, radius + r_c)
 
 
 def convex_shape_with_point(face_points, face_normals, point):
     """ Assumes that normals point outward
     """
     sgn_distx = rowwise_dot(point - face_points, face_normals)
-    return numpy.all((sgn_distx < 0.) | numpy.isclose(sgn_distx, 0.))
+    return np.all((sgn_distx < 0.) | np.isclose(sgn_distx, 0.))
 
 
 def convex_shape_with_spheres(face_points, face_normals, target_positions, target_radii=None):
@@ -119,18 +119,18 @@ def convex_shape_with_spheres(face_points, face_normals, target_positions, targe
     """
     # expand a dimension to do all the pairwise differences
     # resulting dimensions for k_m (N, M, 3)
-    k_m = target_positions - face_points[:, numpy.newaxis]
+    k_m = target_positions - face_points[:, np.newaxis]
 
     # signed distance from each point to each side of the domain (N, M)
-    signed_dist = numpy.einsum('ijk, ik -> ji', k_m, face_normals)
+    signed_dist = np.einsum('ijk, ik -> ji', k_m, face_normals)
 
     # if there is at least one signed distance from a point to a triangle side
     # that remains positive after subtracting the radius then that point belongs
     # to the halfspace outside that side of the triangle, thus not possible to intersect
     if target_radii is not None:
-        signed_dist -= target_radii[:, numpy.newaxis]
+        signed_dist -= target_radii[:, np.newaxis]
 
     # fix accuracy issues
-    signed_dist[numpy.isclose(signed_dist, 0.)] = 0.
+    signed_dist[np.isclose(signed_dist, 0.)] = 0.
 
-    return ~numpy.any(signed_dist > 0., axis=1)
+    return ~np.any(signed_dist > 0., axis=1)

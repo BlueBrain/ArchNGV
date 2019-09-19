@@ -6,7 +6,10 @@
 import numpy
 from scipy.spatial import ConvexHull  # pylint: disable = no-name-in-module
 
-import archngv.math_utils as mt
+from archngv.math_utils.linear_algebra import rowwise_dot
+from archngv.math_utils.ngons import vectorized_triangle_area
+from archngv.math_utils.ngons import vectorized_triangle_normal
+from archngv.math_utils.ngons import vectorized_tetrahedron_volume
 
 from . import bounding_box as _bbox
 from . import support_functions as _sup
@@ -15,7 +18,7 @@ from . import support_functions as _sup
 from . import utils as _ut
 
 
-class Sphere(object):
+class Sphere:
     """ Sphere class object.
     """
     __slots__ = ['center', 'radius']
@@ -43,7 +46,7 @@ class Sphere(object):
         return _sup.sphere(self.center, self.radius, unit_direction)
 
 
-class ConvexPolygon(object):
+class ConvexPolygon:
     """ Convex polygon data structure
     """
     __slots__ = 'points', 'triangles'
@@ -94,12 +97,12 @@ class ConvexPolygon(object):
     def face_areas(self):
         """ Returns areas of faces
         """
-        return mt.vectorized_triangle_area(*self.face_vectors)
+        return vectorized_triangle_area(*self.face_vectors)
 
     @property
     def face_normals(self):
         """ Returns normals of faces """
-        return mt.vectorized_triangle_normal(*self.face_vectors)
+        return vectorized_triangle_normal(*self.face_vectors)
 
     @property
     def face_centers(self):
@@ -120,8 +123,7 @@ class ConvexPolygon(object):
         tetrahedra_centroids = (self.points[self.triangles].sum(axis=1) + self._center) / 4.
 
         vecs = self.points[self.triangles] - self._center
-        volumes = \
-            mt.vectorized_tetrahedron_volume(vecs[:, 0, :], vecs[:, 1, :], vecs[:, 2, :])
+        volumes = vectorized_tetrahedron_volume(vecs[:, 0, :], vecs[:, 1, :], vecs[:, 2, :])
 
         return numpy.average(tetrahedra_centroids,
                              weights=volumes / volumes.sum(), axis=0)
@@ -131,9 +133,9 @@ class ConvexPolygon(object):
         """ Volume of the convex polygon
         """
         vecs = self.points[self.triangles] - self.centroid
-        return mt.vectorized_tetrahedron_volume(vecs[:, 0, :],
-                                                vecs[:, 1, :],
-                                                vecs[:, 2, :]).sum()
+        return vectorized_tetrahedron_volume(vecs[:, 0, :],
+                                             vecs[:, 1, :],
+                                             vecs[:, 2, :]).sum()
 
     @property
     def bounding_box(self):
@@ -171,7 +173,7 @@ class ConvexPolygon(object):
 
         face_first_points = self.points[self.triangles[:, 0]]
 
-        radius = min(mt.rowwise_dot(self.face_normals, face_first_points - centroid))
+        radius = min(rowwise_dot(self.face_normals, face_first_points - centroid))
 
         return centroid, radius
 
@@ -188,7 +190,7 @@ class ConvexPolygon(object):
         return ConvexPolygon(scale_factor * (self.points - cnt) + cnt, self.triangles)
 
 
-class TaperedCapsule(object):
+class TaperedCapsule:
     """ Capsule data structure
     """
     __slots__ = ['cap1_center', 'cap2_center', 'cap1_radius', 'cap2_radius']

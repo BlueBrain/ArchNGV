@@ -4,9 +4,9 @@ from the geometry of the microdomain
 import logging
 import numpy as np
 
-from archngv.math_utils import angle_matrix
-from archngv.math_utils import normalize_vectors
-from archngv.math_utils import subdivide_triangles_by_total_area
+from archngv.math_utils.linear_algebra import angle_matrix
+from archngv.math_utils.linear_algebra import normalize_vectors
+from archngv.math_utils.ngons import subdivide_triangles_by_total_area
 
 
 L = logging.getLogger(__name__)

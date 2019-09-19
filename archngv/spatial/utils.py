@@ -5,7 +5,8 @@ from itertools import chain
 
 import numpy as np
 
-import archngv.math_utils as mt
+from archngv.math_utils.linear_algebra import rowwise_dot
+from archngv.math_utils.geometry import rotate_from_unit_vector_to_another
 
 
 def _globally_ordered_verts(face_points, face_vertices):
@@ -69,7 +70,7 @@ def are_normals_backward(centroid, points, triangles, normals):
     """
     vectors = points[triangles[:, 0]] - centroid
 
-    signed_distx = mt.rowwise_dot(vectors, normals)
+    signed_distx = rowwise_dot(vectors, normals)
 
     return (signed_distx < 0.) & ~np.isclose(signed_distx, 0.)
 
@@ -89,7 +90,7 @@ def make_normals_outward(centroid, points, triangles, normals):
 def are_in_the_same_side(vectors1, vectors2):
     """ Check if vectors point to the same halfspace
     """
-    return mt.rowwise_dot(vectors1, vectors2) > 0.
+    return rowwise_dot(vectors1, vectors2) > 0.
 
 
 # pylint: disable = too-many-locals
@@ -102,8 +103,7 @@ def create_contact_sphere_around_truncated_cylinder(p_0, p_1, r_0, r_1, n_sphere
 
     vec = p_1 - p_0
 
-    rot_m = \
-        mt.rotate_from_unit_vector_to_another(np.array([0., 0., 1.]), vec / np.linalg.norm(vec))
+    rot_m = rotate_from_unit_vector_to_another(np.array([0., 0., 1.]), vec / np.linalg.norm(vec))
 
     p_t = p_0 + vec * taus[:, np.newaxis]
 

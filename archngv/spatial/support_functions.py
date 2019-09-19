@@ -2,7 +2,7 @@
 """
 import numpy
 
-from archngv.math_utils import vectorized_dot_product
+from archngv.math_utils.linear_algebra import vectorized_dot_product
 
 
 def sphere(center, radius, normalized_direction):

@@ -5,9 +5,6 @@ from scipy.spatial import ConvexHull
 from .. import shapes
 
 
-import archngv.math_utils as mt
-
-
 @pytest.fixture
 def convex_polygon():
     points = numpy.array([[0., 0., 0.], [1., 0., 0.], [0., 0., 1.], [0., 1., 0.]])

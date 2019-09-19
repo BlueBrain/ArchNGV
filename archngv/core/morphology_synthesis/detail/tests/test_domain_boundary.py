@@ -2,7 +2,6 @@ import pytest
 import numpy as np
 
 from archngv.spatial import ConvexPolygon
-
 from ..domain_boundary import StopAtConvexBoundary
 
 

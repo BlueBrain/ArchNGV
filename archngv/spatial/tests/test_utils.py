@@ -1,8 +1,7 @@
 
 import numpy
 
-import archngv.math_utils as _mt
-
+from archngv.math_utils.ngons import vectorized_triangle_normal
 from .. import utils as _ut
 
 
@@ -46,7 +45,7 @@ def test_make_normals_outwards():
         v1s = points[triangles[:, 1]] - points[triangles[:, 0]]
         v2s = points[triangles[:, 2]] - points[triangles[:, 0]]
 
-        normals = _mt.vectorized_triangle_normal(v1s, v2s)
+        normals = vectorized_triangle_normal(v1s, v2s)
 
         return normals
 

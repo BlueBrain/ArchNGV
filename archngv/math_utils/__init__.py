@@ -1,5 +1,5 @@
-""" General Mathematics Functions
+""" Imports
 """
-from .geometry import *
-from .linear_algebra import *
-from .combinatronics import *
+from . import geometry
+from . import linear_algebra
+from . import combinatronics

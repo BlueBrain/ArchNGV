@@ -1,6 +1,6 @@
 
 import numpy
-from archngv.math_utils import rowwise_dot
+from archngv.math_utils.linear_algebra import rowwise_dot
 
 from .. import inclusion as _inc
 

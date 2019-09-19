@@ -1,8 +1,65 @@
 import pytest
 import numpy as np
 
-from ..geometry import subdivide_triangles 
-from ..geometry import subdivide_triangles_by_total_area
+from .. import ngons
+
+
+def test_vectorized_triangle_normal():
+
+    As = np.random.rand(2, 3)
+    Bs = np.random.rand(2, 3)
+    Cs = np.random.rand(2, 3)
+
+    Us = Bs - As
+    Vs = Cs - As
+
+    result = []
+
+    for i in range(2):
+
+        x = (Us[i][1] * Vs[i][2]) - (Us[i][2] * Vs[i][1])
+        y = (Us[i][2] * Vs[i][0]) - (Us[i][0] * Vs[i][2])
+        z = (Us[i][0] * Vs[i][1]) - (Us[i][1] * Vs[i][0])
+        dist = np.sqrt(x**2 + y**2 + z**2)
+        n = np.asarray((x / dist, y / dist, z / dist))
+        result.append(n)
+
+    expected_result = np.asarray(result)
+
+    result = ngons.vectorized_triangle_normal(Bs - As, Cs - As)
+
+    assert np.allclose(expected_result, result)
+
+
+def test_vectorized_parallelepiped_volume():
+
+    vectors1 = np.array([(1., 1., 1.),
+                         (5., 1., 3.)])
+    vectors2 = np.array([(2., 1., 2.),
+                         (4., 1., 2.)])
+    vectors3 = np.array([(2., 4., 4.),
+                         (2., 1., 4.)])
+
+    res_arr = ngons.vectorized_parallelepiped_volume(vectors1, vectors2, vectors3)
+    act_arr = np.array([2., 4.])
+
+    assert np.allclose(res_arr, act_arr)
+
+
+def test_vectorized_tetrahedron_volume():
+
+    vectors1 = np.array([(1., 1., 1.),
+                         (5., 1., 3.)])
+    vectors2 = np.array([(2., 1., 2.),
+                         (4., 1., 2.)])
+    vectors3 = np.array([(2., 4., 4.),
+                         (2., 1., 4.)])
+
+    res_arr = ngons.vectorized_tetrahedron_volume(vectors1, vectors2, vectors3)
+    act_arr = np.array([2., 4.]) / 6.
+
+    assert np.allclose(res_arr, act_arr)
+
 
 
 def test_subdivide_triangles_iterations_0():
@@ -10,7 +67,7 @@ def test_subdivide_triangles_iterations_0():
     points = np.array([[0., 0., 0.], [0., 0., 3.], [3., 0., 0.]])
     triangles = [[0, 1, 2]]
 
-    added_points, res_triangles = subdivide_triangles(points, triangles)
+    added_points, res_triangles = ngons.subdivide_triangles(points, triangles)
 
     assert len(added_points) == 1
     assert len(res_triangles) == 3
@@ -24,7 +81,7 @@ def test_subdivide_triangles_iterations_1():
     points = np.array([[0., 0., 0.], [0., 0., 9.], [9., 0., 0.]])
     triangles = [[0, 1, 2]]
 
-    added_points, res_triangles = subdivide_triangles(points, triangles, max_level=1)
+    added_points, res_triangles = ngons.subdivide_triangles(points, triangles, max_level=1)
 
     assert len(added_points) == 4
     assert len(res_triangles) == 9
@@ -52,22 +109,22 @@ def test_subdivide_triangles_by_total_area__no_subdivision():
     points = np.array([[0., 0., 0.], [0., 0., 9.], [9., 0., 0.]])
     triangles = [[0, 1, 2]]
 
-    result_points, result_triangles = subdivide_triangles_by_total_area(points, triangles, 0)
+    result_points, result_triangles = ngons.subdivide_triangles_by_total_area(points, triangles, 0)
 
     assert np.allclose(result_points, points)
     assert np.array_equal(triangles, result_triangles)
 
-    result_points, result_triangles = subdivide_triangles_by_total_area(points, triangles, 1)
+    result_points, result_triangles = ngons.subdivide_triangles_by_total_area(points, triangles, 1)
 
     assert np.allclose(result_points, points)
     assert np.array_equal(triangles, result_triangles)
 
-    result_points, result_triangles = subdivide_triangles_by_total_area(points, triangles, 2)
+    result_points, result_triangles = ngons.subdivide_triangles_by_total_area(points, triangles, 2)
 
     assert np.allclose(result_points, points)
     assert np.array_equal(triangles, result_triangles)
 
-    result_points, result_triangles = subdivide_triangles_by_total_area(points, triangles, 3)
+    result_points, result_triangles = ngons.subdivide_triangles_by_total_area(points, triangles, 3)
 
     print(result_points, result_triangles)
 
@@ -81,7 +138,7 @@ def test_subdivide_triangles_by_total_area_1():
                        [0., 0., 0.], [0., 0., 0.1], [0.1, 0., 0.]])
     triangles = [[0, 1, 2], [3, 4, 5]]
 
-    result_points, result_triangles = subdivide_triangles_by_total_area(points, triangles, 7)
+    result_points, result_triangles = ngons.subdivide_triangles_by_total_area(points, triangles, 7)
 
     expected_points = [[0.,  0.,  0.],
                        [0.,  0.,  9. ],
@@ -108,7 +165,7 @@ def test_subdivide_triangles_by_total_area_2():
                        [0., 0., 0.], [0., 0., 8.], [8., 0., 0.]])
     triangles = [[0, 1, 2], [3, 4, 5]]
 
-    result_points, result_triangles = subdivide_triangles_by_total_area(points, triangles, 30)
+    result_points, result_triangles = ngons.subdivide_triangles_by_total_area(points, triangles, 30)
 
     expected_points = np.array([
        [0.        , 0.        , 0.        ],
