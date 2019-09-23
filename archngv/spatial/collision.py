@@ -4,7 +4,7 @@
 # pylint: disable = too-many-arguments
 
 import numpy as np
-from archngv.math_utils.linear_algebra import rowwise_dot
+from archngv.utils.linear_algebra import rowwise_dot
 
 from .gjk_algorithm import GJK
 

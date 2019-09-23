@@ -4,12 +4,11 @@
 
 
 import numpy
+from cached_property import cached_property
 from scipy.spatial import ConvexHull  # pylint: disable = no-name-in-module
 
-from archngv.math_utils.linear_algebra import rowwise_dot
-from archngv.math_utils.ngons import vectorized_triangle_area
-from archngv.math_utils.ngons import vectorized_triangle_normal
-from archngv.math_utils.ngons import vectorized_tetrahedron_volume
+from archngv.utils import ngons
+from archngv.utils.linear_algebra import rowwise_dot
 
 from . import bounding_box as _bbox
 from . import support_functions as _sup
@@ -49,8 +48,6 @@ class Sphere:
 class ConvexPolygon:
     """ Convex polygon data structure
     """
-    __slots__ = 'points', 'triangles'
-
     @classmethod
     def from_point_cloud(cls, points):
         """ Constructor from point cloud
@@ -63,30 +60,33 @@ class ConvexPolygon:
         """
         return cls(convex_hull.points, convex_hull.simplices)
 
-    def __init__(self, points, face_vertices):
+    def __init__(self, points, triangles):
+        self._points = points
+        self._triangles = triangles
 
-        self.points = points
+    @property
+    def points(self):
+        """ Returns convex polygon points """
+        return self._points
 
-        # break down polygonal faces to triangular ones
-        gen = _ut.triangles_from_polygons_generator(points, face_vertices)
+    @points.setter
+    def points(self, new_points):
+        """ Update polygon points """
+        self._points = new_points
 
-        self.triangles = _ut.fromiter2D(gen, 3, numpy.intp)
-
-        # flip the sequence of the triangles if the normal is inwards
-        # ensure that everytime normals are calculated, the normals are outward
-        self.triangles = _ut.make_normals_outward(self._center,
-                                                  self.points,
-                                                  self.triangles,
-                                                  self.face_normals)
+    @cached_property
+    def triangles(self):
+        """ Returns convex polygon triangles. Flips the sequence of the triangles
+        if the normal is inwards ensure that everytime normals are calculated,
+        the normals are outward
+        """
+        return _ut.make_normals_outward(self._center, self.points, self._triangles)
 
     @property
     def face_vectors(self):
-        """ Sequential face vectors
-        """
-        tris = self.triangles
-        pnts = self.points
-        return (pnts[tris[:, 1]] - pnts[tris[:, 0]],
-                pnts[tris[:, 2]] - pnts[tris[:, 0]])
+        """ Sequential face vectors """
+        ps, tris = self.points, self.triangles
+        return ngons.vectorized_consecutive_triangle_vectors(ps, tris)
 
     @property
     def face_points(self):
@@ -95,14 +95,13 @@ class ConvexPolygon:
 
     @property
     def face_areas(self):
-        """ Returns areas of faces
-        """
-        return vectorized_triangle_area(*self.face_vectors)
+        """ Returns areas of faces """
+        return ngons.vectorized_triangle_area(*self.face_vectors)
 
     @property
     def face_normals(self):
         """ Returns normals of faces """
-        return vectorized_triangle_normal(*self.face_vectors)
+        return ngons.vectorized_triangle_normal(*self.face_vectors)
 
     @property
     def face_centers(self):
@@ -123,35 +122,31 @@ class ConvexPolygon:
         tetrahedra_centroids = (self.points[self.triangles].sum(axis=1) + self._center) / 4.
 
         vecs = self.points[self.triangles] - self._center
-        volumes = vectorized_tetrahedron_volume(vecs[:, 0, :], vecs[:, 1, :], vecs[:, 2, :])
+        volumes = ngons.vectorized_tetrahedron_volume(vecs[:, 0, :], vecs[:, 1, :], vecs[:, 2, :])
 
         return numpy.average(tetrahedra_centroids,
                              weights=volumes / volumes.sum(), axis=0)
 
     @property
     def volume(self):
-        """ Volume of the convex polygon
-        """
+        """ Volume of the convex polygon """
         vecs = self.points[self.triangles] - self.centroid
-        return vectorized_tetrahedron_volume(vecs[:, 0, :],
-                                             vecs[:, 1, :],
+        return ngons.vectorized_tetrahedron_volume(vecs[:, 0, :],
+                                                   vecs[:, 1, :],
                                              vecs[:, 2, :]).sum()
 
     @property
     def bounding_box(self):
-        """ Axis aligned bounding box of convex polygon
-        """
+        """ Axis aligned bounding box of convex polygon """
         return _bbox.aabb_point_cloud(self.points)
 
     def support(self, unit_direction):
-        """ Support of convex polygon along unit direction
-        """
+        """ Support of convex polygon along unit direction """
         return _sup.convex_polytope(self.points, self.adjacency, unit_direction)
 
     @property
     def adjacency(self):
-        """ Adjacency matrix of its vertices
-        """
+        """ Adjacency matrix of its vertices """
         adjacency = tuple(set() for _ in range(len(self.points)))
         for vertices in self.triangles:
             for i, vertex in enumerate(vertices):
@@ -168,13 +163,9 @@ class ConvexPolygon:
         """ Returns centroid and radius of a sphere that is inscribed
         inside the convex polygon
         """
-
         centroid = self.centroid
-
         face_first_points = self.points[self.triangles[:, 0]]
-
         radius = min(rowwise_dot(self.face_normals, face_first_points - centroid))
-
         return centroid, radius
 
     def scale(self, scale_factor, inplace=False):
@@ -182,11 +173,9 @@ class ConvexPolygon:
         sits on the origin.
         """
         cnt = self.centroid
-
         if inplace:
             self.points = scale_factor * (self.points - cnt) + cnt
             return self
-
         return ConvexPolygon(scale_factor * (self.points - cnt) + cnt, self.triangles)
 
 

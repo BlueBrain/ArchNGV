@@ -2,9 +2,10 @@ import numpy as np
 import pytest
 from copy import deepcopy
 from scipy.spatial import ConvexHull
-from ..overlap import convex_polygon_with_overlap
 
-from archngv.spatial.shapes import ConvexPolygon
+from archngv import Microdomain
+
+from ..overlap import convex_polygon_with_overlap
 
 """
 def test_convex_polygon_with_overlap():
@@ -13,7 +14,7 @@ def test_convex_polygon_with_overlap():
 
     points = 100. + np.random.random((100, 3))
 
-    cp1 = ConvexPolygon.from_convex_hull(ConvexHull(points))
+    cp1 = Microdomain.from_convex_hull(ConvexHull(points))
     cp2 = deepcopy(cp1)
 
     cp2.points = convex_polygon_with_overlap(cp1.centroid, cp1.points, overlap)

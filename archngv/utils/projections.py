@@ -3,8 +3,8 @@ Functions related to projections
 """
 import numpy as np
 
-from archngv.math_utils.linear_algebra import rowwise_dot
-from archngv.math_utils.linear_algebra import normalize_vectors
+from archngv.utils.linear_algebra import rowwise_dot
+from archngv.utils.linear_algebra import normalize_vectors
 
 
 def vectorized_scalar_projection(vectors, vector):

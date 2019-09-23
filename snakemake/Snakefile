@@ -37,7 +37,7 @@ PARALLEL = True
 rule default:
     input:
         'cell_data.h5',
-        'microdomains/overlapping_structure.h5',
+        'microdomains/overlapping_microdomains.h5',
         'gliovascular_connectivity.h5',
         'gliovascular_data.h5',
         'endfeet_areas.h5',
@@ -80,12 +80,8 @@ rule microdomains:
         'cell_data.h5'
 
     output:
-        'microdomains/structure.h5',
-        'microdomains/structure_global.h5',
-        'microdomains/tesselation.stl',
-        'microdomains/overlapping_structure.h5',
-        'microdomains/overlapping_structure_global.h5',
-        'microdomains/overlapping_tesselation.stl',
+        'microdomains/microdomains.h5',
+        'microdomains/overlapping_microdomains.h5',
 
     log:
         log_path('microdomains')
@@ -110,7 +106,7 @@ rule microdomains:
 rule gliovascular_connectivity:
     input:
         cell_data = 'cell_data.h5',
-        microdomains = 'microdomains/overlapping_structure.h5',
+        microdomains = 'microdomains/overlapping_microdomains.h5',
 
     output:
         data = 'gliovascular_data.h5',
@@ -141,7 +137,7 @@ rule gliovascular_connectivity:
 rule neuroglial_connectivity:
     input:
         astrocytes = 'sonata/nodes/glia.h5',
-        microdomains = 'microdomains/overlapping_structure.h5',
+        microdomains = 'microdomains/overlapping_microdomains.h5',
 
     output:
         'sonata.tmp/edges/neuroglial.h5.connectivity',
@@ -169,7 +165,7 @@ rule neuroglial_connectivity:
 rule synthesis:
     input:
         cell_data = 'cell_data.h5',
-        microdomains = 'microdomains/overlapping_structure.h5',
+        microdomains = 'microdomains/overlapping_microdomains.h5',
         gliovascular_connectivity = 'gliovascular_connectivity.h5',
         gliovascular_data = 'gliovascular_data.h5',
         neuroglial_connectivity = 'sonata.tmp/edges/neuroglial.h5.connectivity',

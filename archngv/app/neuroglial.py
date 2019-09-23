@@ -39,8 +39,9 @@ def connectivity(neurons, astrocytes, microdomains, synaptic_data, seed, output)
 
     LOGGER.info('Generating neuroglial connectivity...')
 
-    with MicrodomainTesselation(microdomains) as microdomains, \
-         SynapticData(synaptic_data) as syn_data:
+    microdomains = MicrodomainTesselation(microdomains)
+
+    with SynapticData(synaptic_data) as syn_data:
 
         data_iterator = generate_neuroglial(
             astrocytes=astrocytes,

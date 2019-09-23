@@ -39,27 +39,28 @@ def cmd(config, cell_data, microdomains, vasculature, seed, output_data, output_
     n_astrocytes = len(somata_positions)
     somata_idx = np.arange(len(somata_positions), dtype=np.uintp)
 
-    with MicrodomainTesselation(microdomains) as microdomains:
-        (
-            endfeet_surface_positions,
-            endfeet_graph_positions,
-            endfeet_to_astrocyte_mapping,
-            endfeet_to_vasculature_mapping
-        ) = generate_gliovascular(somata_idx, somata_positions, microdomains, vasculature, params)
+    microdomains = MicrodomainTesselation(microdomains)
 
-        LOGGER.info('Exporting gliovascular data...')
-        export_gliovascular_data(
-            output_data,
-            endfeet_surface_positions,
-            endfeet_graph_positions
-        )
+    (
+        endfeet_surface_positions,
+        endfeet_graph_positions,
+        endfeet_to_astrocyte_mapping,
+        endfeet_to_vasculature_mapping
+    ) = generate_gliovascular(somata_idx, somata_positions, microdomains, vasculature, params)
 
-        LOGGER.info('Exporting gliovascular connectivity...')
-        export_gliovascular_connectivity(
-            output_connectivity,
-            n_astrocytes,
-            endfeet_to_astrocyte_mapping,
-            endfeet_to_vasculature_mapping
-        )
+    LOGGER.info('Exporting gliovascular data...')
+    export_gliovascular_data(
+        output_data,
+        endfeet_surface_positions,
+        endfeet_graph_positions
+    )
+
+    LOGGER.info('Exporting gliovascular connectivity...')
+    export_gliovascular_connectivity(
+        output_connectivity,
+        n_astrocytes,
+        endfeet_to_astrocyte_mapping,
+        endfeet_to_vasculature_mapping
+    )
 
     LOGGER.info("Done!")

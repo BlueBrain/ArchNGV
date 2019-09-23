@@ -3,8 +3,14 @@ Functions related to triangles
 """
 import math
 import numpy as np
-from archngv.math_utils.linear_algebra import rowwise_dot
-from archngv.math_utils.linear_algebra import normalize_vectors
+from archngv.utils.linear_algebra import rowwise_dot
+from archngv.utils.linear_algebra import normalize_vectors
+
+
+def vectorized_consecutive_triangle_vectors(points, triangles):
+    """ Sequential face vectors """
+    return (points[triangles[:, 1]] - points[triangles[:, 0]],
+            points[triangles[:, 2]] - points[triangles[:, 0]])
 
 
 def vectorized_triangle_normal(vectors1, vectors2):
@@ -224,3 +230,104 @@ def subdivide_triangles(initial_points, initial_triangles, max_level=0, max_poin
         level += 1
 
     return added_points, new_triangles
+
+
+def globally_ordered_verts(face_points, face_vertices):
+    """ Given a chain of face_vertices, find how to traverse it
+    via face_point coordinate ordering in order to achieve the same
+    ordering from any overlapping polygon
+
+    Args:
+        face_points: array[float, (N, 3)]
+        face_vertices: array[int, (M,)]
+
+    Returns:
+        face_vertices_ordering: array[ing, (M, )]
+    """
+    # the start vertex of the face is selected be the
+    # ordering of the face coordinates by zyx
+    first_index, second_index = np.lexsort(face_points.T)[:2]
+
+    n_verts = len(face_points)
+
+    if first_index > second_index or (first_index == 0 and second_index == n_verts - 1):
+        # if the second index is smaller than the first it means that we need to
+        # iterate the vertices backwards starting from the second_index
+        # By shifting the array by len(face_vertices) - second_index - 1 we make
+        # sure that the second_index is at the end of the array eg
+        # [4, 5, 6, 7, 8] -> [7, 8, 4, 5, 6] if first_index = 2, second_index = 1
+        # Then we reverse the array to [6, 5, 4, 8, 7] to achieve the same ordering
+        right_shift = len(face_vertices) - first_index - 1
+        return np.roll(face_vertices, right_shift)[::-1]
+
+    # shoft the array to the left so that first_index element is first eg
+    # [5, 6, 7, 8] -> [7, 8, 5, 6] if first_index = 2
+    return np.roll(face_vertices, -first_index)
+
+
+def polygons_to_triangles(points, face_vertices_collection):
+    """ Triangles from polygons
+
+    Args:
+        points: array[float, (N, 3)]
+            The 3D coordinates of the polygons
+        face_vertices_collection: list[list[int]]
+            A list of polygons the vertices in consecutive order
+
+    Returns:
+        triangles: array[uint, (M, 3)]
+        triangle_to_polygon_map: array[uint, (M,)]
+
+    Notes:
+        This algorithm works by splitting a polygon into consecutive
+        triangles, starting from an existing vertex and tranversing
+        the polygon clockwise or counterclockwise depending on the global
+        order determined by the coordinates of the polygon.
+
+        A triangle consists for three vertices and for any extra vertex
+        we have in the polygon creates a new triangle, i.e.:
+
+        3 vertices 1 triangle
+        4 vertices 2 triangles
+        5 vertices 3 triagnels
+        n vertices n - 2 triangles
+
+    """
+    n_tris = sum(len(verts) - 2 for verts in face_vertices_collection)
+
+    tris = np.empty((n_tris, 3), dtype=np.uint64)
+
+    # maps triangles back to the polygon list
+    tris_to_polys_map = np.empty(n_tris, dtype=np.uint64)
+
+    n = 0
+    for face_index, face_vertices in enumerate(face_vertices_collection):
+
+        n_vertices = len(face_vertices)
+        face_vertices = np.asarray(face_vertices, dtype=np.uintp)
+
+        # triangle, store it as it is
+        if n_vertices == 3:
+
+            tris[n] = face_vertices
+            tris_to_polys_map[n] = face_index
+            n += 1
+            continue
+
+        face_points = points[face_vertices]
+
+        # consecutive vertices ordered by a global ordering of their
+        # coordinates.
+        o_verts = globally_ordered_verts(face_points, face_vertices)
+
+        # split the polygon into consecutive triangles
+        for i in range(2, n_vertices):
+            # i = 2 -> 0, 1, 2
+            # i = 3 -> 0, 2, 3 etc.
+            tris[n] = o_verts[0], o_verts[i - 1], o_verts[i]
+
+            # keep track of the polygon we started from
+            tris_to_polys_map[n] = face_index
+            n += 1
+
+    return tris, tris_to_polys_map

@@ -7,30 +7,26 @@ from copy import deepcopy
 import numpy as np
 import tess
 
-from archngv.spatial import ConvexPolygon
-
-from archngv.core.microdomain.tesselation import MicrodomainTesselation
+from archngv import Microdomain
 from archngv.core.microdomain.overlap import convex_polygon_with_overlap
 
+from archngv.utils.ngons import polygons_to_triangles
 
 L = logging.getLogger(__name__)
 
 
-def _shape_from_cell(cell):
-    """ Returns a shape from a tess cell
+def _microdomain_from_tess_cell(cell):
+    """ Converts a tess cell into a Microdomain object
     """
-    points = np.asarray(cell.vertices())
-    face_vertices = np.asarray(cell.face_vertices())
-    return ConvexPolygon(points, face_vertices)
+    points = np.asarray(cell.vertices(), dtype=np.float32)
 
+    # polygon face neighbors
+    neighbors = np.asarray(cell.neighbors(), dtype=np.intp)
 
-def _connectivity_from_cells(cells):
-    """ Returns the connectivity between the tesselation cells
-    """
-    extract_neighbors = \
-        lambda cell: tuple(neighbor for neighbor in cell.neighbors() if neighbor >= 0)
+    triangles, tris_to_polys_map = polygons_to_triangles(points, cell.face_vertices())
+    triangle_data = np.column_stack((tris_to_polys_map, triangles))
 
-    return tuple(extract_neighbors(cell) for cell in cells)
+    return Microdomain(points, triangle_data, neighbors[tris_to_polys_map])
 
 
 def generate_microdomain_tesselation(generator_points, generator_radii, bounding_box):
@@ -40,16 +36,13 @@ def generate_microdomain_tesselation(generator_points, generator_radii, bounding
     limits = (bounding_box.min_point, bounding_box.max_point)
 
     # calculates the tesselations using voro++ library
-    cells = tess.Container(generator_points, limits=limits, radii=generator_radii)
+    tess_cells = tess.Container(generator_points, limits=limits, radii=generator_radii)
 
     # convert tess cells to archngv.spatial shapes
-    regions = list(map(_shape_from_cell, cells))
-    connectivity = _connectivity_from_cells(cells)
-
-    return MicrodomainTesselation(regions, connectivity)
+    return list(map(_microdomain_from_tess_cell, tess_cells))
 
 
-def convert_to_overlappping_tesselation(microdomain_tesselation, overlap_distribution):
+def convert_to_overlappping_tesselation(microdomains, overlap_distribution):
     """ Given an existing tesselation uniformly exapnd each convex region in order to
     achieve an overlap with the neighbors given by the overlap distribution. Overlap is
     a percentage determined by overlap = (V_new - V_old) / V_old
@@ -57,11 +50,12 @@ def convert_to_overlappping_tesselation(microdomain_tesselation, overlap_distrib
     Returns a new tesselation with the scaled domains and same connectivity as the input
     one.
     """
-    overlaps = overlap_distribution.rvs(size=len(microdomain_tesselation))
+    overlaps = overlap_distribution.rvs(size=len(microdomains))
+    overlapping_microdomains = deepcopy(microdomains)
 
-    new_regions = list(map(deepcopy, microdomain_tesselation.regions))
+    for dom_index, dom in enumerate(microdomains):
 
-    for index, reg in enumerate(new_regions):
-        reg.points = convex_polygon_with_overlap(reg.centroid, reg.points, overlaps[index])
+        new_points = convex_polygon_with_overlap(dom.centroid, dom.points, overlaps[dom_index])
+        overlapping_microdomains[dom_index].points = new_points
 
-    return microdomain_tesselation.with_regions(new_regions)
+    return overlapping_microdomains

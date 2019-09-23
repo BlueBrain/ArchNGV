@@ -1,25 +1,8 @@
 
 import numpy
 
-from archngv.math_utils.ngons import vectorized_triangle_normal
-from .. import utils as _ut
-
-
-def test_are_in_the_same_side():
-
-    vecs1 = numpy.array([[1., 2., 1.],
-                         [-1., -1., -1.],
-                         [1., 1., 1.]])
-
-    vecs2 = numpy.array([[0., 1., 1.],
-                         [1., 2., 1.],
-                         [1., 1., 1.]])
-
-    expected_result = numpy.array([True, False, True], dtype=numpy.bool)
-
-    result = _ut.are_in_the_same_side(vecs1, vecs2)
-
-    assert numpy.allclose(expected_result, result)
+from archngv.utils.ngons import vectorized_triangle_normal
+from archngv.spatial import utils as _ut
 
 
 def test_are_normals_backward():
@@ -55,7 +38,7 @@ def test_make_normals_outwards():
 
     centroid = numpy.mean(points, axis=0)
 
-    new_triangles = _ut.make_normals_outward(centroid, points, old_triangles, old_normals)
+    new_triangles = _ut.make_normals_outward(centroid, points, old_triangles)
     new_normals = calc_normals(points, new_triangles)
 
     msg = ['{} {} {} {}'.format(row1, val1, row2, val2) for

@@ -2,7 +2,7 @@
 """
 import numpy
 
-from archngv.math_utils.linear_algebra import vectorized_dot_product
+from archngv.utils.linear_algebra import vectorized_dot_product
 
 
 def sphere(center, radius, normalized_direction):
@@ -40,13 +40,10 @@ def convex_polytope2(shape_points, adjacency, direction):
                 new_dst = dst
 
         if new_vid == cur_vid:
-
             break
 
-        else:
-
-            cur_vid = new_vid
-            cur_dst = new_dst
+        cur_vid = new_vid
+        cur_dst = new_dst
 
     return shape_points[cur_vid]
 

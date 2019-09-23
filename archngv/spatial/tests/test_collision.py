@@ -1,8 +1,8 @@
 import numpy as np
 
-import archngv.math_utils.geometry as _gm
-import archngv.math_utils.linear_algebra as _la
-import archngv.math_utils.projections as _pj
+import archngv.utils.geometry as _gm
+import archngv.utils.linear_algebra as _la
+import archngv.utils.projections as _pj
 
 from .. import collision
 from ..utils import create_contact_sphere_around_truncated_cylinder

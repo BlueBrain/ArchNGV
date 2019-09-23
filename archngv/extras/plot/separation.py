@@ -9,7 +9,7 @@ from .common import LAYERS
 from archngv.extras.analysis.histograms import wiring_histogram
 from archngv.extras.analysis.histograms import vectors_included_in_bin_1D
 from archngv.extras.analysis.histograms import points_included_in_bin_1D
-from archngv.math_utils import normalize_vectors
+from archngv.utils import normalize_vectors
 
 from archngv.spatial.shapes import Sphere
 

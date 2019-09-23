@@ -18,11 +18,11 @@ def cross(a, b):
                      a[0] * b[1] - a[1] * b[0]))
 
 
-def support(shape1, shape2, direction):
+def support(first_shape, second_shape, direction):
     """ Support function to get the Minkowsky difference
     """
     direction = direction / np.sqrt(direction[0] ** 2 + direction[1] ** 2 + direction[2] ** 2)
-    return shape1.support(direction) - shape2.support(-direction)
+    return first_shape.support(direction) - second_shape.support(-direction)
 
 
 def pick_line(shape1, shape2, direction):

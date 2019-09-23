@@ -5,57 +5,10 @@ from itertools import chain
 
 import numpy as np
 
-from archngv.math_utils.linear_algebra import rowwise_dot
-from archngv.math_utils.geometry import rotate_from_unit_vector_to_another
-
-
-def _globally_ordered_verts(face_points, face_vertices):
-    """ Given a chain of face_vertices, find how to traverse it
-    via face_point coordinate ordering in order to achieve the same
-    ordering from any overlapping polygon
-    """
-    # the start vertex of the face is selected be the
-    # ordering of the face coordinates by zyx
-    first_index, second_index = np.lexsort(face_points.T)[:2]
-
-    n_verts = len(face_points)
-
-    if first_index > second_index or \
-       (first_index == 0 and second_index == n_verts - 1):
-        # if the second index is smaller than the first it means that we need to
-        # iterate the vertices backwards starting from the second_index
-        # By shifting the array by len(face_vertices) - second_index - 1 we make
-        # sure that the second_index is at the end of the array eg
-        # [4, 5, 6, 7, 8] -> [7, 8, 4, 5, 6] if first_index = 2, second_index = 1
-        # Then we reverse the array to [6, 5, 4, 8, 7] to achieve the same ordering
-        right_shift = len(face_vertices) - first_index - 1
-        return np.roll(face_vertices, right_shift)[::-1]
-
-    # shoft the array to the left so that first_index element is first eg
-    # [5, 6, 7, 8] -> [7, 8, 5, 6] if first_index = 2
-    return np.roll(face_vertices, -first_index)
-
-
-def triangles_from_polygons_generator(points, face_vertices_collection):
-    """ Triangles from polygons
-    """
-    for vlist in face_vertices_collection:
-
-        n_vertices = len(vlist)
-
-        if n_vertices == 3:
-
-            yield vlist
-
-        else:
-
-            face_vertices = np.asarray(vlist)
-
-            face_points = points[face_vertices]
-            o_verts = _globally_ordered_verts(face_points, face_vertices)
-
-            for index in range(2, n_vertices):
-                yield [o_verts[0], o_verts[index - 1], o_verts[index]]
+from archngv.utils.linear_algebra import rowwise_dot
+from archngv.utils.geometry import rotate_from_unit_vector_to_another
+from archngv.utils.ngons import vectorized_triangle_normal
+from archngv.utils.ngons import vectorized_consecutive_triangle_vectors
 
 
 def fromiter2D(gen, number_of_columns, dtype):  # pylint: disable = invalid-name
@@ -75,22 +28,18 @@ def are_normals_backward(centroid, points, triangles, normals):
     return (signed_distx < 0.) & ~np.isclose(signed_distx, 0.)
 
 
-def make_normals_outward(centroid, points, triangles, normals):
+def make_normals_outward(centroid, points, triangles):
     """ Normals that point inwards are flipped
     """
     new_triangles = triangles.copy()
+    face_vectors = vectorized_consecutive_triangle_vectors(points, triangles)
 
+    normals = vectorized_triangle_normal(*face_vectors)
     backward = are_normals_backward(centroid, points, triangles, normals)
 
     new_triangles[backward] = np.fliplr(triangles[backward])
 
     return new_triangles
-
-
-def are_in_the_same_side(vectors1, vectors2):
-    """ Check if vectors point to the same halfspace
-    """
-    return rowwise_dot(vectors1, vectors2) > 0.
 
 
 # pylint: disable = too-many-locals

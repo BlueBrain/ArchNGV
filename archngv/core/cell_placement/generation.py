@@ -210,7 +210,7 @@ def proposal(voxel_centers, voxel_edge_length):
     voxel_center = voxel_centers[random_index]
 
     new_position = np.random.uniform(low=voxel_center - 0.5 * voxel_edge_length,
-                                     high=voxel_center + 0.5 * voxel_edge_length, size=(1, 3))[0]
+                                     high=voxel_center + 0.5 * voxel_edge_length, size=3)
 
     return new_position
 

@@ -1,6 +1,6 @@
 
 import numpy as np
-from archngv.math_utils import linear_algebra as _la
+from archngv.utils import linear_algebra as _la
 
 
 def test_skew_symmetric_matrix():
@@ -101,4 +101,20 @@ def test_angle_matrix():
     assert result.shape == expected_shape
     assert np.allclose(result, expected_matrix)
 
+
+def test_are_in_the_same_side():
+
+    vecs1 = np.array([[1., 2., 1.],
+                         [-1., -1., -1.],
+                         [1., 1., 1.]])
+
+    vecs2 = np.array([[0., 1., 1.],
+                         [1., 2., 1.],
+                         [1., 1., 1.]])
+
+    expected_result = np.array([True, False, True], dtype=np.bool)
+
+    result = _la.are_in_the_same_side(vecs1, vecs2)
+
+    assert np.allclose(expected_result, result)
 

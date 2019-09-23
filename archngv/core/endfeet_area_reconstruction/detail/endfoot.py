@@ -187,7 +187,7 @@ def _arrange_indices(kept_triangles, coordinates, triangles, extras=None):
 
     # finally we need to keep a record of the mapping between the local and global
     # reference system in order to be able to go back later
-    local_to_global_map = {new: old for new, old in enumerate(used_vertices)}
+    local_to_global_map = dict(enumerate(used_vertices))
 
     if extras:
         for k in extras:

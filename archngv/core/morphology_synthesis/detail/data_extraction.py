@@ -44,8 +44,9 @@ def obtain_cell_properties(astrocyte_index,
     via the ngv_config and its index.
     """
 
-    with CellData(cell_data_filepath) as cell_data, \
-         MicrodomainTesselation(microdomains_filepath) as microdomains:
+    microdomains = MicrodomainTesselation(microdomains_filepath)
+
+    with CellData(cell_data_filepath) as cell_data:
 
         cell_name = str(cell_data.astrocyte_names[astrocyte_index], 'utf-8')
         soma_position = cell_data.astrocyte_positions[astrocyte_index]

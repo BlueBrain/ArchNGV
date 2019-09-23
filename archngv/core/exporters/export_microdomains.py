@@ -4,72 +4,57 @@ import h5py
 import numpy
 
 
-def export_structure(filename, tesselation, global_coordinate_system=False):
+def export_structure(filename, domains):
     """ Export microdomain tesselation structure
+
+    Args:
+        domains: list[Microdomain]
+
+    Notes:
+        HDF5 Layout Hierarchy:
+            data:
+                points: array[float32, (N, 3)]
+                    xyz coordinates of microdomain points
+                triangle_data   array[uint64, (M, 4)]
+                    [polygon_id, v0, v1, v2]
+                    The polygon the triangle belongs to and its vertices
+                neighbors
+                    The neighbors to each triangle. Negative numbers signify a
+                    bounding box wall.
+
+            offsets: array[uint64, (N + 1, 3)]
+                [points, triangle_data, neighbors]
+                The data for the i-th domain:
+                    points[offsets[i, 0]: offsets[i + 1, 0]]
+                    triangle_data[offsets[i, 1]: offsets[i + 1, 1]]
+                    neighbors[offsets[i, 2]: offsets[i + 1, 2]]
     """
-    n_cells = len(tesselation)
-
-    neighbors = tesselation.connectivity
-    flat_connectivity = [(index, n) for index, ns in enumerate(neighbors) for n in ns]
-
+    n_domains = len(domains)
     with h5py.File(filename, 'w') as fd:
 
-        data_group = fd.create_group('Data')
+        data_group = fd.create_group('data')
+        points, triangle_data, neighbors = [], [], []
 
-        data_points = []
-        data_triangles = []
-        data_neighbors = []
+        # offsets are of size n_domains + 1 because it is convenient
+        # to query the offset of the i-th domain as (offsets[i], offsets[i + 1])
+        offsets = numpy.zeros((n_domains + 1, 3), dtype=numpy.uint64)
 
-        offsets = numpy.zeros((n_cells + 1, 3), dtype=numpy.uintp)
-        current_offsets = numpy.zeros(3, dtype=numpy.uintp)
+        for index, dom in enumerate(domains):
 
-        for index, cell in enumerate(tesselation):
+            ps, tri_data, neighs = dom.points, dom.triangle_data, dom.neighbor_ids
 
-            cell_points = cell.points
-            cell_triangles = cell.triangles
-            cell_neighbors = neighbors[index]
+            offsets[index + 1] = offsets[index] + (len(ps), len(tri_data), len(neighs))
 
-            # before the new offset
-            if global_coordinate_system:
-                data_triangles.extend(cell_triangles + current_offsets[0])
-            else:
-                data_triangles.extend(cell_triangles)
+            points.extend(ps)
+            triangle_data.extend(tri_data)
+            neighbors.extend(neighs)
 
-            current_offsets[0] += len(cell_points)
-            current_offsets[1] += len(cell_triangles)
-            current_offsets[2] += len(cell_neighbors)
+        data_group.create_dataset('points', data=points, dtype=numpy.float32)
+        data_group.create_dataset('triangle_data', data=triangle_data, dtype=numpy.uint64)
+        data_group.create_dataset('neighbors', data=neighbors, dtype=numpy.int64)
 
-            offsets[index + 1] = current_offsets
-
-            data_points.extend(cell_points)
-            data_neighbors.extend(cell_neighbors)
-
-        data_group.create_dataset('points', data=data_points, dtype=numpy.float)
-        data_group.create_dataset('triangles', data=data_triangles, dtype=numpy.uintp)
-        data_group.create_dataset('neighbors', data=data_neighbors, dtype=numpy.uintp)
-
-        offsets_dset = fd.create_dataset('offsets', data=offsets, dtype=numpy.uintp)
+        offsets_dset = fd.create_dataset('offsets', data=offsets, dtype=numpy.uint64)
         offsets_dset.attrs["column_names"] = numpy.array(
-            ['points', 'triangles', 'neighbors'],
+            ['points', 'triangle_data', 'neighbors'],
             dtype=h5py.special_dtype(vlen=str)
         )
-
-        conn_dset = fd.create_dataset('connectivity', data=flat_connectivity, dtype=numpy.uintp)
-        conn_dset.attrs["column_names"] = numpy.array(
-            ['i_domain_index', 'j_domain_index'],
-            dtype=h5py.special_dtype(vlen=str)
-        )
-
-
-def export_mesh(tesselation, filepath):
-    """ Exports either all the faces of the laguerre cells separately or as one object in stl format
-    """
-    import stl.mesh
-
-    triangles = [triangle for _, cell in enumerate(tesselation) for triangle in cell.points[cell.triangles]]
-
-    cell_mesh = stl.mesh.Mesh(numpy.zeros(len(triangles), dtype=stl.mesh.Mesh.dtype))
-
-    cell_mesh.vectors = numpy.asarray(triangles, dtype=numpy.float)
-
-    cell_mesh.save(filepath)
