@@ -1,9 +1,7 @@
-from .priority_heap cimport MinPriorityHeap
-from .priority_heap cimport PriorityHeapRecord
+from .priority_heap cimport MinPriorityHeap, SIZE_t
 
 
 cpdef test_queue():
-
     pmin = MinPriorityHeap(100)
 
     pmin.push(0, 0.4)
@@ -13,14 +11,14 @@ cpdef test_queue():
     pmin.push(4, 51.)
     pmin.push(5, 100000.)
 
-    cdef PriorityHeapRecord r
+    cdef float value
+    cdef SIZE_t node_id
 
     print "pmin"
     print "expected: 0 2 1 4 3 5"
     for _ in range(6):
-
-        pmin.pop(&r)
-        print r.node_id, r.value
+        pmin.pop(&node_id, &value)
+        print node_id, value
 
     pmin.push(0, 0.4)
     pmin.push(1, 11.0)
@@ -35,5 +33,5 @@ cpdef test_queue():
     print "pmin updated"
     print "expected 4 2 1 3 5 0"
     for _ in range(6):
-        pmin.pop(&r)
-        print r.node_id, r.value
+        pmin.pop(&node_id, &value)
+        print node_id, value

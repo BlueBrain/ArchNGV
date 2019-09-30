@@ -2,11 +2,24 @@
 # cython: boundscheck=False
 # cython: wraparound=False
 
-from libc.stdlib cimport free
-from libc.stdlib cimport realloc
+from libc.stdlib cimport free, realloc
 
 
-cdef realloc_ptr safe_realloc(realloc_ptr* p, size_t nelems) nogil except *:
+cdef struct PriorityHeapRecord:
+    SIZE_t node_id
+    float value
+
+ctypedef fused realloc_ptr:
+    # Add pointer types here as needed.
+    (PriorityHeapRecord*)
+    (SIZE_t*)
+
+# safe_realloc(&p, n) resizes the allocation of p to n * sizeof(*p) bytes or
+# raises a MemoryError. It never calls free, since that's __dealloc__'s job.
+#   cdef DTYPE_t *p = NULL
+#   safe_realloc(&p, n)
+# is equivalent to p = malloc(n * sizeof(*p)) with error checking.
+cdef void safe_realloc(realloc_ptr* p, size_t nelems) nogil except *:
     # sizeof(realloc_ptr[0]) would be more like idiomatic C, but causes Cython
     # 0.20.1 to crash.
 
@@ -25,11 +38,9 @@ cdef realloc_ptr safe_realloc(realloc_ptr* p, size_t nelems) nogil except *:
             raise MemoryError("could not allocate %d bytes" % nbytes)
 
     p[0] = tmp
-    return tmp  # for convenience
 
 
 cdef class MinPriorityHeap:
-
     """A priority queue implemented as a binary heap.
     The heap invariant is that the impurity value of the parent record
     is larger then the impurity value of the children.
@@ -92,7 +103,7 @@ cdef class MinPriorityHeap:
         self.heap_ptr = heap_ptr + 1
         return 0
 
-    cdef int pop(self, PriorityHeapRecord* res) nogil:
+    cdef int pop(self, SIZE_t* node_id, float* value) nogil:
         """Remove min element from the heap. """
 
         cdef SIZE_t heap_ptr = self.heap_ptr
@@ -103,7 +114,8 @@ cdef class MinPriorityHeap:
             return -1
 
         # Take first element
-        res[0] = heap[0]
+        node_id[0] = heap[0].node_id
+        value[0] = heap[0].value
 
         # swap id pos
         idmap[heap[0].node_id], idmap[heap[heap_ptr - 1].node_id] = \

@@ -116,10 +116,10 @@ def run_fast_marching_method(mesh, endfeet_points, max_area):
     travel_times = solver.travel_times()
 
     L.info('Extract groups..')
-    mark_seeds, mark_indices, mark_offsets = solver.groups()
+    mark_indices, mark_offsets = solver.groups()
 
     L.info('fmm completed')
-    return mark_seeds, mark_indices, mark_offsets, travel_times
+    return mark_indices, mark_offsets, travel_times
 
 
 def endfeet_area_generation(mesh,
@@ -147,7 +147,7 @@ def endfeet_area_generation(mesh,
 
     n_endfeet = len(endfeet_points)
 
-    _, mark_indices, mark_offsets, travel_times = \
+    mark_indices, mark_offsets, travel_times = \
         run_fast_marching_method(mesh, endfeet_points, parameters['max_endfoot_area'])
 
     L.info('Generating groups...')
