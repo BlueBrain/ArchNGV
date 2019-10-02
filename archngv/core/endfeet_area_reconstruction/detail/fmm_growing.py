@@ -112,21 +112,14 @@ class FastMarchingEikonalSolver:
     @staticmethod
     def _assign_vertex_neighbors(mesh):
         '''assign the neighbors for each vertex'''
-        nn_offsets = np.zeros(mesh.n_vertices() + 1, dtype=np.long)
-        v_xyz = np.empty((mesh.n_vertices(), 3), dtype=np.float32)
+        neighbors = mesh.vv_indices()
+        mask = neighbors >= 0
+        nn_offsets = np.count_nonzero(mask.reshape(neighbors.shape), axis=1)
+        nn_offsets = np.hstack(((0, ), np.cumsum(nn_offsets))).astype(np.long)
+        neighbors = neighbors[mask].astype(np.long)
+        v_xyz = mesh.points().astype(np.float32)
 
-        offset = 0
-
-        neighbors = []
-        for v_handle in mesh.vertices():
-            v_index = v_handle.idx()
-            for n_handle in mesh.vv(v_handle):
-                neighbors.append(n_handle.idx())
-                offset += 1
-            nn_offsets[v_index + 1] = offset
-            v_xyz[v_index, :] = mesh.point(v_handle)
-
-        return np.array(neighbors), v_xyz, nn_offsets
+        return neighbors, v_xyz, nn_offsets
 
     def marks(self):
         ''' Returns the group id for each vertex in the vertices array.
