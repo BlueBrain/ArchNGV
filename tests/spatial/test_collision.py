@@ -4,8 +4,8 @@ import archngv.utils.geometry as _gm
 import archngv.utils.linear_algebra as _la
 import archngv.utils.projections as _pj
 
-from .. import collision
-from ..utils import create_contact_sphere_around_truncated_cylinder
+from archngv.spatial import collision
+from archngv.spatial.utils import create_contact_sphere_around_truncated_cylinder
 
 
 def _format_sphere_spheres(center, radius, centers, radii):

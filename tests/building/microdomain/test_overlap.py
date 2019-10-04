@@ -5,7 +5,7 @@ from scipy.spatial import ConvexHull
 
 from archngv import Microdomain
 
-from ..overlap import convex_polygon_with_overlap
+from archngv.building.microdomain.overlap import convex_polygon_with_overlap
 
 """
 def test_convex_polygon_with_overlap():

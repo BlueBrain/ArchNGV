@@ -1,5 +1,5 @@
 import numpy as np
-from .. import combinatronics as cb
+from archngv.utils import combinatronics as cb
 
 
 def test_cartesian_product():

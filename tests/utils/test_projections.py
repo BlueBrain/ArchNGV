@@ -1,6 +1,6 @@
 import numpy
-from .. import linear_algebra as la
-from .. import projections as pj
+from archngv.utils import linear_algebra as la
+from archngv.utils import projections as pj
 
 
 def test_scalar_projection():

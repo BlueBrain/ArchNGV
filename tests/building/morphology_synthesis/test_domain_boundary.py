@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 
 from archngv.spatial import ConvexPolygon
-from ..domain_boundary import StopAtConvexBoundary
+from archngv.building.morphology_synthesis.domain_boundary import StopAtConvexBoundary
 
 
 HAZARD_RATE = 0.01

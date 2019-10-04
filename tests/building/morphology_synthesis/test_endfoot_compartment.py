@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 from unittest.mock import Mock
 
-from .. import endfoot_compartment as ec
+from archngv.building.morphology_synthesis import endfoot_compartment as ec
 
 
 def points():

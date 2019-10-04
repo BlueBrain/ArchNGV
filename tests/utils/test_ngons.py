@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from .. import ngons
+from archngv.utils import ngons
 
 
 def test_vectorized_consecutive_triangle_vectors():

@@ -2,7 +2,7 @@ import pytest
 
 import numpy
 from scipy.spatial import ConvexHull
-from .. import shapes
+from archngv.spatial import shapes
 
 
 @pytest.fixture

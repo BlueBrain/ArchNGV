@@ -2,7 +2,7 @@
 import numpy
 from archngv.utils.linear_algebra import rowwise_dot
 
-from .. import inclusion as _inc
+from archngv.spatial import inclusion as _inc
 
 
 def create_spheres(center, radius, epsilon):

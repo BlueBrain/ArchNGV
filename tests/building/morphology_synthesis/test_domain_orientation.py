@@ -1,9 +1,9 @@
 import pytest
-from ..domain_orientation import Objective
-from ..domain_orientation import quadratic_angles
-from ..domain_orientation import orientations_from_domain
-from ..domain_orientation import choose_ids
-from ..domain_orientation import remove_overlapping_orientations
+from archngv.building.morphology_synthesis.domain_orientation import Objective
+from archngv.building.morphology_synthesis.domain_orientation import quadratic_angles
+from archngv.building.morphology_synthesis.domain_orientation import orientations_from_domain
+from archngv.building.morphology_synthesis.domain_orientation import choose_ids
+from archngv.building.morphology_synthesis.domain_orientation import remove_overlapping_orientations
 import numpy as np
 
 

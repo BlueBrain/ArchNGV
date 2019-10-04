@@ -1,7 +1,7 @@
 import pytest
 
 import numpy as np
-from .. import hashmap
+from archngv.spatial import hashmap
 
 
 @pytest.fixture(scope='function')

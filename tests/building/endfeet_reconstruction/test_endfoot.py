@@ -1,14 +1,16 @@
 from numpy.testing import assert_allclose
 import numpy as np
-import utils
+
+from .utils import create_mesh_data
+
 from archngv.building.endfeet_reconstruction.detail.endfoot import create_endfoot_from_global_data
 
 
 def _create_data(height=10, width=10, world_offset=0):
     ef = create_endfoot_from_global_data(0,
-                                         *utils.create_mesh_data(height,
-                                                                 width,
-                                                                 world_offset))
+                                         *create_mesh_data(height,
+                                                           width,
+                                                           world_offset))
     return ef
 
 
