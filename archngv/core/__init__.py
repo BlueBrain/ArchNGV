@@ -1,2 +1,2 @@
-""" Core modules of ArchNGV
+""" Data structures for ngv data and connectivity
 """

@@ -14,7 +14,7 @@ class Worker(object):
     def __call__(self, astrocyte_index):
         import numpy as np
 
-        from archngv.core.morphology_synthesis.full_astrocyte import synthesize_astrocyte
+        from archngv.building.morphology_synthesis.full_astrocyte import synthesize_astrocyte
 
         seed = hash((self._kwargs['seed'], astrocyte_index)) % (2 ** 32)
         np.random.seed(seed)
@@ -66,7 +66,7 @@ def _apply_parallel_func(func, data_generator):
 @click.option("--out-morph-dir", help="Path to output morphology folder", required=True)
 def cmd(config, **kwargs):
     # pylint: disable=missing-docstring
-    from archngv.core.data_structures.data_cells import CellData
+    from archngv import CellData
     from archngv.app.utils import load_yaml, ensure_dir
 
     config = load_yaml(config)

@@ -25,10 +25,9 @@ def connectivity(neurons, astrocytes, microdomains, synaptic_data, seed, output)
 
     from voxcell.sonata import NodePopulation
 
-    from archngv.core.connectivity.neuroglial_generation import generate_neuroglial
-    from archngv.core.data_structures.data_microdomains import MicrodomainTesselation
-    from archngv.core.data_structures.data_synaptic import SynapticData
-    from archngv.core.exporters.export_neuroglial_connectivity import export_neuroglial_connectivity
+    from archngv import MicrodomainTesselation, SynapticData
+    from archngv.building.connectivity.neuroglial_generation import generate_neuroglial
+    from archngv.building.exporters.export_neuroglial_connectivity import export_neuroglial_connectivity
 
     from archngv.app.logger import LOGGER
 
@@ -71,7 +70,7 @@ def bind_annotations(input, astrocytes, annotation_dir, output):  # pylint: disa
 
     from voxcell.sonata import NodePopulation
 
-    from archngv.core.exporters.export_neuroglial_connectivity import bind_annotations as _run
+    from archngv.building.exporters.export_neuroglial_connectivity import bind_annotations as _run
 
     astrocytes = NodePopulation.load(astrocytes)
 

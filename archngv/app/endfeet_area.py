@@ -17,8 +17,8 @@ def cmd(config, vasculature_mesh, gliovascular_data, seed, parallel, output):
     import numpy as np
     import openmesh
 
-    from archngv.core.endfeet_area_reconstruction.area_generation import endfeet_area_generation
-    from archngv.core.exporters.export_endfeet_areas import export_endfeet_areas
+    from archngv.building.endfeet_reconstruction.area_generation import endfeet_area_generation
+    from archngv.building.exporters.export_endfeet_areas import export_endfeet_areas
 
     from archngv.app.logger import LOGGER
     from archngv.app.utils import load_yaml
