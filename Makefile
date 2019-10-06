@@ -17,4 +17,5 @@ clean: clean-build clean-general clean-cpp clean-pyc
 
 .PHONY: install
 install: clean
+	pip3 install cython
 	pip3 install --index-url https://bbpteam.epfl.ch/repository/devpi/bbprelman/dev/+simple/ -e .
