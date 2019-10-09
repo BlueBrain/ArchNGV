@@ -69,5 +69,6 @@ extension-pkg-whitelist=libsonata,
                         openmesh,
                         morphio,
                         cKDTree,
-                        archngv.core.endfeet_area_reconstruction.detail._endfoot,
-                        archngv.core.endfeet_area_reconstruction.detail.fmm_growing
+                        archngv.building.endfeet_reconstruction.detail._endfoot,
+                        archngv.building.endfeet_reconstruction.detail._fmm_growing,
+                        archngv.building.endfeet_reconstruction.detail.local_solvers

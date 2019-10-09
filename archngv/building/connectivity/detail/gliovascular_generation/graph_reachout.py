@@ -3,8 +3,8 @@ determine the sites of contact with the vasculature
 """
 import logging
 from functools import partial
-
 import numpy
+import jenkspy
 
 
 L = logging.getLogger(__name__)
@@ -14,7 +14,6 @@ def maximum_reachout(val_arr, n_classes):
     """ Uses jenks natural break algorithm to find the closest distance
     to each class of distances
     """
-    import jenkspy
 
     sorted_idx = numpy.argsort(val_arr)
     sorted_arr = val_arr[sorted_idx]
