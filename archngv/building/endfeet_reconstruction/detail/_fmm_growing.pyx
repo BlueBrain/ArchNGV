@@ -67,7 +67,7 @@ cpdef float _find_travel_time(SIZE_t[:] nn_offsets,
                                  TA, TB)
         else:
             TC = local_solver_2D(v_xyz[nb2, 0], v_xyz[nb2, 1], v_xyz[nb2, 2],
-                                 v_xyz[nb1, 0], v_xyz[nb2, 1], v_xyz[nb1, 2],
+                                 v_xyz[nb1, 0], v_xyz[nb1, 1], v_xyz[nb1, 2],
                                  v_xyz[ind, 0], v_xyz[ind, 1], v_xyz[ind, 2],
                                  TB, TA)
 
