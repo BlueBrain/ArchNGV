@@ -1,7 +1,5 @@
 """ Neuroglial connectivity expoerters functions """
 
-import os
-
 import h5py
 import libsonata
 import numpy as np
@@ -73,11 +71,11 @@ def export_neuroglial_connectivity(data_iterator, neurons, astrocytes, output_pa
             )
             _append_to_dataset(
                 h5root['source_node_id'],
-                synapses['neuron_id'].values
+                synapses['neuron_id'].to_numpy()
             )
             _append_to_dataset(
                 h5group['synapse_id'],
-                synapses['synapse_id'].values
+                synapses['synapse_id'].to_numpy()
             )
 
         h5root['source_node_id'].attrs['node_population'] = six.text_type(neurons.name)
@@ -92,28 +90,36 @@ def export_neuroglial_connectivity(data_iterator, neurons, astrocytes, output_pa
     )
 
 
-def bind_annotations(h5_filepath, astrocytes, annotation_dir):
+def _load_annotations(h5_annotations, astrocytes, astrocyte_id):
+    morph_name = astrocytes.attributes.loc[astrocyte_id, 'morphology']
+
+    morph_group = h5_annotations[morph_name]
+
+    synapse_group = morph_group['synapses']
+
+    try:
+        synapse_ids = synapse_group['ids'][:]
+    except KeyError:
+        return None
+
+    assert len(np.unique(synapse_ids)) == len(synapse_ids), 'duplicate synapse IDs per astrocyte'
+
+    return pd.DataFrame(
+        {
+            'section_id': synapse_group['morph_section_ids'][:],
+            'segment_id': synapse_group['morph_segment_ids'][:],
+            'segment_offset': synapse_group['morph_segment_offsets'][:],
+        },
+        index=synapse_ids
+    )
+
+
+def bind_annotations(h5_filepath, astrocytes, annotations_file):
     """ Bind synapse annotations with closest astrocyte sections. """
-    def _load_annotations(astrocyte_id):
-        morph_name = astrocytes.attributes.loc[astrocyte_id, 'morphology']
-        filepath = os.path.join(annotation_dir, '%s_synapse_annotation.h5' % morph_name)
-        if not os.path.exists(filepath):
-            return None
-        with h5py.File(filepath, 'r') as h5f:
-            loc = h5f['synapse_location']
-            synapse_ids = h5f['synapse_id'][:]
-            assert len(np.unique(synapse_ids)) == len(synapse_ids), 'duplicate synapse IDs per astrocyte'
-            return pd.DataFrame(
-                {
-                    'section_id': loc['section_id'][:],
-                    'segment_id': loc['segment_id'][:],
-                    'segment_offset': loc['segment_offset'][:],
-                },
-                index=synapse_ids
-            )
 
     # TODO: read / write with `libsonata` rather than direct HDF5 access
-    with h5py.File(h5_filepath, 'a') as h5f:
+    with h5py.File(annotations_file, 'r') as h5_annotations, h5py.File(h5_filepath, 'a') as h5f:
+
         h5root = h5f['/edges/%s' % POPULATION_NAME]
         h5group = h5root['0']
         h5index = h5root['indices/target_to_source']
@@ -122,14 +128,16 @@ def bind_annotations(h5_filepath, astrocytes, annotation_dir):
 
         h5group.create_dataset('morpho_section_id_post', shape=(edge_count,), dtype=np.int32)
         h5group.create_dataset('morpho_segment_id_post', shape=(edge_count,), dtype=np.int32)
-        h5group.create_dataset('morpho_offset_segment_post', shape=(edge_count,), dtype=np.float32)
+        h5group.create_dataset('morpho_segment_offset_post', shape=(edge_count,), dtype=np.int32)
 
         for astrocyte_id, (r10, r11) in enumerate(h5index['node_id_to_ranges']):
-            annotations = _load_annotations(astrocyte_id)
 
-            if r10 == r11:
-                assert annotations is None, 'annotations exist for astrocyte with no synapses'
+            annotations = _load_annotations(h5_annotations, astrocytes, astrocyte_id)
+
+            if annotations is None:
                 continue
+
+            assert r10 != r11, 'annotations exist for astrocyte with no synapses'
 
             assert r11 == r10 + 1, 'invalid edge range'
             r20, r21 = h5index['range_to_edge_id'][r10]
@@ -137,10 +145,8 @@ def bind_annotations(h5_filepath, astrocytes, annotation_dir):
 
             synapse_ids = h5group['synapse_id'][r20:r21]
 
-            assert annotations is not None, 'no annotations for astrocyte with synapses'
-
             assert np.all(sorted(synapse_ids) == sorted(annotations.index)), 'annotations mismatch synapse IDs'
 
             h5group['morpho_section_id_post'][r20:r21] = annotations.loc[synapse_ids, 'section_id']
             h5group['morpho_segment_id_post'][r20:r21] = annotations.loc[synapse_ids, 'segment_id']
-            h5group['morpho_offset_segment_post'][r20:r21] = annotations.loc[synapse_ids, 'segment_offset']
+            h5group['morpho_segment_offset_post'][r20:r21] = annotations.loc[synapse_ids, 'segment_offset']

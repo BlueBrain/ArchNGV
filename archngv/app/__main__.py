@@ -19,6 +19,7 @@ from archngv.app import (
     gliovascular_connectivity,
     neuroglial,
     synthesis,
+    annotations_and_properties,
     assign_emodels,
     endfeet_area,
     convert,
@@ -46,6 +47,7 @@ app.add_command(name='microdomains', cmd=microdomains.cmd)
 app.add_command(name='gliovascular-connectivity', cmd=gliovascular_connectivity.cmd)
 app.add_command(name='neuroglial', cmd=neuroglial.group)
 app.add_command(name='synthesis', cmd=synthesis.cmd)
+app.add_command(name='annotations_and_properties', cmd=annotations_and_properties.cmd)
 app.add_command(name='assign-emodels', cmd=assign_emodels.cmd)
 app.add_command(name='endfeet-area', cmd=endfeet_area.cmd)
 app.add_command(name='convert', cmd=convert.group)

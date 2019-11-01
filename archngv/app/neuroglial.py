@@ -62,9 +62,9 @@ def connectivity(neurons, astrocytes, microdomains, synaptic_data, seed, output)
 @group.command()
 @click.option("-i", "--input", help="Path to input file (SONATA Edges HDF5)", required=True)
 @click.option("--astrocytes", help="Path to astrocyte node population (SONATA Nodes)", required=True)
-@click.option("--annotation-dir", help="Path folder with synapse annotations", required=True)
+@click.option("--annotations", help="Path file with synapse annotations", required=True)
 @click.option("-o", "--output", help="Path to output file (SONATA Edges HDF5)", required=True)
-def bind_annotations(input, astrocytes, annotation_dir, output):  # pylint: disable=redefined-builtin
+def bind_annotations(input, astrocytes, annotations, output):  # pylint: disable=redefined-builtin
     """ Bind synapse annotations with closest astrocyte sections. """
     import shutil
 
@@ -75,4 +75,4 @@ def bind_annotations(input, astrocytes, annotation_dir, output):  # pylint: disa
     astrocytes = NodePopulation.load(astrocytes)
 
     shutil.copyfile(input, output)
-    _run(output, astrocytes=astrocytes, annotation_dir=annotation_dir)
+    _run(output, astrocytes=astrocytes, annotations_file=annotations)

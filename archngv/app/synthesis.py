@@ -5,7 +5,7 @@ Synthesize astrocyte morphologies
 import click
 
 
-class Worker(object):
+class Worker:
     """Morphology synthesis helper"""
     def __init__(self, config, kwargs):
         self._config = config
@@ -13,7 +13,6 @@ class Worker(object):
 
     def __call__(self, astrocyte_index):
         import numpy as np
-
         from archngv.building.morphology_synthesis.full_astrocyte import synthesize_astrocyte
 
         seed = hash((self._kwargs['seed'], astrocyte_index)) % (2 ** 32)
@@ -70,6 +69,7 @@ def cmd(config, **kwargs):
     from archngv.app.utils import load_yaml, ensure_dir
 
     config = load_yaml(config)
+    ensure_dir(kwargs['out_morph_dir'])
 
     map_func = _apply_parallel_func if kwargs['parallel'] else _apply_func
 
@@ -77,6 +77,4 @@ def cmd(config, **kwargs):
         astrocyte_ids = cell_data.astrocyte_gids[:]
 
     worker = Worker(config, kwargs)
-
-    ensure_dir(kwargs['out_morph_dir'])
     map_func(worker, astrocyte_ids)

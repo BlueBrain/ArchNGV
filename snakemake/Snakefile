@@ -31,7 +31,7 @@ BASE_CIRCUIT_CELLS = config['common']['base_circuit_cells']
 BASE_CIRCUIT_CONNECTOME = config['common']['base_circuit_connectome']
 
 NGV_APP = 'ngv -v {cmd}'
-PARALLEL = True
+PARALLEL = False
 
 
 rule default:
@@ -232,6 +232,54 @@ rule synthesis:
                 '2>&1 | tee {log}'
         ])
 
+
+rule annotations_and_properties:
+    input:
+        cell_data = 'cell_data.h5',
+        microdomains = 'microdomains/overlapping_microdomains.h5',
+        gliovascular_connectivity = 'gliovascular_connectivity.h5',
+        gliovascular_data = 'gliovascular_data.h5',
+        neuroglial_connectivity = 'sonata.tmp/edges/neuroglial.h5.connectivity',
+        endfeet_areas = 'endfeet_areas.h5',
+        morphologies = MORPH_DIR + '/_DONE',
+
+    output:
+        properties = 'astrocyte_properties.h5',
+        annotations = 'astrocyte_annotations.h5'
+
+    log:
+        log_path('annotations_and_properties')
+
+    shell:
+        ' '.join([
+            NGV_APP.format(cmd='annotations_and_properties'),
+                '--config',
+                    bioname_path('synthesis.yaml'),
+                '--cell-data',
+                    '{input[cell_data]}',
+                '--microdomains',
+                    '{input[microdomains]}',
+                '--gliovascular-connectivity',
+                    '{input[gliovascular_connectivity]}',
+                '--gliovascular-data',
+                    '{input[gliovascular_data]}',
+                '--neuroglial-connectivity',
+                    '{input[neuroglial_connectivity]}',
+                '--endfeet-areas',
+                    '{input[endfeet_areas]}',
+                '--synaptic-data',
+                    BASE_CIRCUIT_CONNECTOME,
+                '--morph-dir',
+                    MORPH_DIR,
+                '--annotations_output',
+                    '{output[annotations]}',
+                '--properties_output',
+                    '{output[properties]}',
+                ('--parallel' if PARALLEL else ''),
+                '2>&1 | tee {log}'
+        ])
+
+
 rule cell_data_sonata:
     input:
         'cell_data.h5',
@@ -273,6 +321,7 @@ rule neuroglial_bind_annotations:
         connectivity = 'sonata.tmp/edges/neuroglial.h5.connectivity',
         astrocytes = 'sonata.tmp/nodes/glia.h5.somata',
         morphologies = MORPH_DIR + '/_DONE',
+        annotations= 'astrocyte_annotations.h5',
 
     output:
         'sonata/edges/neuroglial.h5'
@@ -284,8 +333,8 @@ rule neuroglial_bind_annotations:
                     '{input[connectivity]}',
                 '--astrocytes',
                     '{input[astrocytes]}',
-                '--annotation-dir',
-                    MORPH_DIR,
+                '--annotations',
+                    '{input[annotations]}',
                 '--output',
                     '{output}'
         ])

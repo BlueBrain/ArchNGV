@@ -117,77 +117,28 @@ def test_target_to_maximal_extent():
     assert np.allclose(expected_length, extent)
 
 
-def test_stump_section():
-
-    # the actual data is not important
-    start_point = section_direction = np.array([0.1, -0.5, 11.2])
-    section_direction /= np.linalg.norm(section_direction)
-
-    points, diameters, perimeters = ec._stump_section(start_point, section_direction)
-
-    expected_points = [start_point,
-                       start_point + 0.01 * section_direction,
-                       start_point + 0.02 * section_direction,
-                       start_point + 0.03 * section_direction]
-
-    expected_diameters = expected_perimeters = [0.01, 0.01, 0.01, 0.01]
-
-    np.testing.assert_allclose(points, expected_points)
-    np.testing.assert_allclose(diameters, expected_diameters)
-    np.testing.assert_allclose(perimeters, expected_perimeters)
-
-
-def test_endfoot_section():
-
-    start_point = section_direction = np.array([0.1212, -1.1435, 10.5])
-    section_direction /= np.linalg.norm(section_direction)
-
-    total_area = 10.32
-    total_volume = 31.5
-    total_length = 2.4
-
-    points, diameters, perimeters = ec._endfoot_section(start_point, total_area, total_volume, total_length, section_direction)
-
-    expected_points = [
-              start_point,
-              start_point + total_length * 0.33333333 * section_direction,
-              start_point + total_length * 0.66666667 * section_direction,
-              start_point + total_length * section_direction]
-
-    expected_diameters = [2.0 * np.sqrt(total_volume / (np.pi * total_length))] * 4
-    expected_perimeters = [total_area / (np.pi * total_length)] * 4
-
-    np.testing.assert_allclose(expected_points, points)
-    np.testing.assert_allclose(expected_diameters, diameters)
-    np.testing.assert_allclose(expected_perimeters, perimeters)
-
-    # we need to reconstruct the initial area and volume
-
-    points = np.asarray(points)
-    diameters = np.asarray(diameters)
-    perimeters = np.asarray(perimeters)
-
-    lengths = np.linalg.norm(points[:1] - points[:-1], axis=1)
-    reconstructed_volume = np.sum(lengths * (diameters[1:] * 0.5) ** 2 * np.pi)
-    reconstructed_area = np.sum(lengths * perimeters[1:] * np.pi)
-
-    assert np.isclose(total_volume, reconstructed_volume)
-    assert np.isclose(total_area, reconstructed_area)
-
-
-def test_add_compartments():
+def test_endfoot_compartment_data():
 
     section = MockSection()
 
-    target = np.random.random(3)
+    target = np.array([0.1, 0.1, 0.1], dtype=np.float)
 
-    volume, area = 2., 5.
+    area, thickness  = 5., 1.2
 
-    ec._add_compartments(section, points(), target, volume, area)
-    assert len(section.children) == 2
+    expected_volume = area * thickness
 
+    (
+        res_length,
+        res_diameter,
+        res_perimeter
+    ) = ec._endfoot_compartment_data(target, points(), area, thickness)
 
-def test_add_endfeet_comparments(endfeet_data):
+    expected_length = 0.873461474423381
+    np.testing.assert_allclose(res_length, expected_length)
 
-    mutable_morphology = MockMorphology()
-    ec.add_endfeet_compartments(mutable_morphology, endfeet_data)
+    expected_diameter =  2.0 * np.sqrt(expected_volume / (np.pi * expected_length))
+
+    np.testing.assert_allclose(res_diameter, expected_diameter)
+
+    expected_perimeter = area / (np.pi * expected_length)
+    np.testing.assert_allclose(res_perimeter, expected_perimeter)
