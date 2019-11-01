@@ -8,7 +8,7 @@ from archngv.core.data_cells import CellDataInfo
 from archngv.core.data_synaptic import SynapticData
 from archngv.core.data_endfeet_areas import EndfeetAreas
 from archngv.core.data_gliovascular import GliovascularData
-from archngv.core.data_microdomains import MicrodomainTesselationInfo
+from archngv.core.data_microdomains import MicrodomainTesselation
 from archngv.core.vasculature_morphology.vasculature import Vasculature
 
 
@@ -43,7 +43,14 @@ class NGVData(object):
     @cached_property
     def microdomains(self):
         """ Returns microdomain tesselation """
-        return MicrodomainTesselationInfo(self._config)
+        path = self._config.output_paths('microdomain_structure')
+        return MicrodomainTesselation(path)
+
+    @cached_property
+    def overlapping_microdomains(self):
+        """ Returns overlapping microdomains """
+        path = self._config.output_paths('overlapping_microdomain_structure')
+        return MicrodomainTesselation(path)
 
     @cached_property
     def endfeetome(self):

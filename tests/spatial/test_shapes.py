@@ -38,7 +38,7 @@ def test_inscribed_sphere(convex_polygon):
 
     center, radius = convex_polygon.inscribed_sphere
 
-    expected_center = convex_polygon._center
+    expected_center = convex_polygon.centroid
 
     assert numpy.allclose(center, expected_center)
 

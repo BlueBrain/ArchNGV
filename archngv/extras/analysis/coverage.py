@@ -1,109 +1,217 @@
 from collections import deque
+import logging
 import multiprocessing
 import numpy as np
+import pandas as pd
 
-from archngv import MicrodomainTesselation
+from archngv import NGVConfig, NGVCircuit
 from archngv.spatial.collision import convex_shape_with_spheres
 from archngv.spatial.bounding_box import BoundingBox
 
-N_POINTS = 1000000
+from .common import find_layer
 
-"""
-def is_inside_union_of_spheres(point, points, radii):
-    return np.any(np.linalg.norm(points - point, axis=1) <= radii)
-
-
-def monte_carlo_volume_estimation(function, xmin, xmax, ymin, ymax, zmin, zmax, epsi, N_max):
-
-    V = (xmax - xmin) * (ymax - ymin) * (zmax - zmin)
-
-    N_included = 0
-    N_total = 0
-
-    while N_total < N_max:
-
-        N_total += 1
-
-        point = np.random.uniform((xmin, ymin, zmin), (xmax, ymax, zmax))
-
-        N_included += int(function(point))
-
-    return V * float(N_included) / float(N_total)
-"""
-
-def unpack_arguments(func):
-    def wrapped(tuple_arguments):
-        return func(*tuple_arguments)
-    return wrapped
+logging.basicConfig(level=logging.INFO)
+L = logging.getLogger(__name__)
 
 
-def calculate_overlap(microdomains, index, points):
+N_POINTS = 100000
 
-    are_overlapping = np.ones(N_POINTS, dtype=np.bool)
+
+def _spherical_extent(domain):
+    """ Returns the extent of the domain as two times
+    the distance its furthest point.
+    """
+    vectors = domain.points - domain.centroid
+    lengths = np.linalg.norm(vectors, axis=1)
+    return 2. * lengths.max()
+
+
+def _overlap_fraction(microdomains, domain_points, domain_neighbors, index, scale_factor):
+    """
+    Find the number of points that are shared by the microdomain with index
+    and any other domain in the neighborhood.
+
+    Args:
+        microdomains: MicrodomainTesselation
+            The domain tesselation interface.
+        domain_points:
+            The sample of uniform points that lie inside the current domain.
+        index: int
+            The id of the current domain.
+
+    Returns:
+        fraction: float
+            The fraction of sample points in the domain that are shared with
+            neighbors N_shared / N_domain_points
+    """
+    # the overlap points belong to both the domain and a neighbor
+    overlap_mask = np.zeros(len(domain_points), dtype=np.bool)
 
     visited = set([index])
-    q = deque([index])
+    q = deque()
+
+    for neighbor_id in domain_neighbors:
+        if neighbor_id >= 0 and neighbor_id not in visited:
+            q.append(neighbor_id)
+            visited.add(neighbor_id)
+
+    n_neighbors = 0
 
     while q:
 
-        domain = microdomains[q.pop(0)]
+        # get domain in neighborhood and scale it wrt to the scale factor
+        neighbor = microdomains[q.popleft()].scale(scale_factor)
 
-        are_inside = convex_shape_with_spheres(domain.face_points, domain.face_normals, points)
+        # find points that are inside the neighbor
+        inside_neighbor = convex_shape_with_spheres(neighbor.face_points, neighbor.face_normals, domain_points)
 
-        if not are_inside.any():
+        if not inside_neighbor.any():
             continue
 
-        are_overlapping &= are_inside
+        n_neighbors += 1
 
-        for neighbor_id in domain.neighbor_ids:
+        # the overlap are the domain points that are shared with any neighbor (or)
+        overlap_mask |= inside_neighbor
+
+        # add the neighbors of this domain that are not boundary or visited
+        for neighbor_id in neighbor.neighbor_ids:
             if neighbor_id >= 0 and neighbor_id not in visited:
                 q.append(neighbor_id)
                 visited.add(neighbor_id)
 
-    return are_overlapping.sum()
-
-
-def create_sample_from_bbox(bbox):
-
-    (xmin, xmax), (ymin, ymax), (zmin, zmax) = bbox.ranges
-    return np.random.uniform((xmin, ymin, zmin), (xmax, ymax, zmax), size=N_POINTS)
-
-
-
-@unpack_arguments
-def microdomain_worker(tesselation_filepath, index):
-
-    microdomains = MicrodomainTesselation(tesselation_filepath)
-
-    # is boundary domain
-    if (microdomains.domain_neighbors(index) == -1).any():
-        return True, None, None
-
-    domain = microdomains[index]
-
-    bbox = BoundingBox.from_points(domain)
-    points = create_sample_from_bbox(bbox, N_POINTS)
-
-    # number of points overlapping
-    n_overlapping = calculate_overlap(microdomains, index, points)
-
     # monte carlo volume
-    overlap_volume = bbox.volume * float(n_overlapping) / float(N_POINTS)
-
-    return False, overlap_volume, domain.volume
+    return float(overlap_mask.sum()) / float(len(overlap_mask)), n_neighbors
 
 
-def microdomain_tesselation_overlap_distribution(filepath):
+def _distance_to_vasculature(circuit, index):
+    """ Returns average distance of the current microdomain to the vasculature
+    surface points.
+    """
+    soma_center = circuit.data.astrocytes.astrocyte_positions[index]
+
+    gv_conn = circuit.connectome.gliovascular
+    gv_data = circuit.data.endfeetome.targets
+
+    ids = gv_conn.astrocyte.to_endfoot(index)
+
+    if len(ids) == 0:
+        return soma_center, 0.0
+
+    points = gv_data.endfoot_surface_coordinates[ids]
+    return soma_center, np.linalg.norm(points - soma_center, axis=1).mean()
+
+
+def _points_in_domain(domain):
+
+    # get a point sample in the bbox of the domain
+    bbox = BoundingBox.from_points(domain.points)
+    points = np.random.uniform(bbox.min_point, bbox.max_point, size=(N_POINTS, 3))
+
+    # reduce the point cloud to the inside of the domain
+    inside_domain = convex_shape_with_spheres(domain.face_points, domain.face_normals, points)
+    return points[inside_domain]
+
+
+def microdomain_worker(tup):
+    """
+    Microdomain worker that extracts information concerning a microdomain.
+    """
+    config_path, index, scale_factor = tup
+
+    circuit = NGVCircuit(NGVConfig.from_file(config_path))
+    microdomains = circuit.data.microdomains
+    # get the domains and scale wrt to the scale factor
+    domain = microdomains[index].scale(scale_factor)
+    domain_points = _points_in_domain(domain)
+
+    # fraction of domain points that belong to the overlap
+    fraction, n_neighbors = _overlap_fraction(microdomains, domain_points, domain.neighbor_ids, index, scale_factor)
+
+    domain_volume = domain.volume
+    overlap_volume = fraction * domain_volume
+
+    spherical_extent = _spherical_extent(domain)
+    soma_center, dist_to_vasculature = _distance_to_vasculature(circuit, index)
+
+
+    bbox = circuit.data.vasculature.bounding_box
+
+    layer = find_layer(soma_center[1])
+
+    print(index, soma_center, layer, scale_factor, spherical_extent, overlap_volume / domain_volume)
+
+    return (
+        layer,
+        scale_factor,
+        spherical_extent,
+        domain_volume,
+        overlap_volume,
+        overlap_volume / domain_volume,
+        dist_to_vasculature,
+        n_neighbors)
+
+
+def _create_ids(config_path, n_samples):
+    """ It returns a random selection of n_samples microdomain ids
+    that are not boundaries.
+    """
+    microdomains = NGVCircuit(NGVConfig.from_file(config_path)).data.microdomains
+    n_microdomains = len(microdomains)
+
+    L.info('Microdomain sample size: %d', n_samples)
+
+    shuffled_ids = np.random.choice(np.arange(n_microdomains), n_microdomains)
+
+    ids = np.empty(n_samples, dtype=np.int)
+
+    n = 0
+    while n < n_samples:
+        index = shuffled_ids[n]
+        if not (microdomains.domain_neighbors(index) == -1).any():
+            ids[n] = index
+            n += 1
+
+    return ids
+
+
+def microdomain_tesselation_measurements(circuit_config_path):
+
+    np.random.seed(0)
 
     n_cpus = multiprocessing.cpu_count()
-    n_microdomains = len(MicrodomainTesselation(filepath))
+    n_samples = 20 * n_cpus
+
+    ids = _create_ids(circuit_config_path, n_samples)
+
+    L.info('ids: %s', ids)
+
+    #scale_factors = [1.01, 1.05]
+    scale_factors = np.arange(1.01, 1.5, 0.01)
+    data = []
 
     with multiprocessing.Pool(n_cpus) as pool:
 
-        inputs = ((filepath, index) for index in range(n_microdomains))
-        res_gen = pool.imap_unordered(microdomain_worker, inputs)
+        map_func = pool.imap_unordered
 
-        results = [(overlap_vol, vol) for is_boundary, overlap_vol, vol in res_gen if not is_boundary]
-        results = np.asarray(results, dtype=np.float)
+        for i, scale_factor in enumerate(scale_factors):
+            inputs = ((circuit_config_path, index, scale_factor) for index in ids)
+            data.append(list(map_func(microdomain_worker, inputs)))
 
-        print(results)
+    data = np.vstack(data)
+
+    labels = [
+        'layer',
+        'scale_factor',
+        'spherical_extent',
+        'domain_volume',
+        'overlap_volume',
+        'overlap_fraction',
+        'avg_distance_to_endfeet',
+        'overlapping_neighbors'
+    ]
+
+    dset = pd.DataFrame({label: data[:, i] for i, label in enumerate(labels)})
+
+    dset.to_pickle('microdomain_overlap.pkl')
+    np.save('microdomain_overlap.npy', data)
+    return dset

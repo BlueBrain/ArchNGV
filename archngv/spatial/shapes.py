@@ -80,7 +80,7 @@ class ConvexPolygon:
         if the normal is inwards ensure that everytime normals are calculated,
         the normals are outward
         """
-        return _ut.make_normals_outward(self._center, self.points, self._triangles)
+        return _ut.make_normals_outward(self.centroid, self.points, self._triangles)
 
     @property
     def face_vectors(self):
@@ -108,24 +108,10 @@ class ConvexPolygon:
         """ Returns centers of faces """
         return self.points[self.triangles].mean(axis=1)
 
-    @property
-    def _center(self):
+    @cached_property
+    def centroid(self):
         """ Arithmetic mean of the vertices """
         return numpy.mean(self.points, axis=0)
-
-    @property
-    def centroid(self):
-        """ Calculation of the center of mass of the polyhedron by taking the arithmetic
-        center inside and decomposing the polyhedron into tetrahedra formed by that center
-        and each triangular face.
-        """
-        tetrahedra_centroids = (self.points[self.triangles].sum(axis=1) + self._center) / 4.
-
-        vecs = self.points[self.triangles] - self._center
-        volumes = ngons.vectorized_tetrahedron_volume(vecs[:, 0, :], vecs[:, 1, :], vecs[:, 2, :])
-
-        return numpy.average(tetrahedra_centroids,
-                             weights=volumes / volumes.sum(), axis=0)
 
     @property
     def volume(self):
@@ -167,16 +153,6 @@ class ConvexPolygon:
         face_first_points = self.points[self.triangles[:, 0]]
         radius = min(rowwise_dot(self.face_normals, face_first_points - centroid))
         return centroid, radius
-
-    def scale(self, scale_factor, inplace=False):
-        """ Uniformly scales the polygon by a scale_factor, assuming its centroid
-        sits on the origin.
-        """
-        cnt = self.centroid
-        if inplace:
-            self.points = scale_factor * (self.points - cnt) + cnt
-            return self
-        return ConvexPolygon(scale_factor * (self.points - cnt) + cnt, self.triangles)
 
 
 class TaperedCapsule:

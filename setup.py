@@ -61,7 +61,6 @@ EXTRA_CORE = [
 EXTRA_ALL = [
     'bluepy[sonata]>=0.13.5',
     'Click>=7.0',
-    'jenkspy>=0.1.4',
     'openmesh>=1.1.2',
     'pyyaml>=3.0',
     # TODO 'tns>=??',

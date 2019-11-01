@@ -45,6 +45,16 @@ class Microdomain(ConvexPolygon):
         """
         return np.column_stack((self._polygon_ids, self._triangles))
 
+    def scale(self, scale_factor):
+        """ Uniformly scales the polygon by a scale_factor, assuming its centroid
+        sits on the origin.
+        """
+        cnt = self.centroid
+        return Microdomain(
+            scale_factor * (self.points - cnt) + cnt,
+            self.triangle_data.copy(),
+            self.neighbor_ids.copy())
+
 
 class MicrodomainTesselation:
     """ Data structure for storing the information concerning

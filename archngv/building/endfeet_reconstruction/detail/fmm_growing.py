@@ -20,33 +20,33 @@ def _find_closest_mesh_nodes(endfeet_points, mesh_points):
     tree = cKDTree(mesh_points, leafsize=16, copy_data=False)
 
     # find the closest mesh indices to the endfeet targets
-    seed_idx = tree.query(endfeet_points)[1]
-    unique_indices = np.unique(seed_idx)
+    _, mesh_nodes = tree.query(endfeet_points)
+    set_occupied_nodes = set(mesh_nodes)
 
-    if unique_indices.size != seed_idx.size:
+    if len(set_occupied_nodes) != mesh_nodes.size:
         L.info('Multiple endfeet points converged to the same mesh node (%s, %s). Fixing...',
-               unique_indices.size, seed_idx.size)
+            len(set_occupied_nodes), mesh_nodes.size)
 
-        registry = collections.defaultdict(set)
-        for endfoot_index, mesh_index in enumerate(seed_idx):
-            registry[mesh_index].add(endfoot_index)
+        endfeet_per_node = collections.defaultdict(set)
+        for endfoot_index, mesh_node in enumerate(mesh_nodes):
+            endfeet_per_node[mesh_node].add(endfoot_index)
 
-        set_unique_indices = set(n for n in unique_indices)
+        iter_multiples_only = filter(lambda e: len(e) > 1, endfeet_per_node.values())
 
-        for endfeet_indices in registry.values():
-            assert endfeet_indices, 'Empty endfeet indices'
-            assert len(endfeet_indices) < 5, 'Sparse mesh. Finer subdivisions required.'
-            for endfoot_index in list(endfeet_indices)[1:]:
-                nearest_neighbors = tree.query(endfeet_points[endfoot_index], k=10)[1]
+        for endfeet_set in iter_multiples_only:
+            assert len(endfeet_set) < 5, 'Sparse mesh. Too many endfeet close to the same mesh node.'
+            endfeet_list = list(endfeet_set)
+            for endfoot_index in endfeet_list[1:]:
+                _, nearest_neighbors = tree.query(endfeet_points[endfoot_index], k=10)
                 for nearest_neighbor in nearest_neighbors:
-                    if nearest_neighbor not in set_unique_indices:
-                        seed_idx[endfoot_index] = nearest_neighbor
-                        set_unique_indices.add(nearest_neighbor)
+                    if nearest_neighbor not in set_occupied_nodes:
+                        mesh_nodes[endfoot_index] = nearest_neighbor
+                        set_occupied_nodes.add(nearest_neighbor)
                         break
                 else:
-                    assert False, 'Fixing closeby points failed.'
+                    raise Exception('Fixing closeby points failed.')
 
-    return seed_idx
+    return mesh_nodes
 
 
 def _groups(v_group_index):
