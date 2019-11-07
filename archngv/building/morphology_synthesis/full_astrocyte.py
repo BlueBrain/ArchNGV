@@ -5,6 +5,7 @@ import logging
 # TODO: used by `eval` below; remove along with `eval`
 import numpy as np  # pylint: disable=unused-import
 
+import morphio
 from tns.spatial.point_cloud import PointCloud  # pylint: disable=import-error
 
 from archngv.utils.decorators import log_execution_time, log_start_end
@@ -105,3 +106,7 @@ def synthesize_astrocyte(astrocyte_index,
     astro_grower.grow()
     morphology_output_file = os.path.join(morphology_directory, cell_name + '.h5')
     astro_grower.write(morphology_output_file)
+
+    # TODO remove this when write neuron ordering is implemented
+    morphology = morphio.Morphology(morphology_output_file, options=morphio.Option.nrn_order)
+    morphology.as_mutable().write(morphology_output_file)

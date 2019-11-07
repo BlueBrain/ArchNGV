@@ -2,4 +2,4 @@ attraction_field: 'lambda _: 1'
 point_cloud: [5.0, 2.0]
 segment_length: 1.0
 randomness: 0.6
-generate_endfoot_equivalent_compartment: True
+

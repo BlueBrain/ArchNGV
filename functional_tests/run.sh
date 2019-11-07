@@ -9,9 +9,9 @@ rm -rf $BUILD_DIR && mkdir $BUILD_DIR
 pushd $BUILD_DIR
 
 snakemake \
-	--snakefile '../../snakemake/Snakefile' \
+	--snakefile '../../snakemake/Snakefile' --cluster-config '../bioname/cluster.yaml'\
 	--config bioname='../bioname' \
-	-- default sonata
+	-- functional_test
 
 popd
 

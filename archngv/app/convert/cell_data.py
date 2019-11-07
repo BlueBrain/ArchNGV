@@ -25,5 +25,6 @@ def cmd(input, output):
         result.positions = data.astrocyte_positions[:]
         result.attributes['radius'] = data.astrocyte_radii[:]
         result.attributes['morphology'] = data.astrocyte_names[:]
+        result.attributes['mtype'] = np.full((n_cells, ), "ASTROCYTE")
 
-    result.save(output)
+    result.save(output, library_properties=["mtype"])

@@ -83,7 +83,7 @@ setup(
         'libsonata>=0.0.3',
         'h5py>=2.3.1',
         'cached-property>=1.5',
-        'voxcell[sonata]>=2.6',
+        'voxcell[sonata]>=2.6.2',
         'scipy>=1.0.0',
         'spatial-index>=0.0.1',
     ],
