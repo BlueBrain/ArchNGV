@@ -1,7 +1,7 @@
 """
 Synthesize astrocyte morphologies
 """
-
+from collections import namedtuple
 import click
 
 
@@ -43,6 +43,15 @@ def _apply_parallel_func(func, data_generator):
             yield result
 
 
+Paths = namedtuple('Paths', ['cell_data',
+                            'synaptic_data',
+                            'gliovascular_data',
+                            'gliovascular_connectivity',
+                            'neuroglial_connectivity',
+                            'endfeet_areas',
+                            'morphology_directory'])
+
+
 @click.command(help=__doc__)
 @click.option("--config", help="Path to synthesis YAML config", required=True)
 @click.option("--cell-data", help="Path to HDF5 with somata positions and radii", required=True)
@@ -60,19 +69,10 @@ def _apply_parallel_func(func, data_generator):
 def cmd(config, **kwargs):
     # pylint: disable=missing-docstring
     from archngv import CellData
-    from collections import namedtuple
     from archngv.app.utils import load_yaml
     from archngv.building.exporters.export_ngv_data import export_annotations_and_properties
 
     config = load_yaml(config)
-
-    Paths = namedtuple('Paths', ['cell_data',
-                                'synaptic_data',
-                                'gliovascular_data',
-                                'gliovascular_connectivity',
-                                'neuroglial_connectivity',
-                                'endfeet_areas',
-                                'morphology_directory'])
 
     paths = Paths(
         cell_data=kwargs['cell_data'],

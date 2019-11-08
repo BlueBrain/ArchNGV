@@ -35,7 +35,7 @@ BASE_CIRCUIT_CONNECTOME = config['common']['base_circuit_connectome']
 BUILDER_RECIPE = bioname_path('builderRecipeAllPathways.xml')
 
 NGV_APP = 'ngv -v {cmd} '
-PARALLEL = False
+PARALLEL = True
 
 
 SPACK_MODULEPATH = ":".join(
