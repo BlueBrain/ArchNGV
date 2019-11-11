@@ -9,6 +9,7 @@ import morphio
 from tns.spatial.point_cloud import PointCloud  # pylint: disable=import-error
 
 from archngv.utils.decorators import log_execution_time, log_start_end
+from archngv.exceptions import NGVError
 
 from .data_extraction import obtain_endfeet_data
 from .data_extraction import obtain_synapse_data
@@ -110,3 +111,30 @@ def synthesize_astrocyte(astrocyte_index,
     # TODO remove this when write neuron ordering is implemented
     morphology = morphio.Morphology(morphology_output_file, options=morphio.Option.nrn_order)
     morphology.as_mutable().write(morphology_output_file)
+
+    _sanity_checks(cell_name, morphology)
+
+
+def _sanity_checks(cell_name, morphology):
+    """ Various checks ensuring morphology corectedness """
+
+    for section in morphology.iter():
+
+        if section.is_root:
+            continue
+
+        try:
+            assert np.allclose(section.points[0], section.parent.points[-1])
+        except AssertionError:
+            msg = 'Morphology {} is missing duplicate points.\n'.format(cell_name)
+            msg += '\t Section {}, Points: {}, Parent last point: {}'.format(
+                section.id, section.points, section.parent.points[-1])
+            raise NGVError(msg)
+
+        try:
+            assert len(section.points) > 1
+        except AssertionError:
+            msg = 'Morphology {} has one point sections.\n'.format(cell_name)
+            msg += '\t Section {}, Points: {}, Parent points: {}'.format(
+                section.id, section.points, section.parent.points[-1])
+            raise NGVError(msg)

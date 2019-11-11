@@ -245,7 +245,6 @@ rule neuroglial_connectivity:
                 dump_log='{log}'
         )
 
-
 rule glial_gap_junctions:
     message:
         "Detect touches between astrocytes"
@@ -274,6 +273,7 @@ rule glial_gap_junctions:
             dump_log=True,
             slurm_env='glial_gap_junctions',
             mpi_opt='pmi2')
+
 
 rule endfeet_area:
     input:

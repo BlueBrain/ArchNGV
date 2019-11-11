@@ -25,6 +25,8 @@ def cmd(config, vasculature_mesh, gliovascular_data, seed, parallel, output):
 
     config = load_yaml(config)
 
+    LOGGER.info('Parallel: %s', parallel)
+
     LOGGER.info('Load vasculature mesh...')
     vasculature_mesh = openmesh.read_trimesh(vasculature_mesh)
 

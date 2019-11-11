@@ -83,7 +83,6 @@
       ],
       "segment_length": 1.0,
       "randomness": 0.6,
-      "generate_endfoot_equivalent_compartment": true,
       "endfeet_area_reconstruction": {
         "area_distribution": [
           200.0,

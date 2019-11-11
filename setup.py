@@ -80,7 +80,7 @@ setup(
         'cython>=0.25.2'
     ],
     install_requires=[
-        'libsonata>=0.0.3',
+        'libsonata>=0.1.1',
         'h5py>=2.3.1',
         'cached-property>=1.5',
         'voxcell[sonata]>=2.6.2',
