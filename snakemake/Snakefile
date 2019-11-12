@@ -32,7 +32,7 @@ VASCULATURE = config['common']['vasculature']
 BASE_CIRCUIT_SONATA = config['common']['base_circuit_sonata']
 BASE_CIRCUIT_CELLS = config['common']['base_circuit_cells']
 BASE_CIRCUIT_CONNECTOME = config['common']['base_circuit_connectome']
-BUILDER_RECIPE = bioname_path('builderRecipeAllPathways.xml')
+BUILDER_RECIPE = bioname_path('astrocyte_gap_junction_recipe.xml')
 
 NGV_APP = 'ngv -v {cmd} '
 PARALLEL = True
@@ -41,9 +41,8 @@ PARALLEL = True
 SPACK_MODULEPATH = ":".join(
     path % component
     for path, component in it.product(
-        ('/gpfs/bbp.cscs.ch/apps/hpc/jenkins/modules/%s/2019-06/tcl/linux-rhel7-x86_64/',
-         '/gpfs/bbp.cscs.ch/apps/hpc/jenkins/modules/%s/2019-09/tcl/linux-rhel7-x86_64/',
-         '/gpfs/bbp.cscs.ch/apps/hpc/jenkins/modules/%s/2019-11/tcl/linux-rhel7-x86_64/',
+        (
+        '/gpfs/bbp.cscs.ch/apps/hpc/jenkins/modules/%s/2019-11/tcl/linux-rhel7-x86_64/',
         ),
         ('applications',
          'external-libraries',
@@ -62,32 +61,64 @@ MODULES = {
 TOUCHES_DIR = 'connectome/touches'
 
 
-def bbp_env(module_env, command, dump_log=False, slurm_env=None, skip_srun=False, mpi_opt=None):
-    result = " ".join(map(str, command))
+def propagate_cluster_default_values():
+    # propagate the missing options from the default
+    slurm_envs = set(cluster_config.keys()) - {'__default__'}
+    default = cluster_config['__default__']
+    for slurm_env in slurm_envs:
+        slurm_dict = cluster_config[slurm_env]
+        missing_keys = set(default.keys()) -  set(slurm_dict.keys())
+        slurm_dict.update({key: default[key] for key in missing_keys})
+
+
+def salloc_cmd(slurm_env):
     if (slurm_env is not None) and cluster_config:
         if slurm_env not in cluster_config:
             slurm_env = '__default__'
-        slurm_config = cluster_config[slurm_env]
-        result = "salloc -J {jobname} {alloc} {srun} {mpi} sh -c '{cmd}'".format(
-            jobname=slurm_config.get('jobname', 'cbuild'),
-            alloc=slurm_config['salloc'],
-            srun=('' if skip_srun else 'srun'),
-            cmd=escape_single_quotes(result),
-            mpi=('' if mpi_opt is None else '--mpi={}'.format(mpi_opt))
-        )
 
+        cfg = cluster_config[slurm_env]
+        salloc_options = '-C {constraint} -A {account} -N {nodes} -n {tasks} -p {partition} -J {jobname} -t {time}'.format(
+            constraint=cfg['constraint'],
+            account=cfg['account'],
+            nodes=cfg['nodes'],
+            tasks=cfg['tasks'],
+            partition=cfg['partition'],
+            jobname=cfg['jobname'],
+            time=cfg['time'],
+        )
+        return "salloc {salloc_options}".format(salloc_options=salloc_options)
+    return ""
+
+
+def modules_cmd(module_env):
     if module_env is not None:
         modulepath, modules = MODULES[module_env]
-        result = "(" + " && ".join([
+        return " && ".join([
             "export MODULEPATH=%s" % modulepath,
             ". /etc/profile.d/modules.sh",
             "module purge",
             "module load %s" % " ".join(modules),
             "echo MODULEPATH=%s" % modulepath,
-            "module list",
-            result,
-        ]) + ")"
+            "module list", " "
+            ])
+    return ""
 
+
+def srun_cmd(skip_srun, mpi_opt):
+    if not skip_srun:
+        return "srun {mpi} sh -c".format(
+                mpi=('' if mpi_opt is None else '--mpi={}'.format(mpi_opt)),
+            )
+    return ""
+
+
+def bbp_env(module_env, command, dump_log=False, slurm_env=None, skip_srun=False, mpi_opt=None):
+
+    result = "{module} {salloc} {srun} \'{command}\'"
+    result = result.format(module=modules_cmd(module_env),
+                            salloc=salloc_cmd(slurm_env),
+                            srun= srun_cmd(skip_srun, mpi_opt),
+                            command=" ".join(map(str, command)))
     if dump_log:
         result += " 2>&1 | tee {log}"
     return result
@@ -101,7 +132,10 @@ def ngv_run(command, args, dump_log=False):
     return result
 
 
-rule default:
+propagate_cluster_default_values()  #  cluster info propagation does not work so doing it here
+
+
+rule all:
     input:
         'cell_data.h5',
         'microdomains/overlapping_microdomains.h5',
@@ -109,24 +143,15 @@ rule default:
         'gliovascular_data.h5',
         'endfeet_areas.h5',
         MORPH_DIR + '/_DONE',
+        TOUCHES_DIR + '/_SUCCESS',
         'ngv_config.json',
-        TOUCHES_DIR + '/_SUCCESS'
+        'sonata/nodes/glia.h5',
+        'sonata/edges/neuroglial.h5',
+        'astrocyte_annotations.h5'
 
 
 rule sonata:
     input:
-        'sonata/nodes/glia.h5',
-        'sonata/edges/neuroglial.h5',
-
-rule functional_test:
-    input:
-        'cell_data.h5',
-        'microdomains/overlapping_microdomains.h5',
-        'gliovascular_connectivity.h5',
-        'gliovascular_data.h5',
-        'endfeet_areas.h5',
-        MORPH_DIR + '/_DONE',
-        'ngv_config.json',
         'sonata/nodes/glia.h5',
         'sonata/edges/neuroglial.h5',
 

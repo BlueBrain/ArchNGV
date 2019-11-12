@@ -1,6 +1,11 @@
 __default__:
-  salloc: '-A proj62 -p prod_small --time 0:05:00'
+  jobname: default_ngv
+  account: 'proj44'
+  nodes: 1
+  tasks: 5
+  partition: 'prod_small'
+  constraint: 'cpu'
+  time: '00:05:00'
 
 glial_gap_junctions:
   jobname: astro_conn
-  salloc: '-A proj62 -p prod -C nvme --time 0:05:00'
