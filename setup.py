@@ -85,7 +85,7 @@ setup(
         'cached-property>=1.5',
         'voxcell[sonata]>=2.6.2',
         'scipy>=1.0.0',
-        'spatial-index>=0.0.1',
+        'spatial-index==0.0.1',
     ],
     extras_require={
         'all': EXTRA_CORE + EXTRA_ALL,

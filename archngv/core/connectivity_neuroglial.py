@@ -13,3 +13,8 @@ class NeuroglialConnectivity(EdgesContextManager):
         """ Synapse IDs corresponding to a given `astrocyte_id` """
         selection = self._impl.afferent_edges(astrocyte_id)
         return self._impl.get_attribute('synapse_id', selection)
+
+    def astrocyte_neurons(self, astrocyte_id):
+        """ Synapse IDs corresponding to a given `neuron_id` """
+        selection = self._impl.afferent_edges(astrocyte_id)
+        return self._impl.source_nodes(selection)
