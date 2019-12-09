@@ -4,7 +4,7 @@ import logging
 import numpy as np
 
 from scipy.spatial import cKDTree
-from archngv.building.endfeet_reconstruction.detail import _fmm_growing
+from archngv_building.endfeet_reconstruction import fmm_growing
 
 L = logging.getLogger(__name__)
 
@@ -139,15 +139,15 @@ class FastMarchingEikonalSolver:
         source vertex. The wavefronts color the vertices they encounter and
         stop if another wavefront (group) has already beed colored a
         neighboring vertex. '''
-        return _fmm_growing.solve(self.squared_cutoff_distance,
-                                  self.nn_offsets,
-                                  self.v_travel_time,
-                                  self.neighbors,
-                                  self.v_xyz,
-                                  self.v_status,
-                                  self.group_labels,
-                                  self.v_group_index,
-                                  )
+        return fmm_growing.solve(self.squared_cutoff_distance,
+                                 self.nn_offsets,
+                                 self.v_travel_time,
+                                 self.neighbors,
+                                 self.v_xyz,
+                                 self.v_status,
+                                 self.group_labels,
+                                 self.v_group_index,
+                                 )
 
     def groups(self):
         ''' transform v_group_index (storing vertex -> group information) into inverse
