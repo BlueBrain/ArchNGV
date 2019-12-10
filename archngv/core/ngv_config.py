@@ -1,8 +1,11 @@
 """ NGV Project configuration container """
 
-import json
 import os
-import time
+import json
+import logging
+
+
+L = logging.getLogger(__name__)
 
 
 def _create_dir(directory):
@@ -11,35 +14,41 @@ def _create_dir(directory):
         os.makedirs(directory)
 
 
+DEFAULT_CONFIG_PATH = 'build/ngv_config.json'
+
+
 class NGVConfig(object):
     """ Configuration data structure for ArchGNV
     """
     @classmethod
-    def create_template(cls, parent_directory, experiment_name, config_name='ngv_config'):
-        """ config template """
-        config = {}
+    def _resolve_config(cls, arg):
+        if isinstance(arg, str):
+            if os.path.isfile(arg):
+                config_path = arg
+            elif os.path.isdir(arg):
+                config_path = os.path.join(arg, DEFAULT_CONFIG_PATH)
+            else:
+                msg = 'Unknown argument type {}'.format(type(arg))
+                L.error(msg)
+                raise TypeError(msg)
 
-        config['experiment_name'] = experiment_name
-        config['parent_directory'] = parent_directory
+            L.info('NGV config loaded from path %s', config_path)
+            return cls.from_file(config_path)
 
-        config['output_paths'] = {
-            'morphology': 'morphology',
-            'figures': 'figures'
-        }
+        try:
+            assert isinstance(arg, NGVConfig)
+        except AssertionError:
+            msg = 'Incompatible argument of type {}'.format(type(arg))
+            L.error(msg)
+            raise TypeError(msg)
 
-        config['metadata'] = {'creation_data': time.strftime("%S%M%H")}
-
-        config['input_paths'] = {}
-        config['parameters'] = {}
-
-        return cls(config, config_name)
+        return arg
 
     @classmethod
     def from_file(cls, file_path):
         """ Load a json config from file """
         with open(file_path, 'r') as fp:
             config_dict = json.load(fp)
-
         return cls(config_dict, 'ngv_config')
 
     def __init__(self, config_dict, config_name):
@@ -62,7 +71,7 @@ class NGVConfig(object):
 
     def __str__(self):
         """ str representation """
-        return self._config.__str__()
+        return json.dumps(self._config, indent=4)
 
     def __repr__(self):
         """ str repr """
