@@ -2,7 +2,7 @@
 from collections import defaultdict
 import logging
 import numpy as np
-from archngv.building.endfeet_reconstruction.detail import _endfoot
+from archngv_building.endfeet_reconstruction import endfoot
 
 L = logging.getLogger(__name__)
 
@@ -16,7 +16,7 @@ def create_endfoot_from_global_data(index,
     (containing only vertices and triangles that correspond to it) using the
     global datasets of all coordinates, triangles and vertices per endfoot
     '''
-    kept_triangles = _endfoot.subset_triangles_that_include_vertices(
+    kept_triangles = endfoot.subset_triangles_that_include_vertices(
         all_triangles, set(endfoot_vertices))
 
     coordinates, triangles, local_to_global_map = _arrange_indices(
@@ -140,7 +140,7 @@ class Endfoot(object):
         '''
         L.debug('Area Before Shrink: %s', self.area)
 
-        kept_triangles = _endfoot.subset_triangles_that_do_not_include_vertices(
+        kept_triangles = endfoot.subset_triangles_that_do_not_include_vertices(
             self.triangles, indices_to_remove)
 
         extras = None

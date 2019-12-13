@@ -3,7 +3,7 @@ and the somata positions.
 """
 import math
 import numpy as np
-from archngv.building.endfeet_reconstruction.detail.local_solvers import second_order_solutions
+from archngv_building.endfeet_reconstruction.local_solvers import second_order_solutions
 
 
 EPS = 1e-6
