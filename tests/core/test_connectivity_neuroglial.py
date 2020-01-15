@@ -29,4 +29,4 @@ def test_all():
         npt.assert_equal(conn.astrocyte_synapses(1), [11, 22, 33])
 
         npt.assert_equal(conn.astrocyte_neurons(0), [2, ])
-        npt.assert_equal(conn.astrocyte_neurons(1), [0, 0, 2])
+        npt.assert_equal(conn.astrocyte_neurons(1), [0, 2])

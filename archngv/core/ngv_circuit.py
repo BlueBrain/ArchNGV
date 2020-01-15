@@ -35,8 +35,3 @@ class NGVCircuit:
     def connectome(self):
         """ Circuit connectome object """
         return NGVConnectome(self.config)
-
-    @property
-    def neuronal_microcircuit_path(self):
-        """ Path to bbp neuronal microcircuit """
-        return self.config.input_paths('neuronal_microcircuit')

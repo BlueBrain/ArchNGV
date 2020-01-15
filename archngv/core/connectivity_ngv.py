@@ -5,12 +5,13 @@ import logging
 from cached_property import cached_property
 
 from archngv import GliovascularConnectivity
+from archngv import NeuroglialConnectivity
 
 
 L = logging.getLogger(__name__)
 
 
-class NGVConnectome(object):
+class NGVConnectome:
     """ Connectome container for accessing the NGV connectivities
     """
     def __init__(self, ngv_config):
@@ -42,7 +43,8 @@ class NGVConnectome(object):
 
     def _neuroglial(self):
         """ Get neuroglial connectivity """
-        raise NotImplementedError
+        filepath = self._config.output_paths('neuroglial_connectivity')
+        return NeuroglialConnectivity(filepath)
 
     @cached_property
     def neuroglial(self):
@@ -58,23 +60,6 @@ class NGVConnectome(object):
         """ Get synaptic connectivity """
         return self._synaptic()
 
-    def __enter__(self):
-        """ Composition context manager """
-        self.synaptic.__enter__()
-        self.neuroglial.__enter__()
-        self.gliovascular.__enter__()
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        """ Called when with goes out of scope """
-        self.close()
-
-    def close(self):
-        """ Close context managers """
-        self.synaptic.close()
-        self.neuroglial.close()
-        self.gliovascular.close()
-
     def astrocyte_endfeet(self, astrocyte_index):
         """ Given an astrocyte index, return the endfeet indices """
         return self.gliovascular.astrocyte.to_endfoot(astrocyte_index)
@@ -85,7 +70,7 @@ class NGVConnectome(object):
 
     def astrocyte_synapses(self, astrocyte_index):
         """ Given an astrocyte index return the synapse indices """
-        return self.neuroglial.astrocyte.to_synapse(astrocyte_index)
+        return self.neuroglial.astrocyte_synapses(astrocyte_index)
 
     def endfoot_vasculature_segment(self, endfoot_index):
         """ Given the endfoot index return the vasculature segment indices """
@@ -99,10 +84,6 @@ class NGVConnectome(object):
         """ Given the synapse index return the afferent neuron index """
         return self.synaptic.synapse.to_afferent_neuron(synapse_index)
 
-    def synapse_astrocyte(self, synapse_index):
-        """ Given the synapse index return the respective astrocyte indices """
-        return self.neuroglial.synapse.to_astrocyte(synapse_index)
-
     def vasculature_segment_endfoot(self, vasculature_segment_index):
         """ Given the vasculature segment index return the respective endfoot """
         return self.gliovascular.vasculature_segment.to_endfoot(vasculature_segment_index)
@@ -113,5 +94,4 @@ class NGVConnectome(object):
 
     def astrocyte_afferent_neurons(self, astrocyte_index):
         """ Given the astrocyte index return the afferent neuron indices """
-        syn_idx = self.astrocyte_synapses(astrocyte_index)
-        return set(self.synapse_afferent_neuron(index) for index in syn_idx)
+        return self.neuroglial.astrocyte_neurons(astrocyte_index)

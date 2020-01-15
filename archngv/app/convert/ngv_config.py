@@ -50,7 +50,7 @@ def cmd(build_dir, bioname, output):
             'synaptic_connectivity': 'synaptic_connectivity.h5',
             'gliovascular_connectivity': 'gliovascular_connectivity.h5',
             'gliovascular_data': 'gliovascular_data.h5',
-            'neuroglial_connectivity': 'neuroglial_connectivity.h5',
+            'neuroglial_connectivity': 'sonata/edges/neuroglial.h5',
             'neuroglial_data': 'neuroglial_data.h5',
             'endfeet_areas': 'endfeet_areas.h5',
             'microdomain_mesh': 'microdomains/tesselation.stl',
