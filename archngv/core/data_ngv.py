@@ -24,6 +24,13 @@ class NGVData(object):
         return CellDataInfo(self._config)
 
     @cached_property
+    def neurons(self):
+        """ Returns neurons population """
+        from bluepy.v2 import Circuit
+        path = self._config.input_paths('microcircuit_path')
+        return Circuit(path + '/CircuitConfig').cells
+
+    @cached_property
     def synapses(self):
         """ Returns synaptic data """
         path = self._config.input_paths('synaptic_data')
@@ -43,13 +50,13 @@ class NGVData(object):
     @cached_property
     def microdomains(self):
         """ Returns microdomain tesselation """
-        path = self._config.output_paths('microdomain_structure')
+        path = self._config.output_paths('microdomains')
         return MicrodomainTesselation(path)
 
     @cached_property
     def overlapping_microdomains(self):
         """ Returns overlapping microdomains """
-        path = self._config.output_paths('overlapping_microdomain_structure')
+        path = self._config.output_paths('overlapping_microdomains')
         return MicrodomainTesselation(path)
 
     @cached_property

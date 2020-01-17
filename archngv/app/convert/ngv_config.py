@@ -54,9 +54,9 @@ def cmd(build_dir, bioname, output):
             'neuroglial_data': 'neuroglial_data.h5',
             'endfeet_areas': 'endfeet_areas.h5',
             'microdomain_mesh': 'microdomains/tesselation.stl',
-            'microdomain_structure': 'microdomains/structure.h5',
+            'microdomains': 'microdomains/microdomains.h5',
             'overlapping_microdomain_mesh': 'microdomains/overlapping_tesselation.stl',
-            'overlapping_microdomain_structure': 'microdomains/overlapping_structure.h5',
+            'overlapping_microdomains': 'microdomains/overlapping_microdomains.h5',
         },
         'parameters': {
             'cell_placement': _load_config('cell_placement'),
