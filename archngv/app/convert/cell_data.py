@@ -21,7 +21,7 @@ def cmd(input, output):
             data.astrocyte_gids,
             np.arange(n_cells)
         )
-        result = NodePopulation('glia', size=n_cells)
+        result = NodePopulation('astrocytes', size=n_cells)
 
         # TODO: to reset to 'data.astrocyte_positions[:]' once the synthesis pb are solved
         result.positions = np.zeros((n_cells, 3), dtype=np.float32)
