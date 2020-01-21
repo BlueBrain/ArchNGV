@@ -1,11 +1,11 @@
 """ Container for NGV connectome """
-
 import logging
 
 from cached_property import cached_property
 
 from archngv import GliovascularConnectivity
 from archngv import NeuroglialConnectivity
+from archngv import GlialglialConnectivity
 
 
 L = logging.getLogger(__name__)
@@ -20,7 +20,8 @@ class NGVConnectome:
 
         self._connectivities = {'neuroglial': self._neuroglial,
                                 'gliovascular': self._gliovascular,
-                                'synaptic': self._synaptic}
+                                'synaptic': self._synaptic,
+                                'glial': self._glial}
 
     @property
     def connectivities(self):
@@ -59,6 +60,16 @@ class NGVConnectome:
     def synaptic(self):
         """ Get synaptic connectivity """
         return self._synaptic()
+
+    def _glial(self):
+        """ Get glial connectivity """
+        filepath = self._config.output_paths('glialglial_connectivity')
+        return GlialglialConnectivity(filepath)
+
+    @cached_property
+    def glial(self):
+        """ Get glial connectivity """
+        return self._glial()
 
     def astrocyte_endfeet(self, astrocyte_index):
         """ Given an astrocyte index, return the endfeet indices """

@@ -43,6 +43,26 @@ class CellData(H5ContextManager):
         """ Number of cells """
         return self.__len__()
 
+    @property
+    def positions(self):
+        """ Returns positions """
+        return self.astrocyte_positions
+
+    @property
+    def radii(self):
+        """ Returns radii """
+        return self.astrocyte_radii
+
+    @property
+    def names(self):
+        """ Returns the cell names """
+        return self.astrocyte_names
+
+    @property
+    def ids(self):
+        """ Returns the astrocyte ids """
+        return self.astrocyte_gids
+
 
 class CellDataInfo(CellData):
     """ Rich circuit information after it has been created. This requires an

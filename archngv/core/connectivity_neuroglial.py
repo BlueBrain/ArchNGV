@@ -4,11 +4,12 @@
 import numpy as np
 from archngv.core.common import EdgesContextManager
 
+
 POPULATION_NAME = 'neuroglial'
 
 
 class NeuroglialConnectivity(EdgesContextManager):
-    """ "Neuroglial connectivity access """
+    """ Neuroglial connectivity access """
 
     def _synapse_selection(self, astrocyte_id):
         return self._impl.efferent_edges(astrocyte_id)

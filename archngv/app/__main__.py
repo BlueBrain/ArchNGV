@@ -18,6 +18,7 @@ from archngv.app import (
     microdomains,
     gliovascular_connectivity,
     neuroglial,
+    glialglial_connectivity,
     synthesis,
     annotations_and_properties,
     assign_emodels,
@@ -46,6 +47,7 @@ app.add_command(name='cell-placement', cmd=cell_placement.cmd)
 app.add_command(name='microdomains', cmd=microdomains.cmd)
 app.add_command(name='gliovascular-connectivity', cmd=gliovascular_connectivity.cmd)
 app.add_command(name='neuroglial', cmd=neuroglial.group)
+app.add_command(name='glialglial-connectivity', cmd=glialglial_connectivity.cmd)
 app.add_command(name='synthesis', cmd=synthesis.cmd)
 app.add_command(name='annotations_and_properties', cmd=annotations_and_properties.cmd)
 app.add_command(name='assign-emodels', cmd=assign_emodels.cmd)

@@ -10,6 +10,7 @@ from archngv.core.data_endfeet_areas import EndfeetAreas
 
 from archngv.core.connectivity_neuroglial import NeuroglialConnectivity
 from archngv.core.connectivity_gliovascular import GliovascularConnectivity
+from archngv.core.connectivity_glialglial import GlialglialConnectivity
 
 from archngv.core.vasculature_morphology.vasculature import Vasculature
 

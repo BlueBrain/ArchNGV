@@ -52,6 +52,7 @@ def cmd(build_dir, bioname, output):
             'gliovascular_data': 'gliovascular_data.h5',
             'neuroglial_connectivity': 'sonata/edges/neuroglial.h5',
             'neuroglial_data': 'neuroglial_data.h5',
+            'glialglial_connectivity': 'sonata/edges/glialglial.h5',
             'endfeet_areas': 'endfeet_areas.h5',
             'microdomain_mesh': 'microdomains/tesselation.stl',
             'microdomains': 'microdomains/microdomains.h5',

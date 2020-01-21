@@ -11,9 +11,9 @@ pushd $BUILD_DIR
 unset $(env | grep SLURM | cut -d= -f1 | xargs)
 
 snakemake \
-	--snakefile '../../snakemake/Snakefile' --cluster-config '../bioname/cluster.yaml'\
-	--config bioname='../bioname' \
-	-- all
+    --snakefile '../../snakemake/Snakefile' --cluster-config '../bioname/cluster.yaml'\
+    --config bioname='../bioname' \
+    --omit-from glialglial_connectivity
 
 popd
 

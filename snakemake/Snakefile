@@ -17,6 +17,7 @@ def log_path(name):
     timestamp = datetime.datetime.now().strftime("%Y%m%dT%H%M%S")
     return os.path.abspath(os.path.join(LOGS_DIR, "%s.%s.log" % (name, timestamp)))
 
+
 def escape_single_quotes(value):
     return value.replace("'", "'\\''")
 
@@ -56,6 +57,8 @@ SPACK_MODULEPATH = ":".join(
 MODULES = {
     'glial_gap_junctions':
         (SPACK_MODULEPATH, ['touchdetector/5.3.2/parallel/serial']),
+    'glialglial_connectivity':
+        (SPACK_MODULEPATH, ['py-pytouchreader/1.4.3/python3'])
 }
 
 TOUCHES_DIR = 'connectome/touches'
@@ -124,11 +127,24 @@ def bbp_env(module_env, command, dump_log=False, slurm_env=None, skip_srun=False
     return result
 
 
-def ngv_run(command, args, dump_log=False):
-    result = NGV_APP.format(cmd=command)
-    result += ' '.join(args)
+def ngv_run(command, args, module_env=None, dump_log=False):
+    """
+    Args:
+        command: ngv command
+        args: arguments for ngv command
+        module_env: modules specified for this command in MODULES
+        dump_log: produce log
+    """
+
+    result = '{module_setup} {cmd}{args}'.format(
+        module_setup=modules_cmd(module_env),
+        cmd=NGV_APP.format(cmd=command),
+        args=' '.join(args)
+    )
+
     if dump_log:
         result += " 2>&1 | tee {log}"
+
     return result
 
 
@@ -147,6 +163,7 @@ rule all:
         'ngv_config.json',
         'sonata/nodes/glia.h5',
         'sonata/edges/neuroglial.h5',
+        'sonata/edges/glialglial.h5',
         'astrocyte_annotations.h5'
 
 
@@ -298,6 +315,34 @@ rule glial_gap_junctions:
             dump_log=True,
             slurm_env='glial_gap_junctions',
             mpi_opt='pmi2')
+
+
+rule glialglial_connectivity:
+    message:
+        " Extract glial glial connectivity from touches"
+
+    input:
+        cell_data = 'cell_data.h5',
+        touches = TOUCHES_DIR + '/_SUCCESS'
+
+    output:
+        connectivity = 'sonata/edges/glialglial.h5'
+
+    log:
+        log_path('glialglial_connectivity')
+
+    shell:
+        ngv_run('glialglial-connectivity',
+                [
+                '--cell-data',
+                    '{input[cell_data]}',
+                '--touches-dir',
+                    '{TOUCHES_DIR}',
+                '--output-connectivity',
+                    '{output[connectivity]}'
+                ],
+                module_env='glialglial_connectivity',
+                dump_log='{log}')
 
 
 rule endfeet_area:
