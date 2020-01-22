@@ -6,11 +6,12 @@ import numpy as np
 from scipy.spatial import cKDTree
 import morphio
 
-from archngv.utils import vectorized_triangle_area
+from archngv.utils.ngons import vectorized_triangle_area
 
 from archngv.extras.analysis.common import find_layer
 
 L = logging.getLogger(__name__)
+
 
 def endfeet_morphometrics(ngv_circuit, astrocyte_ids):
     '''endfeet_morphometrics'''
@@ -19,7 +20,8 @@ def endfeet_morphometrics(ngv_circuit, astrocyte_ids):
             'layers': [],
             'distances': []}
 
-    endfeet_areas = ngv_circuit.data.endfeetome.areas
+    endfeetome = ngv_circuit.data.endfeetome
+
     for astrocyte_id in astrocyte_ids:
         astrocyte_path = os.path.join(
             ngv_circuit.config.morphology_directory,
@@ -28,7 +30,7 @@ def endfeet_morphometrics(ngv_circuit, astrocyte_ids):
 
         endfeet_ids = ngv_circuit.connectome.gliovascular.astrocyte.to_endfoot(astrocyte_id)
         if len(endfeet_ids) > 0:
-            current_endfeet_targets = endfeet_areas.targets.endfoot_surface_coordinates[endfeet_ids]
+            current_endfeet_targets = endfeetome.targets.endfoot_surface_coordinates[endfeet_ids]
 
             for endfoot_section in find_endfoot_section(morphio.Morphology(astrocyte_path),
                                                         current_endfeet_targets):
@@ -37,7 +39,7 @@ def endfeet_morphometrics(ngv_circuit, astrocyte_ids):
                 data['distances'].append(distance)
 
             for endfoot_id in endfeet_ids:
-                endfoot = endfeet_areas[endfoot_id]
+                endfoot = endfeetome.areas[endfoot_id]
                 area = vectorized_triangle_area((endfoot.points[endfoot.triangles[:, 1]] -
                                                  endfoot.points[endfoot.triangles[:, 0]]),
                                                 (endfoot.points[endfoot.triangles[:, 2]] -

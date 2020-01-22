@@ -8,6 +8,8 @@ LOGS_DIR = 'logs'
 
 MORPH_DIR = 'morphologies'
 
+ANALYSIS_DIR = 'analysis'
+
 
 def bioname_path(filename):
     return os.path.join(BIONAME, filename)
@@ -542,4 +544,21 @@ rule ngv_config:
                 '--output',
                     '{output}',
                 ]
+        )
+
+
+rule analysis:
+    input:
+        morphologies = MORPH_DIR + '/_DONE',
+        ngv_config = 'ngv_config.json'
+    output:
+        touch(ANALYSIS_DIR + '/_DONE'),
+    shell:
+        ngv_run('analysis',
+            [
+                '--ngv-config',
+                    '{input[ngv_config]}',
+                '--output-dir',
+                    ANALYSIS_DIR,
+            ]
         )

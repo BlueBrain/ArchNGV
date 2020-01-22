@@ -9,6 +9,8 @@ from archngv.core.vasculature_morphology.types import pmap, emap, sconmap
 from archngv.core.vasculature_morphology.graph.graphs import DirectedGraph
 from archngv.core.vasculature_morphology.transformations import remap_edge_vertices
 
+from archngv.core.vasculature_morphology import features
+
 
 class Vasculature(object):
     """ Class container for vasculature datasets
@@ -226,6 +228,14 @@ class Vasculature(object):
     def bounding_box(self):
         """ Returns bb object """
         return BoundingBox.from_points(self.points)
+
+    def volume(self):
+        """ Total volume of the vasculature """
+        return features.segment_volumes(self).sum()
+
+    def area(self):
+        """ Total area of the vasculature """
+        return features.segment_lateral_areas(self).sum()
 
     def spatial_index(self):
         """ Returns vasculature spatial index """

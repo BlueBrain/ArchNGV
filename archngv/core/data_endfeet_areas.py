@@ -47,6 +47,10 @@ def _index_to_key(endfoot_index):
     return 'endfoot_' + str(endfoot_index)
 
 
+def _key_to_index(key):
+    return int(key.split('_')[-1])
+
+
 class EndfeetAreas(H5ContextManager):
     """ Access to the endfeet meshes
     """
@@ -70,6 +74,11 @@ class EndfeetAreas(H5ContextManager):
         triangles = entry['triangles'][:]
         thickness = entry.attrs['thickness']
         return EndfootMesh(endfoot_index, points, triangles, thickness)
+
+    def __iter__(self):
+        """ Endfoot iterator """
+        for h5_key in self._groups:
+            yield self._object(_key_to_index(h5_key))
 
     def __getitem__(self, index):
         """ Endfoot mesh object getter """

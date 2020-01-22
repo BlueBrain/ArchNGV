@@ -26,19 +26,28 @@ def _batch_ids(n_batches, total_elements):
 @click.command(help=__doc__)
 @click.option("--ngv-config", help="Path to the circuit config", required=True)
 @click.option("--seed", help="Pseudo-random generator seed", type=int, default=0, show_default=True)
-@click.option("-o", "--output", help="Path to output json", required=True)
-def cmd(ngv_config, seed, output):
+@click.option("--output-dir", help="Path to output directory", required=True)
+def cmd(ngv_config, seed, output_dir):
     """ Analysis of generated circuit """
+    import os
     import multiprocessing
     import numpy as np
     from archngv import NGVConfig, NGVCircuit
     from archngv.extras.analysis.endfeet_morphometrics import endfeet_morphometrics
+    from archngv.app.utils import ensure_dir
+
+    from archngv.app.logger import LOGGER
+
+    ensure_dir(output_dir)
 
     config = NGVConfig.from_file(ngv_config)
     n_elements = len(NGVCircuit(config).data.astrocytes)
 
     n_cpus = multiprocessing.cpu_count()
     n_batches = n_elements // n_cpus
+
+    LOGGER.info('N cpus: %d', n_cpus)
+    LOGGER.info('N batches: %d', n_batches)
 
     analysis_functions = [endfeet_morphometrics]
 
@@ -58,5 +67,7 @@ def cmd(ngv_config, seed, output):
                     except KeyError:
                         results[key] = values
 
-    with open(output, 'w') as fd:
+    output_file = os.path.join(output_dir, 'analysis.json')
+
+    with open(output_file, 'w') as fd:
         json.dump(results, fd, indent=2)
