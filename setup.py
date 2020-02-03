@@ -15,6 +15,7 @@ EXTRA_CORE = [
     'trimesh>=2.21.15',
     'pandas>=0.16.2',
     'archngv-building',
+    'spatial-index==0.0.1'
 ]
 
 EXTRA_ALL = [
@@ -42,8 +43,7 @@ setup(
         'h5py>=2.3.1',
         'cached-property>=1.5',
         'voxcell[sonata]>=2.6.2',
-        'scipy>=1.0.0',
-        'spatial-index==0.0.1',
+        'scipy>=1.0.0'
     ],
     extras_require={
         'all': EXTRA_CORE + EXTRA_ALL,
