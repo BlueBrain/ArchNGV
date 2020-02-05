@@ -40,27 +40,13 @@ BUILDER_RECIPE = bioname_path('astrocyte_gap_junction_recipe.xml')
 NGV_APP = 'ngv -v {cmd} '
 PARALLEL = True
 
-
-SPACK_MODULEPATH = ":".join(
-    path % component
-    for path, component in it.product(
-        (
-        '/gpfs/bbp.cscs.ch/apps/hpc/jenkins/modules/%s/2019-11/tcl/linux-rhel7-x86_64/',
-        ),
-        ('applications',
-         'external-libraries',
-         'parallel-libraries',
-         'serial-libraries',
-         'tools', )
-         )
-)
-
+SPACK_MODULEPATH = "/gpfs/bbp.cscs.ch/ssd/apps/hpc/jenkins/modules/all"
 
 MODULES = {
     'glial_gap_junctions':
-        (SPACK_MODULEPATH, ['touchdetector/5.3.2/parallel/serial']),
+        (SPACK_MODULEPATH, ['archive/2019-12', 'touchdetector/5.3.2']),
     'glialglial_connectivity':
-        (SPACK_MODULEPATH, ['py-pytouchreader/1.4.3/python3'])
+        (SPACK_MODULEPATH, ['archive/2019-12', 'py-pytouchreader/1.4.3/python3'])
 }
 
 TOUCHES_DIR = 'connectome/touches'
