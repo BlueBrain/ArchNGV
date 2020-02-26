@@ -9,19 +9,19 @@ VERSION = imp.load_source("archngv.version", "archngv/version.py").VERSION
 
 EXTRA_CORE = [
     'tess>=0.2.2',
-    'tmd>=2.0.4',
-    'morphio>=2.0.6',
+    'tmd>=2.0.6',
+    'MorphIO>=2.3.4',
     'numpy-stl>=2.7',
     'trimesh>=2.21.15',
     'pandas>=0.16.2',
-    'archngv-building',
-    'spatial-index==0.0.1'
+    'spatial-index==0.0.1',
+    'archngv-building>=0.1.1',
 ]
 
 EXTRA_ALL = [
     'bluepy[sonata]>=0.13.5',
     'Click>=7.0',
-    'openmesh>=1.1.2',
+    'openmesh==1.1.2',
     'pyyaml>=3.0',
     # TODO 'tns>=??',
 ]
