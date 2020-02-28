@@ -1,0 +1,212 @@
+{
+    "input_density_profile": "/gpfs/bbp.cscs.ch/project/proj62/NGV/ARCHNGV/Data/laminar_densities/densities_appaix_with_bins.dat", 
+    "soma_densities": {
+        "citations": [
+            "Nimmerjahn et al., 2004", 
+            "Grosche et al., 2013", 
+            "Leahy et al., 2015", 
+            "Olude et al., 2015", 
+            "Appaix et al., 2012", 
+            "Schreiner et al., 2014", 
+            "Emsley et al., 2006"
+        ], 
+        "ages": [
+            "Old", 
+            "Adult", 
+            "Adult", 
+            "Juvenile", 
+            "Juvenile", 
+            "Juvenile", 
+            "Neonate"
+        ], 
+        "errors": [
+            1844, 
+            860, 
+            2000, 
+            1750, 
+            1601, 
+            400, 
+            133
+        ], 
+        "densities": [
+            23000.0, 
+            15696, 
+            18000, 
+            10700, 
+            12286, 
+            10800, 
+            2666
+        ]
+    }, 
+    "endfeet_path_lengths": {
+        "n": [
+            10
+        ], 
+        "citation": [
+            "Moye et al., 2019"
+        ], 
+        "sdev": [
+            2
+        ], 
+        "mean": [
+            17
+        ]
+    }, 
+    "astrocyte_nearest_neighbor_distribution": {
+        "citation": "Lopez-Hidalgo et al., 2016", 
+        "sdev": [
+            4.0
+        ], 
+        "mean": [
+            30.0
+        ]
+    }, 
+    "soma_radii": {
+        "citation": [
+            "Puschmann et al., 2014", 
+            "Cali et al., 2019", 
+            "Bindocci et al., 2017", 
+            "Lee et al., 2016", 
+            "Guo et al., 2016", 
+            "Bagheri et al., 2013"
+        ], 
+        "sdev": [
+            0.66, 
+            0.39, 
+            0.06, 
+            0.45, 
+            0.02, 
+            0.07
+        ], 
+        "value": [
+            5.99, 
+            4.36, 
+            4.85, 
+            5.9, 
+            6.46, 
+            6.05
+        ]
+    }, 
+    "endfeet_areas": {
+        "sdev": 160.55871962923592, 
+        "citation": [
+            "Cali et al., 2019"
+        ], 
+        "values": [
+            41.0, 
+            74.6, 
+            442.1, 
+            182.5, 
+            431.7, 
+            66.3, 
+            102.7
+        ], 
+        "mean": 191.55714285714288
+    }, 
+    "endfeet_volume_area_ratio": {
+        "ab": [
+            0.97, 
+            37.0
+        ]
+    }, 
+    "soma_volumes": {
+        "source": [
+            "Bagheri et al., 2015", 
+            "Moye et al., 2019"
+        ], 
+        "sdev": [
+            50.0, 
+            30.0
+        ], 
+        "mean": [
+            900.0, 
+            489.0
+        ]
+    }, 
+    "microdomain_volumes": {
+        "staining_method": [
+            "Golgi", 
+            "Dye", 
+            "S100b", 
+            "GFAP", 
+            "GFAP", 
+            "S100b", 
+            "GFAP", 
+            "GFAP"
+        ], 
+        "citation": [
+            "Grosche etl al., 2013", 
+            "Wilhelmson et al., 2006", 
+            "Ogata and Kosaka, 2002", 
+            "Scofield et al., 2016", 
+            "Bushong et al., 2002", 
+            "Lopez-Hidalgo et al., 2016", 
+            "Mishima et al., 2010", 
+            "Bagheri et al., 2015"
+        ], 
+        "species": [
+            "Mouse", 
+            "Mouse", 
+            "Mouse", 
+            "Rat", 
+            "Rat", 
+            "Mouse", 
+            "Rat", 
+            "Rat"
+        ], 
+        "sdev_volume": [
+            3000.0, 
+            2900.0, 
+            29000.0, 
+            1063.0, 
+            3200.0, 
+            4314.0, 
+            14600.0, 
+            1000.0
+        ], 
+        "mean_volume": [
+            38000.0, 
+            26100.0, 
+            86700.0, 
+            31242.0, 
+            65900.0, 
+            64831.0, 
+            16600.0, 
+            21000.0
+        ]
+    },
+    "processes_primary": {
+        "mean": [
+            9.59,
+            7.0,
+            5.1,
+            4.0
+        ],
+        "sdev": [
+            0.75,
+            0.5,
+            0.1,
+            0.0
+        ],
+        "citation": [
+            "Benedetto et al., 2006",
+            "Moye et al., 2019",
+            "Wilhelmsson et al., 2006",
+            "cali et al., 2019"
+        ]
+    },
+    "processes_perivascular": {
+        "mean": [
+            2.2,
+            1.75
+        ],
+        "sdev": [
+            0.5,
+            0.43
+        ],
+        "citation": [
+            "Moye et al., 2019",
+            "cali et al., 2019"
+        ]
+    }
+}

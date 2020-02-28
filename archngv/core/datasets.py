@@ -379,6 +379,13 @@ class GliovascularData(H5ContextManager):
         """ Total number of endfeet """
         return len(self.endfoot_graph_coordinates)
 
+    @property
+    def vasculature_surface_targets(self):
+        return self.endfoot_surface_coordinates[:]
+
+    @property
+    def vasculature_skeleton_targets(self):
+        return self.endfoot_graph_coordinates[:]
 
 class SynapticData(EdgesContextManager):
     """ Synaptic data access """

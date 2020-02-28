@@ -1,89 +1,51 @@
 import logging
 import numpy as np
-import pandas as pd
-import seaborn as sns
-from .common import bin_centers
-from .common import remove_spines
 from archngv.extras.analysis.density import read_densities_from_file
 
 
-log = logging.getLogger(__name__)
+L = logging.getLogger(__name__)
 
 
-def _experimental_densities(densities_filename):
+def _point_histogram_across_y(points, bins, slab_volume):
 
-    log.info("Laminar Density File: {}".format(densities_filename))
-
-    rdensities, rbins = read_densities_from_file(densities_filename)
-
-    return rdensities, rbins, rbins[1] - rbins[0]
-
-
-def _sim_densities_from_points(points, slab_volume, max_y, bins):
-
-    # offset them from the max to reverse order
-    y_values = max_y - points[:, 1]
-
-    h, _ = np.histogram(y_values, bins)
-
+    h, _ = np.histogram(points[:, 1], bins)
     return h.astype(np.float) / slab_volume
 
 
-def _calculate_rectangular_slab_volume(bounding_box, bin_size):
-    x_range, _, z_range = bounding_box.ranges.T
-    return 1e-9 * np.diff(x_range)[0] * np.diff(z_range)[0] * bin_size
+def _voxel_densities(voxel_data):
 
-def plot_spatial_distribution_histogram(ax, points, densities_filename, bounding_box, neuronal_positions=None):
+    y_bin_size = voxel_data.voxel_dimensions[1]
+    n_x, n_y, n_z = voxel_data.shape
+    xz_slab_volume = 1e-9 * voxel_data.voxel_volume * n_x * n_z
 
-    # get densities and bin data
-    rdensities, bins, bin_size = _experimental_densities(densities_filename)
+    y_bins = np.arange(0., (n_y + 1) * y_bin_size, y_bin_size) + voxel_data.offset[1]
+    y_densities = np.mean(voxel_data.raw, axis=(0, 2))
 
-    x_range, y_range, z_range = bounding_box.ranges.T
-    slab_volume = 1e-9 * np.diff(x_range)[0] * np.diff(z_range)[0] * bin_size
-
-    max_y = y_range[-1]
-    bin_starts = bins[:-1] # the last one is not a start
-
-    sdensities = _sim_densities_from_points(points, slab_volume, max_y, bins)
-
-    assert (len(bin_starts) == len(sdensities) == len(rdensities))
-
-    max_bin = np.where(bin_starts > sdensities)[0][0]
-
-    if neuronal_positions is not None:
-
-        ndensities, nbins = _sim_densities_from_points(neuronal_positions, slab_volume, rdensities.size, dy)
+    return y_densities, y_bins, y_bin_size, xz_slab_volume
 
 
-        ax.barh(nbins[:-1], ndensities / 20., height=bin_width, alpha=0.2,
-                label='Neuronal (downscaled)', color='k')
+def plot_spatial_distribution_histogram(ax, ref_densities, bounding_box, point_populations_dict, **kwargs):
 
-    max_bin = np.where(bin_starts > sdensities)[0][0]
+    voxel_data = ref_densities['voxel_data']
 
-    ax.barh(bin_starts[:max_bin],
-            rdensities[:max_bin],
-            height=bin_size,
-            alpha=0.8,
-            align='edge',
-            label='Appaix et al., 2012',
-            color='cornflowerblue')
+    rdensities, bins, bin_size, slab_volume = _voxel_densities(voxel_data)
+    bin_centers = bins[:-1] + bin_size * 0.5
 
-    ax.barh(bin_starts,
-            sdensities,
-            height=bin_size,
-            alpha=0.8,
-            align='edge',
-            color='darkred',
-            label='Simulation Result')
+    mask = ~np.isclose(rdensities, 0.0)
+    ax.plot(rdensities[mask], bin_centers[mask], color=ref_densities['color'], linewidth=2, label=ref_densities['label'])
 
-    #ax.set_ylabel("Cortical Depth (um)")
-    ax.set_xlabel("Astrocyte Density\n(astrocytes / cubic mm)")
+    ids = np.arange(0, len(bins), 3, dtype=np.intp)
 
-    ax.set_xticks([0, 20000])
-    ax.set_xlim([0., 20000])
+    bins = np.take(bins, ids)
+    rdensities = np.take(rdensities, ids[:-1])
 
-    ax.set_ylim([0, 1500])
+    new_bin_size = bins[1] - bins[0]
+    slab_volume = slab_volume * new_bin_size / bin_size
 
+    _, y_range, _ = voxel_data.bbox.T
 
-    ax.invert_yaxis()
-    ax.legend(loc=2)
+    for label, data in point_populations_dict.items():
+
+        densities = _point_histogram_across_y(data['points'], bins, slab_volume)
+        ax.barh(bins[:-1], densities, height=new_bin_size,
+                align='edge', color=data['color'], label=label, linewidth=0.5, edgecolor=data['edgecolor'], **kwargs)

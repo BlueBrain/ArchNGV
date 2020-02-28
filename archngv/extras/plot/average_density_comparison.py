@@ -19,44 +19,38 @@ literature_data = {'citations': ['Nimmerjahn et al., 2004',
 
 
 def grouped_barplot(ax, df, cat, subcat, val , err):
-
-    #u  = df[cat].unique()
-    #x  = np.arange(len(u))
-    #cat_dict = {key: value for key, value in zip(u, x)}
-    #subx = df[subcat].unique()
-
+    """ Grouped barplot """
     ages = df[subcat].unique()
-
     x = np.arange(ages.size, dtype=np.int) * 0.8
-    palette = cycle(sns.color_palette())
-    #n_subcats = len(subx)
-    colors = ['k', 'r', 'g', 'b', 'y']
     for i, age in enumerate(ages):
 
-        dfg = df[df['ages'] == age]
+        dfg = df[df[subcat] == age]
 
-        citations = dfg['citations'].values
-
-        densities = dfg['densities'].values
-
-        errors = dfg['errors'].values
+        citations = dfg[cat].values
+        densities = dfg[val].values
+        errors = dfg[err].values
+        colors = dfg['colors'].values
 
         n_citations = citations.size
-
-        #offsets = (np.arange(citations.size) - np.mean(np.arange(citations.size))) / (citations.size + 1.)
 
         offsets = np.arange(n_citations, dtype=np.float)
         offsets -= offsets.mean()
 
         for j in range(len(dfg)):
 
+            width = 0.18
 
-            width=0.2
-            #width = np.diff(offsets).mean() if len(offsets > 1) else 0.1
-            color = next(palette)
+            errs = [[0], [errors[j]]]
 
-            ax.bar(x[i] + 0.21 * offsets[j], densities[j], width=width, label=citations[j], yerr=errors[j], color=color, align='center')
-
+            ax.bar(x[i] + 0.21 * offsets[j],
+                   densities[j],
+                   width=width,
+                   label=citations[j],
+                   yerr=errs,
+                   linewidth=1,
+                   capsize=10,
+                   edgecolor='black',
+                   color=colors[j], align='center')
 
     ax.set_xlabel('Age')
     ax.set_ylabel('Density (Astrocytes / mm^3)')
@@ -67,7 +61,7 @@ def grouped_barplot(ax, df, cat, subcat, val , err):
     ax.set_yticks([5000, 15000, 25000])
 
     remove_spines(ax, (False, True, False, False))
-    ax.legend(loc='upper left')
+    #ax.legend(loc='upper left')
 
 
 def plot_laminar_density_comparison(ax, points, bounding_box):
@@ -77,7 +71,7 @@ def plot_laminar_density_comparison(ax, points, bounding_box):
     saverage = points.shape[0] / volume
 
     data = {
-            'citations': ['Simulation Result'],
+            'citations': ['Result'],
             'densities': [saverage],
             'errors'   : [0.],
             'ages'     : ['Juvenile']
@@ -91,7 +85,5 @@ def plot_laminar_density_comparison(ax, points, bounding_box):
     dataframe.sort_values('densities', inplace=True)
 
     grouped_barplot(ax, dataframe, 'citations', 'ages', 'densities', 'errors')
-
-    
 
     remove_spines(ax, (False, True, True, False))
