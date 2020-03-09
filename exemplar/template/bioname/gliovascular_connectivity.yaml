@@ -1,0 +1,9 @@
+graph_targeting:
+    linear_density: 0.17
+
+connection:
+    reachout_strategy: 'maximum_reachout'
+    endfeet_distribution: [2, 2, 1, 5]
+    endfeet_minimum_distance_with_neighbors: 0.1
+
+surface_targeting: {}

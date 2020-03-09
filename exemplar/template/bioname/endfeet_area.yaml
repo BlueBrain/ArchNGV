@@ -1,0 +1,4 @@
+fmm_cutoff_radius: 1000.
+area_distribution: [192.0, 160.0, 0.0, 1000.]
+thickness_distribution: [0.97, 0.1, 0.01, 2.0]
+thickness_from_area_polynomial: [37.0, 0.97]

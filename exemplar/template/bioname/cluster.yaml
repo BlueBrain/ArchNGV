@@ -1,0 +1,11 @@
+__default__:
+    account: 'proj62'
+    nodes: 1
+    tasks: 72
+    time: '24:00:00'
+    partition: 'prod'
+    constraint: 'cpu'
+
+glial_gap_junctions:
+    jobname: 'glial_gap_junctions'
+    tasks: 60

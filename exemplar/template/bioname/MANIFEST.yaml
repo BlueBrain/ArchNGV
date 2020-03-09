@@ -1,0 +1,12 @@
+common:
+  atlas: '/gpfs/bbp.cscs.ch/project/proj67/entities/dev/atlas/O1-230/20190517'
+  vasculature: '/gpfs/bbp.cscs.ch/project/proj62/NGV/ARCHNGV/Data/vasculature_datasets/raw_pruned_cap_circuit_coo_inscribed_spec_atlas_translated.h5'
+  vasculature_mesh: '/gpfs/bbp.cscs.ch/project/proj62/NGV/ARCHNGV/Data/vasculature_datasets/raw_pruned_cap_circuit_coo_inscribed_spec_atlas_translated_triangulated_zup_fixed.obj'
+  base_circuit: '/gpfs/bbp.cscs.ch/project/proj62/Circuits/O1/20190912_spines/CircuitConfig'
+  base_circuit_sonata: '/gpfs/bbp.cscs.ch/project/proj62/Circuits/O1/20190912_spines/sonata/circuit_config.json'
+  base_circuit_cells: '/gpfs/bbp.cscs.ch/project/proj62/Circuits/O1/20190912_spines/sonata/networks/nodes/All/nodes.h5'
+  base_circuit_connectome: '/gpfs/bbp.cscs.ch/project/proj62/Circuits/O1/20190912_spines/sonata/networks/edges/functional/All/edges.h5'
+
+assign_emodels:
+  templates_dir: '/gpfs/bbp.cscs.ch/project/proj67/entities/dev/emodels/'
+  hoc_template: 'astrocyte'
