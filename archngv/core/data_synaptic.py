@@ -20,11 +20,19 @@ class SynapticData(EdgesContextManager):
     def synapse_coordinates(self, synapse_ids=None):
         """ XYZ coordinates for given synapse_ids (all if synapse_ids not specified) """
         selection = self._select(synapse_ids)
-        return np.stack([
-            self._impl.get_attribute('efferent_center_x', selection),
-            self._impl.get_attribute('efferent_center_y', selection),
-            self._impl.get_attribute('efferent_center_z', selection),
-        ]).transpose()
+
+        try:
+            return np.stack([
+                self._impl.get_attribute('efferent_center_x', selection),
+                self._impl.get_attribute('efferent_center_y', selection),
+                self._impl.get_attribute('efferent_center_z', selection),
+            ]).transpose()
+        except libsonata.SonataError:
+            return np.stack([
+                self._impl.get_attribute('afferent_center_x', selection),
+                self._impl.get_attribute('afferent_center_y', selection),
+                self._impl.get_attribute('afferent_center_z', selection),
+            ]).transpose()
 
     def afferent_gids(self, synapse_ids=None):
         """ 0-based afferent neuron GIDs for given synapse_ids (all if synapse_ids not specified) """

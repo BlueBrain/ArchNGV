@@ -78,7 +78,7 @@ class CellDataInfo(CellData):
         """ Absolute path to the astrocyte morphology corresponding
         to the given index.
         """
-        cell_filename = self.astrocyte_names[astrocyte_index] + '.h5'
+        cell_filename = self.astrocyte_names[astrocyte_index].decode('utf-8') + '.h5'
         return os.path.join(self._config.morphology_directory, cell_filename)
 
     def morphology_object(self, astrocyte_index):

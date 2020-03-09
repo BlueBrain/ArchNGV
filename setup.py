@@ -15,7 +15,7 @@ EXTRA_CORE = [
     'trimesh>=2.21.15',
     'pandas>=0.16.2',
     'spatial-index==0.0.1',
-    'archngv-building>=0.1.1',
+    'archngv-building>=0.1.2',
 ]
 
 EXTRA_ALL = [
