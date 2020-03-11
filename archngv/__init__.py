@@ -12,8 +12,6 @@ from archngv.core.connectivity_neuroglial import NeuroglialConnectivity
 from archngv.core.connectivity_gliovascular import GliovascularConnectivity
 from archngv.core.connectivity_glialglial import GlialglialConnectivity
 
-from archngv.core.vasculature_morphology.vasculature import Vasculature
-
 from archngv.core.data_ngv import NGVData
 from archngv.core.ngv_circuit import NGVCircuit
 from archngv.core.connectivity_ngv import NGVConnectome

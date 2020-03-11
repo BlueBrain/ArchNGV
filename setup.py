@@ -43,6 +43,7 @@ setup(
         'h5py>=2.3.1',
         'cached-property>=1.5',
         'voxcell[sonata]>=2.6.2',
+        'vasculatureapi>=0.0.6',
         'scipy>=1.0.0'
     ],
     extras_require={

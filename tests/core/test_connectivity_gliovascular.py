@@ -1,128 +1,81 @@
 import os
 import h5py
 import pytest
+import tempfile
 import numpy as np
+from numpy import testing as npt
 from unittest.mock import Mock
 
-from archngv.building.exporters.export_gliovascular_connectivity import export_gliovascular_connectivity
 from archngv.core.connectivity_gliovascular import GliovascularConnectivity
+from archngv.building.exporters.export_gliovascular_connectivity import export_gliovascular_connectivity
 
 
-N_ASTROCYTES = 10
 N_ENDFEET = 20
-N_VASCULATURE_SEGMENTS = N_ENDFEET
-
-
-class MockGliovascularConnectivity(object):
-
-        def __init__(self):
-
-
-            self.endfeet_per_astrocyte = \
-                np.split(np.arange(N_ENDFEET, dtype=np.uintp), N_ASTROCYTES)
-
-            self.endfoot_to_vasculature = \
-                np.arange(N_ENDFEET, dtype=np.uintp)
-
-            self.vasculature_segments_per_astrocyte = self.endfeet_per_astrocyte
-
-            self.astrocyte = Mock(to_endfoot = lambda astro_index: self.endfeet_per_astrocyte[astro_index],
-                                  to_vasculature_segment = lambda astro_index: self.vasculature_segments_per_astrocyte[astro_index])
-
-            self.endfoot_to_astrocyte = self._endfoot_to_astrocyte()
-
-            self.endfoot = Mock(to_astrocyte = lambda endf_index: self.endfoot_to_astrocyte[endf_index],
-                                to_vasculature_segment = lambda endf_index: self.endfoot_to_vasculature[endf_index])
-
-            self.vasculature_segment = Mock(to_astrocyte = lambda v_index: self.endfoot_to_astrocyte[v_index],
-                                            to_endfoot = lambda v_index: v_index)
-
-            self.n_astrocytes = N_ASTROCYTES
-            self.n_endfeet = N_ENDFEET
-
-
-        def _endfoot_to_astrocyte(self):
-
-            res = np.zeros(N_ENDFEET, dtype=np.uintp)
-
-            offset = 0
-            for astrocyte_index, endfeet in enumerate(self.endfeet_per_astrocyte):
-
-                n_endfeet = len(endfeet)
-                res[offset: offset + n_endfeet] = astrocyte_index
-                offset += n_endfeet
-
-            return res
-
-
-@pytest.fixture(scope='session')
-def gv_conn_path(tmpdir_factory):
-
-    directory_path = tmpdir_factory.getbasetemp()
-
-    path = os.path.join(directory_path, 'synaptic_data.h5')
-    return path
+N_ASTROCYTES = 10
 
 
 @pytest.fixture(scope='module')
-def gv_conn_mock(gv_conn_path):
-
-    mock_data = MockGliovascularConnectivity()
-
-    export_gliovascular_connectivity(gv_conn_path,
-                                     N_ASTROCYTES,
-                                     mock_data.endfoot_to_astrocyte,
-                                     mock_data.endfoot_to_vasculature)
-    return mock_data
+def astrocyte_to_endfoot():
+    """ ids of endfeet per astrocyte """
+    #          0          1        2      3     4      5    6            7               8         9
+    return [[11, 14], [0, 1, 2], [3, 4], [5], [6, 7], [], [8, 9], [10, 12, 13, 15], [16, 17, 18], [19]]
 
 
 @pytest.fixture(scope='module')
-def gv_conn_data(gv_conn_path, gv_conn_mock):
-    return GliovascularConnectivity(gv_conn_path)
+def endfoot_to_astrocyte():
+    """ The corresponding astrocyte for each endfoot """
+    #       0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19
+    return [1, 1, 1, 2, 2, 3, 4, 4, 6, 6, 7, 0, 7, 7, 0, 7, 8, 8, 8, 9]
 
 
-def test_n_astrocytes(gv_conn_data, gv_conn_mock):
-    assert gv_conn_mock.n_astrocytes == gv_conn_data.n_astrocytes
+@pytest.fixture(scope='module')
+def endfoot_to_vasculature():
+    """ The vasculature section and segment id for each endfoot """
+    return {'section_id': [0, 0, 0, 1, 1, 1, 2, 2, 3, 3, 4, 4, 4, 4, 4, 5, 1, 2, 3, 4],
+            'segment_id': [1, 2, 4, 1, 2, 3, 3, 5, 1, 2, 1, 0, 0, 0, 1, 2, 3, 4, 1, 1]}
 
 
-def test_n_endfeet(gv_conn_data, gv_conn_mock):
-    assert gv_conn_mock.n_endfeet == gv_conn_data.n_endfeet
+@pytest.fixture(scope='module')
+def gv_connectivity(endfoot_to_astrocyte, endfoot_to_vasculature):
+
+    with tempfile.NamedTemporaryFile(suffix='.h5') as fd:
+
+        path = fd.name
 
 
-def test_astrocyte_to_endfoot(gv_conn_data, gv_conn_mock):
+        e2v = np.column_stack((endfoot_to_vasculature['section_id'],
+                               endfoot_to_vasculature['segment_id']))
 
-    for astrocyte_index in range(N_ASTROCYTES):
-        assert np.all(gv_conn_data.astrocyte.to_endfoot(astrocyte_index) == \
-                      gv_conn_mock.astrocyte.to_endfoot(astrocyte_index))
+        export_gliovascular_connectivity(path,
+                                         N_ASTROCYTES,
+                                         endfoot_to_astrocyte,
+                                         e2v)
 
-
-def test_astrocyte_to_vasculature_segment(gv_conn_data, gv_conn_mock):
-    for astrocyte_index in range(N_ASTROCYTES):
-        assert np.all(gv_conn_data.astrocyte.to_vasculature_segment(astrocyte_index) == \
-                      gv_conn_mock.astrocyte.to_vasculature_segment(astrocyte_index))
+        return GliovascularConnectivity(path)
 
 
-def test_endfoot_to_astrocyte(gv_conn_data, gv_conn_mock):
-    for endfoot_index in range(N_ENDFEET):
-        print(gv_conn_data.endfoot.to_astrocyte(endfoot_index))
-        print(gv_conn_mock.endfoot.to_astrocyte(endfoot_index))
-        assert np.all(gv_conn_data.endfoot.to_astrocyte(endfoot_index) == \
-                      gv_conn_mock.endfoot.to_astrocyte(endfoot_index))
+def test_lengths(gv_connectivity):
+    npt.assert_equal(gv_connectivity.n_astrocytes, N_ASTROCYTES)
+    npt.assert_equal(gv_connectivity.n_endfeet, N_ENDFEET)
 
 
-def test_endfoot_to_vasculature_segment(gv_conn_data, gv_conn_mock):
-    for endfoot_index in range(N_ENDFEET):
-        assert gv_conn_data.endfoot.to_vasculature_segment(endfoot_index) == \
-               gv_conn_mock.endfoot.to_vasculature_segment(endfoot_index)
+def test_astrocyte_to_endfoot(gv_connectivity, astrocyte_to_endfoot):
+    for astrocyte_index, expected_endfeet_ids in enumerate(astrocyte_to_endfoot):
+        ids = gv_connectivity.astrocyte.to_endfoot(astrocyte_index)
+        npt.assert_array_equal(ids, expected_endfeet_ids)
 
 
-def test_vasculature_segment_to_endfoot(gv_conn_data, gv_conn_mock):
-    for seg_index in range(N_VASCULATURE_SEGMENTS):
-        assert gv_conn_data.vasculature_segment.to_endfoot(seg_index) == \
-               gv_conn_mock.vasculature_segment.to_endfoot(seg_index)
+def test_endfoot_to_astrocyte(gv_connectivity, endfoot_to_astrocyte):
+    for endfoot_index, expected in enumerate(endfoot_to_astrocyte):
+        ids = gv_connectivity.endfoot.to_astrocyte(endfoot_index)
+        npt.assert_array_equal(ids, expected)
 
 
-def test_vasculature_segment_to_astrocyte(gv_conn_data, gv_conn_mock):
-    for seg_index in range(N_VASCULATURE_SEGMENTS):
-        assert gv_conn_data.vasculature_segment.to_astrocyte(seg_index) == \
-               gv_conn_mock.vasculature_segment.to_astrocyte(seg_index)
+def test_endfoot_to_vasculature(gv_connectivity, endfoot_to_vasculature):
+
+    section_ids = endfoot_to_vasculature['section_id']
+    segment_ids = endfoot_to_vasculature['segment_id']
+
+    for endfoot_index, expected in enumerate(zip(section_ids, segment_ids)):
+        ids = gv_connectivity.endfoot.to_vasculature_segment(endfoot_index)
+        npt.assert_array_equal(ids, expected)

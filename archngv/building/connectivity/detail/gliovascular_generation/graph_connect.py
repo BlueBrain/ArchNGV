@@ -36,6 +36,10 @@ def domains_to_vasculature(cell_ids, reachout_strategy_function, potential_targe
 
     3. Using a reachout strategy select twhich ones to keep
 
+    Returns:
+        Astrocyte - Target edges: array (K, 2)
+            Edges for each astrocyte connecting to multiple targets.
+                e.g. [[astro_0, target_2], [atro_0, target_3], [astro_1, target_10] ...]
     """
     L.info('Endfeet Distribution Paremeters %s', properties['endfeet_distribution'])
 

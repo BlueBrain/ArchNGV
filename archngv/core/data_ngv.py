@@ -9,7 +9,7 @@ from archngv.core.data_synaptic import SynapticData
 from archngv.core.data_endfeet_areas import EndfeetAreas
 from archngv.core.data_gliovascular import GliovascularData
 from archngv.core.data_microdomains import MicrodomainTesselation
-from archngv.core.vasculature_morphology.vasculature import Vasculature
+from archngv.core.vasculature_wrapper import Vasculature
 
 
 class NGVData(object):

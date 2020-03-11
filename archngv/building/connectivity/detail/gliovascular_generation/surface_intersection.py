@@ -48,14 +48,6 @@ def opening_angle(r, R, L):
     return math.atan2(r, truncated_length(r, R, L))
 
 
-def norm(V, W):
-    """ Returns the length between point V and W.
-    """
-    return math.sqrt((V[0] - W[0]) ** 2 +
-                     (V[1] - W[1]) ** 2 +
-                     (V[2] - W[2]) ** 2)
-
-
 def _M(D, open_angle):
     R = D[:, None] * D
     cos_angle2 = math.cos(open_angle) ** 2
@@ -189,43 +181,22 @@ def _resolve_segment_direction(start_pos, end_pos, start_rad, end_rad):
     return start_pos, end_pos, start_rad, end_rad
 
 
-# pylint: disable=too-many-arguments
-def surface_intersect(somata_positions,
-                      target_positions,
-                      segments_start, segments_end,
-                      sg_radii_start, sg_radii_end,
-                      somata_idx,
-                      target_idx,
-                      segment_idx,
-                      edges,
-                      graph):
+def surface_intersect(astrocyte_positions, potential_targets, astrocyte_target_edges, vasculature):
     """ From the line segments starting from target points on the skeleton of the vasculature
     graph and ending to the astrocytic somata the intersection with the surface of teh cones or
     cyliners is calculated.
 
     Args:
-        somata_positions: array[float, (N, 3)]
+        astrocyte_positions: array[float, (N, 3)]
             Positions of the astrocytic somata.
-        target_positions: array[float, (N, 3)]
-            The points on the skeleton graph of the vasculature that connect to each soma.
-        segments_starts: array[float, (M, 3)]
-            The start points of the vasculature segments.
-        segments_end: array[float, (M, 3)]
-            The end points of the vasculature segments.
-        sg_radii_start: array[float, (M,)]
-            The start radii of the vasculature segments.
-        sg_radii_end: array[float, (M,)]
-            The end radii of the vasculature segments.
-        somata_idx: array[int, (N,)]
-            The ids for each astrocytic soma.
-        target_idx: array[int, (N,)]
-            The ids for each endfoot target on the skeleton.
-        segment_idx: array[int]
-            The ids for each edge.
-        edges: array[int, (M, 2)]
-            The edges of the vasculature graph.
-        graph: Graph
-            The point graph of the vasculature.
+        potential_targets: Dataframe of length M
+            The potential targets to connect to. The following columns are required:
+            x, y, z, edge_index
+            where edge_id is the edge index of the vasculature the target is located
+        astrocyte_target_edges: array[int, (K)]
+            The edges between astrocyte somata and targets. Note that K < M
+        vasculature: Vasculature
+            The vasculature geometry/topology
 
     Returns:
        surface_target_positions: array[float, (N, 3)]
@@ -238,84 +209,120 @@ def surface_intersect(somata_positions,
     #  pylint: disable=too-many-locals,too-many-branches,too-many-statements
     T_EPS = 1e-1  # margin of error in the parametric t e.g 0.1 of length of segment
 
-    surface_target_positions, surface_astros_idx, vasculature_edge_idx = [], [], []
-    for astro_id, target_it in zip(somata_idx, target_idx):
-        T0 = target_positions[target_it]
-        U = somata_positions[astro_id] - T0
+    astrocyte_positions = astrocyte_positions.astype(np.float32)
 
-        # first segment id is the one that contains the target point
-        sid = segment_idx[target_it]
+    segments_start, segments_end = vasculature.segment_points.astype(np.float32)
+    sg_radii_start, sg_radii_end = vasculature.segment_radii.astype(np.float32)
+    edges = vasculature.edges.astype(np.int64)
+    graph = vasculature.point_graph
+
+    somata_idx, target_idx = astrocyte_target_edges.T.astype(np.int64)
+
+    # get target properties
+    target_edge_indices = potential_targets.loc[target_idx, 'edge_index'].to_numpy(dtype=np.int64)
+    target_positions = potential_targets.loc[target_idx, ['x', 'y', 'z']].to_numpy(dtype=np.float32)
+
+    n_connections = len(astrocyte_target_edges)
+    surface_target_positions = np.empty((n_connections, 3), dtype=np.float32)
+    surface_astros_idx = np.empty(n_connections, dtype=np.int64)
+    vasculature_edge_idx = np.empty_like(surface_astros_idx)
+
+    n_established = 0
+    for astro_id, edge_id, target_point in zip(somata_idx, target_edge_indices, target_positions):
+
+        target_to_soma_vec = astrocyte_positions[astro_id] - target_point
+
         for _ in range(10):
             # we have to determine if the intersection is with the current
             # segment or with a neighboring one. Therefore the intersection
             # is set to not_resolved until the correct segment is found or
             # the astro-target segment is contained in a truncated cone
 
-            start, end = segments_start[sid], segments_end[sid]
+            segment_beg_point = segments_start[edge_id]
+            segment_end_point = segments_end[edge_id]
 
-            radius_start, radius_end = sg_radii_start[sid], sg_radii_end[sid]
+            segment_beg_radius = sg_radii_start[edge_id]
+            segment_end_radius = sg_radii_end[edge_id]
 
-            length = norm(start, end)
+            segment_length = np.linalg.norm(segment_beg_point - segment_end_point)
 
-            if abs(radius_start - radius_end) < EPS:  # cylinder
+            if abs(segment_beg_radius - segment_end_radius) < EPS:  # cylinder
+
                 # unit length direction of the cone
-                D = (end - start) / length
-                roots = cylinder_intersections(D, start, T0, U, radius_end ** 2)
+                cone_direction = (segment_end_point - segment_beg_point) / segment_length
+                roots = cylinder_intersections(
+                    cone_direction, segment_beg_point, target_point, target_to_soma_vec, segment_end_radius ** 2)
+
             else:  # truncated cone
+
                 # make sure that the vector is always from the small radius to the big one
-                start, end, radius_start, radius_end = _resolve_segment_direction(
-                    start, end, radius_start, radius_end)
+                (
+                    segment_beg_point, segment_end_point,
+                    segment_beg_radius, segment_end_radius
+                ) = _resolve_segment_direction(
+                    segment_beg_point, segment_end_point,
+                    segment_beg_radius, segment_end_radius)
 
                 # unit length direction of the cone
-                D = (end - start) / length
-                cone_angle = opening_angle(radius_start, radius_end, length)
+                cone_direction = (segment_end_point - segment_beg_point) / segment_length
 
-                # coordinates of the tip of the cone
-                V = start - truncated_length(radius_start, radius_end, length) * D
+                # opening angle of the truncated cone
+                cone_angle = opening_angle(segment_beg_radius, segment_end_radius, segment_length)
+
+                # coordinates of the tip of the truncated cone
+                cone_tip = segment_beg_point - truncated_length(
+                    segment_beg_radius, segment_end_radius, segment_length) * cone_direction
 
                 # target - astro segment angle with the line of the segment
                 # min and max angles determined from the size of the caps
-                roots = cone_intersections(D, V, T0, U, cone_angle)
+                roots = cone_intersections(
+                    cone_direction, cone_tip, target_point, target_to_soma_vec, cone_angle)
 
             # segment extent validity
             if -T_EPS < roots[0] < 1. + T_EPS:
-                T = roots[0]
+                fraction = roots[0]
             elif -T_EPS < roots[1] < 1. + T_EPS:
-                T = roots[1]
+                fraction = roots[1]
             else:
+                # if the roots are not in [0, 1] then they aren't valid to proceed
                 break
 
-            P = T0 + U * T
-            left, right = np.dot(D, P - start), np.dot(D, P - end)
+            surface_point = target_point + target_to_soma_vec * fraction
+            left = np.dot(cone_direction, surface_point - segment_beg_point)
+            right = np.dot(cone_direction, surface_point - segment_end_point)
 
             # after determining the point on the surface
             # validate its inclusion in the finite geometry
             if left > 0. > right:
-                surface_target_positions.append(P)
-                surface_astros_idx.append(astro_id)
-                vasculature_edge_idx.append(sid)
+                surface_astros_idx[n_established] = astro_id
+                vasculature_edge_idx[n_established] = edge_id
+                surface_target_positions[n_established] = surface_point
+                n_established += 1
                 break
 
             if left < 0. and right < 0.:  # check previous segment
-                cid = int(edges[sid][0])
-                pids = graph.adjacency_matrix.parents(cid)
 
-                if pids.size:
-                    sid = graph.get_edge_index(pids[0], cid)
+                cid = edges[edge_id][0]
+                # the int casting is a fix because np.uin64 is converted
+                # to float if added to a regular int
+                parents = graph.predecessors(cid)
+
+                if parents.size > 0:
+                    edge_id = graph.edge_index(parents[0], cid)
                 else:  # if there is no parent
                     break
-            elif left > 0. and right > 0.:  # check next segment
-                pid = int(edges[sid][1])
-                cids = graph.adjacency_matrix.children(pid)
 
-                if cids.size:
-                    sid = graph.get_edge_index(pid, cids[0])
+            elif left > 0. and right > 0.:  # check next segment
+
+                pid = edges[edge_id][1]
+                children = graph.successors(pid)
+                if children.size > 0:
+                    edge_id = graph.edge_index(pid, children[0])
                 else:  # if there are no children
                     break
             else:
                 break
 
-    return (np.array(surface_target_positions),
-            np.array(surface_astros_idx),
-            np.array(vasculature_edge_idx),
-            )
+    return (surface_target_positions[:n_established],
+            surface_astros_idx[:n_established],
+            vasculature_edge_idx[:n_established])

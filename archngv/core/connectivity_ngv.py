@@ -75,10 +75,6 @@ class NGVConnectome:
         """ Given an astrocyte index, return the endfeet indices """
         return self.gliovascular.astrocyte.to_endfoot(astrocyte_index)
 
-    def astrocyte_vasculature_segments(self, astrocyte_index):
-        """ Given an astrocyte index return the vasculature segment indices """
-        return self.gliovascular.astrocyte.to_vasculature_segment(astrocyte_index)
-
     def astrocyte_synapses(self, astrocyte_index):
         """ Given an astrocyte index return the synapse indices """
         return self.neuroglial.astrocyte_synapses(astrocyte_index)
@@ -94,14 +90,6 @@ class NGVConnectome:
     def synapse_afferent_neuron(self, synapse_index):
         """ Given the synapse index return the afferent neuron index """
         return self.synaptic.synapse.to_afferent_neuron(synapse_index)
-
-    def vasculature_segment_endfoot(self, vasculature_segment_index):
-        """ Given the vasculature segment index return the respective endfoot """
-        return self.gliovascular.vasculature_segment.to_endfoot(vasculature_segment_index)
-
-    def vasculature_segment_astrocyte(self, vasculature_segment_index):
-        """ Given the vasculature segment index return the connecting astrocyte """
-        return self.gliovascular.vasculature_segment.to_astrocyte(vasculature_segment_index)
 
     def astrocyte_afferent_neurons(self, astrocyte_index):
         """ Given the astrocyte index return the afferent neuron indices """

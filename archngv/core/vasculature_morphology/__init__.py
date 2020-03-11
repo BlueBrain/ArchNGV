@@ -1,1 +1,0 @@
-""" Vasculature data structure """
