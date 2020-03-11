@@ -44,7 +44,7 @@ def cmd(ngv_config, seed, output_dir):
     n_elements = len(NGVCircuit(config).data.astrocytes)
 
     n_cpus = multiprocessing.cpu_count()
-    n_batches = n_elements // n_cpus
+    n_batches = max(1, n_elements // n_cpus)
 
     LOGGER.info('N cpus: %d', n_cpus)
     LOGGER.info('N batches: %d', n_batches)

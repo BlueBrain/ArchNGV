@@ -152,7 +152,8 @@ rule all:
         'sonata/nodes/glia.h5',
         'sonata/edges/neuroglial.h5',
         'sonata/edges/glialglial.h5',
-        'astrocyte_annotations.h5'
+        'astrocyte_annotations.h5',
+        ANALYSIS_DIR + '/_DONE'
 
 
 rule sonata:
