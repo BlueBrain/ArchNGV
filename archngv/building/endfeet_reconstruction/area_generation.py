@@ -14,15 +14,12 @@ from archngv.building.endfeet_reconstruction.groups import group_elements
 
 from archngv.utils.statistics import truncated_normal
 from archngv.utils.ngons import vectorized_triangle_area
-from archngv.utils.decorators import log_execution_time, log_start_end
 
 
 L = logging.getLogger(__name__)
 
 
-@log_start_end
-@log_execution_time
-def grow_endfeet_areas(vasculature_mesh, endfeet_points, threshold_radius):
+def _grow_endfeet_areas(vasculature_mesh, endfeet_points, threshold_radius):
     """
     Args:
         mesh: TriMesh
@@ -63,11 +60,21 @@ def _endfeet_areas(grouped_triangles, triangle_areas, n_endfeet):
         be also present which coressponds to triangles that are not occupied by any
         endfoot.
     """
-    endfeet_areas = np.zeros(n_endfeet, dtype=np.float)
+    endfeet_areas = np.zeros(n_endfeet, dtype=np.float32)
 
     for group, ids in grouped_triangles.iter_assigned_groups():
         endfeet_areas[group] = triangle_areas[ids].sum()
     return endfeet_areas
+
+
+def _global_to_local_indices(triangles):
+
+    local_vertices, inverse = np.unique(triangles, return_inverse=True)
+
+    # remap triangle indices to the local index space
+    raveled_triangles = np.arange(len(local_vertices))[inverse]
+
+    return local_vertices, raveled_triangles.reshape((-1, 3))
 
 
 def _shrink_endfoot_triangles(triangles, triangle_areas, triangle_travel_times, endfoot_area, target_area):
@@ -76,16 +83,7 @@ def _shrink_endfoot_triangles(triangles, triangle_areas, triangle_travel_times, 
     """
     # indices of remaining t_ids and the remaining area
     idx = shrink_surface_mesh(triangle_areas, triangle_travel_times, endfoot_area, target_area)
-
-    # remaining triangles
-    t_tris = triangles[idx]
-
-    vertices, inverse = np.unique(t_tris, return_inverse=True)
-
-    # remap triangle indices to the local index space
-    t_tris.ravel()[:] = np.arange(len(vertices))[inverse]
-
-    return vertices, t_tris
+    return triangles[idx]
 
 
 def _process_endfeet(points, triangles, grouped_triangles,
@@ -121,35 +119,41 @@ def _process_endfeet(points, triangles, grouped_triangles,
         endfeet_thicknesses: np.ndarray (K,)
             The thickness of the endfoot surface mesh
 
-    Returns:
-        Tuple generator containing the following data:
-            - endfoot group id
-            - points of endfoot surface mesh
-            - triangles of endfoot surface mesh in the local index space
-            - thickness of endfoot surface
+    Yields:
+        - endfoot group id
+        - points of endfoot surface mesh
+        - triangles of endfoot surface mesh in the local index space
+        - area before reduction
+        - area after reduction
+        - thickness of endfoot surface
 
     Note:
         The difference between group indices and endfoot indices is that groups
         include also the unassigned -1 group that corresponds to mesh triangles
         that are not occupid by endfeet.
     """
-    for group, ids in grouped_triangles.iter_assigned_groups():
+    for group, triangle_ids in grouped_triangles.iter_assigned_groups():
 
         current_area, target_area = endfeet_areas[group], target_areas[group]
 
-        # endfoot area is overshoot, shrink it
+        # triangles for endfoot but the indices are from the entire mesh
+        triangles_global = triangles[triangle_ids]
+
         if current_area > target_area:
 
-            t_verts, t_tris = _shrink_endfoot_triangles(
-                triangles[ids],
-                triangle_areas[ids],
-                triangle_travel_times[ids],
+            triangles_global = _shrink_endfoot_triangles(
+                triangles_global,
+                triangle_areas[triangle_ids],
+                triangle_travel_times[triangle_ids],
                 current_area, target_area)
 
-            t_points = points[t_verts]
-            final_area = _triangle_areas(t_points, t_tris).sum()
+        # the unique vertices belonging to group and the triangles refering to that subset
+        vertices_global, triangles_local = _global_to_local_indices(triangles_global)
 
-            yield group, t_points, t_tris, final_area, endfeet_thicknesses[group]
+        points_local = points[vertices_global]
+        final_area = _triangle_areas(points_local, triangles_local).sum()
+
+        yield group, points_local, triangles_local, current_area, final_area, endfeet_thicknesses[group]
 
 
 def endfeet_area_generation(vasculature_mesh, parameters, endfeet_points):
@@ -170,7 +174,7 @@ def endfeet_area_generation(vasculature_mesh, parameters, endfeet_points):
     """
     n_endfeet = len(endfeet_points)
 
-    travel_times, vertex_groups = grow_endfeet_areas(
+    travel_times, vertex_groups = _grow_endfeet_areas(
         vasculature_mesh, endfeet_points, parameters['fmm_cutoff_radius'])
 
     points = vasculature_mesh.points()
@@ -181,10 +185,10 @@ def endfeet_area_generation(vasculature_mesh, parameters, endfeet_points):
     # interpolate travel times at the center of triangles
     triangle_travel_times = np.mean(travel_times[triangles], axis=1)
 
-    # find triangle groups from vertex groups
+    # for each triangle deduce its group id by examining its vertices
     triangle_groups = vertex_to_triangle_groups(vertex_groups, triangles)
 
-    # convert the triangle groups into slices of unique group triangles
+    # make chunks of triangles that belong to the same group
     grouped_triangles = group_elements(triangle_groups)
 
     # endfeet areas from the fast marching simulation

@@ -29,6 +29,29 @@ def test_endfeet_areas():
     npt.assert_allclose(expected_areas, areas)
 
 
+def test_global_to_local_indices():
+    
+    global_triangles = np.array([
+        [6, 7, 8],
+        [24, 25, 26],
+        [45, 46, 47],
+        [42, 43, 44],
+        [9, 10, 11]])
+
+    expected_global_vertices = [6, 7, 8, 9, 10, 11, 24, 25, 26, 42, 43, 44, 45, 46, 47]
+
+    expected_local_triangles = [[0, 1, 2],
+                                [6, 7, 8],
+                                [12, 13, 14],
+                                [9, 10, 11],
+                                [3, 4, 5]]
+
+    vertices_global, triangles_local = _a._global_to_local_indices(global_triangles)
+
+    npt.assert_array_equal(vertices_global, expected_global_vertices)
+    npt.assert_array_equal(triangles_local, expected_local_triangles)
+
+
 def test_shrink_endfoot_triangles():
 
     triangles = np.array([
@@ -65,9 +88,9 @@ def test_shrink_endfoot_triangles():
     current_area = triangle_areas.sum()
     target_area = current_area * 0.2
 
-    vertices, t_tris = _a._shrink_endfoot_triangles(triangles, triangle_areas, triangle_travel_times, current_area, target_area)
+    t_tris = _a._shrink_endfoot_triangles(triangles, triangle_areas, triangle_travel_times, current_area, target_area)
     expected_triangle_ids = np.array([2, 8, 15, 14, 3])
-    expected_vertices = np.unique(triangles[expected_triangle_ids])
+    #expected_vertices = np.unique(triangles[expected_triangle_ids])
 
     # expected global triangles
     # [[ 6  7  8]
@@ -75,11 +98,18 @@ def test_shrink_endfoot_triangles():
     #  [45 46 47]
     #  [42 43 44]
     #  [ 9 10 11]]
+    expected_triangles = [[6, 7, 8],
+                          [24, 25, 26],
+                          [45, 46, 47],
+                          [42, 43, 44],
+                          [9, 10, 11]]
+    """
     expected_local_triangles = [[0, 1, 2],
                                 [6, 7, 8],
                                 [12, 13, 14],
                                 [9, 10, 11],
                                 [3, 4, 5]]
-    npt.assert_array_equal(expected_vertices, vertices)
-    npt.assert_array_equal(expected_local_triangles, t_tris)
+    """
+    #npt.assert_array_equal(expected_vertices, vertices)
+    npt.assert_array_equal(expected_triangles, t_tris)
 

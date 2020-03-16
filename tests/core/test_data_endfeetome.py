@@ -44,13 +44,18 @@ def areas_per_entry():
 
 
 @pytest.fixture(scope='module')
+def initial_areas_per_entry(areas_per_entry):
+    return areas_per_entry * 10.
+
+
+@pytest.fixture(scope='module')
 def thicknesses_per_entry():
     return np.random.random(4)
 
 
 @pytest.fixture(scope='module')
-def endfeet_data(indices_per_entry, points_per_entry, triangles_per_entry, areas_per_entry, thicknesses_per_entry):
-    return list(zip(indices_per_entry, points_per_entry, triangles_per_entry, areas_per_entry, thicknesses_per_entry))
+def endfeet_data(indices_per_entry, points_per_entry, triangles_per_entry, areas_per_entry, initial_areas_per_entry, thicknesses_per_entry):
+    return list(zip(indices_per_entry, points_per_entry, triangles_per_entry, initial_areas_per_entry, areas_per_entry, thicknesses_per_entry))
 
 
 @pytest.fixture(scope='module')
@@ -108,9 +113,10 @@ def test_endfeet_mesh_points_triangles(endfeet_areas, indices_per_entry, points_
         npt.assert_allclose(endfeet_areas.mesh_triangles(endfoot_id), triangles_per_entry[i])
 
 
-def test_bulk_attributes(endfeet_areas, indices_per_entry, areas_per_entry, thicknesses_per_entry):
+def test_bulk_attributes(endfeet_areas, indices_per_entry, initial_areas_per_entry, areas_per_entry, thicknesses_per_entry):
 
     ids = indices_per_entry
 
-    npt.assert_allclose(endfeet_areas.mesh_surface_areas[ids], areas_per_entry)
-    npt.assert_allclose(endfeet_areas.mesh_surface_thicknesses[ids], thicknesses_per_entry)
+    npt.assert_allclose(endfeet_areas.get('surface_area', ids), areas_per_entry)
+    npt.assert_allclose(endfeet_areas.get('unreduced_surface_area', ids), initial_areas_per_entry)
+    npt.assert_allclose(endfeet_areas.get('surface_thickness', ids), thicknesses_per_entry)

@@ -40,10 +40,10 @@ class EndfeetAreas(H5ContextManager):
         return self._groups[endfoot_key]
 
     def _get_mesh_surface_area(self, index):
-        return self._attributes['surface_areas'][index]
+        return self._attributes['surface_area'][index]
 
     def _get_mesh_surface_thickness(self, index):
-        return self._attributes['surface_thicknesses'][index]
+        return self._attributes['surface_thickness'][index]
 
     def _object(self, endfoot_index):
         """ Returns endfoot object from its index """
@@ -77,12 +77,9 @@ class EndfeetAreas(H5ContextManager):
         """ Return the triangles of the endfoot mesh """
         return self._entry(_index_to_key(endfoot_index))['triangles'][:]
 
-    @property
-    def mesh_surface_areas(self):
-        """ Returns the surface areas of the endfeet on the vasculature """
-        return self._attributes['surface_areas'][:]
-
-    @property
-    def mesh_surface_thicknesses(self):
-        """ Returns the tickness of the endfeet meshes """
-        return self._attributes['surface_thicknesses'][:]
+    def get(self, attribute_name, ids=None):
+        """ Get the respective attribute array """
+        dset = self._attributes[attribute_name][:]
+        if ids is not None:
+            return dset[ids]
+        return dset

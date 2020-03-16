@@ -31,16 +31,18 @@ def export_endfeet_areas(filepath, data_generator, n_endfeet):
 
         # datasets with 1D properties
         endfeet_areas = np.zeros(n_endfeet, dtype=np.float32)
+        endfeet_areas_initial = np.zeros(n_endfeet, dtype=np.float32)
         endfeet_thicknesses = np.zeros(n_endfeet, dtype=np.float32)
 
-        for endfoot_index, points, triangles, area, thickness in data_generator:
+        for endfoot_index, points, triangles, initial_area, final_area, thickness in data_generator:
 
             _write_endfoot_layout(root=meshes,
                                   index=endfoot_index,
                                   points=points,
                                   triangles=triangles)
 
-            endfeet_areas[endfoot_index] = area
+            endfeet_areas[endfoot_index] = final_area
+            endfeet_areas_initial[endfoot_index] = initial_area
             endfeet_thicknesses[endfoot_index] = thickness
 
             is_empty[endfoot_index] = False
@@ -57,8 +59,9 @@ def export_endfeet_areas(filepath, data_generator, n_endfeet):
             L.info('Endfoot %d is empty', endfoot_index)
 
         # write 1D datasets
-        attributes.create_dataset('surface_areas', data=endfeet_areas)
-        attributes.create_dataset('surface_thicknesses', data=endfeet_thicknesses)
+        attributes.create_dataset('surface_area', data=endfeet_areas)
+        attributes.create_dataset('unreduced_surface_area', data=endfeet_areas_initial)
+        attributes.create_dataset('surface_thickness', data=endfeet_thicknesses)
 
 
 def export_endfoot_mesh(endfoot_coordinates, endfoot_triangles, filepath):
