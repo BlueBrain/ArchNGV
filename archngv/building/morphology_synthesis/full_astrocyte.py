@@ -11,11 +11,14 @@ from tns.spatial.point_cloud import PointCloud  # pylint: disable=import-error
 from archngv.utils.decorators import log_execution_time, log_start_end
 from archngv.exceptions import NGVError
 
+from archngv.building.morphology_synthesis.perimeters import add_perimeters_to_morphology
+
 from .data_extraction import obtain_endfeet_data
 from .data_extraction import obtain_synapse_data
 from .data_extraction import obtain_cell_properties
 
 from .tns_wrapper import TNSGrowerWrapper
+
 
 L = logging.getLogger(__name__)
 
@@ -105,6 +108,11 @@ def synthesize_astrocyte(astrocyte_index,
         astro_grower.set_process_orientations_from_microdomain(soma_pos, microdomain, None)
 
     astro_grower.grow()
+
+    if parameters['perimeter_distribution']['enabled']:
+        L.info('Distributing perimeters...')
+        add_perimeters_to_morphology(astro_grower.morphology, parameters['perimeter_distribution'])
+
     morphology_output_file = os.path.join(morphology_directory, cell_name + '.h5')
     astro_grower.write(morphology_output_file)
 
