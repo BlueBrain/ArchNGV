@@ -5,9 +5,6 @@ import numpy as np
 from archngv.core.common import EdgesContextManager
 
 
-POPULATION_NAME = 'neuroglial'
-
-
 class NeuroglialConnectivity(EdgesContextManager):
     """ Neuroglial connectivity access """
 

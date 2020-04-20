@@ -25,7 +25,8 @@ def connectivity(neurons, astrocytes, microdomains, synaptic_data, seed, output)
 
     from voxcell.sonata import NodePopulation
 
-    from archngv import MicrodomainTesselation, SynapticData
+    from archngv.core.data_microdomains import MicrodomainTesselation
+    from archngv.core.data_synaptic import SynapticData
     from archngv.building.connectivity.neuroglial_generation import generate_neuroglial
     from archngv.building.exporters.export_neuroglial_connectivity import export_neuroglial_connectivity
 

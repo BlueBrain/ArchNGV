@@ -8,7 +8,7 @@ import libsonata
 import numpy as np
 import six
 
-from archngv.core.connectivity_glialglial import POPULATION_NAME
+from archngv.core.ngv_constants import Population
 
 
 L = logging.getLogger(__name__)
@@ -30,7 +30,7 @@ def export_glialglial_connectivity(astrocyte_data, n_astrocytes, output_path):
     """
     with h5py.File(output_path, 'w') as h5f:
 
-        h5root = h5f.create_group(f'/edges/{POPULATION_NAME}')
+        h5root = h5f.create_group(f'/edges/{Population.GLIALGLIAL}')
 
         # 'edge_type_id' is a required attribute storing index into CSV which we don't use
         h5root.create_dataset('edge_type_id',
@@ -45,13 +45,13 @@ def export_glialglial_connectivity(astrocyte_data, n_astrocytes, output_path):
         h5group.create_dataset('connection_id',
                                data=astrocyte_data['connection_id'], dtype=np.uint64)
 
-        h5root['source_node_id'].attrs['node_population'] = six.text_type('astrocytes')
-        h5root['target_node_id'].attrs['node_population'] = six.text_type('astrocytes')
+        h5root['source_node_id'].attrs['node_population'] = six.text_type(Population.ASTROCYTES)
+        h5root['target_node_id'].attrs['node_population'] = six.text_type(Population.ASTROCYTES)
 
     # above, edge population has been sorted by (target_id, source_id)
     libsonata.EdgePopulation.write_indices(
         output_path,
-        POPULATION_NAME,
+        Population.GLIALGLIAL,
         source_node_count=n_astrocytes,
         target_node_count=n_astrocytes
     )

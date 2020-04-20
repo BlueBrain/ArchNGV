@@ -3,7 +3,7 @@ import pytest
 from copy import deepcopy
 from scipy.spatial import ConvexHull
 
-from archngv import Microdomain
+from archngv.core.data_microdomains import Microdomain
 
 from archngv.building.microdomain.overlap import convex_polygon_with_overlap
 

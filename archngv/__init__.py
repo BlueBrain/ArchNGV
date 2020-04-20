@@ -15,3 +15,5 @@ from archngv.core.connectivity_glialglial import GlialglialConnectivity
 from archngv.core.data_ngv import NGVData
 from archngv.core.ngv_circuit import NGVCircuit
 from archngv.core.connectivity_ngv import NGVConnectome
+
+from archngv.core.ngv_snapcircuit import NGVSnapCircuit

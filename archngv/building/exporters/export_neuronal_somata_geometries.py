@@ -334,8 +334,6 @@ def extract_neuronal_somata_information(output_directory, neuronal_microcircuit,
 
     n_cells = len(paths)
 
-    data = np.zeros((len(paths), 5), dtype=np.float)
-
     data = {'max_radii': np.zeros(n_cells, dtype=np.float),
             'min_radii': np.zeros(n_cells, dtype=np.float),
             'mean_radii': np.zeros(n_cells, dtype=np.float),
@@ -379,6 +377,3 @@ def extract_neuronal_somata_information(output_directory, neuronal_microcircuit,
     np.save(radii_path, np.column_stack((data['mean_radii'],
                                          data['max_radii'],
                                          data['min_radii'])))
-
-    # with open('morph_soma_points.pkl', 'w') as fp:
-    #    pickle.dump(outputs, fp)

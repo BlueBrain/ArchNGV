@@ -13,7 +13,7 @@ import click
 def cmd(cell_data, touches_dir, seed, output_connectivity):
     # pylint: disable=missing-docstring,redefined-argument-from-local,too-many-locals
     import numpy as np
-    from archngv import CellData
+    from archngv.core.data_cells import CellData
     from archngv.building.connectivity.glialglial import generate_glialglial
     from archngv.building.exporters import export_glialglial_connectivity
 

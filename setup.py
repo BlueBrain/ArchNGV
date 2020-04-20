@@ -16,10 +16,11 @@ EXTRA_CORE = [
     'pandas>=0.16.2',
     'spatial-index==0.0.1',
     'archngv-building>=0.1.3',
+    'bluepysnap>=0.4.1'
 ]
 
 EXTRA_ALL = [
-    'bluepy[sonata]>=0.13.5',
+    'bluepy[sonata]>=0.14.7',
     'Click>=7.0',
     'openmesh==1.1.2',
     'pyyaml>=3.0',

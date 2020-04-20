@@ -3,9 +3,6 @@
 from archngv.core.common import EdgesContextManager
 
 
-POPULATION_NAME = 'glialglial'
-
-
 class GlialglialConnectivity(EdgesContextManager):
     """ Glialglial connectivity access
     """

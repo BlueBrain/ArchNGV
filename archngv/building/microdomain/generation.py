@@ -7,7 +7,7 @@ from copy import deepcopy
 import numpy as np
 import tess
 
-from archngv import Microdomain
+from archngv.core.data_microdomains import Microdomain
 from archngv.building.microdomain.overlap import convex_polygon_with_overlap
 
 from archngv.utils.ngons import polygons_to_triangles

@@ -3,9 +3,9 @@ import logging
 
 from cached_property import cached_property
 
-from archngv import GliovascularConnectivity
-from archngv import NeuroglialConnectivity
-from archngv import GlialglialConnectivity
+from archngv.core.connectivity_gliovascular import GliovascularConnectivity
+from archngv.core.connectivity_neuroglial import NeuroglialConnectivity
+from archngv.core.connectivity_glialglial import GlialglialConnectivity
 
 
 L = logging.getLogger(__name__)

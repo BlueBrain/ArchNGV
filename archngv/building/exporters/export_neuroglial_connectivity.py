@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import six
 
-from archngv.core.connectivity_neuroglial import POPULATION_NAME
+from archngv.core.ngv_constants import Population
 
 L = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ def export_neuroglial_connectivity(astrocyte_data, neurons, astrocytes, output_p
         output_path: path to output HDF5 file.
     """
     with h5py.File(output_path, 'w') as h5f:
-        h5root = h5f.create_group('/edges/%s/' % POPULATION_NAME)
+        h5root = h5f.create_group('/edges/%s/' % Population.NEUROGLIAL)
 
         # 'edge_type_id' is a required attribute storing index into CSV which we don't use
         h5root.create_dataset('edge_type_id',
@@ -48,7 +48,7 @@ def export_neuroglial_connectivity(astrocyte_data, neurons, astrocytes, output_p
     # above, edge population has been sorted by (target_id, source_id)
     libsonata.EdgePopulation.write_indices(
         output_path,
-        POPULATION_NAME,
+        Population.NEUROGLIAL,
         source_node_count=astrocytes.size,
         target_node_count=neurons.size
     )
@@ -86,10 +86,11 @@ def bind_annotations(output_path, astrocytes, annotations_file):
                 )
     # TODO: read / write with `libsonata` rather than direct HDF5 access
     with h5py.File(output_path, 'a') as h5:
-        h5group = h5['/edges/%s/0' % POPULATION_NAME]
+        population_path = '/edges/%s' % Population.NEUROGLIAL
+        h5group = h5[population_path + '/0']
 
-        synapses = (pd.DataFrame({'astro_id': h5['/edges/neuroglial/source_node_id'][:],
-                                  'synapse_id': h5['/edges/neuroglial/0/synapse_id'][:],
+        synapses = (pd.DataFrame({'astro_id': h5[population_path + '/source_node_id'][:],
+                                  'synapse_id': h5[population_path + '/0/synapse_id'][:],
                                   })
                     .join(astrocytes.to_dataframe(), on='astro_id')
                     .join(sections, on=['morphology', 'synapse_id'])
