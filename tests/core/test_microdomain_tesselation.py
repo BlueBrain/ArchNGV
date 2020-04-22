@@ -5,8 +5,7 @@ from collections import namedtuple
 
 import numpy as np
 
-from archngv.core.data_microdomains import Microdomain
-from archngv.core.data_microdomains import MicrodomainTesselation
+from archngv.core.datasets import Microdomain, MicrodomainTesselation
 from archngv.building.exporters.export_microdomains import export_structure
 
 

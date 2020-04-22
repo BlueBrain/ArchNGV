@@ -21,7 +21,7 @@ def cmd(config, cell_data, atlas, atlas_cache, seed, output_dir):
     from scipy import stats
     from voxcell.nexus.voxelbrain import Atlas
 
-    from archngv.core.data_cells import CellData
+    from archngv.core.datasets import CellData
     from archngv.building.exporters.export_microdomains import export_structure
     from archngv.building.microdomain.generation import generate_microdomain_tesselation
     from archngv.building.microdomain.generation import convert_to_overlappping_tesselation

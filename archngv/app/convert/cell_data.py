@@ -13,7 +13,7 @@ def cmd(input, output):
     import numpy as np
 
     from voxcell.sonata import NodePopulation
-    from archngv.core.data_cells import CellData
+    from archngv.core.datasets import CellData
 
     with CellData(input) as data:
         n_cells = len(data)

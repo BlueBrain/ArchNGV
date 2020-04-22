@@ -2,7 +2,7 @@ import os
 
 import numpy.testing as npt
 
-from archngv.core.data_synaptic import SynapticData
+from archngv.core.datasets import SynapticData
 
 
 TEST_FILE = os.path.join(os.path.dirname(__file__), 'data', 'synaptic_data.h5')

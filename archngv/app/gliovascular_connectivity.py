@@ -17,9 +17,12 @@ def cmd(config, cell_data, microdomains, vasculature, seed, output_data, output_
     # pylint: disable=missing-docstring,redefined-argument-from-local,too-many-locals
     import numpy as np
 
-    from archngv.core.data_cells import CellData
-    from archngv.core.data_microdomains import MicrodomainTesselation
-    from archngv.core.vasculature_wrapper import Vasculature
+    from archngv.core.datasets import (
+        CellData,
+        Vasculature,
+        MicrodomainTesselation
+    )
+
     from archngv.building.connectivity.gliovascular_generation import generate_gliovascular
     from archngv.building.exporters import export_gliovascular_data, export_gliovascular_connectivity
 

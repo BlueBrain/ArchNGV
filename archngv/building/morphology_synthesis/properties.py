@@ -4,7 +4,7 @@ import os
 import numpy as np
 
 import morphio
-from archngv.core.data_cells import CellData
+from archngv.core.datasets import CellData
 
 
 def _extract_section_perimeters(morphology):

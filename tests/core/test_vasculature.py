@@ -2,7 +2,7 @@ import pathlib
 import pytest
 import h5py
 from numpy import testing as npt
-from archngv.core.vasculature_wrapper import Vasculature
+from archngv.core.datasets import Vasculature
 
 
 _DATAPATH = pathlib.Path(__file__).parent.resolve() / 'data'

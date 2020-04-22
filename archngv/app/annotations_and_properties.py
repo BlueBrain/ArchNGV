@@ -14,7 +14,7 @@ class Worker:
 
     def __call__(self, astrocyte_index):
         import numpy as np
-        from archngv.core.data_cells import CellData
+        from archngv.core.datasets import CellData
         from archngv.building.morphology_synthesis.annotation import create_astrocyte_annotations
         from archngv.building.morphology_synthesis.properties import create_astrocyte_properties
 
@@ -68,7 +68,7 @@ Paths = namedtuple('Paths', ['cell_data',
 @click.option("--properties_output", help="Path to output HDF5", required=True)
 def cmd(config, **kwargs):
     # pylint: disable=missing-docstring
-    from archngv.core.data_cells import CellData
+    from archngv.core.datasets import CellData
     from archngv.app.utils import load_yaml
     from archngv.building.exporters.export_ngv_data import export_annotations_and_properties
 
