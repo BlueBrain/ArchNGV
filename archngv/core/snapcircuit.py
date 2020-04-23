@@ -3,9 +3,8 @@
 from cached_property import cached_property
 
 from bluepysnap import Circuit
-from archngv.core.connectivity_gliovascular import GliovascularConnectivity
-from archngv.core.ngv_structures import LazyVasculature, LazyEndfeetome, LazyMicrodomains, LazyAtlas
-from archngv.core.ngv_constants import Population
+from archngv.core.structures import Vasculature, Endfeetome, Microdomains, Atlas
+from archngv.core.constants import Population
 from archngv.exceptions import NGVError
 
 
@@ -23,11 +22,11 @@ def _add_astrocytes_information(node_population, config):
     from bluepysnap.morph import MorphHelper
 
     setattr(node_population, "microdomains",
-            LazyMicrodomains(config["microdomains_file"],
+            Microdomains(config["microdomains_file"],
                              config["microdomains_overlapping_file"]))
 
     setattr(node_population, "endfeetome",
-            LazyEndfeetome(config["endfeet_file"], config["endfeet_data_file"]))
+            Endfeetome(config["endfeet_file"], config["endfeet_data_file"]))
 
     # overload of the morph helper from snap to allow multiple morphology paths
     # the morph.get is broken due to the h5 path instead of swc
@@ -36,7 +35,7 @@ def _add_astrocytes_information(node_population, config):
 
 def _load_atlases(config):
     """Dynamically load atlases."""
-    return {name: LazyAtlas(name, filepath) for name, filepath in config.items()}
+    return {name: Atlas(name, filepath) for name, filepath in config.items()}
 
 
 class NGVSnapCircuit:
@@ -68,6 +67,7 @@ class NGVSnapCircuit:
     def edges(self):
         """Access to connectome class(es)."""
         if "gliovascular" in self._config:
+            from archngv.core.connectivities import GliovascularConnectivity
             self._circuit.edges[Population.GLIOVASCULAR] = GliovascularConnectivity(
                 self._config["gliovascular"])
         return self._circuit.edges
@@ -78,7 +78,7 @@ class NGVSnapCircuit:
         if "vasculature" in self._config:
             filepath = self._config["vasculature"]["vasculature_file"]
             meshpath = self._config["vasculature"]["vasculature_mesh_file"]
-            return LazyVasculature(filepath, meshpath)
+            return Vasculature(filepath, meshpath)
         raise NGVError("No vasculature provided in the circuit config")
 
     @cached_property

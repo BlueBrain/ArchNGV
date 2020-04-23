@@ -6,13 +6,18 @@ from collections import namedtuple
 
 import pandas as pd
 
-from archngv.core.data_cells import CellData
-from archngv.core.data_synaptic import SynapticData
-from archngv.core.data_endfeet_areas import EndfeetAreas
-from archngv.core.data_gliovascular import GliovascularData
-from archngv.core.data_microdomains import MicrodomainTesselation
-from archngv.core.connectivity_neuroglial import NeuroglialConnectivity
-from archngv.core.connectivity_gliovascular import GliovascularConnectivity
+from archngv.core.datasets import (
+    CellData,
+    SynapticData,
+    EndfeetAreas,
+    GliovascularData,
+    MicrodomainTesselation
+)
+
+from archngv.core.connectivities import (
+        NeuroglialConnectivity,
+        GliovascularConnectivity
+)
 
 L = logging.getLogger(__name__)
 

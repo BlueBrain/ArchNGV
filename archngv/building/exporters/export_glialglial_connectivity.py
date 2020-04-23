@@ -8,7 +8,7 @@ import libsonata
 import numpy as np
 import six
 
-from archngv.core.ngv_constants import Population
+from archngv.core.constants import Population
 
 
 L = logging.getLogger(__name__)

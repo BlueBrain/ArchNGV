@@ -3,7 +3,7 @@ import h5py
 import pytest
 import numpy as np
 
-from archngv.core.data_gliovascular import GliovascularData
+from archngv.core.datasets import GliovascularData
 
 N_ENDFEET = 5
 

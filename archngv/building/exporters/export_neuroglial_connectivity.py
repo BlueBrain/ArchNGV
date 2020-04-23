@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import six
 
-from archngv.core.ngv_constants import Population
+from archngv.core.constants import Population
 
 L = logging.getLogger(__name__)
 

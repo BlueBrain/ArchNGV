@@ -7,14 +7,14 @@ from bluepysnap.nodes import NodePopulation
 from bluepysnap.edges import EdgePopulation
 from voxcell.voxel_data import VoxelData
 
-import archngv.core.ngv_snapcircuit as test_module
-from archngv.core.ngv_structures import (LazyEndfeetome, LazyMicrodomains,
-                                         LazyVasculature, LazyAtlas)
-from archngv.core.connectivity_gliovascular import GliovascularConnectivity
-from archngv.core.data_microdomains import MicrodomainTesselation
-from archngv.core.data_endfeet_areas import EndfeetAreas
-from archngv.core.data_gliovascular import GliovascularData
-from archngv.core.vasculature_wrapper import Vasculature
+import archngv.core.snapcircuit as test_module
+from archngv.core.structures import (Endfeetome, Microdomains,
+                                         Vasculature, Atlas)
+from archngv.core.connectivities import GliovascularConnectivity
+from archngv.core.datasets import MicrodomainTesselation
+from archngv.core.datasets import EndfeetAreas
+from archngv.core.datasets import GliovascularData
+from archngv.core.datasets import Vasculature as VasculatureMorphology
 
 from archngv.exceptions import NGVError
 
@@ -34,8 +34,8 @@ def test__add_astrocytes_information():
     }
 
     test_module._add_astrocytes_information(node_pop, config)
-    assert isinstance(node_pop.microdomains, LazyMicrodomains)
-    assert isinstance(node_pop.endfeetome, LazyEndfeetome)
+    assert isinstance(node_pop.microdomains, Microdomains)
+    assert isinstance(node_pop.endfeetome, Endfeetome)
 
     assert node_pop.microdomains._microdomain_path == "microdomains_file"
     assert node_pop.microdomains._overlaping_path == "microdomains_overlapping_file"
@@ -52,7 +52,7 @@ def test___load_atlases():
     atlases = test_module._load_atlases(config)
     assert isinstance(atlases, dict)
     assert sorted(list(atlases)) == ["my_atlas_1", "my_atlas_2"]
-    assert isinstance(atlases["my_atlas_1"], LazyAtlas)
+    assert isinstance(atlases["my_atlas_1"], Atlas)
     assert atlases["my_atlas_1"]._name == "my_atlas_1"
     assert atlases["my_atlas_1"]._filepath == "atlas_1.nrrd"
 
@@ -99,14 +99,14 @@ def test_all():
     assert isinstance(circuit.edges["neuroglial"], EdgePopulation)
     assert isinstance(circuit.edges["gliovascular"], GliovascularConnectivity)
 
-    assert isinstance(circuit.vasculature, LazyVasculature)
+    assert isinstance(circuit.vasculature, Vasculature)
     assert circuit.vasculature._vasculature_mesh_path == str(Path(TEST_DATA_DIR, "vasculature_mesh.obj"))
     assert len(circuit.vasculature.mesh.vertices) == 4
     assert circuit.vasculature._vasculature_path == str(Path(TEST_DATA_DIR, "vasculature.h5"))
-    assert isinstance(circuit.vasculature.morphology, Vasculature)
+    assert isinstance(circuit.vasculature.morphology, VasculatureMorphology)
 
     assert isinstance(circuit.atlases, dict)
-    assert isinstance(circuit.atlases["my_atlas"], LazyAtlas)
+    assert isinstance(circuit.atlases["my_atlas"], Atlas)
     assert isinstance(circuit.atlases["my_atlas"].get_atlas(), VoxelData)
 
 

@@ -6,9 +6,9 @@ import openmesh
 import numpy as np
 from numpy import testing as npt
 
+from archngv.core.datasets import EndfeetAreas
 from archngv.building.endfeet_reconstruction.area_generation import endfeet_area_generation
 from archngv.building.exporters.export_endfeet_areas import export_endfeet_areas
-from archngv.core.data_endfeet_areas import EndfeetAreas
 
 
 _PATH = pathlib.Path(__file__).parent.resolve()

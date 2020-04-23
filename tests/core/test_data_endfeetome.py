@@ -3,7 +3,7 @@ import pytest
 import numpy as np
 from numpy import testing as npt
 
-from archngv.core.data_endfeet_areas import EndfeetAreas
+from archngv.core.datasets import EndfeetAreas
 from archngv.building.exporters.export_endfeet_areas import export_endfeet_areas
 
 # In total there are 6 endfeet but we have data for 4

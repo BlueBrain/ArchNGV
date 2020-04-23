@@ -8,6 +8,19 @@ from archngv.utils.geometry import unique_points
 from archngv.utils.functional import consecutive_pairs
 
 
+TRIANGLE_TYPE = {
+    'polygon_id': 0,
+    'vertices': slice(1, 4)}
+
+
+OFFSET_TYPE = {
+    "points": 0,
+    "triangle_data": 1,
+    "neighbors": 2,
+    "all": None,
+    "domain_data": slice(0, 2)}
+
+
 def local_to_global_triangles(triangles, ps_tris_offsets, local_to_global_vertices):
     """ Converts and array from the local index space to the global one
 

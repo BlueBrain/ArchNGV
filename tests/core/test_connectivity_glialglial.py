@@ -1,13 +1,10 @@
 import os
-
-import numpy.testing as npt
-
-from archngv.core.connectivity_glialglial import GlialglialConnectivity
-
-
 import pandas as pd
-from archngv.building.exporters import export_glialglial_connectivity
+import numpy.testing as npt
 from voxcell.sonata import NodePopulation
+from archngv.core.connectivities import GlialglialConnectivity
+from archngv.building.exporters import export_glialglial_connectivity
+
 
 TEST_FILE = os.path.join(os.path.dirname(__file__), 'data', 'glialglial_connectivity.h5')
 

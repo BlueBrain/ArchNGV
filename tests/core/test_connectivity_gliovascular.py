@@ -6,7 +6,7 @@ import numpy as np
 from numpy import testing as npt
 from unittest.mock import Mock
 
-from archngv.core.connectivity_gliovascular import GliovascularConnectivity
+from archngv.core.connectivities import GliovascularConnectivity
 from archngv.building.exporters.export_gliovascular_connectivity import export_gliovascular_connectivity
 
 

@@ -3,7 +3,7 @@ import pytest
 import numpy as np
 
 
-from archngv.core.data_cells import CellData
+from archngv.core.datasets import CellData
 from archngv.building.exporters.export_ngv_data import export_cell_placement_data
 
 

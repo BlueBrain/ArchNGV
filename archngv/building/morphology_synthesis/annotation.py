@@ -7,7 +7,7 @@ import pandas as pd
 from scipy.spatial import cKDTree
 
 import morphio
-from archngv.core.data_cells import CellData
+from archngv.core.datasets import CellData
 
 from archngv.building.morphology_synthesis.endfoot_compartment import create_endfeet_compartment_data
 from archngv.building.morphology_synthesis.data_extraction import obtain_endfeet_data

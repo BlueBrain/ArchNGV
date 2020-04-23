@@ -65,7 +65,7 @@ def _apply_parallel_func(func, data_generator):
 @click.option("--out-morph-dir", help="Path to output morphology folder", required=True)
 def cmd(config, **kwargs):
     # pylint: disable=missing-docstring
-    from archngv.core.data_cells import CellData
+    from archngv.core.datasets import CellData
     from archngv.app.utils import load_yaml, ensure_dir
 
     config = load_yaml(config)

@@ -71,7 +71,7 @@ def _find_neuron_files(circuit_path, neuron_config_filename):
 def cmd(ngv_config, neuron_config_filename, output_file):
     """Convert a ngv config to a sonata extended config_file"""
     import json
-    from archngv.core.ngv_config import NGVConfig
+    from archngv.core.config import NGVConfig
 
     ngv_config = NGVConfig.from_file(ngv_config)
     neuron_config = ngv_config.input_paths("microcircuit_path")

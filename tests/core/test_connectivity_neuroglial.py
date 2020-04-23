@@ -2,7 +2,7 @@ import os
 
 import numpy.testing as npt
 
-from archngv.core.connectivity_neuroglial import NeuroglialConnectivity
+from archngv.core.connectivities import NeuroglialConnectivity
 
 
 '''
