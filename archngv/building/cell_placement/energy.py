@@ -36,7 +36,7 @@ def _init_potentials(options):
     return pots
 
 
-class EnergyOperator(object):
+class EnergyOperator:
     """ Energy function class where potentials can be registered and then summed for the calculation
     of the total energy
     """

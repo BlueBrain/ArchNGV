@@ -7,7 +7,7 @@ import numpy
 from spatial_index import sphere_rtree
 
 
-class SpatialSpherePattern(object):
+class SpatialSpherePattern:
     """ Data Structure for a sphere collection embedded in space,
     registered in an Rtree index.
 

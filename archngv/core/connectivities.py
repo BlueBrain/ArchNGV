@@ -50,7 +50,7 @@ class GliovascularConnectivity(H5ContextManager):
         return np.column_stack((e2a, endfeet_indices))
 
 
-class AstrocyteEntry(object):
+class AstrocyteEntry:
     """ Astrocytic point of view. Allows access to all its
     neighbors.
 
@@ -97,7 +97,7 @@ class AstrocyteEntry(object):
         return self._connectivity[slice_]
 
 
-class EndfootEntry(object):
+class EndfootEntry:
     """ Endfoot point of view. Allows access to all its
     neighbors.
 

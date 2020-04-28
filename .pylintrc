@@ -10,11 +10,10 @@ ignore=extras,tests
 #W0511 - TODO in code
 #W0232 - Class has no __init__ method
 #C0325 - superfluous-parens
-#R0205 - useless-object-inheritance
 #C0330 - bad-continuation
 #C1801 - len-as-condition
 #R1705 - no-else-return
-disable=C0103,R0904,R0903,W0511,W0232,C0325,R0205,C0330,C1801,R1705,import-outside-toplevel
+disable=C0103,R0904,R0903,W0511,W0232,C0325,C0330,C1801,R1705,import-outside-toplevel,unsubscriptable-object,unsupported-assignment-operation,unbalanced-tuple-unpacking
 
 [FORMAT]
 # Maximum number of characters on a single line.
@@ -64,7 +63,7 @@ ignore-docstrings=yes
 # (useful for modules/projects where namespaces are manipulated during runtime
 # and thus existing member attributes cannot be deduced by static analysis. It
 # supports qualified module names, as well as Unix pattern matching.
-ignored-modules=numpy,numpy.*,scipy.stats,scipy.spatial
+ignored-modules=tns, numpy,numpy.*,scipy.stats,scipy.spatial
 extension-pkg-whitelist=libsonata,
                         openmesh,
                         morphio,

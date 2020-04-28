@@ -1,6 +1,6 @@
 """ High level Circuit container. All NGV data can be accesed from here. """
 from cached_property import cached_property
-from archngv import NGVConfig
+from archngv.core.config import NGVConfig
 
 
 class NGVCircuit:

@@ -23,6 +23,7 @@ L = logging.getLogger(__name__)
 
 
 EndfeetData = namedtuple('EndfeetData', ['targets', 'area_meshes'])
+AstrocyteProperties = namedtuple('AstrocyteProperties', ['name', 'soma_position', 'soma_radius', 'microdomain'])
 
 
 def obtain_endfeet_data(astrocyte_index,
@@ -68,7 +69,13 @@ def obtain_cell_properties(astrocyte_index,
         microdomain = microdomains[astrocyte_index]
 
     L.debug('Index: %d, Name: %s, Pos: %s, Rad: %f', astrocyte_index, cell_name, soma_position, soma_radius)
-    return cell_name, soma_position, soma_radius, microdomain
+
+    return AstrocyteProperties(
+        name=cell_name,
+        soma_position=soma_position,
+        soma_radius=soma_radius,
+        microdomain=microdomain
+    )
 
 
 def obtain_synapse_data(astrocyte_index, synaptic_data_filepath, neuroglial_conn_filepath):

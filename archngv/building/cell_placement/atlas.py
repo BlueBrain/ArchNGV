@@ -4,7 +4,7 @@ Atlas related class and functions
 import numpy as np
 
 
-class PlacementVoxelData(object):
+class PlacementVoxelData:
     """ Simple composition of voxelized intensity
     and voxelized brain region.
 

@@ -17,7 +17,7 @@ def _create_dir(directory):
 DEFAULT_CONFIG_PATH = 'build/ngv_config.json'
 
 
-class NGVConfig(object):
+class NGVConfig:
     """ Configuration data structure for ArchGNV
     """
     @classmethod

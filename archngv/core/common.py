@@ -16,7 +16,7 @@ def _open_population(h5_filepath):
     return storage.open_population(list(populations)[0])
 
 
-class H5ContextManager(object):
+class H5ContextManager:
     """ Context manager for hdf5 files """
 
     def __init__(self, filepath):
@@ -35,7 +35,7 @@ class H5ContextManager(object):
         self.close()
 
 
-class EdgesContextManager(object):
+class EdgesContextManager:
     """ Context manager for accessing SONATA Edges """
     def __init__(self, filepath):
         self.filepath = filepath

@@ -5,7 +5,7 @@ import json
 import numpy
 
 
-class CutPointData(object):
+class CutPointData:
     """ Cut plane data for cut astrocytes
     """
     @classmethod

@@ -7,7 +7,7 @@ from .inclusion import points_in_rectangle
 from .inclusion import spheres_in_rectangle
 
 
-class BoundingBox(object):
+class BoundingBox:
     """ Bounding box data object"""
 
     @classmethod

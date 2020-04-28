@@ -1,7 +1,6 @@
 """
 Synthesize astrocyte morphologies
 """
-
 import click
 
 
@@ -18,20 +17,23 @@ class Worker:
         seed = hash((self._kwargs['seed'], astrocyte_index)) % (2 ** 32)
         np.random.seed(seed)
 
-        synthesize_astrocyte(
-            astrocyte_index,
-            cell_data_path=self._kwargs['cell_data'],
-            microdomains_path=self._kwargs['microdomains'],
-            synaptic_data_path=self._kwargs['synaptic_data'],
-            gliovascular_data_path=self._kwargs['gliovascular_data'],
-            gliovascular_connectivity_path=self._kwargs['gliovascular_connectivity'],
-            neuroglial_conn_path=self._kwargs['neuroglial_connectivity'],
-            endfeet_areas_path=self._kwargs['endfeet_areas'],
-            tns_parameters_path=self._kwargs['tns_parameters'],
-            tns_distributions_path=self._kwargs['tns_distributions'],
-            morphology_directory=self._kwargs['out_morph_dir'],
-            parameters=self._config
-        )
+        paths = _synthesis_input_paths(self._kwargs)
+        synthesize_astrocyte(astrocyte_index, paths, self._config)
+
+
+def _synthesis_input_paths(kwargs):
+    from archngv.building.morphology_synthesis.full_astrocyte import SynthesisInputPaths
+    return SynthesisInputPaths(
+            cell_data=kwargs['cell_data'],
+            microdomains=kwargs['microdomains'],
+            synaptic_data=kwargs['synaptic_data'],
+            gliovascular_data=kwargs['gliovascular_data'],
+            gliovascular_connectivity=kwargs['gliovascular_connectivity'],
+            neuroglial_connectivity=kwargs['neuroglial_connectivity'],
+            endfeet_areas=kwargs['endfeet_areas'],
+            tns_parameters=kwargs['tns_parameters'],
+            tns_distributions=kwargs['tns_distributions'],
+            morphology_directory=kwargs['out_morph_dir'])
 
 
 def _apply_func(func, data_generator):

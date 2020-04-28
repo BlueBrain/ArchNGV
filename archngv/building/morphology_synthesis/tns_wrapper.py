@@ -1,21 +1,18 @@
 """ Wrapper of TNS AstrocyteGrower. It takes care of all
 the functionality required for astrocyte synthesis.
 """
-
 import json
 import logging
 import numpy as np
 import scipy.stats
 
-from tns import AstrocyteGrower  # pylint: disable=import-error
 from tns.morphmath.field import PointTarget  # pylint: disable=import-error
 from tns.morphmath.field import PointAttractionField  # pylint: disable=import-error
 
 from archngv.building.types import ASTROCYTE_TO_NEURON
 
-from .ph_modification import scale_barcode
-from .domain_boundary import StopAtConvexBoundary
-from .domain_orientation import orientations_from_domain
+from archngv.building.morphology_synthesis.domain_boundary import StopAtConvexBoundary
+from archngv.building.morphology_synthesis.domain_orientation import orientations_from_domain
 
 
 L = logging.getLogger(__name__)
@@ -29,144 +26,142 @@ L.info('Map: %s -> %s', 'endfoot', ENDFOOT_TYPE)
 L.info('Map: %s -> %s', 'domain_process', PROCESS_TYPE)
 
 
-class TNSGrowerWrapper(object):
-    """ Adapter Class for tns AstrocyteGrower
+def _default_context():
+    return {'collision_handle': lambda _: None}
+
+
+def _set_soma_properties(parameters, distributions, soma_position, soma_radius):
+    """ Set soma positions and radius in the TNS parameters.
 
     Args:
-        parameters_path: string
-            Absolute path to tns parameters json file.
-        distributions_path: string
-            Absolute path to tns distributions json file.
+        soma_position: array[float, (3,)]
+        soma_radius: float
 
-    Attrs:
-        parameters: dict
-            TNS parameters dict.
-        distributions: dict
-            TNS distributions dict.
-        context: dict
-            TNS context dict.
-        morphology: MorphIO.Morphology
+    Due to the fact that TNS handles distributions for the soma radii, but
+    we have them precalculated during placement, we set a normal with std 0.0
+    and mean of the radius we want.
     """
-    def __init__(self, parameters_path, distributions_path):
+    parameters['origin'] = np.asarray(soma_position, dtype=np.float32)
+    distributions['soma']['size'] = {'norm': {'mean': soma_radius, 'std': 0.0}}
 
-        with open(parameters_path, 'r') as parameters_fd, \
-             open(distributions_path, 'r') as distributions_fd:
 
-            self._parameters = json.load(parameters_fd)
-            self._distributions = json.load(distributions_fd)
+def _assign_microdomain_as_collision_boundary(context, microdomain):
+    """ Assigns the microdomain boundary as a collision bounding hull
+    that will contain the grower.
+    """
+    context['collision_handle'] = StopAtConvexBoundary(
+        microdomain.points, microdomain.triangles, microdomain.face_normals)
 
-        self.morphology = None
-        self._context = {'collision_handle': lambda _: False}
 
-    def add_collision_handle(self, collision_handle):
-        """ Assigns as a collision object a function which takes as an
-        input a point and returns True if there is a collision, otherwise False
+def _set_space_colonization_algorithm(parameters):
+    """ Set growth method to space colonization """
+    parameters[PROCESS_TYPE]['growth_method'] = 'tmd_space_colonization'
+    parameters[ENDFOOT_TYPE]['growth_method'] = 'tmd_space_colonization_target'
 
-        Example: collision_handle = lambda _: False (No collision takes place ever)
-        """
-        self._context['collision_handle'] = collision_handle
 
-    def set_soma_properties(self, soma_position, soma_radius):
-        """ Set soma positions and radius in the TNS parameters.
+def _set_fallback_algorithm(parameters):
+    """ Fallback if there is no point cloud """
+    parameters[PROCESS_TYPE]['growth_method'] = 'tmd'
+    parameters[ENDFOOT_TYPE]['growth_method'] = 'tmd_target'
 
-        Args:
-            soma_position: array[float, (3,)]
-            soma_radius: float
 
-        Due to the fact that TNS handles distributions for the soma radii, but
-        we have them precalculated during placement, we set a normal with std 0.0
-        and mean of the radius we want.
-        """
-        self._parameters['origin'] = np.asarray(soma_position, dtype=np.float)
-        self._distributions['soma']['size'] = {'norm': {'mean': soma_radius, 'std': 0.0}}
+def _add_point_cloud(context, point_cloud):
+    """ Add the point cloud to the context """
+    context['point_cloud'] = point_cloud
 
-    def add_microdomain_boundary(self, microdomain=None):
-        """ Assigns the microdomain boundary as a collision bounding hull
-        that will contain the grower.
-        """
 
-        if microdomain is not None:
-            collision_handle = StopAtConvexBoundary(
-                microdomain.points,
-                microdomain.triangles,
-                microdomain.face_normals
-            )
-        else:
+def _add_endfeet_attractors(parameters, context, target_points, field_function):
+    """ Set targets for the processes to grow to and be attracted by """
+    target_objects = [PointTarget(point) for point in target_points]
 
-            collision_handle = lambda point: False
+    parameters[ENDFOOT_TYPE]['targets'] = target_objects
+    context['field'] = PointAttractionField(field_function)
 
-            L.warning('No microdomain boundary provided.')
 
-        self.add_collision_handle(collision_handle)
+def _set_endfeet_barcode_scaling(parameters):
+    """ Add modification function for scaling the barcodes """
+    from archngv.building.morphology_synthesis.ph_modification import scale_barcode
+    parameters[ENDFOOT_TYPE].update({'modify_target': {'funct': scale_barcode, 'kwargs': {}}})
 
-    def set_process_orientations_from_microdomain(self, soma_center,
-                                                      microdomain,
-                                                      endfeet_targets):
-        """ Given the microdomain geometry and the endfeet targets, calculate the
-        orientation of the primary processes from that geometry without overlapping
-        with the endfeet targets.
 
-        Args:
-            soma_center: array[float, 3]
-            microdomain: ConvexPolygon
-            endfeet_targets: array[float, (N, 3)]
-        """
-        n_trunks = int(scipy.stats.norm(4.431391289748588, 0.3331223431693443).rvs())
+def _remove_endfeet_properties(parameters):
+    """ Remove the endfoot type from the growing types """
+    parameters['grow_types'].remove(ENDFOOT_TYPE)
 
-        # n_trunks = sample.n_neurites(self._distributions[PROCESS_TYPE]['num_trees'])
-        orientations, _ = orientations_from_domain(soma_center,
-                                                   microdomain.points,
-                                                   microdomain.triangles,
-                                                   n_trunks,
-                                                   fixed_targets=endfeet_targets)
-        self._parameters[PROCESS_TYPE]['orientation'] = orientations
 
-    def set_endfeet_targets(self, target_points, field_function):
-        """ Set targets for the processes to grow to.
-        """
-        target_objects = [PointTarget(point) for point in target_points]
-        self._parameters[ENDFOOT_TYPE]['targets'] = target_objects
+def _set_process_orientations_from_microdomain(parameters, soma_center, microdomain, endfeet_targets):
+    """ Given the microdomain geometry and the endfeet targets, calculate the
+    orientation of the primary processes from that geometry without overlapping
+    with the endfeet targets.
 
-        self._context['field'] = PointAttractionField(field_function)
+    Args:
+        soma_center: array[float, 3]
+        microdomain: ConvexPolygon
+        endfeet_targets: array[float, (N, 3)]
+    """
+    n_trunks = int(scipy.stats.norm(4.431391289748588, 0.3331223431693443).rvs())
 
-    def add_point_cloud(self, point_cloud=None):
-        """ Add point cloud in synthesis context
-        """
-        if point_cloud is not None:
-            self._context['point_cloud'] = point_cloud
-            self._parameters[PROCESS_TYPE]['growth_method'] = 'tmd_space_colonization'
-            self._parameters[ENDFOOT_TYPE]['growth_method'] = 'tmd_space_colonization_target'
-        else:
-            self._parameters[PROCESS_TYPE]['growth_method'] = 'tmd'
-            self._parameters[ENDFOOT_TYPE]['growth_method'] = 'tmd_target'
-            L.warning('No point cloud provided. Switched to regular synthesis')
+    # n_trunks = sample.n_neurites(self._distributions[PROCESS_TYPE]['num_trees'])
+    orientations, _ = orientations_from_domain(soma_center,
+                                               microdomain.points,
+                                               microdomain.triangles,
+                                               n_trunks,
+                                               fixed_targets=endfeet_targets)
 
-    def remove_endfeet_properties(self):
-        """ If no endfeet targets are available, make sure that
-        tns will not grow trees for the endfoot type
-        """
-        self._parameters['grow_types'].remove(ENDFOOT_TYPE)
+    parameters[PROCESS_TYPE]['orientation'] = orientations
 
-    def enable_endfeet_barcode_scaling(self):
-        '''Modifies the input parameters to match the input data
-           taken from the spatial properties of the Atlas:
-           The reference_thicness is the expected thickness of input data
-           The target_thickness is the expected thickness that the synthesized
-           cells should live in. Input should be modified accordingly
-        '''
-        self._parameters[ENDFOOT_TYPE].update({'modify_target': {'funct': scale_barcode,
-                                               'kwargs': {}}})
 
-    def grow(self):
-        """ Run morphology synthesis
-        """
-        tns_grower = AstrocyteGrower(input_distributions=self._distributions,
-                                     input_parameters=self._parameters,
-                                     context=self._context)
-        self.morphology = tns_grower.grow()
+# pylint: disable=too-many-arguments
+def create_tns_inputs(default_parameters_path,
+                      default_distributions_path,
+                      soma_position,
+                      soma_radius,
+                      microdomain=None,
+                      point_cloud=None,
+                      endfeet_data=None,
+                      field_function=None,
+                      endfeet_barcode_scaling=False):
+    """ Generate inputs for tns astrocyte grower
+    """
+    with open(default_parameters_path, 'r') as parameters_fd, \
+         open(default_distributions_path, 'r') as distributions_fd:
 
-    def write(self, filepath):
-        """ Write morphology to file
-        """
-        assert self.morphology is not None
-        self.morphology.write(filepath)
+        parameters = json.load(parameters_fd)
+        distributions = json.load(distributions_fd)
+
+    # set origin and radius of cell soma
+    _set_soma_properties(parameters, distributions, soma_position, soma_radius)
+
+    context = _default_context()
+
+    if microdomain is not None:
+        _assign_microdomain_as_collision_boundary(context, microdomain)
+    else:
+        L.warning('No microdomain boundary provided.')
+
+    if point_cloud is None:
+        L.warning('No point cloud provided. Switched to regular synthesis')
+        _set_fallback_algorithm(parameters)
+    else:
+        _add_point_cloud(context, point_cloud)
+        _set_space_colonization_algorithm(parameters)
+
+    if endfeet_data is not None:
+        endfeet_targets = endfeet_data.targets
+        _add_endfeet_attractors(parameters, context, endfeet_targets, field_function)
+
+        # we need to make sure that our extracted homology will suffice
+        # in order to reach the target. If they are shorter, we scale them.
+        if endfeet_barcode_scaling:
+            _set_endfeet_barcode_scaling(parameters)
+
+    else:
+
+        endfeet_targets = None
+        _remove_endfeet_properties(parameters)
+
+    # determine the orientations of the primary processes by using
+    # the geometry of the microdomain and its respective anisotropy
+    _set_process_orientations_from_microdomain(parameters, soma_position, microdomain, endfeet_targets)
+
+    return parameters, distributions, context
