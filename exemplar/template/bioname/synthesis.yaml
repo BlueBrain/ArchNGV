@@ -2,3 +2,12 @@ attraction_field: 'lambda distance: 0.20968752 * np.exp(- 0.02084375 * distance)
 point_cloud: [2.0, 1.5]
 segment_length: 1.0
 randomness: 0.6
+
+perimeter_distribution:
+    enabled: true
+    statistical_model:
+        slope: 2.060005867796768
+        intercept: 1.0219733661696733
+        standard_deviation: 1.1161359624857308
+    smoothing:
+        window: [1.0, 1.0, 1.0, 1.0, 1.0]
