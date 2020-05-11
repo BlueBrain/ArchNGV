@@ -12,7 +12,7 @@ def cmd(input, output):
     # pylint: disable=missing-docstring,redefined-builtin
     import numpy as np
 
-    from voxcell.sonata import NodePopulation
+    from voxcell import CellCollection
     from archngv.core.datasets import CellData
 
     with CellData(input) as data:
@@ -21,13 +21,15 @@ def cmd(input, output):
             data.astrocyte_gids,
             np.arange(n_cells)
         )
-        result = NodePopulation('astrocytes', size=n_cells)
+        cells = CellCollection(population_name='astrocytes')
 
         # TODO: to reset to 'data.astrocyte_positions[:]' once the synthesis pb are solved
-        result.positions = np.zeros((n_cells, 3), dtype=np.float32)
+        cells.positions = np.zeros((n_cells, 3), dtype=np.float32)
 
-        result.attributes['radius'] = data.astrocyte_radii[:]
-        result.attributes['morphology'] = data.astrocyte_names[:]
-        result.attributes['mtype'] = np.full((n_cells, ), "ASTROCYTE")
+        cells.properties['radius'] = data.astrocyte_radii
+        cells.properties['morphology'] = data.astrocyte_names
 
-    result.save(output, library_properties=["mtype"])
+        cells.properties['mtype'] = "ASTROCYTE"
+        cells.properties["model_type"] = "biophysical"
+
+    cells.save_sonata(output)

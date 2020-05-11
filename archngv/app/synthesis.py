@@ -22,7 +22,7 @@ class Worker:
 
 
 def _synthesis_input_paths(kwargs):
-    from archngv.building.morphology_synthesis.full_astrocyte import SynthesisInputPaths
+    from archngv.building.morphology_synthesis.data_structures import SynthesisInputPaths
     return SynthesisInputPaths(
             cell_data=kwargs['cell_data'],
             microdomains=kwargs['microdomains'],
@@ -33,6 +33,7 @@ def _synthesis_input_paths(kwargs):
             endfeet_areas=kwargs['endfeet_areas'],
             tns_parameters=kwargs['tns_parameters'],
             tns_distributions=kwargs['tns_distributions'],
+            tns_context=kwargs['tns_context'],
             morphology_directory=kwargs['out_morph_dir'])
 
 
@@ -44,17 +45,22 @@ def _apply_func(func, data_generator):
 def _apply_parallel_func(func, data_generator):
     import multiprocessing
     from archngv.app.logger import LOGGER
-    n_cores = multiprocessing.cpu_count()
+    # If all the available cores are used the workers accumulate running time
+    # as if there is a sequential bottleneck somewhere
+    # Not sure if it is the hyperthreading, or some gpfs io issue. Using only the physical cores seems to fix it
+    n_cores = multiprocessing.cpu_count() // 2
     LOGGER.info('Run in parallel enabled. N cores: %d', n_cores)
     with multiprocessing.Pool(n_cores) as p:
-        for _ in p.imap_unordered(func, data_generator):
-            pass
+        for n, _ in enumerate(p.imap_unordered(func, data_generator), start=1):
+            if n % 1000 == 0:
+                LOGGER.info('%d astrocytes were synthesized', n)
 
 
 @click.command(help=__doc__)
 @click.option("--config", help="Path to synthesis YAML config", required=True)
 @click.option("--tns-distributions", help="Path to TNS distributions (JSON)", required=True)
 @click.option("--tns-parameters", help="Path to TNS parameters (JSON)", required=True)
+@click.option("--tns-context", help="Path to TNS context (JSON)", required=True)
 @click.option("--cell-data", help="Path to HDF5 with somata positions and radii", required=True)
 @click.option("--microdomains", help="Path to microdomains structure (HDF5)", required=True)
 @click.option("--gliovascular-connectivity", help="Path to gliovascular connectivity (HDF5)", required=True)

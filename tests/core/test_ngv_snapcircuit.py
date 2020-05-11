@@ -25,6 +25,10 @@ TEST_DATA_DIR = Path(TEST_DIR / "data").resolve()
 
 def test__add_astrocytes_information():
     node_pop = Mock()
+
+    # get past the assertion _is_biophysical in bluepysnap MorphHelper
+    node_pop.get.return_value = "biophysical"
+
     config = {
         "microdomains_file": "microdomains_file",
         "microdomains_overlapping_file": "microdomains_overlapping_file",

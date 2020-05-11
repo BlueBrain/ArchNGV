@@ -282,6 +282,11 @@ class MicrodomainTesselation(H5ContextManager):
             return neighbors[neighbors >= 0]
         return neighbors
 
+    def domain_is_boundary(self, astrocyte_index):
+        """ Returns true if the domain is adjacent to a wall """
+        beg, end = self._offset_slice(astrocyte_index, _impl_microdomains.OFFSET_TYPE['neighbors'])
+        return np.any(self._dset_neighbors[beg: end] < 0)
+
     def domain_points(self, astrocyte_index):
         """ The coordinates of the vertices of the microdomain. """
         beg, end = self._offset_slice(astrocyte_index, _impl_microdomains.OFFSET_TYPE['points'])

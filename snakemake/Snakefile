@@ -385,6 +385,8 @@ rule synthesis:
                     bioname_path('tns_distributions.json'),
                 '--tns-parameters',
                     bioname_path('tns_parameters.json'),
+                '--tns-context',
+                    bioname_path('tns_context.json'),
                 '--cell-data',
                     '{input[cell_data]}',
                 '--microdomains',

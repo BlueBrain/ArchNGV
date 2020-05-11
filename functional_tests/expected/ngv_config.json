@@ -2,12 +2,12 @@
   "experiment_name": "build",
   "parent_directory": "/gpfs/bbp.cscs.ch/project/proj62/NGV/ARCHNGV/PACKAGES/GERRIT_REPOS/ArchNGV/functional_tests",
   "input_paths": {
-    "voxelized_intensity": "/gpfs/bbp.cscs.ch/project/proj67/usr/share/test-build/src/atlas/[density]astrocytes.nrrd",
-    "voxelized_brain_regions": "/gpfs/bbp.cscs.ch/project/proj67/usr/share/test-build/src/atlas/brain_regions.nrrd",
-    "vasculature": "/gpfs/bbp.cscs.ch/project/proj67/usr/share/test-build/src/atlas/vasculature.h5",
-    "microcircuit_path": "/gpfs/bbp.cscs.ch/project/proj67/usr/share/test-build/src/circuit",
-    "synaptic_data": "/gpfs/bbp.cscs.ch/project/proj67/usr/share/test-build/src/circuit/sonata/networks/edges/functional/All/edges.h5",
-    "vasculature_mesh": "/gpfs/bbp.cscs.ch/project/proj67/usr/share/test-build/src/atlas/vasculature.mesh.obj",
+    "voxelized_intensity": "../data/atlas/[density]astrocytes.nrrd",
+    "voxelized_brain_regions": "../data/atlas/brain_regions.nrrd",
+    "vasculature": "../data/atlas/vasculature.h5",
+    "microcircuit_path": "",
+    "synaptic_data": "../data/circuit/sonata/networks/edges/functional/All/edges.h5",
+    "vasculature_mesh": "../data/atlas/vasculature.mesh.obj",
     "tns_astrocyte_distributions": "/gpfs/bbp.cscs.ch/project/proj62/NGV/ARCHNGV/PACKAGES/GERRIT_REPOS/ArchNGV/functional_tests/bioname/tns_distributions.json",
     "tns_astrocyte_parameters": "/gpfs/bbp.cscs.ch/project/proj62/NGV/ARCHNGV/PACKAGES/GERRIT_REPOS/ArchNGV/functional_tests/bioname/tns_parameters.json"
   },
@@ -17,13 +17,14 @@
     "synaptic_connectivity": "synaptic_connectivity.h5",
     "gliovascular_connectivity": "gliovascular_connectivity.h5",
     "gliovascular_data": "gliovascular_data.h5",
-    "neuroglial_connectivity": "neuroglial_connectivity.h5",
+    "neuroglial_connectivity": "sonata/edges/neuroglial.h5",
     "neuroglial_data": "neuroglial_data.h5",
+    "glialglial_connectivity": "sonata/edges/glialglial.h5",
     "endfeet_areas": "endfeet_areas.h5",
     "microdomain_mesh": "microdomains/tesselation.stl",
-    "microdomain_structure": "microdomains/structure.h5",
+    "microdomains": "microdomains/microdomains.h5",
     "overlapping_microdomain_mesh": "microdomains/overlapping_tesselation.stl",
-    "overlapping_microdomain_structure": "microdomains/overlapping_structure.h5"
+    "overlapping_microdomains": "microdomains/overlapping_microdomains.h5"
   },
   "parameters": {
     "cell_placement": {
@@ -83,7 +84,25 @@
       ],
       "segment_length": 1.0,
       "randomness": 0.6,
+      "perimeter_distribution": {
+        "enabled": true,
+        "statistical_model": {
+          "slope": 2.060005867796768,
+          "intercept": 1.0219733661696733,
+          "standard_deviation": 1.1161359624857308
+        },
+        "smoothing": {
+          "window": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      },
       "endfeet_area_reconstruction": {
+        "fmm_cutoff_radius": 1000.0,
         "area_distribution": [
           200.0,
           10.0,
@@ -91,8 +110,8 @@
           1000.0
         ],
         "thickness_distribution": [
-          0.5,
-          0.3,
+          1.0,
+          0.1,
           0.01,
           2.0
         ]

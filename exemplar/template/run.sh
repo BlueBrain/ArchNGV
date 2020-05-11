@@ -12,4 +12,4 @@ snakemake --snakefile ./Snakefile \
           --config bioname=../bioname \
           --directory ./build \
           --cluster-config ./bioname/cluster.yaml \
-          -F "${1:-all}"
+          -f "${1:-all}"

@@ -1,42 +1,75 @@
 {
-    "basal": {
-        "randomness": 0.2,
-        "targeting": 0.2,
-        "radius": 0.3,
-        "orientation": null,
-        "growth_method": "tmd_space_colonization",
-        "branching_method": "directional",
-        "filtration_metric": "path_distance",
-        "modify": null,
-        "tree_type": 3
+  "basal": {
+    "randomness": 0.3,
+    "targeting": 0.1,
+    "radius": 0.3,
+    "orientation": null,
+    "growth_method": "tmd_space_colonization",
+    "branching_method": "bio_oriented",
+    "modify": null,
+    "step_size": {
+      "norm": {
+        "mean": 5.0,
+        "std": 0.001
+      }
     },
-    "apical": {},
-    "axon": {
-        "randomness": 0.2,
-        "targeting": 0.2,
-        "radius": 0.3,
-        "orientation": [
-            [
-                0.0,
-                -1.0,
-                0.0
-            ]
-        ],
-        "growth_method": "tmd_space_colonization_target",
-        "branching_method": "directional",
-        "filtration_metric": "path_distance",
-        "modify": null,
-        "tree_type": 2,
-        "bias": 0.01,
-        "bias_length": 5.0
+    "metric": "path_distances",
+    "tree_type": 3,
+    "filtration_metric": "path_distance",
+    "barcode_scaling": true
+  },
+  "apical": {},
+  "axon": {
+    "randomness": 0.3,
+    "targeting": 0.1,
+    "radius": 0.3,
+    "orientation": null,
+    "growth_method": "tmd_space_colonization_target",
+    "branching_method": "bio_oriented",
+    "modify": null,
+    "step_size": {
+      "norm": {
+        "mean": 5.0,
+        "std": 0.001
+      }
     },
-    "origin": [
-        0.0,
-        0.0,
-        0.0
+    "metric": "path_distances",
+    "tree_type": 2,
+    "filtration_metric": "path_distance",
+    "barcode_scaling": true,
+    "bias": 0.9
+  },
+  "origin": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "grow_types": [
+    "basal",
+    "axon"
+  ],
+  "diameter_params": {
+    "mtypes_file": null,
+    "models": [
+      "astrocyte"
     ],
-    "grow_types": [
-        "axon",
-        "basal"
-    ]
+    "neurite_types": [
+      "basal",
+      "axon"
+    ],
+    "terminal_threshold": 2.0,
+    "taper": {
+      "max": 1.1,
+      "min": -1.1
+    },
+    "asymmetry_threshold": {
+      "axon": 0.05,
+      "basal": 0.05
+    },
+    "n_samples": 1,
+    "seed": 0,
+    "trunk_max_tries": 100,
+    "n_cpu": 8,
+    "method": "external"
+  }
 }

@@ -10,6 +10,7 @@ import tess
 from archngv.core.datasets import Microdomain
 from archngv.building.microdomain.overlap import convex_polygon_with_overlap
 
+from archngv.spatial.bounding_box import BoundingBox
 from archngv.utils.ngons import polygons_to_triangles
 
 L = logging.getLogger(__name__)
@@ -35,8 +36,17 @@ def generate_microdomain_tesselation(generator_points, generator_radii, bounding
     """
     limits = (bounding_box.min_point, bounding_box.max_point)
 
-    # calculates the tesselations using voro++ library
-    tess_cells = tess.Container(generator_points, limits=limits, radii=generator_radii)
+    try:
+        # calculates the tesselations using voro++ library
+        tess_cells = tess.Container(generator_points, limits=limits, radii=generator_radii)
+    except ValueError:
+        # a value error is thrown when the bounding box is smaller or overlapping with a
+        # generator point. In that case relax a bit the bounding box taking into account
+        # the spherical extent of the somata
+        L.warning('Bounding box smaller or overlapping with a generator point.')
+        bounding_box = BoundingBox.from_spheres(generator_points, generator_radii) + bounding_box
+        limits = (bounding_box.min_point, bounding_box.max_point)
+        tess_cells = tess.Container(generator_points, limits=limits, radii=generator_radii)
 
     # convert tess cells to archngv.spatial shapes
     return list(map(_microdomain_from_tess_cell, tess_cells))

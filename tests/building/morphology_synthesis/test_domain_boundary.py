@@ -90,7 +90,7 @@ def test_acceptance_criterion(domain_boundary):
 
     # values that hasn't stopped
     accepted = np.fromiter(
-        (val for val in values if not domain_boundary.acceptance_criterion(val)),
+        (val for val in values if not domain_boundary.acceptance_criterion(val, 1.0)),
         dtype=np.float
     )
 
@@ -113,6 +113,6 @@ def test_acceptance_criterion(domain_boundary):
 
 def test__call__(domain_boundary, convex_polygon):
     # does not stop
-    assert not domain_boundary(convex_polygon.centroid)
+    assert not domain_boundary(convex_polygon.centroid, 1.0)
     # stops
-    assert domain_boundary([1e6, 1e6, 1e6])
+    assert domain_boundary([1e6, 1e6, 1e6], 1.0)

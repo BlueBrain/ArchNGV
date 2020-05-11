@@ -35,7 +35,7 @@ def _create_point_sampling_on_vasculature_skeleton(vasculature, graph_targeting_
     L.info('STEP 1: Generation of potential targets completed.')
     L.info('%s potential targets generated.', len(positions))
     L.debug('Parameters: %s', graph_targeting_params)
-    L.debug('Positions: %d\nVasculature Edges: %d', positions, edge_indices)
+    L.debug('Positions: %s\nVasculature Edges: %s', positions, edge_indices)
 
     L.info('STEP 2: Connection of astrocytes with vasculature started.')
 

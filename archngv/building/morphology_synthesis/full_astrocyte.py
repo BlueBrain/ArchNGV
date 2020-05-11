@@ -1,115 +1,31 @@
 """ Synthesis entry function """
-
 import os
 import logging
-from collections import namedtuple
-
 import numpy as np
 
 import morphio
 from tns import AstrocyteGrower
-from tns.spatial.point_cloud import PointCloud  # pylint: disable=import-error
+from diameter_synthesis import build_diameters
 
-from archngv.utils.decorators import log_execution_time, log_start_end
+from archngv.utils.decorators import log_execution_time
 from archngv.exceptions import NGVError
 
+from archngv.building.morphology_synthesis.tns_wrapper import create_tns_inputs
+from archngv.building.morphology_synthesis.data_extraction import tns_inputs
+from archngv.building.morphology_synthesis.data_extraction import astrocyte_circuit_data
 from archngv.building.morphology_synthesis.perimeters import add_perimeters_to_morphology
-
-from .data_extraction import obtain_endfeet_data
-from .data_extraction import obtain_synapse_data
-from .data_extraction import obtain_cell_properties
-
-from .tns_wrapper import create_tns_inputs
 
 
 L = logging.getLogger(__name__)
 
 
-SynthesisInputPaths = namedtuple('SynthesisInputPaths', [
-    'cell_data',
-    'microdomains',
-    'synaptic_data',
-    'gliovascular_data',
-    'gliovascular_connectivity',
-    'neuroglial_connectivity',
-    'tns_parameters',
-    'tns_distributions',
-    'morphology_directory',
-    'endfeet_areas'])
-
-
-@log_start_end
-@log_execution_time
-def synthesize_astrocyte(astrocyte_index, paths, parameters):
-    """ Synthesize a circuit astrocyte
+def _write_with_NEURON_ordering_hack(morphology, filepath):
+    """Writes the morphology, opens it again in NEURON ordering and then
+    writes it again to ensure NEURON ordering
 
     Args:
-        astrocyte_index: int
-            The id of the astrocyte
-        paths: SynthesisInputPaths
-            The various paths need by this function
-        parameters: dict
-
-    """
-    properties = obtain_cell_properties(astrocyte_index, paths.cell_data, paths.microdomains)
-
-    synapses = obtain_synapse_data(
-        astrocyte_index, paths.synaptic_data, paths.neuroglial_connectivity)
-
-    if synapses is not None:
-        # space colonization point cloud parameters
-        radius_of_influence, removal_radius = parameters['point_cloud']
-
-        # create point cloud
-        point_cloud = PointCloud(synapses.values, radius_of_influence, removal_radius)
-    else:
-        point_cloud = None
-
-    endfeet_data = obtain_endfeet_data(
-        astrocyte_index, paths.gliovascular_data, paths.gliovascular_connectivity, paths.endfeet_areas)
-
-    if endfeet_data is None:
-        field_function = None
-    else:
-        # lambda function is passed from config as string
-        lambda_string = parameters['attraction_field']
-
-        # add the targets to grow to and the attraction field
-        # function which depends on the distance to the target
-        # TODO: consider using Equation instead of `eval`?
-        field_function = eval(lambda_string)  # pylint: disable=eval-used
-
-    tns_parameters, tns_distributions, tns_context = create_tns_inputs(
-        default_parameters_path=paths.tns_parameters,
-        default_distributions_path=paths.tns_distributions,
-        soma_position=properties.soma_position,
-        soma_radius=properties.soma_radius,
-        microdomain=properties.microdomain,
-        point_cloud=point_cloud,
-        endfeet_data=endfeet_data,
-        field_function=field_function,
-        endfeet_barcode_scaling=True
-    )
-
-    morphology = AstrocyteGrower(
-        input_parameters=tns_parameters,
-        input_distributions=tns_distributions,
-        context=tns_context).grow()
-
-    if parameters['perimeter_distribution']['enabled']:
-        L.info('Distributing perimeters...')
-        add_perimeters_to_morphology(morphology, parameters['perimeter_distribution'])
-
-    filepath = os.path.join(paths.morphology_directory, properties.name + '.h5')
-
-    # TODO: replace this when direct NEURON ordering write is available in MorphIO
-    _write_with_NEURON_ordering_hack(morphology, filepath)
-    _sanity_checks(filepath)
-
-
-def _write_with_NEURON_ordering_hack(morphology, filepath):
-    """ Writes the morphology, opens it again in NEURON ordering and then
-    writes it again to ensure NEURON ordering
+        morphology (morphio.mut.Morphology): Mutable morphology
+        filepath (str): Output filepath
     """
     morphology.write(filepath)
     morphology = morphio.Morphology(filepath, options=morphio.Option.nrn_order)
@@ -117,11 +33,16 @@ def _write_with_NEURON_ordering_hack(morphology, filepath):
 
 
 def _sanity_checks(filepath):
-    """ Various checks ensuring morphology corectedness
+    """Various checks ensuring morphology corectedness
         - existence of duplicate points
         - at least two points in each section
-    """
 
+    Args:
+        filepath (str): The morphology filepath
+
+    Raises:
+        NGVError: If any of the tests are not satisfied
+    """
     for section in morphio.Morphology(filepath).iter():
 
         if section.is_root:
@@ -130,18 +51,67 @@ def _sanity_checks(filepath):
         points = section.points
         parent_points = section.parent.points
 
-        try:
-            assert np.allclose(points[0], parent_points[-1])
-        except AssertionError:
+        if not np.allclose(points[0], parent_points[-1]):
             raise NGVError(
                 f'Morphology {filepath} is missing duplicate points.\n'
                 f'\t Section {section.id}, Points: {points}, Parent last point: {parent_points}'
             )
 
-        try:
-            assert len(points) > 1
-        except AssertionError:
+        if not len(points) > 1:
             raise NGVError(
                 f'Morphology {filepath} has one point sections.\n'
                 f'\t Section {section.id}, Points: {points}'
             )
+
+
+def grow_circuit_astrocyte(tns_data, properties, endfeet_attraction_data, space_colonization_data):
+    """
+    Args:
+        tns_data (TNSData): namedtuple of tns parameters, distributions and context
+        properties (CellProperties): cell specific properties
+        endfeet_attraction_data (EndfeetAttractionData):
+            namedtuple that contains data related to endfeet generation
+        space_colonization_data (SpaceColonizationData):
+            namedtuple that contains data concerning the space colonization
+
+    Returns:
+        morphio.mut.Morphology: The generated astrocyte morphology
+    """
+    tns_data = create_tns_inputs(
+        tns_data, properties, endfeet_attraction_data, space_colonization_data)
+
+    # external diametrizer function handle
+    diametrizer_function = lambda cell, model, neurite_type: build_diameters.build(
+        cell, model, [neurite_type], tns_data.parameters['diameter_params'])
+
+    return AstrocyteGrower(
+        input_parameters=tns_data.parameters,
+        input_distributions=tns_data.distributions,
+        context=tns_data.context,
+        external_diametrizer=diametrizer_function).grow()
+
+
+@log_execution_time
+def synthesize_astrocyte(astrocyte_index, paths, parameters):
+    """ Synthesize a circuit astrocyte and write it to file
+
+    Args:
+        astrocyte_index (int): The id of the astrocyte
+        paths (SynthesisInputPaths): The various paths need by this function
+        parameters (dict): Input synthesis parameters
+    """
+    cell_properties, endfeet_attraction_data, space_colonization_data = astrocyte_circuit_data(
+        astrocyte_index, paths, parameters)
+
+    morphology = grow_circuit_astrocyte(
+        tns_inputs(paths), cell_properties, endfeet_attraction_data, space_colonization_data)
+
+    if parameters['perimeter_distribution']['enabled']:
+        L.info('Distributing perimeters...')
+        add_perimeters_to_morphology(morphology, parameters['perimeter_distribution'])
+
+    filepath = os.path.join(paths.morphology_directory, cell_properties.name + '.h5')
+
+    # TODO: replace this when direct NEURON ordering write is available in MorphIO
+    _write_with_NEURON_ordering_hack(morphology, filepath)
+    _sanity_checks(filepath)

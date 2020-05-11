@@ -24,7 +24,8 @@ EXTRA_ALL = [
     'Click>=7.0',
     'openmesh==1.1.2',
     'pyyaml>=3.0',
-    # TODO 'tns>=??',
+    'tns>=2.2.1',
+    'diameter-synthesis>=0.1.6'
 ]
 
 setup(
