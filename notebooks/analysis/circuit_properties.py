@@ -66,7 +66,17 @@ class CircuitProperties(CircuitInterface):
             astrocytes_segment_index,
             vasculature_segment_index
         )
-        
+
+    def segment_features_per_microdomain(self, index, samples_per_layer=10):
+        from analytics import segment_statistics_per_microdomain
+        return segment_statistics_per_microdomain(
+            self.overlapping_microdomains,
+            self.astrocyte_positions,
+            index,
+            samples_per_layer
+        )
+
+
     @cached_property
     def primary_processes_per_astrocyte(self):
         n_astrocytes = self.n_astrocytes

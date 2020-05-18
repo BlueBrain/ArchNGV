@@ -7,6 +7,7 @@ import numpy as np
 from morphio import Morphology
 import spatial_index
 
+from archngv.spatial.collision import convex_shape_with_spheres
 
 BATCH_SIZE = 1000
 
@@ -23,6 +24,35 @@ def _intersection(args):
 
         index = spatial_index.point_rtree(part['points'][:])
         ids = index.intersection(xmin, ymin, zmin, xmax, ymax, zmax)
+
+        features = features_dset[:]
+        features = features[ids].sum(axis=0)
+
+        return features
+
+
+def _intersection_polygon(args):
+
+    filepath, key, xmin, ymin, zmin, xmax, ymax, zmax, face_points, face_normals = args
+
+    with h5py.File(filepath, 'r') as fd:
+
+        part = fd[key]
+
+        points_dset, features_dset = part['points'], part['features']
+
+        points = part['points'][:]
+
+        index = spatial_index.point_rtree(points)
+        ids = index.intersection(xmin, ymin, zmin, xmax, ymax, zmax)
+
+        mask = convex_shape_with_spheres(
+            face_points,
+            face_normals,
+            points[ids],
+            np.zeros(len(ids)))
+
+        ids = ids[mask]
 
         features = features_dset[:]
         features = features[ids].sum(axis=0)
@@ -54,6 +84,18 @@ class SegmentIndex:
         with multiprocessing.Pool(multiprocessing.cpu_count()) as pool:
         
             for values in pool.imap_unordered(_intersection, args):
+                result += values
+
+        return result
+
+    def intersection_polygon(self, xmin, ymin, zmin, xmax, ymax, zmax, face_points, face_normals):
+
+        args = ((self._filepath, key, xmin, ymin, zmin, xmax, ymax, zmax, face_points, face_normals) for key in self._keys)
+
+        result = np.zeros(3)
+        with multiprocessing.Pool(multiprocessing.cpu_count()) as pool:
+
+            for values in pool.imap_unordered(_intersection_polygon, args):
                 result += values
 
         return result
