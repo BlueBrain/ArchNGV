@@ -144,6 +144,10 @@ class NeuroglialConnectivity(EdgesContextManager):
     def _synapse_selection(self, astrocyte_id):
         return self._impl.efferent_edges(astrocyte_id)
 
+    def astrocyte_number_of_synapses(self, astrocyte_id):
+        """ Get the number of synapses to a given `astrocyte_id` """
+        return self._synapse_selection(astrocyte_id).flat_size
+
     def astrocyte_synapses(self, astrocyte_id):
         """ Synapse IDs corresponding to a given `astrocyte_id` """
         selection = self._synapse_selection(astrocyte_id)
