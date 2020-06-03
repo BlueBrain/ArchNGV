@@ -381,11 +381,14 @@ class GliovascularData(H5ContextManager):
 
     @property
     def vasculature_surface_targets(self):
+        """ Endfeet surface targets on vascualture """
         return self.endfoot_surface_coordinates[:]
 
     @property
     def vasculature_skeleton_targets(self):
+        """ Endfeet skeleton targets on vaculature """
         return self.endfoot_graph_coordinates[:]
+
 
 class SynapticData(EdgesContextManager):
     """ Synaptic data access """
