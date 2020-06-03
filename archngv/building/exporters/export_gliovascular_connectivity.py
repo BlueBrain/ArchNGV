@@ -33,7 +33,7 @@ def write_astrocyte_perspective(fd, astrocyte_to_endfeet):
     connectivity_dset = \
         astrocyte_group.create_dataset('connectivity', data=astrocyte_endfeet_data, dtype=np.uintp)
 
-    astrocyte_endfeet_offs = np.cumsum([0] + [len(l) for l in astrocyte_to_endfeet])
+    astrocyte_endfeet_offs = np.cumsum([0] + [len(endfeet) for endfeet in astrocyte_to_endfeet])
     offsets_dset = astrocyte_group.create_dataset('offsets', data=astrocyte_endfeet_offs, dtype=np.uintp)
 
     connectivity_dset.attrs['column_names'] = np.array(['endfoot'], dtype=h5py.special_dtype(vlen=str))

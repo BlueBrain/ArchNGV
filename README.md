@@ -20,7 +20,7 @@ $ . /path/to/repo/.venv/bin/activate
 
 # Install ArchNGV
 $ cd /path/to/repo
-$ mkdir install
+$ make install
 ```
 
 ## Create circuit exemplars
@@ -30,8 +30,8 @@ $ mkdir install
 $ circuit_dir=/gpfs/bbp.cscs.ch/project/projXX/$USER/ArchNGVCircuits
 $ mkdir -p $circuit_dir
 
-# Create examplars. Default is 7 is the number is not specified in command line
-$ ./exemplar/create_exemplars.sh $circuit_dir 3
+# Create an exemplar
+$ python ./exemplar/create_exemplar.py $circuit_dir
 ```
 
 ## Execute cell placement
