@@ -60,8 +60,9 @@ def _find_neuron_files(circuit_path, neuron_config_filename):
             edges = [edge["edges_file"] for edge in config["networks"]["edges"]]
             morph = config["components"]["morphologies_dir"]
             return edges, nodes, morph
-        except (JSONDecodeError, KeyError):
-            raise NGVError("{} is not a bbp/sonata circuit config file".format(config_filepath))
+        except (JSONDecodeError, KeyError) as e:
+            msg = f"{config_filepath} is not a bbp/sonata circuit config file"
+            raise NGVError(msg) from e
 
 
 @click.command(help=__doc__)

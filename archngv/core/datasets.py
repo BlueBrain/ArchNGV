@@ -25,6 +25,18 @@ class Vasculature:
         point_vasculature = section_vasculature.as_point_graph()
         return cls(point_vasculature)
 
+    @classmethod
+    def load_sonata(cls, filepath):
+        """Loads a vasculature SONATA NodePopulation"""
+        from archngv.building.exporters.node_populations import load_vasculature_node_population
+        return cls(load_vasculature_node_population(filepath))
+
+    def save_sonata(self, filepath):
+        """Writes the vasculature dataset as a SONATA NodePopulation
+        """
+        from archngv.building.exporters.node_populations import save_vasculature_node_population
+        save_vasculature_node_population(self._impl, filepath)
+
     @property
     def node_properties(self):
         """ Node properties dataframe """
@@ -186,7 +198,7 @@ class Microdomain(ConvexPolygon):
 
         self._polygon_ids = triangle_data[:, _impl_microdomains.TRIANGLE_TYPE['polygon_id']]
         triangles = triangle_data[:, _impl_microdomains.TRIANGLE_TYPE['vertices']]
-        super(Microdomain, self).__init__(points, triangles)
+        super().__init__(points, triangles)
         self.neighbor_ids = neighbor_ids
 
     @property

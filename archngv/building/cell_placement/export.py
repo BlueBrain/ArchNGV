@@ -69,7 +69,8 @@ def export_cell_placement_data(filepath, astrocyte_ids,
     }
     try:
         writer_func = writers[method]
-    except KeyError:
-        raise KeyError('Export method {} is not valid. Choose from {}'.format(method, writers.keys()))
+    except KeyError as e:
+        msg = f'Export method {method} is not valid. Choose from {writers.keys()}'
+        raise KeyError(msg) from e
     else:
         writer_func(filepath, astrocyte_ids, somata_positions, somata_radii)

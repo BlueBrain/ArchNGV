@@ -9,6 +9,7 @@ from archngv.app.convert import (
     merge_sonata,
     ngv_config,
     sonata_config,
+    sonata_vasculature
 )
 
 
@@ -17,4 +18,5 @@ group = click.Group('convert', {
     'ngv-config': ngv_config.cmd,
     'merge-sonata': merge_sonata.cmd,
     'sonata-config': sonata_config.cmd,
+    'sonata-vasculature': sonata_vasculature.cmd
 }, help=__doc__)

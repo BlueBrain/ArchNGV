@@ -64,7 +64,7 @@ class LaminarCounterGrid(UniformGrid):
     """ Counter grid on xz slices
     """
     def __init__(self, laminar_densities, x_range, y_range, z_range, cell_size):  # pylint: disable = too-many-arguments
-        super(LaminarCounterGrid, self).__init__(x_range, y_range, z_range, cell_size)
+        super().__init__(x_range, y_range, z_range, cell_size)
 
         # N_cells need to be indexed as i + sx * k + sx * sz * j
         index = np.zeros(self.s_x * self.s_y * self.s_z, dtype=np.uintp)

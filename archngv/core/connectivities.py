@@ -24,8 +24,7 @@ class GliovascularConnectivity(H5ContextManager):
             from the astrocyte to the endfoot and astrocyte.
     """
     def __init__(self, filepath):
-        super(GliovascularConnectivity, self).__init__(filepath)
-
+        super().__init__(filepath)
         self.endfoot = EndfootEntry(self._fd)
         self.astrocyte = AstrocyteEntry(self._fd)
 

@@ -16,11 +16,11 @@ def equal_length(iterable1, iterable2):
         l2 = len(iterable2)
         assert l1 == l2
 
-    except AssertionError:
+    except AssertionError as e:
 
         msg = 'Iterables do not have same length {}, {}'.format(l1, l2)
         L.error(msg)
-        raise AssertionError(msg)
+        raise AssertionError(msg) from e
 
 
 def keys(keys_to_check, dictionary):
@@ -31,11 +31,11 @@ def keys(keys_to_check, dictionary):
         for key in keys_to_check:
             assert key in dictionary
 
-    except AssertionError:
+    except AssertionError as e:
 
         msg = '{} key could not be found in config'.format(key)
         L.error(msg)
-        raise AssertionError(msg)
+        raise AssertionError(msg) from e
 
 
 def points_inside_polyhedra(points, polyhedra):
@@ -52,8 +52,8 @@ def points_inside_polyhedra(points, polyhedra):
                                            polyhedron.face_normals,
                                            point)
 
-    except AssertionError:
+    except AssertionError as e:
 
         msg = 'Points are not inside polyhedra.'
         L.error(msg)
-        raise AssertionError(msg)
+        raise AssertionError(msg) from e

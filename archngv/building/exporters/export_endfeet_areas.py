@@ -77,10 +77,10 @@ def export_endfoot_mesh(endfoot_coordinates, endfoot_triangles, filepath):
 
         L.info('Endfoot saved at: %s', filepath)
 
-    except IndexError:
+    except IndexError as e:
         msg = 'No triangles found'
         L.error(msg)
-        raise NGVError(msg)
+        raise NGVError(msg) from e
 
 
 def export_joined_endfeet_meshes(endfoot_iterator, filepath):
