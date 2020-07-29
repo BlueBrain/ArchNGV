@@ -3,6 +3,8 @@
 import os
 import json
 import logging
+from pathlib import Path
+from archngv.exceptions import NGVError
 
 
 L = logging.getLogger(__name__)
@@ -22,33 +24,38 @@ class NGVConfig:
     """
     @classmethod
     def _resolve_config(cls, arg):
-        if isinstance(arg, str):
-            if os.path.isfile(arg):
-                config_path = arg
-            elif os.path.isdir(arg):
-                config_path = os.path.join(arg, DEFAULT_CONFIG_PATH)
-            else:
-                msg = 'Unknown argument type {}'.format(type(arg))
-                L.error(msg)
-                raise TypeError(msg)
 
+        if isinstance(arg, NGVConfig):
+            return arg
+
+        if isinstance(arg, (str, Path)):
+
+            arg = Path(arg).resolve()
+
+            if not arg.exists():
+                raise NGVError(f'Config path does not exist: {arg}')
+
+            config_path = arg if arg.is_file() else arg / DEFAULT_CONFIG_PATH
             L.info('NGV config loaded from path %s', config_path)
             return cls.from_file(config_path)
 
-        try:
-            assert isinstance(arg, NGVConfig)
-        except AssertionError:
-            msg = 'Incompatible argument of type {}'.format(type(arg))
-            L.error(msg)
-            raise TypeError(msg)
-
-        return arg
+        msg = f'Unknown argument type {type(arg)}'
+        L.error(msg)
+        raise NGVError(msg)
 
     @classmethod
     def from_file(cls, file_path):
         """ Load a json config from file """
         with open(file_path, 'r') as fp:
             config_dict = json.load(fp)
+
+        parent_directory = config_dict['parent_directory']
+
+        if not os.path.isabs(parent_directory):
+
+            config_dir = os.path.dirname(file_path)
+            config_dict['parent_directory'] = os.path.join(config_dir, parent_directory)
+
         return cls(config_dict, 'ngv_config')
 
     def __init__(self, config_dict, config_name):

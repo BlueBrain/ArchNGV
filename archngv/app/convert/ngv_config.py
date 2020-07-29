@@ -33,7 +33,7 @@ def cmd(build_dir, bioname, output):
 
     config = {
         'experiment_name': os.path.basename(build_dir),
-        'parent_directory': os.path.dirname(build_dir),
+        'parent_directory': '../',
         'input_paths': {
             'voxelized_intensity': os.path.join(common_config['atlas'], '%s.nrrd' % cell_placement_config['density']),
             'voxelized_brain_regions': os.path.join(common_config['atlas'], 'brain_regions.nrrd'),
