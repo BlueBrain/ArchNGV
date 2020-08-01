@@ -6,7 +6,7 @@ import openmesh
 import numpy as np
 from numpy import testing as npt
 
-from archngv.core.datasets import EndfeetAreas
+from archngv.core.datasets import EndfootSurfaceMeshes
 from archngv.building.endfeet_reconstruction.area_generation import endfeet_area_generation
 from archngv.building.exporters.export_endfeet_areas import export_endfeet_areas
 
@@ -54,7 +54,7 @@ def test_component(plane_mesh, endfeet_points, parameters):
         filepath = fd.name
         export_endfeet_areas(filepath, data_generator, len(endfeet_points))
 
-        meshes = EndfeetAreas(filepath)
+        meshes = EndfootSurfaceMeshes(filepath)
 
         # without reduction
         expected_areas_initial = [0.6419756, 0.9135803, 0.39506137,

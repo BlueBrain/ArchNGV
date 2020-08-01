@@ -130,7 +130,7 @@ def sample_synaptic_data(synapse_ids, syn_data):
 
     handles = \
     [
-        ('synapse_coordinates', syn_data.synapse_coordinates)
+        ('synapse_coordinates', syn_data.synapse_positions)
     ]
 
     data = {}

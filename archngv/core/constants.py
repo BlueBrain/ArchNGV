@@ -23,10 +23,11 @@ class Astrocyte(ConstContainer):
 class Population(ConstContainer):
     """NGV population names."""
 
+    NEURONS = "neurons"
     ASTROCYTES = "astrocytes"
-    NEUROGLIAL = "neuroglial"
-    GLIALGLIAL = "glialglial"
-    GLIOVASCULAR = "gliovascular"
     VASCULATURE = "vasculature"
-    ENDFEET = "endfeetome"
-    MICRODOMAINS = "microdomains"
+
+    NEURONAL = "neuronal"
+    GLIALGLIAL = "glialglial"
+    NEUROGLIAL = "neuroglial"
+    GLIOVASCULAR = "gliovascular"

@@ -1,21 +1,110 @@
-""" Archngv dataset classes """
-import os
+"""Archngv dataset classes."""
+
 from collections import namedtuple
 from cached_property import cached_property
 
 import numpy as np
-import libsonata
-from archngv.core.common import H5ContextManager, EdgesContextManager
+import h5py
+from spatial_index import sphere_rtree
+
+from archngv.exceptions import NGVError
+from archngv.core.sonata_readers import EdgesReader, NodesReader
 
 from archngv.spatial import ConvexPolygon
-from archngv.core import _impl_microdomains
+
+DOMAIN_TRIANGLE_TYPE = {
+    'polygon_id': 0,
+    'vertices': slice(1, 4)}
+
+
+DOMAIN_OFFSET_TYPE = {
+    "points": 0,
+    "triangle_data": 1,
+    "neighbors": 2,
+    "all": None,
+    "domain_data": slice(0, 2)}
+
+
+class CellData(NodesReader):
+    """Cell population information"""
+
+    def positions(self, index=None):
+        """Cell positions"""
+        return self.get_properties(['x', 'y', 'z'], ids=index)
+
+
+class GliovascularConnectivity(EdgesReader):
+    """Access to the Gliovascular Data"""
+
+    @property
+    def vasculature_surface_targets(self):
+        """Endfeet surface targets on vasculature."""
+        return self.get_properties(['endfoot_surface_x', 'endfoot_surface_y', 'endfoot_surface_z'])
+
+    def astrocyte_endfeet(self, astrocyte_ids):
+        """endfoot_id is equivalent to the edge id. Can resolve quicker using afferent_edges"""
+        return self.afferent_edges(astrocyte_ids)
+
+
+class NeuronalConnectivity(EdgesReader):
+    """ Synaptic data access """
+
+    def synapse_positions(self, synapse_ids=None):
+        """ XYZ coordinates for given synapse_ids (all if synapse_ids not specified) """
+        syn_positions = [['efferent_center_x', 'efferent_center_y', 'efferent_center_z'],
+                         ['afferent_center_x', 'afferent_center_y', 'afferent_center_z']]
+
+        for position_properties in syn_positions:
+            try:
+                return self.get_properties(position_properties, synapse_ids)
+            except NGVError:
+                pass
+
+        raise NGVError(f"Cannot find positions inside {self.filepath}")
+
+    def target_neurons(self, synapse_ids=None):
+        """Target neuron's node ids for given synapse_ids."""
+        return self._impl.target_nodes(self._selection(synapse_ids))
+
+    @cached_property
+    def target_neuron_count(self):
+        """Number of unique target neurons."""
+        return len(np.unique(self.target_neurons()))
+
+
+class NeuroglialConnectivity(EdgesReader):
+    """Neuroglial connectivity access."""
+
+    def astrocyte_synapses(self, astrocyte_id):
+        """Get the synapse ids connected to a given `astrocyte_id`."""
+        edge_ids = self.efferent_edges(astrocyte_id)
+        return self.get_properties('synapse_id', ids=edge_ids).flatten()
+
+    def astrocyte_number_of_synapses(self, astrocyte_id):
+        """Get the number of synapses to a given `astrocyte_id`."""
+        return len(np.unique(self.astrocyte_synapses(astrocyte_id)))
+
+    def astrocyte_neurons(self, astrocyte_id, unique=True):
+        """Post-synaptic neurons given an `astrocyte_id`."""
+        return self.efferent_nodes(astrocyte_id, unique=unique)
+
+
+class GlialglialConnectivity(EdgesReader):
+    """Glialglial connectivity access."""
+
+    def astrocyte_astrocytes(self, astrocyte_id, unique=True):
+        """Target astrocyte connected to astrocyte with `astrocyte_id`."""
+        return self.efferent_nodes(astrocyte_id, unique=unique)
 
 
 class Vasculature:
-    """ Vasculature wrapper using VasculatureAPI
-    """
+    """ Vasculature wrapper using VasculatureAPI"""
     def __init__(self, vasculature):
-        self._impl = vasculature
+        from vasculatureapi import PointVasculature
+        if isinstance(vasculature, PointVasculature):
+            self._impl = vasculature
+        else:
+            raise NGVError("Vasculature init with something else than PointVasculature")
 
     @classmethod
     def load(cls, filepath):
@@ -65,14 +154,12 @@ class Vasculature:
     @property
     def segment_radii(self):
         """ Returns radii for starts and ends of segments """
-        edges, radii = self.edges, self.radii
-        return radii[edges.T]
+        return self.radii[self.edges.T]
 
     @property
     def segment_points(self):
         """ Returns points for starts and ends of segments """
-        points, edges = self.points, self.edges
-        return points[edges.T]
+        return self.points[self.edges.T]
 
     @property
     def bounding_box(self):
@@ -100,7 +187,6 @@ class Vasculature:
 
     def spatial_index(self):
         """ Returns vasculature spatial index """
-        from spatial_index import sphere_rtree
         return sphere_rtree(self.points, self.radii)
 
     @property
@@ -115,96 +201,20 @@ class Vasculature:
         return multi_index.get_level_values('section_id').to_numpy()
 
 
-class CellData(H5ContextManager):
-    """ Data structure for the collection of cell characteristics. Only the actual
-    file is required for accessing the respetive data with this class. No relative path
-    data is available from this entry point.
-    """
-    def __init__(self, filepath_or_config):
-
-        # TODO: remove the config related code when snapCircuit replaces NGVCircuit
-        if isinstance(filepath_or_config, str):
-            self._config = None
-            filepath = filepath_or_config
-        else:
-            self._config = filepath_or_config
-            filepath = self._config.output_paths('cell_data')
-
-        super().__init__(filepath)
-        self.astrocyte_positions = self._fd['/positions']
-        self.astrocyte_radii = self._fd['/radii']
-
-        self.astrocyte_gids = self._fd['/ids']
-        self.astrocyte_names = self._fd['/names']
-
-    def __len__(self):
-        "return cell data size"
-        return len(self.astrocyte_positions)
-
-    @property
-    def astrocyte_point_data(self):
-        """ Returns stacked astrocyte positions and radii
-        """
-        return np.column_stack((self.astrocyte_positions, self.astrocyte_radii))
-
-    @property
-    def n_cells(self):
-        """ Number of cells """
-        return self.__len__()
-
-    @property
-    def positions(self):
-        """ Returns positions """
-        return self.astrocyte_positions
-
-    @property
-    def radii(self):
-        """ Returns radii """
-        return self.astrocyte_radii
-
-    @property
-    def names(self):
-        """ Returns the cell names """
-        return self.astrocyte_names
-
-    @property
-    def ids(self):
-        """ Returns the astrocyte ids """
-        return self.astrocyte_gids
-
-    def morphology_path(self, astrocyte_index):
-        """ Absolute path to the astrocyte morphology corresponding
-        to the given index.
-        """
-        cell_filename = self.astrocyte_names[astrocyte_index].decode('utf-8') + '.h5'
-        return os.path.join(self._config.morphology_directory, cell_filename)
-
-    def morphology_object(self, astrocyte_index):
-        """ Readonly morphology object using morphio
-        Returns:
-            A morphio read only object
-
-        Notes:
-            You need to pip install archngv[core] or archngv[all] to have access to this feature
-        """
-        from morphio import Morphology
-        return Morphology(self.morphology_path(astrocyte_index))
-
-
 class Microdomain(ConvexPolygon):
     """ Extends Convex Polygon shape into an astrocytic microdomain with extra properties
     """
     def __init__(self, points, triangle_data, neighbor_ids):
-
-        self._polygon_ids = triangle_data[:, _impl_microdomains.TRIANGLE_TYPE['polygon_id']]
-        triangles = triangle_data[:, _impl_microdomains.TRIANGLE_TYPE['vertices']]
+        self._polygon_ids = triangle_data[:, DOMAIN_TRIANGLE_TYPE['polygon_id']]
+        triangles = triangle_data[:, DOMAIN_TRIANGLE_TYPE['vertices']]
         super().__init__(points, triangles)
         self.neighbor_ids = neighbor_ids
 
     @property
     def polygons(self):
         """ Returns the polygons of the domain """
-        return _impl_microdomains.triangles_to_polygons(self._triangles, self._polygon_ids)
+        from archngv.utils.ngons import triangles_to_polygons
+        return triangles_to_polygons(self._triangles, self._polygon_ids)
 
     @property
     def triangle_data(self):
@@ -224,10 +234,27 @@ class Microdomain(ConvexPolygon):
             self.neighbor_ids.copy())
 
 
+class H5ContextManager:
+    """ Context manager for hdf5 files """
+
+    def __init__(self, filepath):
+        self._fd = h5py.File(filepath, 'r')
+
+    def close(self):
+        """ Close hdf5 file """
+        self._fd.close()
+
+    def __enter__(self):
+        """ Context manager entry """
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """ And exit """
+        self.close()
+
+
 class MicrodomainTesselation(H5ContextManager):
-    """ Data structure for storing the information concerning
-        the microdomains.
-    """
+    """Data structure for storing the information concerning the microdomains."""
     def __init__(self, filepath):
         super().__init__(filepath)
         self._offsets = self._fd['/offsets']
@@ -236,16 +263,16 @@ class MicrodomainTesselation(H5ContextManager):
         self._dset_triangle_data = self._fd['/data/triangle_data']
 
     def __iter__(self):
-        """ Microdomain object iterator """
+        """Microdomain object iterator."""
         for i in range(self.n_microdomains):
             yield self.domain_object(i)
 
     def __len__(self):
-        """ Number of Microdomains """
+        """Number of Microdomains."""
         return len(self._offsets) - 1
 
     def __getitem__(self, key):
-        """ list getter """
+        """List getter."""
         if isinstance(key, slice):
             return [self.domain_object(i) for i in range(key.start, key.stop, key.step)]
         elif isinstance(key, (np.integer, int)):
@@ -265,65 +292,67 @@ class MicrodomainTesselation(H5ContextManager):
 
     @property
     def _triangles(self):
-        return self._dset_triangle_data[:, _impl_microdomains.TRIANGLE_TYPE['vertices']]
+        return self._dset_triangle_data[:, DOMAIN_TRIANGLE_TYPE['vertices']]
 
     @property
     def _polygon_ids(self):
-        return self._dset_triangle_data[:, _impl_microdomains.TRIANGLE_TYPE['polygon_id']]
+        return self._dset_triangle_data[:, DOMAIN_TRIANGLE_TYPE['polygon_id']]
 
     @property
     def n_microdomains(self):
-        """ Number of Microdomains """
+        """Total number of Microdomains."""
         return self.__len__()
 
     def n_neighbors(self, astrocyte_index, omit_walls=True):
-        """ Number of neighboring microdomains around microdomains
-        with astrocyte_index.
-        """
+        """Number of neighboring microdomains around microdomains using astrocyte_index."""
         return len(self.domain_neighbors(astrocyte_index, omit_walls=omit_walls))
 
     def domain_neighbors(self, astrocyte_index, omit_walls=True):
-        """ For every triangle in the microdomain return its respective neighbor.
+        """For every triangle in the microdomain return its respective neighbor.
+
         Multiple triangles can have the same neighbor if the are part of a triangulated
         polygon face. A microdomain can also have a bounding box wall as a neighbor
         which is signified with a negative number.
         """
-        beg, end = self._offset_slice(astrocyte_index, _impl_microdomains.OFFSET_TYPE['neighbors'])
+        beg, end = self._offset_slice(astrocyte_index, DOMAIN_OFFSET_TYPE['neighbors'])
         neighbors = self._dset_neighbors[beg: end]
         if omit_walls:
             return neighbors[neighbors >= 0]
         return neighbors
 
     def domain_is_boundary(self, astrocyte_index):
-        """ Returns true if the domain is adjacent to a wall """
-        beg, end = self._offset_slice(astrocyte_index, _impl_microdomains.OFFSET_TYPE['neighbors'])
+        """Returns true if the domain is adjacent to a wall."""
+        beg, end = self._offset_slice(astrocyte_index, DOMAIN_OFFSET_TYPE['neighbors'])
         return np.any(self._dset_neighbors[beg: end] < 0)
 
     def domain_points(self, astrocyte_index):
-        """ The coordinates of the vertices of the microdomain. """
-        beg, end = self._offset_slice(astrocyte_index, _impl_microdomains.OFFSET_TYPE['points'])
+        """The coordinates of the vertices of the microdomain."""
+        beg, end = self._offset_slice(astrocyte_index, DOMAIN_OFFSET_TYPE['points'])
         return self._dset_points[beg: end]
 
     def domain_triangles(self, astrocyte_index):
-        """ The triangles connectivity of the domain_points
-        """
-        beg, end = self._offset_slice(astrocyte_index, _impl_microdomains.OFFSET_TYPE['triangle_data'])
-        return self._dset_triangle_data[beg: end, _impl_microdomains.TRIANGLE_TYPE['vertices']]
+        """Returns the triangles connectivity of the domain_points from an astrocyte."""
+        beg, end = self._offset_slice(astrocyte_index, DOMAIN_OFFSET_TYPE['triangle_data'])
+        return self._dset_triangle_data[beg: end, DOMAIN_TRIANGLE_TYPE['vertices']]
 
     def domain_triangle_data(self, astrocyte_index):
-        """ Returns the triangle data of the tesselation: [polygon_id, v0, v1, v2] """
-        beg, end = self._offset_slice(astrocyte_index, _impl_microdomains.OFFSET_TYPE['triangle_data'])
+        """Returns the triangle data of the tesselation.
+
+        Returns:
+            numpy.ndarray: [polygon_id, v0, v1, v2]
+        """
+        beg, end = self._offset_slice(astrocyte_index, DOMAIN_OFFSET_TYPE['triangle_data'])
         return self._dset_triangle_data[beg: end]
 
     def domain_object(self, astrocyte_index):
-        """ Returns a Microdomain object """
+        """Returns a archngv.core.dataset Microdomain object."""
         return Microdomain(self.domain_points(astrocyte_index),
                            self.domain_triangle_data(astrocyte_index),
                            self.domain_neighbors(astrocyte_index, omit_walls=False))
 
     @cached_property
     def connectivity(self):
-        """ Returns the connectivity of the microdomains """
+        """Returns the connectivity of the microdomains."""
         edges = [(cid, nid) for cid in range(self.n_microdomains)
                             for nid in self.domain_neighbors(cid, omit_walls=True)]
         # sort by column [2 3 1] -> [1 2 3]
@@ -332,38 +361,37 @@ class MicrodomainTesselation(H5ContextManager):
         return np.unique(sorted_by_column, axis=0)
 
     def global_triangles(self):
-        """
-        Converts the per object tesselation to a joined mesh with unique
-        points and triangles of unique vertices.
+        """Converts microdomain tesselation to a joined mesh.
 
-        Args:
-            unique_wall_face_id: bool
-            If True every face that touches a boundary wall will be given a
-            unique negative id. This is useful in order to allow for separation
-            of the wall faces in the global reference system.
+        Converts the per object tesselation to a joined mesh with unique points and triangles
+        of unique vertices.
 
         Returns:
             points: array[float, (N, 3)]
             triangles: array[int, (M, 3)]
             neighbor_ids: array[int, (M, 3)]
         """
-        ps_tris_offsets = self._offsets[:, _impl_microdomains.OFFSET_TYPE['domain_data']]
-        return _impl_microdomains.local_to_global_mapping(self._points, self._triangles, ps_tris_offsets)
+        from archngv.utils.ngons import local_to_global_mapping
+        ps_tris_offsets = self._offsets[:, DOMAIN_OFFSET_TYPE['domain_data']]
+        return local_to_global_mapping(self._points, self._triangles, ps_tris_offsets)
 
     def global_polygons(self):
-        """ Returns unique points and polygons in the global index space """
-        g_poly_ids = _impl_microdomains.local_to_global_polygon_ids(self._polygon_ids)
+        """Returns unique points and polygons in the global index space."""
+        from archngv.utils.ngons import triangles_to_polygons
+        from archngv.utils.ngons import local_to_global_mapping
+        from archngv.utils.ngons import local_to_global_polygon_ids
+        g_poly_ids = local_to_global_polygon_ids(self._polygon_ids)
 
-        ps_tris_offsets = self._offsets[:, _impl_microdomains.OFFSET_TYPE['domain_data']]
+        ps_tris_offsets = self._offsets[:, DOMAIN_OFFSET_TYPE['domain_data']]
 
         # local to global triangles
-        ps, tris, polys = _impl_microdomains.local_to_global_mapping(
+        ps, tris, polys = local_to_global_mapping(
             self._points, self._triangles, ps_tris_offsets, triangle_labels=g_poly_ids)
 
-        return ps, _impl_microdomains.triangles_to_polygons(tris, polys)
+        return ps, triangles_to_polygons(tris, polys)
 
     def export_mesh(self, filename):
-        """ Write the tesselation to file as a mesh """
+        """Write the tesselation to file as a mesh."""
         import stl.mesh
         points, triangles = self.global_triangles()
         cell_mesh = stl.mesh.Mesh(np.zeros(len(triangles), dtype=stl.mesh.Mesh.dtype))
@@ -371,91 +399,13 @@ class MicrodomainTesselation(H5ContextManager):
         cell_mesh.save(filename)
 
 
-class GliovascularData(H5ContextManager):
-    """ Provides access to the endfeet contact points
-
-    Attributes:
-        endfoot_graph_coordinates: array[float, (N , 3)]
-            Astrocytic endfeet connection point on the skeleton
-            of the vasculature.
-        endfoot_surface_coordinates: array[float, (N, 3)]
-            Astrocytic endfeet connection points on the surface
-            of the vasculature.
-    """
-    def __init__(self, filepath):
-        super().__init__(filepath)
-
-        self.endfoot_graph_coordinates = \
-            self._fd['/endfoot_graph_coordinates']
-
-        self.endfoot_surface_coordinates = \
-            self._fd['/endfoot_surface_coordinates']
-
-    @property
-    def n_endfeet(self):
-        """ Total number of endfeet """
-        return len(self.endfoot_graph_coordinates)
-
-    @property
-    def vasculature_surface_targets(self):
-        """ Endfeet surface targets on vascualture """
-        return self.endfoot_surface_coordinates[:]
-
-    @property
-    def vasculature_skeleton_targets(self):
-        """ Endfeet skeleton targets on vaculature """
-        return self.endfoot_graph_coordinates[:]
-
-
-class SynapticData(EdgesContextManager):
-    """ Synaptic data access """
-    def _select(self, synapse_ids):
-        if synapse_ids is None:
-            return libsonata.Selection([(0, self._impl.size)])
-        else:
-            return libsonata.Selection(synapse_ids)
-
-    def synapse_coordinates(self, synapse_ids=None):
-        """ XYZ coordinates for given synapse_ids (all if synapse_ids not specified) """
-        selection = self._select(synapse_ids)
-
-        try:
-            return np.stack([
-                self._impl.get_attribute('efferent_center_x', selection),
-                self._impl.get_attribute('efferent_center_y', selection),
-                self._impl.get_attribute('efferent_center_z', selection),
-            ]).transpose()
-        except libsonata.SonataError:
-            return np.stack([
-                self._impl.get_attribute('afferent_center_x', selection),
-                self._impl.get_attribute('afferent_center_y', selection),
-                self._impl.get_attribute('afferent_center_z', selection),
-            ]).transpose()
-
-    def afferent_gids(self, synapse_ids=None):
-        """ 0-based afferent neuron GIDs for given synapse_ids (all if synapse_ids not specified) """
-        selection = self._select(synapse_ids)
-        return self._impl.target_nodes(selection)
-
-    @cached_property
-    def n_neurons(self):
-        """ Number of afferent neurons """
-        return 1 + np.max(self.afferent_gids()).astype(int)  # TODO: get from HDF5 attributes
-
-    @property
-    def n_synapses(self):
-        """ Number of synapses """
-        return self._impl.size
-
-
-class EndfeetAreas(H5ContextManager):
-    """ Access to the endfeet meshes
-    """
+class EndfootSurfaceMeshes(H5ContextManager):
+    """Access to the endfeet meshes."""
     EndfootMesh = namedtuple('EndfootMesh', ['index', 'points', 'triangles', 'area', 'thickness'])
 
     @staticmethod
     def _index_to_key(endfoot_index):
-        """ Convert the endfoot index to the group key in h5 """
+        """Convert the endfoot index to the group key in h5."""
         return 'endfoot_' + str(endfoot_index)
 
     @staticmethod
@@ -464,20 +414,20 @@ class EndfeetAreas(H5ContextManager):
 
     @property
     def _groups(self):
-        """ Groups storing endfoot information """
+        """Groups storing endfoot information."""
         return self._fd['objects']
 
     @property
     def _attributes(self):
-        """ Group storing properties datasets"""
+        """Group storing properties datasets."""
         return self._fd['attributes']
 
     def __len__(self):
-        """ Number of endfeet """
+        """Number of endfeet."""
         return len(self._groups)
 
     def _entry(self, endfoot_key):
-        """ Return the group entry given the key """
+        """Return the group entry given the key."""
         return self._groups[endfoot_key]
 
     def _get_mesh_surface_area(self, index):
@@ -487,7 +437,7 @@ class EndfeetAreas(H5ContextManager):
         return self._attributes['surface_thickness'][index]
 
     def _object(self, endfoot_index):
-        """ Returns endfoot object from its index """
+        """Returns endfoot object from its index."""
         entry = self._entry(self._index_to_key(endfoot_index))
         points = entry['points'][:]
         triangles = entry['triangles'][:]
@@ -496,12 +446,12 @@ class EndfeetAreas(H5ContextManager):
         return self.EndfootMesh(endfoot_index, points, triangles, surface_area, surface_thickness)
 
     def __iter__(self):
-        """ Endfoot iterator """
+        """Endfoot iterator."""
         for index in range(self.__len__()):
             yield self._object(index)
 
     def __getitem__(self, index):
-        """ Endfoot mesh object getter """
+        """Endfoot mesh object getter."""
         if isinstance(index, (np.integer, int)):
             return self._object(index)
         if isinstance(index, slice):
@@ -511,15 +461,15 @@ class EndfeetAreas(H5ContextManager):
         raise TypeError("Invalid argument type: ({}, {})".format(type(index), index))
 
     def mesh_points(self, endfoot_index):
-        """ Return the points of the endfoot mesh """
+        """Return the points of the endfoot mesh."""
         return self._entry(self._index_to_key(endfoot_index))['points'][:]
 
     def mesh_triangles(self, endfoot_index):
-        """ Return the triangles of the endfoot mesh """
+        """Return the triangles of the endfoot mesh."""
         return self._entry(self._index_to_key(endfoot_index))['triangles'][:]
 
     def get(self, attribute_name, ids=None):
-        """ Get the respective attribute array """
+        """Get the respective attribute array."""
         dset = self._attributes[attribute_name][:]
         if ids is not None:
             return dset[ids]

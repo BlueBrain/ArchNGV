@@ -326,7 +326,7 @@ class EndfeetPlots(DataPlots):
 
     def areas_histogram(self, ax, literature_data):
 
-        areas = self.prop.endfeet_areas
+        areas = self.prop.endfeet_surface_meshes
 
         ax.hist(areas[~np.isclose(areas, 0.0)], bins=50, color=RESULT_COLOR, histtype='stepfilled', edgecolor='k')
         ax.set_xlabel('Areas ($\mu$m$^2$)')
@@ -341,7 +341,7 @@ class EndfeetPlots(DataPlots):
             xs = np.sort(areas)
             return xs[::100], ys[::100]
 
-        areas = self.prop.endfeet_areas
+        areas = self.prop.endfeet_surface_meshes
         unreduced_areas = self.prop.endfeet_areas_unreduced
 
         d = truncated_normal(literature_data['mean'], literature_data['sdev'], 0., 1000.)
@@ -391,7 +391,7 @@ class EndfeetPlots(DataPlots):
 
     def area_coverage_pie(self, ax, literature_data):
 
-        endfeet_areas = self.prop.endfeet_areas
+        endfeet_areas = self.prop.endfeet_surface_meshes
 
         center = plt.Circle((0, 0), 0.7, color='white')
 
@@ -411,7 +411,7 @@ class EndfeetPlots(DataPlots):
 
     def volume_area_scatter(self, ax, literature_data):
 
-        endfeet_areas = self.prop.endfeet_areas
+        endfeet_areas = self.prop.endfeet_surface_meshes
         endfeet_thicknesses = self.prop.endfeet_thicknesses
         endfeet_volumes = endfeet_areas * endfeet_thicknesses
 

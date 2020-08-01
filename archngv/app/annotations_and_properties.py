@@ -21,8 +21,8 @@ class Worker:
         seed = hash((self._seed, astrocyte_index)) % (2 ** 32)
         np.random.seed(seed)
 
-        cell_data = CellData(self._paths.cell_data)
-        cell_name = str(cell_data.astrocyte_names[astrocyte_index], 'utf-8')
+        # don t want to load everything using CellCollection
+        cell_name = CellData(self._paths.cell_data).get_properties('morphology', astrocyte_index)[0][0]
 
         return (cell_name,
                 create_astrocyte_annotations(astrocyte_index, self._paths),
@@ -44,12 +44,11 @@ def _apply_parallel_func(func, data_generator):
 
 
 Paths = namedtuple('Paths', ['cell_data',
-                            'synaptic_data',
-                            'gliovascular_data',
-                            'gliovascular_connectivity',
-                            'neuroglial_connectivity',
-                            'endfeet_areas',
-                            'morphology_directory'])
+                             'synaptic_data',
+                             'gliovascular_connectivity',
+                             'neuroglial_connectivity',
+                             'endfeet_areas',
+                             'morphology_directory'])
 
 
 @click.command(help=__doc__)
@@ -57,7 +56,6 @@ Paths = namedtuple('Paths', ['cell_data',
 @click.option("--cell-data", help="Path to HDF5 with somata positions and radii", required=True)
 @click.option("--microdomains", help="Path to microdomains structure (HDF5)", required=True)
 @click.option("--gliovascular-connectivity", help="Path to gliovascular connectivity (HDF5)", required=True)
-@click.option("--gliovascular-data", help="Path to gliovascular data (HDF5)", required=True)
 @click.option("--neuroglial-connectivity", help="Path to neuroglial connectivity (HDF5)", required=True)
 @click.option("--synaptic-data", help="Path to HDF5 with synapse positions", required=True)
 @click.option("--endfeet-areas", help="Path to HDF5 endfeet areas", required=True)
@@ -77,7 +75,6 @@ def cmd(config, **kwargs):
     paths = Paths(
         cell_data=kwargs['cell_data'],
         synaptic_data=kwargs['synaptic_data'],
-        gliovascular_data=kwargs['gliovascular_data'],
         gliovascular_connectivity=kwargs['gliovascular_connectivity'],
         neuroglial_connectivity=kwargs['neuroglial_connectivity'],
         endfeet_areas=kwargs['endfeet_areas'],
@@ -86,11 +83,10 @@ def cmd(config, **kwargs):
 
     map_func = _apply_parallel_func if kwargs['parallel'] else _apply_func
 
-    with CellData(kwargs['cell_data']) as cell_data:
-        astrocyte_ids = cell_data.astrocyte_gids[:]
+    n_astrocytes = len(CellData(kwargs['cell_data']))
 
     worker = Worker(config, kwargs['seed'], paths)
-    annotations_and_properties_iterable = map_func(worker, astrocyte_ids)
+    annotations_and_properties_iterable = map_func(worker, range(n_astrocytes))
     export_annotations_and_properties(kwargs['annotations_output'],
                                       kwargs['properties_output'],
                                       annotations_and_properties_iterable)

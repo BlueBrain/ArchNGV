@@ -7,12 +7,12 @@ import click
 
 @click.command(help=__doc__)
 @click.option("--config", help="Path to astrocyte microdomains YAML config", required=True)
-@click.option("--cell-data", help="Path to HDF5 with somata positions and radii", required=True)
+@click.option("--astrocytes", help="Path to the sonata file with astrocyte's positions and radii", required=True)
 @click.option("--atlas", help="Atlas URL / path", required=True)
 @click.option("--atlas-cache", help="Path to atlas cache folder", default=None, show_default=True)
 @click.option("--seed", help="Pseudo-random generator seed", type=int, default=0, show_default=True)
 @click.option("-o", "--output-dir", help="Path to output MVD3", required=True)
-def cmd(config, cell_data, atlas, atlas_cache, seed, output_dir):
+def cmd(config, astrocytes, atlas, atlas_cache, seed, output_dir):
     # pylint: disable=missing-docstring,too-many-locals
     import os
 
@@ -20,8 +20,8 @@ def cmd(config, cell_data, atlas, atlas_cache, seed, output_dir):
 
     from scipy import stats
     from voxcell.nexus.voxelbrain import Atlas
+    from voxcell import CellCollection
 
-    from archngv.core.datasets import CellData
     from archngv.building.exporters.export_microdomains import export_structure
     from archngv.building.microdomain.generation import generate_microdomain_tesselation
     from archngv.building.microdomain.generation import convert_to_overlappping_tesselation
@@ -43,15 +43,15 @@ def cmd(config, cell_data, atlas, atlas_cache, seed, output_dir):
     bbox = atlas.load_data('brain_regions').bbox
     bounding_box = BoundingBox(bbox[0], bbox[1])
 
-    with CellData(cell_data) as data:
-        somata_positions = data.astrocyte_positions[:]
-        somata_radii = data.astrocyte_radii[:]
+    astrocytes = CellCollection.load_sonata(astrocytes)
+    astrocyte_positions = astrocytes.positions
+    astrocyte_radii = astrocytes.properties['radius'].to_numpy()
 
     ensure_dir(output_dir)
 
     LOGGER.info('Generating microdomains...')
     microdomains = generate_microdomain_tesselation(
-        somata_positions, somata_radii, bounding_box
+        astrocyte_positions, astrocyte_radii, bounding_box
     )
 
     LOGGER.info('Export microdomains...')

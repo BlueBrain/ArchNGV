@@ -10,15 +10,11 @@ import pandas as pd
 from archngv.exceptions import NGVError
 from archngv.core.datasets import (
     CellData,
-    SynapticData,
-    EndfeetAreas,
-    GliovascularData,
+    NeuroglialConnectivity,
+    NeuronalConnectivity,
+    EndfootSurfaceMeshes,
+    GliovascularConnectivity,
     MicrodomainTesselation
-)
-
-from archngv.core.connectivities import (
-        NeuroglialConnectivity,
-        GliovascularConnectivity
 )
 
 from archngv.building.morphology_synthesis.data_structures import (
@@ -29,41 +25,39 @@ from archngv.building.morphology_synthesis.data_structures import (
     TNSData
 )
 
-
 L = logging.getLogger(__name__)
 
 
 def obtain_endfeet_data(astrocyte_index,
-                        gliovascular_data_path,
-                        gliovascular_connectivity_path,
+                        gliovascular_connectivity,
                         endfeet_areas_path):
     """Extract the endfeet information from astrocyte_index if any, otherwise return None
 
     Args:
         astrocyte_index (int): The positional index that represents tha astrocyte entity
-        gliovascular_data_path (str): Path to the gv data file
-        gliovascular_connectivity_path (str): Path to the gv conn file
+        gliovascular_connectivity (str): Path to the gv data file
         endfeet_areas_path (str): Path to the endfeet areas file
 
     Returns:
         EndfeetData: namedtuple containing endfeet related data
     """
-    gliovascular_connectivity = GliovascularConnectivity(gliovascular_connectivity_path)
-    endfeet_indices = gliovascular_connectivity.astrocyte.to_endfoot(astrocyte_index)
+    gliovascular_data = GliovascularConnectivity(gliovascular_connectivity)
+    endfeet_indices = gliovascular_data.astrocyte_endfeet(astrocyte_index)
 
     if len(endfeet_indices) == 0:
         L.warning('No endfeet found for astrocyte index %d', astrocyte_index)
         return None
+    targets = gliovascular_data.get_properties(['endfoot_surface_x',
+                                                'endfoot_surface_y',
+                                                'endfoot_surface_z'], endfeet_indices)
 
-    gliovascular_data = GliovascularData(gliovascular_data_path)
-    targets = gliovascular_data.endfoot_surface_coordinates[sorted(endfeet_indices)]
-
-    endfeet_areas = EndfeetAreas(endfeet_areas_path)[endfeet_indices]
+    endfeet_areas = EndfootSurfaceMeshes(endfeet_areas_path)[endfeet_indices]
 
     L.debug('Found endfeet %s for astrocyte index %d', endfeet_indices, astrocyte_index)
     L.debug('Endfeet Coordinates: %s', targets)
     L.debug('Endfeet Area Meshes: %s', endfeet_areas)
 
+    assert targets.ndim == 2
     return EndfeetData(targets=targets, area_meshes=endfeet_areas)
 
 
@@ -81,51 +75,47 @@ def obtain_cell_properties(astrocyte_index,
     Returns:
         AstrocyteProperties: namedtuple containing cell related data
     """
+    microdomain = MicrodomainTesselation(microdomains_filepath)[astrocyte_index]
 
-    microdomains = MicrodomainTesselation(microdomains_filepath)
+    astrocytes = CellData(cell_data_filepath)
+    astrocyte_name = astrocytes.get_properties('morphology', astrocyte_index)[0]
+    soma_position = astrocytes.positions(astrocyte_index)[0]
+    soma_radius = astrocytes.get_properties('radius', astrocyte_index)[0]
 
-    with CellData(cell_data_filepath) as cell_data:
-
-        cell_name = str(cell_data.astrocyte_names[astrocyte_index], 'utf-8')
-        soma_position = cell_data.astrocyte_positions[astrocyte_index]
-        soma_radius = cell_data.astrocyte_radii[astrocyte_index]
-
-        microdomain = microdomains[astrocyte_index]
-
-    L.debug('Index: %d, Name: %s, Pos: %s, Rad: %f', astrocyte_index, cell_name, soma_position, soma_radius)
+    L.info('Index: %d, Name: %s, Pos: %s, Rad: %s', astrocyte_index, astrocyte_name, soma_position,
+            soma_radius)
 
     return AstrocyteProperties(
-        name=cell_name,
+        name=astrocyte_name,
         soma_position=soma_position,
         soma_radius=soma_radius,
         microdomain=microdomain
     )
 
 
-def obtain_synapse_data(astrocyte_index, synaptic_data_filepath, neuroglial_conn_filepath):
+def obtain_synapse_data(astrocyte_index, synaptic_data_filepath, neuroglial_filepath):
     """Obtain the synapse coordinates that correspond to the microdomain
     of astrocyte_index
 
     Args:
         astrocyte_index (int): The positional index that represents tha astrocyte entity
         synaptic_data_filepath (str): Path to synaptic data file
-        neurogial_conn_filepath (str): Path to neuroglial connectivity filepath
+        neurogial_conn_filepath (str): Path to neuroglial sonata filepath
 
     Returns:
         pandas.DataFrame: A dataframe with three columns of the x, y and z coordinates of
         the synapses, and an index representing the synapse id
     """
-    with SynapticData(synaptic_data_filepath) as synaptic_data, \
-         NeuroglialConnectivity(neuroglial_conn_filepath) as neuroglial_connectivity:
+    synaptic_data = NeuronalConnectivity(synaptic_data_filepath)
+    neuroglial_connectivity = NeuroglialConnectivity(neuroglial_filepath)
+    synapse_ids = sorted(neuroglial_connectivity.astrocyte_synapses(astrocyte_index))
 
-        synapse_ids = sorted(neuroglial_connectivity.astrocyte_synapses(astrocyte_index))
+    if len(synapse_ids) == 0:
+        L.warning('No synapses found for astrocyte index %d', astrocyte_index)
+        return None
+    positions = synaptic_data.synapse_positions(synapse_ids)
 
-        if len(synapse_ids) == 0:
-            L.warning('No synapses found for astrocyte index %d', astrocyte_index)
-            return None
-
-        positions = synaptic_data.synapse_coordinates(synapse_ids)
-
+    assert positions.ndim == 2
     L.debug('Number of synapses for astro index %d: %d', astrocyte_index, len(positions))
     return pd.DataFrame(index=synapse_ids, data=positions, columns=['x', 'y', 'z'])
 
@@ -169,7 +159,6 @@ def _create_target_point_cloud(microdomain, synapse_points, target_n_synapses):
         n_points = len(points)
 
         if n_points + total_synapses > target_n_synapses:
-
             result_points[total_synapses::] = points[:(target_n_synapses - total_synapses)]
             break
 
@@ -195,7 +184,7 @@ def _scale_domain(microdomain, scale_factor):
 
 
 def _obtain_point_cloud(astrocyte_index, microdomains_filepath,
-                       synaptic_data_filepath, neuroglial_conn_filepath, target_density=1.1):
+                        synaptic_data_filepath, neuroglial_conn_filepath, target_density=1.1):
     """Given the astrocyte index it returns a point cloud for the astrocyte's microdomains
     and all neighboring ones. If the the density in each microdomain is smaller than the
     target_density, new uniform points inside the domain are created until the target one is
@@ -279,10 +268,11 @@ def astrocyte_circuit_data(astrocyte_index, paths, parameters):
         EndfeetAttractionData: namedtuple with endfeet atraction data
         SpaceColonizationData: namedtuple with space colonization data
     """
-    properties = obtain_cell_properties(astrocyte_index, paths.cell_data, paths.microdomains)
+    properties = obtain_cell_properties(astrocyte_index, paths.astrocytes, paths.microdomains)
 
     point_cloud = _obtain_point_cloud(
-        astrocyte_index, paths.microdomains, paths.synaptic_data, paths.neuroglial_connectivity)
+        astrocyte_index, paths.microdomains, paths.neuronal_connectivity,
+        paths.neuroglial_connectivity)
 
     if point_cloud.size == 0:
         space_colonization_data = None
@@ -294,8 +284,8 @@ def astrocyte_circuit_data(astrocyte_index, paths, parameters):
             kill_distance_factor=parameters['point_cloud'][1]
         )
 
-    endfeet_data = obtain_endfeet_data(
-        astrocyte_index, paths.gliovascular_data, paths.gliovascular_connectivity, paths.endfeet_areas)
+    endfeet_data = obtain_endfeet_data(astrocyte_index, paths.gliovascular_connectivity,
+                                       paths.endfeet_areas)
 
     if endfeet_data is None:
         attraction_data = None

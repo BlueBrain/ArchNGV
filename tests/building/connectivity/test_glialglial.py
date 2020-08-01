@@ -5,9 +5,8 @@ import pytest
 import numpy as np
 import pandas as pd
 from numpy import testing as npt
-from pandas import testing as pdt
 
-from archngv.building.connectivity import glialglial as _gg
+import archngv.building.connectivity.glialglial as _gg
 
 
 PRE_IDS = [0, 0, 0, 0, 1, 1, 1, 2, 1, 3, 5, 3, 4, 5]
@@ -98,9 +97,5 @@ def test_glialglial_dataframe(edges):
         'astrocyte_source_id': np.array([1, 2, 3, 5, 0, 3, 4, 5, 0, 3, 4, 0, 1, 2, 1, 2, 5, 0, 1, 4]),
         'astrocyte_target_id': np.array([0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5]),
         'connection_id': np.array([0, 1, 2, 3, 0, 4, 5, 6, 1, 7, 8, 2, 4, 7, 5, 8, 9, 3, 6, 9])})
-
-    print(repr(result_df['astrocyte_source_id'].values))
-    print(repr(result_df['astrocyte_target_id'].values))
-    print(repr(result_df['connection_id'].values))
 
     npt.assert_array_equal(result_df.values, expected_df.values)

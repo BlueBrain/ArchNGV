@@ -1,30 +1,78 @@
 {
-  "experiment_name": "build",
-  "parent_directory": "/gpfs/bbp.cscs.ch/project/proj62/NGV/ARCHNGV/PACKAGES/GERRIT_REPOS/ArchNGV/functional_tests",
-  "input_paths": {
-    "voxelized_intensity": "../data/atlas/[density]astrocytes.nrrd",
-    "voxelized_brain_regions": "../data/atlas/brain_regions.nrrd",
-    "vasculature": "../data/atlas/vasculature.h5",
-    "microcircuit_path": "",
-    "synaptic_data": "../data/circuit/sonata/networks/edges/functional/All/edges.h5",
-    "vasculature_mesh": "../data/atlas/vasculature.mesh.obj",
-    "tns_astrocyte_distributions": "/gpfs/bbp.cscs.ch/project/proj62/NGV/ARCHNGV/PACKAGES/GERRIT_REPOS/ArchNGV/functional_tests/bioname/tns_distributions.json",
-    "tns_astrocyte_parameters": "/gpfs/bbp.cscs.ch/project/proj62/NGV/ARCHNGV/PACKAGES/GERRIT_REPOS/ArchNGV/functional_tests/bioname/tns_parameters.json"
+  "manifest": {
+    "$CIRCUIT_DIR": "../",
+    "$BUILD_DIR": "$CIRCUIT_DIR/build",
+    "$COMPONENT_DIR": "$BUILD_DIR",
+    "$NETWORK_DIR": "$BUILD_DIR"
   },
-  "output_paths": {
-    "morphology": "morphologies",
-    "cell_data": "cell_data.h5",
-    "synaptic_connectivity": "synaptic_connectivity.h5",
-    "gliovascular_connectivity": "gliovascular_connectivity.h5",
-    "gliovascular_data": "gliovascular_data.h5",
-    "neuroglial_connectivity": "sonata/edges/neuroglial.h5",
-    "neuroglial_data": "neuroglial_data.h5",
-    "glialglial_connectivity": "sonata/edges/glialglial.h5",
-    "endfeet_areas": "endfeet_areas.h5",
-    "microdomain_mesh": "microdomains/tesselation.stl",
-    "microdomains": "microdomains/microdomains.h5",
-    "overlapping_microdomain_mesh": "microdomains/overlapping_tesselation.stl",
-    "overlapping_microdomains": "microdomains/overlapping_microdomains.h5"
+  "circuit_dir": "$CIRCUIT_DIR",
+  "components": {
+    "morphologies_dir": "/home/tdelemon/1.Workdir/ArchNGV/functional_tests/data/circuit/sonata/morphologies"
+  },
+  "networks": {
+    "nodes": [
+      {
+        "nodes_file": "/home/tdelemon/1.Workdir/ArchNGV/functional_tests/data/circuit/sonata/networks/nodes/All/nodes.h5",
+        "node_types_file": null
+      },
+      {
+        "nodes_file": "$NETWORK_DIR/sonata/nodes/glia.h5",
+        "node_types_file": null
+      },
+      {
+        "nodes_file": "$NETWORK_DIR/sonata/nodes/vasculature.h5",
+        "node_types_file": null
+      }
+    ],
+    "edges": [
+      {
+        "edges_file": "/home/tdelemon/1.Workdir/ArchNGV/functional_tests/data/circuit/sonata/networks/edges/functional/All/edges.h5",
+        "edge_types_file": null
+      },
+      {
+        "edges_file": "$NETWORK_DIR/sonata/edges/neuroglial.h5",
+        "edge_types_file": null
+      },
+      {
+        "edges_file": "$NETWORK_DIR/sonata/edges/gliovascular.h5",
+        "edge_types_file": null
+      }
+    ]
+  },
+  "cells": {
+    "protoplasmic_astrocytes": {
+      "population": "astrocytes",
+      "microdomains_file": "$BUILD_DIR/microdomains/microdomains.h5",
+      "microdomains_overlapping_file": "$BUILD_DIR/microdomains/overlapping_microdomains.h5",
+      "morphologies_dir": "$BUILD_DIR/morphologies"
+    },
+    "neurons": {
+      "population": "All"
+    },
+    "vasculature": {
+      "population": "vasculature",
+      "vasculature_file": "/home/tdelemon/1.Workdir/ArchNGV/functional_tests/data/atlas/vasculature.h5",
+      "vasculature_mesh_file": "/home/tdelemon/1.Workdir/ArchNGV/functional_tests/data/atlas/vasculature.mesh.obj"
+    }
+  },
+  "connectivities": {
+    "neuronal": {
+      "population": "All"
+    },
+    "gliovascular": {
+      "population": "gliovascular",
+      "endfeet_areas": "$BUILD_DIR/endfeet_areas.h5"
+    },
+    "neuroglial": {
+      "population": "neuroglial"
+    },
+    "glialglial": {
+      "population": "glialglial"
+    }
+  },
+  "atlases": {
+    "intensity": "/home/tdelemon/1.Workdir/ArchNGV/functional_tests/data/atlas/[density]astrocytes.nrrd",
+    "brain_regions": "/home/tdelemon/1.Workdir/ArchNGV/functional_tests/data/atlas/brain_regions.nrrd"
   },
   "parameters": {
     "cell_placement": {

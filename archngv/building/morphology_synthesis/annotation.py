@@ -109,8 +109,8 @@ def create_astrocyte_annotations(astrocyte_index, paths):
     """ Generates annotations for endfeet and synapses, endfoot compartment information
     and astrocyte section perimeters.
     """
-    cell_data = CellData(paths.cell_data)
-    cell_name = str(cell_data.astrocyte_names[astrocyte_index], 'utf-8')
+    # need the value itself
+    cell_name = CellData(paths.cell_data).get_properties('morphology', astrocyte_index)[0][0]
 
     # For the annotations the morphology should be in readonly mode. If it is mutated for any reason
     # there will be reordering of the sections ids and thus the annotations would be invalid
@@ -122,7 +122,6 @@ def create_astrocyte_annotations(astrocyte_index, paths):
 
     # get endfeet targets on vasculature surface
     endfeet_data = obtain_endfeet_data(astrocyte_index,
-                                       paths.gliovascular_data,
                                        paths.gliovascular_connectivity,
                                        paths.endfeet_areas)
 

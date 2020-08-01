@@ -1,7 +1,7 @@
 import numpy as np
 
 import pytest
-from archngv.core import _impl_microdomains as _impl
+from archngv.utils import ngons as _impl
 
 
 @pytest.fixture

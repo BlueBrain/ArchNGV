@@ -3,7 +3,7 @@ import pytest
 import numpy as np
 from numpy import testing as npt
 
-from archngv.core.datasets import EndfeetAreas
+from archngv.core.datasets import EndfootSurfaceMeshes
 from archngv.building.exporters.export_endfeet_areas import export_endfeet_areas
 
 # In total there are 6 endfeet but we have data for 4
@@ -59,7 +59,7 @@ def endfeet_data(indices_per_entry, points_per_entry, triangles_per_entry, areas
 
 
 @pytest.fixture(scope='module')
-def endfeet_areas(tmpdir_factory, endfeet_data):
+def endfeet_surface_meshes(tmpdir_factory, endfeet_data):
 
     path = os.path.join(tmpdir_factory.getbasetemp(), 'enfeet_areas.h5')
 
@@ -67,16 +67,16 @@ def endfeet_areas(tmpdir_factory, endfeet_data):
     export_endfeet_areas(path, endfeet_data, N_ENDFEET)
 
     # and load it via the api
-    return EndfeetAreas(path)
+    return EndfootSurfaceMeshes(path)
 
 
-def test__len__(endfeet_areas):
-    assert len(endfeet_areas) == N_ENDFEET
+def test__len__(endfeet_surface_meshes):
+    assert len(endfeet_surface_meshes) == N_ENDFEET
 
 
-def test__getitem__(endfeet_areas, indices_per_entry, points_per_entry, triangles_per_entry, areas_per_entry, thicknesses_per_entry):
+def test__getitem__(endfeet_surface_meshes, indices_per_entry, points_per_entry, triangles_per_entry, areas_per_entry, thicknesses_per_entry):
 
-    assert not isinstance(endfeet_areas[0], list)
+    assert not isinstance(endfeet_surface_meshes[0], list)
 
     all_indices = set(indices_per_entry)
     sorted_idx = np.argsort(indices_per_entry)
@@ -84,7 +84,7 @@ def test__getitem__(endfeet_areas, indices_per_entry, points_per_entry, triangle
     n = 0
     for endfoot_id in range(N_ENDFEET):
 
-        endfoot = endfeet_areas[endfoot_id]
+        endfoot = endfeet_surface_meshes[endfoot_id]
         assert endfoot.index == endfoot_id
 
         if endfoot_id in all_indices:
@@ -105,18 +105,18 @@ def test__getitem__(endfeet_areas, indices_per_entry, points_per_entry, triangle
             assert np.isclose(endfoot.thickness, 0.0)
             assert np.isclose(endfoot.area, 0.0)
 
-def test_endfeet_mesh_points_triangles(endfeet_areas, indices_per_entry, points_per_entry, triangles_per_entry):
+def test_endfeet_mesh_points_triangles(endfeet_surface_meshes, indices_per_entry, points_per_entry, triangles_per_entry):
 
     for i, endfoot_id in enumerate(indices_per_entry):
 
-        npt.assert_allclose(endfeet_areas.mesh_points(endfoot_id), points_per_entry[i])
-        npt.assert_allclose(endfeet_areas.mesh_triangles(endfoot_id), triangles_per_entry[i])
+        npt.assert_allclose(endfeet_surface_meshes.mesh_points(endfoot_id), points_per_entry[i])
+        npt.assert_allclose(endfeet_surface_meshes.mesh_triangles(endfoot_id), triangles_per_entry[i])
 
 
-def test_bulk_attributes(endfeet_areas, indices_per_entry, initial_areas_per_entry, areas_per_entry, thicknesses_per_entry):
+def test_bulk_attributes(endfeet_surface_meshes, indices_per_entry, initial_areas_per_entry, areas_per_entry, thicknesses_per_entry):
 
     ids = indices_per_entry
 
-    npt.assert_allclose(endfeet_areas.get('surface_area', ids), areas_per_entry)
-    npt.assert_allclose(endfeet_areas.get('unreduced_surface_area', ids), initial_areas_per_entry)
-    npt.assert_allclose(endfeet_areas.get('surface_thickness', ids), thicknesses_per_entry)
+    npt.assert_allclose(endfeet_surface_meshes.get('surface_area', ids), areas_per_entry)
+    npt.assert_allclose(endfeet_surface_meshes.get('unreduced_surface_area', ids), initial_areas_per_entry)
+    npt.assert_allclose(endfeet_surface_meshes.get('surface_thickness', ids), thicknesses_per_entry)

@@ -4,6 +4,8 @@ import numpy as np
 import pandas as pd
 from voxcell import CellCollection
 
+from archngv.core.constants import Population
+
 
 def load_vasculature_node_population(filepath):
     """
@@ -23,12 +25,12 @@ def load_vasculature_node_population(filepath):
     end_node_ids = get_prop('end_node_id')
 
     edge_properties = pd.DataFrame({
-            'start_node': start_node_ids,
-            'end_node': end_node_ids,
-            'type': get_prop('type')},
-            index=pd.MultiIndex.from_arrays((
-                get_prop('section_id'), get_prop('segment_id')),
-                names=['section_id', 'segment_id']))
+        'start_node': start_node_ids,
+        'end_node': end_node_ids,
+        'type': get_prop('type')},
+        index=pd.MultiIndex.from_arrays((
+            get_prop('section_id'), get_prop('segment_id')),
+            names=['section_id', 'segment_id']))
     uids = np.unique(np.hstack([start_node_ids, end_node_ids]))
     assert np.all(uids == np.arange(uids.size, dtype=uids.dtype))
     xyzd = np.empty((uids.size, 4), dtype=np.float32)
@@ -54,7 +56,6 @@ def save_vasculature_node_population(vasculature, filepath):
     # for multiple columns assignment
     columns = ['start_x', 'start_y', 'start_z', 'end_x', 'end_y', 'end_z']
     properties = pd.DataFrame(index=np.arange(len(indices)), columns=columns)
-    properties['node_type_id'] = -1
     properties['type'] = vasculature.edge_types
     properties['section_id'] = indices.get_level_values('section_id').to_numpy().astype(np.int64)
     properties['segment_id'] = indices.get_level_values('segment_id').to_numpy().astype(np.int64)
@@ -66,6 +67,19 @@ def save_vasculature_node_population(vasculature, filepath):
     properties['start_diameter'] = diameters[start_node_ids].astype(np.float32)
     properties['end_diameter'] = diameters[end_node_ids].astype(np.float32)
 
-    cells = CellCollection(population_name='vasculature')
+    cells = CellCollection(population_name=Population.VASCULATURE)
     cells.add_properties(properties)
+    cells.save_sonata(filepath)
+
+
+def export_astrocyte_population(filepath, cell_names, somata_positions, somata_radii, mtype):
+    """ Export cell data """
+    cell_names = np.asarray(cell_names, dtype=bytes)
+
+    cells = CellCollection(population_name=Population.ASTROCYTES)
+    cells.positions = somata_positions
+    cells.properties['radius'] = somata_radii
+    cells.properties['morphology'] = np.asarray(cell_names, dtype=str)
+    cells.properties['mtype'] = mtype
+    cells.properties["model_type"] = "biophysical"
     cells.save_sonata(filepath)

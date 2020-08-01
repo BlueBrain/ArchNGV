@@ -93,7 +93,7 @@ class AstrocyteData:
 def _zip_endfeet_data(endfeet_ids, vessels_ids, annotation_path, endfeetome):
     """ Returns a generator of the endfeet data per endfoot """
 
-    endfeet_areas = endfeetome.areas
+    endfeet_areas = endfeetome.surface_meshes
     endfeet_targets = endfeetome.targets.endfoot_surface_coordinates
 
     with h5py.File(annotation_path, 'r') as f_d:
@@ -125,7 +125,7 @@ def _synapse_data(annotation_path, synapses):
 
         synapse_ids = f_d['synapse_id'][:]
         return SynapseData(synapse_ids,
-                           synapses.synapse_coordinates(synapse_ids=synapse_ids),
+                           synapses.synapse_positions(synapse_ids=synapse_ids),
                            f_d['synapse_location']['section_id'][:],
                            f_d['synapse_location']['segment_id'][:],
                            f_d['synapse_location']['segment_offset'][:])

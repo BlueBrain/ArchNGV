@@ -8,15 +8,15 @@ import click
 @click.command(help=__doc__)
 @click.option("--config", help="Path to YAML config", required=True)
 @click.option("--vasculature-mesh", help="Path to vasculature mesh", required=True)
-@click.option("--gliovascular-data", help="Path to gliovascular data (HDF5)", required=True)
+@click.option("--gliovascular-connectivity", help="Path to sonata gliovascular file", required=True)
 @click.option("--seed", help="Pseudo-random generator seed", type=int, default=0, show_default=True)
 @click.option("-o", "--output", help="Path to output file (HDF5)", required=True)
-def cmd(config, vasculature_mesh, gliovascular_data, seed, output):
+def cmd(config, vasculature_mesh, gliovascular_connectivity, seed, output):
     # pylint: disable=missing-docstring
     import numpy as np
     import openmesh
 
-    from archngv.core.datasets import GliovascularData
+    from archngv.core.datasets import GliovascularConnectivity
     from archngv.building.endfeet_reconstruction.area_generation import endfeet_area_generation
     from archngv.building.exporters.export_endfeet_areas import export_endfeet_areas
 
@@ -31,8 +31,8 @@ def cmd(config, vasculature_mesh, gliovascular_data, seed, output):
     LOGGER.info('Load vasculature mesh at %s', vasculature_mesh)
     vasculature_mesh = openmesh.read_trimesh(vasculature_mesh)
 
-    with GliovascularData(gliovascular_data) as gdata:
-        endfeet_points = gdata.endfoot_surface_coordinates[:]
+    gliovascular_connectivity = GliovascularConnectivity(gliovascular_connectivity)
+    endfeet_points = gliovascular_connectivity.vasculature_surface_targets
 
     LOGGER.info('Setting up generator...')
     data_generator = endfeet_area_generation(

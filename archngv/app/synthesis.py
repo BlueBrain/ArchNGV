@@ -24,10 +24,9 @@ class Worker:
 def _synthesis_input_paths(kwargs):
     from archngv.building.morphology_synthesis.data_structures import SynthesisInputPaths
     return SynthesisInputPaths(
-            cell_data=kwargs['cell_data'],
+            astrocytes=kwargs['astrocytes'],
             microdomains=kwargs['microdomains'],
-            synaptic_data=kwargs['synaptic_data'],
-            gliovascular_data=kwargs['gliovascular_data'],
+            neuronal_connectivity=kwargs['neuronal_connectivity'],
             gliovascular_connectivity=kwargs['gliovascular_connectivity'],
             neuroglial_connectivity=kwargs['neuroglial_connectivity'],
             endfeet_areas=kwargs['endfeet_areas'],
@@ -61,16 +60,15 @@ def _apply_parallel_func(func, data_generator):
 @click.option("--tns-distributions", help="Path to TNS distributions (JSON)", required=True)
 @click.option("--tns-parameters", help="Path to TNS parameters (JSON)", required=True)
 @click.option("--tns-context", help="Path to TNS context (JSON)", required=True)
-@click.option("--cell-data", help="Path to HDF5 with somata positions and radii", required=True)
+@click.option("--astrocytes", help="Path to HDF5 with somata positions and radii", required=True)
 @click.option("--microdomains", help="Path to microdomains structure (HDF5)", required=True)
-@click.option("--gliovascular-connectivity", help="Path to gliovascular connectivity (HDF5)", required=True)
-@click.option("--gliovascular-data", help="Path to gliovascular data (HDF5)", required=True)
+@click.option("--gliovascular-connectivity", help="Path to gliovascular connectivity sonata", required=True)
 @click.option("--neuroglial-connectivity", help="Path to neuroglial connectivity (HDF5)", required=True)
-@click.option("--synaptic-data", help="Path to HDF5 with synapse positions", required=True)
 @click.option("--endfeet-areas", help="Path to HDF5 endfeet areas", required=True)
-@click.option("--seed", help="Pseudo-random generator seed", type=int, default=0, show_default=True)
-@click.option("--parallel", help="Parallelize with 'multiprocessing'", is_flag=True, default=False)
+@click.option("--neuronal-connectivity", help="Path to HDF5 with synapse positions", required=True)
 @click.option("--out-morph-dir", help="Path to output morphology folder", required=True)
+@click.option("--parallel", help="Parallelize with 'multiprocessing'", is_flag=True, default=False)
+@click.option("--seed", help="Pseudo-random generator seed", type=int, default=0, show_default=True)
 def cmd(config, **kwargs):
     # pylint: disable=missing-docstring
     from archngv.core.datasets import CellData
@@ -81,8 +79,7 @@ def cmd(config, **kwargs):
 
     map_func = _apply_parallel_func if kwargs['parallel'] else _apply_func
 
-    with CellData(kwargs['cell_data']) as cell_data:
-        astrocyte_ids = cell_data.astrocyte_gids[:]
+    n_astrocytes = len(CellData(kwargs['astrocytes']))
 
     worker = Worker(config, kwargs)
-    map_func(worker, astrocyte_ids)
+    map_func(worker, range(n_astrocytes))

@@ -79,7 +79,7 @@ def generate_gliovascular(cell_ids,
     skeleton_seeds = _create_point_sampling_on_vasculature_skeleton(vasculature, params['graph_targeting'])
 
     L.info('STEP 2: Connecting astrocytes with vasculature skeleton graph...')
-    astrocyte_skeleton_connectivity = domains_to_vasculature(
+    astrocyte_skeleton_pairs = domains_to_vasculature(
         cell_ids,
         strategy(params['connection']['reachout_strategy']),
         skeleton_seeds,
@@ -92,13 +92,12 @@ def generate_gliovascular(cell_ids,
         endfeet_positions,
         endfeet_astrocyte_edges,
         endfeet_vasculature_edge_indices
-    ) = surface_intersect(astrocytic_positions, skeleton_seeds, astrocyte_skeleton_connectivity, vasculature)
+    ) = surface_intersect(astrocytic_positions, skeleton_seeds, astrocyte_skeleton_pairs, vasculature)
 
     # translate the vasculature edge indices to section and segment ids
     section_ids, segment_ids = _vasculature_annotation_from_edges(vasculature, endfeet_vasculature_edge_indices)
     endfeet_to_vasculature = np.column_stack((section_ids, segment_ids))
 
     return (endfeet_positions,
-            skeleton_seeds.loc[:, ['x', 'y', 'z']].to_numpy(),
             endfeet_astrocyte_edges,
             endfeet_to_vasculature)

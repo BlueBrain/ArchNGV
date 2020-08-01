@@ -20,7 +20,7 @@ def cmd(config, atlas, atlas_cache, vasculature, seed, output):
 
     from archngv.core.datasets import Vasculature
     from archngv.building.cell_placement.positions import create_positions
-    from archngv.building.exporters import export_cell_placement_data
+    from archngv.building.exporters.node_populations import export_astrocyte_population
     from archngv.building.checks import assert_bbox_alignment
 
     from archngv.spatial import BoundingBox
@@ -60,9 +60,8 @@ def cmd(config, atlas, atlas_cache, vasculature, seed, output):
     )
 
     cell_names = ['GLIA_{:013d}'.format(index) for index in range(len(somata_positions))]
-    cell_ids = np.arange(len(cell_names))
 
     LOGGER.info('Export to CellData...')
-    export_cell_placement_data(output, cell_ids, cell_names, somata_positions, somata_radii)
+    export_astrocyte_population(output, cell_names, somata_positions, somata_radii, mtype="ASTROCYTE")
 
     LOGGER.info('Done!')

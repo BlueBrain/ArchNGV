@@ -1,10 +1,14 @@
 #!/usr/bin/env python
 
-import imp
+import importlib.util
 from setuptools import setup
 from setuptools import find_packages
 
-VERSION = imp.load_source("archngv.version", "archngv/version.py").VERSION
+
+spec = importlib.util.spec_from_file_location("archngv.version", "archngv/version.py")
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+VERSION = module.VERSION
 
 
 EXTRA_CORE = [
@@ -13,16 +17,13 @@ EXTRA_CORE = [
     'MorphIO>=2.3.4',
     'numpy-stl>=2.7',
     'trimesh>=2.21.15',
-    'pandas>=0.16.2',
     'spatial-index==0.0.1',
     'archngv-building>=0.1.3',
-    'bluepysnap>=0.4.1'
 ]
 
 EXTRA_ALL = [
-    'bluepy[sonata]>=0.14.7',
     'Click>=7.0',
-    'openmesh==1.1.2',
+    'openmesh>=1.1.2',
     'pyyaml>=3.0',
     'tns>=2.2.1',
     'diameter-synthesis>=0.1.6'
@@ -41,12 +42,16 @@ setup(
         'numpy>=1.13',
     ],
     install_requires=[
-        'libsonata>=0.1.1',
+        'pandas==1.0.5',
+        'bluepy-configfile>=0.1.11',
+        'six>=1.15.0',
         'h5py>=2.3.1',
+        'scipy>=1.0.0',
+        'libsonata>=0.1.1',
+        'bluepysnap>=0.6.1',
         'cached-property>=1.5',
         'voxcell[sonata]>=2.6.2',
         'vasculatureapi>=0.0.6',
-        'scipy>=1.0.0'
     ],
     extras_require={
         'all': EXTRA_CORE + EXTRA_ALL,

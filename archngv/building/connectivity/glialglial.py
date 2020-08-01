@@ -81,6 +81,8 @@ def _glialglial_dataframe(symmetric_edges: np.ndarray, connection_ids: np.ndarra
 
 def generate_glialglial(touches_directory: str):
     """ Create glial glial connectivity dataframe """
+    # TODO : the touches are actually something we should be able to access.
+    # this file will probably change from unique connections to touches.
     edges = _edges_from_touchreader(touches_directory)
     edges, edges_ids = _symmetric_connections_and_ids(edges)
     return _glialglial_dataframe(edges, edges_ids)

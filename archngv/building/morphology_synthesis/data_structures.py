@@ -17,10 +17,9 @@ EndfeetAttractionData = namedtuple(
 TNSData = namedtuple('TNSData', ['parameters', 'distributions', 'context'])
 
 SynthesisInputPaths = namedtuple('SynthesisInputPaths', [
-    'cell_data',
+    'astrocytes',
     'microdomains',
-    'synaptic_data',
-    'gliovascular_data',
+    'neuronal_connectivity',
     'gliovascular_connectivity',
     'neuroglial_connectivity',
     'tns_parameters',

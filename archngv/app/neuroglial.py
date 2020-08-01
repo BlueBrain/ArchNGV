@@ -3,6 +3,7 @@ Generate neuroglial (N-G) connectivity
 """
 
 import click
+import numpy as np
 
 
 @click.group(help=__doc__)
@@ -15,52 +16,46 @@ def group():
 @click.option("--neurons", help="Path to neuron node population (SONATA Nodes)", required=True)
 @click.option("--astrocytes", help="Path to astrocyte node population (SONATA Nodes)", required=True)
 @click.option("--microdomains", help="Path to microdomains structure (HDF5)", required=True)
-@click.option("--synaptic-data", help="Path to synaptic data (SONATA Edges HDF5)", required=True)
+@click.option("--neuronal-connectivity", help="Path to neuron-neuron sonata edge file", required=True)
 @click.option("--seed", help="Pseudo-random generator seed", type=int, default=0, show_default=True)
 @click.option("-o", "--output", help="Path to output file (SONATA Edges HDF5)", required=True)
-def connectivity(neurons, astrocytes, microdomains, synaptic_data, seed, output):
+def connectivity(neurons, astrocytes, microdomains, neuronal_connectivity, seed, output):
     """ Generate N-G connectivity """
     # pylint: disable=redefined-argument-from-local,too-many-locals
-    import numpy as np
 
-    from voxcell.sonata import NodePopulation
+    from voxcell import CellCollection
 
     from archngv.core.datasets import (
-        SynapticData,
+        NeuronalConnectivity,
         MicrodomainTesselation
     )
     from archngv.building.connectivity.neuroglial_generation import generate_neuroglial
-    from archngv.building.exporters.export_neuroglial_connectivity import export_neuroglial_connectivity
+    from archngv.building.exporters.edge_populations import neuroglial_connectivity
 
     from archngv.app.logger import LOGGER
-
-    LOGGER.info('Seed: %d', seed)
     np.random.seed(seed)
 
-    neurons = NodePopulation.load(neurons)
-    astrocytes = NodePopulation.load(astrocytes)
+    astrocytes_data = CellCollection.load(astrocytes)
 
     LOGGER.info('Generating neuroglial connectivity...')
 
     microdomains = MicrodomainTesselation(microdomains)
 
-    with SynapticData(synaptic_data) as syn_data:
+    data_iterator = generate_neuroglial(
+        astrocytes=astrocytes_data,
+        microdomains=microdomains,
+        neuronal_connectivity=NeuronalConnectivity(neuronal_connectivity)
+    )
 
-        data_iterator = generate_neuroglial(
-            astrocytes=astrocytes,
-            microdomains=microdomains,
-            synaptic_data=syn_data
-        )
+    LOGGER.info('Exporting the per astrocyte files...')
+    neuroglial_connectivity(
+        data_iterator,
+        neurons=CellCollection.load(neurons),
+        astrocytes=astrocytes_data,
+        output_path=output
+    )
 
-        LOGGER.info('Exporting the per astrocyte files...')
-        export_neuroglial_connectivity(
-            data_iterator,
-            neurons=neurons,
-            astrocytes=astrocytes,
-            output_path=output
-        )
-
-        LOGGER.info("Done!")
+    LOGGER.info("Done!")
 
 
 @group.command()
@@ -72,11 +67,10 @@ def bind_annotations(input, astrocytes, annotations, output):  # pylint: disable
     """ Bind synapse annotations with closest astrocyte sections. """
     import shutil
 
-    from voxcell.sonata import NodePopulation
+    from voxcell import CellCollection
 
-    from archngv.building.exporters.export_neuroglial_connectivity import bind_annotations as _run
-
-    astrocytes = NodePopulation.load(astrocytes)
+    from archngv.building.exporters.edge_populations import bind_annotations as _run
+    astrocytes = CellCollection.load(astrocytes)
 
     shutil.copyfile(input, output)
     _run(output, astrocytes=astrocytes, annotations_file=annotations)

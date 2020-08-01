@@ -312,7 +312,7 @@ class MockSynapticData(object):
         with SynapticData(self.filename) as syn_data:
 
             assert syn_data.n_synapses == self.n_synapses
-            assert np.allclose(syn_data.synapse_coordinates[:], self.synapse_coordinates)
+            assert np.allclose(syn_data.synapse_positions, self.synapse_coordinates)
 
 
 ###########################################################################################################
@@ -469,7 +469,7 @@ class MockSynapticConnectivity(object):
 
     @cached_property
     def synapse_to_neuron_connectivity(self):
-        res = np.zeros(self.n_synapses, dtype=np.uintp)
+        res = np.zeros(len(self), dtype=np.uintp)
         k = 0
         for neuron_index, neuron_synapses in enumerate(self.synapses_per_neuron):
             for _ in range(neuron_synapses.size):
@@ -515,7 +515,7 @@ class MockSynapticConnectivity(object):
 
         with SynapticConnectivity(self.filename) as syn_conn:
 
-            assert syn_conn.n_synapses == self.n_synapses
+            assert syn_conn.n_synapses == len(self)
 
             for neuron_index in range(self.n_neurons):
 

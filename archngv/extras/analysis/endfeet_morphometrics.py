@@ -39,7 +39,7 @@ def endfeet_morphometrics(ngv_circuit, astrocyte_ids):
                 data['distances'].append(distance)
 
             for endfoot_id in endfeet_ids:
-                endfoot = endfeetome.areas[endfoot_id]
+                endfoot = endfeetome.surface_meshes[endfoot_id]
                 area = vectorized_triangle_area((endfoot.points[endfoot.triangles[:, 1]] -
                                                  endfoot.points[endfoot.triangles[:, 0]]),
                                                 (endfoot.points[endfoot.triangles[:, 2]] -

@@ -14,7 +14,6 @@ snakemake \
     --snakefile '../../snakemake/Snakefile' --cluster-config '../bioname/cluster.yaml'\
     --config bioname='../bioname' \
     --cores 5 \
-    --omit-from glialglial_connectivity
 
 popd
 

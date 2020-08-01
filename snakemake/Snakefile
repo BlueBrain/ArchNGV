@@ -1,13 +1,10 @@
 import os
 import yaml
 import datetime
-import itertools as it
-
-BIONAME = os.path.realpath(config.get('bioname', 'bioname'))
 
 LOGS_DIR = 'logs'
-
 MORPH_DIR = 'morphologies'
+BIONAME = os.path.realpath(config.get('bioname', 'bioname'))
 
 
 def _get_seed(manifest_path):
@@ -23,6 +20,8 @@ def _get_seed(manifest_path):
 def bioname_path(filename):
     return os.path.join(BIONAME, filename)
 
+MANIFEST = bioname_path('MANIFEST.yaml')
+SEED = _get_seed(MANIFEST)
 
 def log_path(name):
     timestamp = datetime.datetime.now().strftime("%Y%m%dT%H%M%S")
@@ -31,9 +30,6 @@ def log_path(name):
 
 def escape_single_quotes(value):
     return value.replace("'", "'\\''")
-
-MANIFEST = bioname_path('MANIFEST.yaml')
-SEED = _get_seed(MANIFEST)
 
 
 # Load MANIFEST.yaml into workflow config
@@ -60,6 +56,7 @@ MODULES = {
     'glialglial_connectivity':
         (SPACK_MODULEPATH, ['archive/2019-12', 'py-pytouchreader/1.4.3/python3'])
 }
+
 
 TOUCHES_DIR = 'connectome/touches'
 
@@ -153,17 +150,16 @@ propagate_cluster_default_values()  #  cluster info propagation does not work so
 
 rule all:
     input:
-        'cell_data.h5',
         'microdomains/overlapping_microdomains.h5',
-        'gliovascular_connectivity.h5',
-        'gliovascular_data.h5',
         'endfeet_areas.h5',
         MORPH_DIR + '/_DONE',
         TOUCHES_DIR + '/_SUCCESS',
         'ngv_config.json',
         'sonata/nodes/glia.h5',
+        'sonata/nodes/vasculature.h5',
         'sonata/edges/neuroglial.h5',
         'sonata/edges/glialglial.h5',
+        'sonata/edges/gliovascular.h5',
         'astrocyte_annotations.h5'
 
 
@@ -173,9 +169,24 @@ rule sonata:
         'sonata/edges/neuroglial.h5',
 
 
+rule ngv_config:
+    output:
+        'ngv_config.json'
+
+    shell:
+        ngv_run('config-file',
+                [
+                '--bioname',
+                    BIONAME,
+                '--output',
+                    '{output}',
+                ]
+        )
+
+
 rule cell_placement:
     output:
-        'cell_data.h5'
+        'sonata.tmp/nodes/glia.somata.h5'
 
     log:
         log_path('cell_placement')
@@ -200,9 +211,54 @@ rule cell_placement:
         )
 
 
+rule assign_emodels:
+    input:
+        'sonata.tmp/nodes/glia.somata.h5'
+
+    output:
+        'sonata.tmp/nodes/glia.emodels.h5'
+
+    shell:
+        ngv_run('assign-emodels',
+                [
+                '--input',
+                    '{input}',
+                '--output',
+                    '{output}',
+                '--hoc',
+                    config['assign_emodels']['hoc_template'],
+                ]
+        )
+
+
+rule finalize_astrocytes:
+    input:
+        somata = 'sonata.tmp/nodes/glia.somata.h5',
+        emodels = 'sonata.tmp/nodes/glia.emodels.h5'
+
+    output:
+        'sonata/nodes/glia.h5'
+
+    log:
+        log_path('finalize_astrocytes')
+
+    shell:
+        ngv_run('finalize-astrocytes',
+                [
+                '--somata-file',
+                    '{input[somata]}',
+                '--emodels-file',
+                    '{input[emodels]}',
+                '--output',
+                    '{output}'
+                ],
+                dump_log='{log}'
+        )
+
+
 rule microdomains:
     input:
-        'cell_data.h5'
+        'sonata/nodes/glia.h5'
 
     output:
         'microdomains/microdomains.h5',
@@ -216,7 +272,7 @@ rule microdomains:
                 [
                 '--config',
                     bioname_path('microdomains.yaml'),
-                '--cell-data',
+                '--astrocytes',
                     '{input}',
                 '--atlas',
                     ATLAS,
@@ -231,14 +287,34 @@ rule microdomains:
         )
 
 
-rule gliovascular_connectivity:
+rule sonata_vasculature:
     input:
-        cell_data = 'cell_data.h5',
-        microdomains = 'microdomains/overlapping_microdomains.h5',
+        VASCULATURE
 
     output:
-        data = 'gliovascular_data.h5',
-        connectivity = 'gliovascular_connectivity.h5',
+        'sonata/nodes/vasculature.h5'
+
+    log:
+        log_path('sonata_vasculature')
+
+    shell:
+        ngv_run('convert vasculature-to-sonata',
+                ['{input}',
+                '{output}',
+                ],
+                dump_log='{log}'
+                )
+
+
+rule gliovascular_connectivity:
+    input:
+        astrocytes = 'sonata/nodes/glia.h5',
+        microdomains = 'microdomains/overlapping_microdomains.h5',
+        vasculature = VASCULATURE,
+        vasculature_sonata = 'sonata/nodes/vasculature.h5'
+
+    output:
+        'sonata/edges/gliovascular.h5',
 
     log:
         log_path('gliovascular_connectivity')
@@ -248,18 +324,18 @@ rule gliovascular_connectivity:
                 [
                 '--config',
                     bioname_path('gliovascular_connectivity.yaml'),
-                '--cell-data',
-                    '{input[cell_data]}',
+                '--astrocytes',
+                    '{input[astrocytes]}',
                 '--microdomains',
                     '{input[microdomains]}',
                 '--vasculature',
-                    VASCULATURE,
-                '--output-data',
-                    '{output[data]}',
-                '--output-connectivity',
-                    '{output[connectivity]}',
+                    '{input[vasculature]}',
+                '--vasculature-sonata',
+                    '{input[vasculature_sonata]}',
                 '--seed',
-                    SEED
+                    SEED,
+                '--output',
+                    '{output}',
                 ],
                 dump_log='{log}'
         )
@@ -271,7 +347,7 @@ rule neuroglial_connectivity:
         microdomains = 'microdomains/overlapping_microdomains.h5',
 
     output:
-        'sonata.tmp/edges/neuroglial.h5.connectivity',
+        'sonata.tmp/edges/neuroglial.connectivity.h5',
 
     log:
         log_path('neuroglial_connectivity')
@@ -285,7 +361,7 @@ rule neuroglial_connectivity:
                     '{input[astrocytes]}',
                 '--microdomains',
                     '{input[microdomains]}',
-                '--synaptic-data',
+                '--neuronal-connectivity',
                     BASE_CIRCUIT_CONNECTOME,
                 '--output',
                     '{output}',
@@ -330,11 +406,11 @@ rule glialglial_connectivity:
         " Extract glial glial connectivity from touches"
 
     input:
-        cell_data = 'cell_data.h5',
+        astrocytes = 'sonata/nodes/glia.h5',
         touches = TOUCHES_DIR + '/_SUCCESS'
 
     output:
-        connectivity = 'sonata/edges/glialglial.h5'
+        glialglial_connectivity = 'sonata/edges/glialglial.h5'
 
     log:
         log_path('glialglial_connectivity')
@@ -342,12 +418,12 @@ rule glialglial_connectivity:
     shell:
         ngv_run('glialglial-connectivity',
                 [
-                '--cell-data',
-                    '{input[cell_data]}',
+                '--astrocytes',
+                    '{input[astrocytes]}',
                 '--touches-dir',
                     '{TOUCHES_DIR}',
                 '--output-connectivity',
-                    '{output[connectivity]}',
+                    '{output[glialglial_connectivity]}',
                 '--seed',
                     SEED
                 ],
@@ -357,7 +433,7 @@ rule glialglial_connectivity:
 
 rule endfeet_area:
     input:
-        gliovascular_data = 'gliovascular_data.h5',
+        gliovascular_connectivity = 'sonata/edges/gliovascular.h5',
 
     output:
         'endfeet_areas.h5'
@@ -372,8 +448,8 @@ rule endfeet_area:
                     bioname_path('endfeet_area.yaml'),
                 '--vasculature-mesh',
                     config['common']['vasculature_mesh'],
-                '--gliovascular-data',
-                    '{input[gliovascular_data]}',
+                '--gliovascular-connectivity',
+                    '{input[gliovascular_connectivity]}',
                 '--output',
                     '{output}',
                 '--seed',
@@ -385,11 +461,10 @@ rule endfeet_area:
 
 rule synthesis:
     input:
-        cell_data = 'cell_data.h5',
+        astrocytes = 'sonata/nodes/glia.h5',
         microdomains = 'microdomains/overlapping_microdomains.h5',
-        gliovascular_connectivity = 'gliovascular_connectivity.h5',
-        gliovascular_data = 'gliovascular_data.h5',
-        neuroglial_connectivity = 'sonata.tmp/edges/neuroglial.h5.connectivity',
+        gliovascular_connectivity = 'sonata/edges/gliovascular.h5',
+        neuroglial_connectivity = 'sonata.tmp/edges/neuroglial.connectivity.h5',
         endfeet_areas = 'endfeet_areas.h5'
 
     output:
@@ -409,19 +484,17 @@ rule synthesis:
                     bioname_path('tns_parameters.json'),
                 '--tns-context',
                     bioname_path('tns_context.json'),
-                '--cell-data',
-                    '{input[cell_data]}',
+                '--astrocytes',
+                    '{input[astrocytes]}',
                 '--microdomains',
                     '{input[microdomains]}',
                 '--gliovascular-connectivity',
                     '{input[gliovascular_connectivity]}',
-                '--gliovascular-data',
-                    '{input[gliovascular_data]}',
                 '--neuroglial-connectivity',
                     '{input[neuroglial_connectivity]}',
                 '--endfeet-areas',
                     '{input[endfeet_areas]}',
-                '--synaptic-data',
+                '--neuronal-connectivity',
                     BASE_CIRCUIT_CONNECTOME,
                 '--out-morph-dir',
                     MORPH_DIR,
@@ -435,11 +508,10 @@ rule synthesis:
 
 rule annotations_and_properties:
     input:
-        cell_data = 'cell_data.h5',
+        cell_data = 'sonata/nodes/glia.h5',
         microdomains = 'microdomains/overlapping_microdomains.h5',
-        gliovascular_connectivity = 'gliovascular_connectivity.h5',
-        gliovascular_data = 'gliovascular_data.h5',
-        neuroglial_connectivity = 'sonata.tmp/edges/neuroglial.h5.connectivity',
+        gliovascular_connectivity = 'sonata/edges/gliovascular.h5',
+        neuroglial_connectivity = 'sonata.tmp/edges/neuroglial.connectivity.h5',
         endfeet_areas = 'endfeet_areas.h5',
         morphologies = MORPH_DIR + '/_DONE',
 
@@ -461,8 +533,6 @@ rule annotations_and_properties:
                     '{input[microdomains]}',
                 '--gliovascular-connectivity',
                     '{input[gliovascular_connectivity]}',
-                '--gliovascular-data',
-                    '{input[gliovascular_data]}',
                 '--neuroglial-connectivity',
                     '{input[neuroglial_connectivity]}',
                 '--endfeet-areas',
@@ -483,48 +553,10 @@ rule annotations_and_properties:
         )
 
 
-rule cell_data_sonata:
-    input:
-        'cell_data.h5',
-
-    output:
-        'sonata.tmp/nodes/glia.h5.somata'
-
-    shell:
-        ngv_run('convert cell-data',
-                [
-                '--input',
-                    '{input}',
-                '--output',
-                    '{output}'
-                ]
-        )
-
-
-rule assign_emodels:
-    input:
-        'sonata.tmp/nodes/glia.h5.somata'
-
-    output:
-        'sonata/nodes/glia.h5'
-
-    shell:
-        ngv_run('assign-emodels',
-                [
-                '--input',
-                    '{input}',
-                '--output',
-                    '{output}',
-                '--hoc',
-                    config['assign_emodels']['hoc_template'],
-                ]
-        )
-
-
 rule neuroglial_bind_annotations:
     input:
-        connectivity = 'sonata.tmp/edges/neuroglial.h5.connectivity',
-        astrocytes = 'sonata.tmp/nodes/glia.h5.somata',
+        connectivity = 'sonata.tmp/edges/neuroglial.connectivity.h5',
+        astrocytes = 'sonata/nodes/glia.h5',
         morphologies = MORPH_DIR + '/_DONE',
         annotations= 'astrocyte_annotations.h5',
 
@@ -542,21 +574,5 @@ rule neuroglial_bind_annotations:
                     '{input[annotations]}',
                 '--output',
                     '{output}'
-                ]
-        )
-
-
-rule ngv_config:
-    output:
-        'ngv_config.json'
-
-    shell:
-        ngv_run('convert ngv-config',
-                [
-                '.',
-                '--bioname',
-                    BIONAME,
-                '--output',
-                    '{output}',
                 ]
         )

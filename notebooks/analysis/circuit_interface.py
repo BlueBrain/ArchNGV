@@ -109,7 +109,7 @@ class CircuitInterface:
 
     @property
     def endfeet_meshes(self):
-        return self.endfeetome.areas
+        return self.endfeetome.surface_meshes
 
     @property
     def endfeet_areas(self):
