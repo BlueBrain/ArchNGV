@@ -9,8 +9,6 @@ LOGS_DIR = 'logs'
 
 MORPH_DIR = 'morphologies'
 
-ANALYSIS_DIR = 'analysis'
-
 
 def _get_seed(manifest_path):
     """Get the seed from the manifest"""
