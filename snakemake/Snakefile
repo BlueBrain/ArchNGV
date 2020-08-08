@@ -1,4 +1,5 @@
 import os
+import yaml
 import datetime
 import itertools as it
 
@@ -9,6 +10,16 @@ LOGS_DIR = 'logs'
 MORPH_DIR = 'morphologies'
 
 ANALYSIS_DIR = 'analysis'
+
+
+def _get_seed(manifest_path):
+    """Get the seed from the manifest"""
+    try:
+        with open(manifest_path, 'r') as stream:
+            manifest = yaml.safe_load(stream)
+            return str(manifest['common']['seed'])
+    except KeyError:
+        return "0"
 
 
 def bioname_path(filename):
@@ -23,9 +34,12 @@ def log_path(name):
 def escape_single_quotes(value):
     return value.replace("'", "'\\''")
 
+MANIFEST = bioname_path('MANIFEST.yaml')
+SEED = _get_seed(MANIFEST)
+
 
 # Load MANIFEST.yaml into workflow config
-workflow.configfile(bioname_path('MANIFEST.yaml'))
+workflow.configfile(MANIFEST)
 
 
 ATLAS = config['common']['atlas']
@@ -152,8 +166,7 @@ rule all:
         'sonata/nodes/glia.h5',
         'sonata/edges/neuroglial.h5',
         'sonata/edges/glialglial.h5',
-        'astrocyte_annotations.h5',
-        ANALYSIS_DIR + '/_DONE'
+        'astrocyte_annotations.h5'
 
 
 rule sonata:
@@ -182,6 +195,8 @@ rule cell_placement:
                     VASCULATURE,
                 '--output',
                     '{output}',
+                '--seed',
+                    SEED,
                 ],
                 dump_log='{log}'
         )
@@ -211,6 +226,8 @@ rule microdomains:
                     ATLAS_CACHE_DIR,
                 '--output-dir',
                     'microdomains',
+                '--seed',
+                    SEED,
                 ],
                 dump_log='{log}'
         )
@@ -243,6 +260,8 @@ rule gliovascular_connectivity:
                     '{output[data]}',
                 '--output-connectivity',
                     '{output[connectivity]}',
+                '--seed',
+                    SEED
                 ],
                 dump_log='{log}'
         )
@@ -272,6 +291,8 @@ rule neuroglial_connectivity:
                     BASE_CIRCUIT_CONNECTOME,
                 '--output',
                     '{output}',
+                '--seed',
+                    SEED,
                 ],
                 dump_log='{log}'
         )
@@ -355,7 +376,8 @@ rule endfeet_area:
                     '{input[gliovascular_data]}',
                 '--output',
                     '{output}',
-                ('--parallel' if PARALLEL else ''),
+                '--seed',
+                    SEED
                 ],
                 dump_log='{log}'
         )
@@ -403,7 +425,9 @@ rule synthesis:
                     BASE_CIRCUIT_CONNECTOME,
                 '--out-morph-dir',
                     MORPH_DIR,
-                ('--parallel' if PARALLEL else '')
+                ('--parallel' if PARALLEL else ''),
+                '--seed',
+                    SEED
                 ],
                 dump_log='{log}'
         )
@@ -451,7 +475,9 @@ rule annotations_and_properties:
                     '{output[annotations]}',
                 '--properties_output',
                     '{output[properties]}',
-                ('--parallel' if PARALLEL else '')
+                ('--parallel' if PARALLEL else ''),
+                '--seed',
+                    SEED,
                 ],
                 dump_log='{log}'
         )
@@ -533,21 +559,4 @@ rule ngv_config:
                 '--output',
                     '{output}',
                 ]
-        )
-
-
-rule analysis:
-    input:
-        morphologies = MORPH_DIR + '/_DONE',
-        ngv_config = 'ngv_config.json'
-    output:
-        touch(ANALYSIS_DIR + '/_DONE'),
-    shell:
-        ngv_run('analysis',
-            [
-                '--ngv-config',
-                    '{input[ngv_config]}',
-                '--output-dir',
-                    ANALYSIS_DIR,
-            ]
         )

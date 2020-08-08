@@ -10,9 +10,8 @@ import click
 @click.option("--vasculature-mesh", help="Path to vasculature mesh", required=True)
 @click.option("--gliovascular-data", help="Path to gliovascular data (HDF5)", required=True)
 @click.option("--seed", help="Pseudo-random generator seed", type=int, default=0, show_default=True)
-@click.option("--parallel", help="Parallelize with 'multiprocessing'", is_flag=True, default=False)
 @click.option("-o", "--output", help="Path to output file (HDF5)", required=True)
-def cmd(config, vasculature_mesh, gliovascular_data, seed, parallel, output):
+def cmd(config, vasculature_mesh, gliovascular_data, seed, output):
     # pylint: disable=missing-docstring
     import numpy as np
     import openmesh
@@ -25,11 +24,11 @@ def cmd(config, vasculature_mesh, gliovascular_data, seed, parallel, output):
     from archngv.app.utils import load_yaml
 
     np.random.seed(seed)
+    LOGGER.info('Seed: %d', seed)
+
     config = load_yaml(config)
 
-    LOGGER.info('Parallel: %s', parallel)
-
-    LOGGER.info('Load vasculature mesh...')
+    LOGGER.info('Load vasculature mesh at %s', vasculature_mesh)
     vasculature_mesh = openmesh.read_trimesh(vasculature_mesh)
 
     with GliovascularData(gliovascular_data) as gdata:

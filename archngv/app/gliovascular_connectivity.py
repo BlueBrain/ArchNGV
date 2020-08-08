@@ -29,10 +29,11 @@ def cmd(config, cell_data, microdomains, vasculature, seed, output_data, output_
     from archngv.app.logger import LOGGER
     from archngv.app.utils import load_yaml
 
+    LOGGER.info('Seed: %d', seed)
+    np.random.seed(seed)
+
     params = load_yaml(config)
     vasculature = Vasculature.load(vasculature)
-
-    np.random.seed(seed)
 
     LOGGER.info('Generating gliovascular connectivity...')
 

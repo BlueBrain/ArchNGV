@@ -34,6 +34,9 @@ def cmd(config, cell_data, atlas, atlas_cache, seed, output_dir):
     def _output_path(filename):
         return os.path.join(output_dir, filename)
 
+    LOGGER.info('Seed: %d', seed)
+    np.random.seed(seed)
+
     config = load_yaml(config)
 
     atlas = Atlas.open(atlas, cache_dir=atlas_cache)
@@ -45,8 +48,6 @@ def cmd(config, cell_data, atlas, atlas_cache, seed, output_dir):
         somata_radii = data.astrocyte_radii[:]
 
     ensure_dir(output_dir)
-
-    np.random.seed(seed)
 
     LOGGER.info('Generating microdomains...')
     microdomains = generate_microdomain_tesselation(

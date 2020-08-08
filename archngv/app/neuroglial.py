@@ -34,10 +34,11 @@ def connectivity(neurons, astrocytes, microdomains, synaptic_data, seed, output)
 
     from archngv.app.logger import LOGGER
 
+    LOGGER.info('Seed: %d', seed)
+    np.random.seed(seed)
+
     neurons = NodePopulation.load(neurons)
     astrocytes = NodePopulation.load(astrocytes)
-
-    np.random.seed(seed)
 
     LOGGER.info('Generating neuroglial connectivity...')
 

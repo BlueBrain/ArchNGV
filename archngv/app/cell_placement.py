@@ -27,6 +27,9 @@ def cmd(config, atlas, atlas_cache, vasculature, seed, output):
     from archngv.app.logger import LOGGER
     from archngv.app.utils import load_yaml
 
+    np.random.seed(seed)
+    LOGGER.info("Seed: %d", seed)
+
     config = load_yaml(config)
 
     atlas = Atlas.open(atlas, cache_dir=atlas_cache)
@@ -47,8 +50,6 @@ def cmd(config, atlas, atlas_cache, vasculature, seed, output):
         )
 
         spatial_indexes.append(vasc.spatial_index())
-
-    np.random.seed(seed)
 
     LOGGER.info('Generating cell positions / radii...')
     somata_positions, somata_radii = create_positions(

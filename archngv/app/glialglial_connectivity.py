@@ -19,14 +19,13 @@ def cmd(cell_data, touches_dir, seed, output_connectivity):
 
     from archngv.app.logger import LOGGER
 
+    LOGGER.info('Seed: %d', seed)
     np.random.seed(seed)
 
     LOGGER.info('Creating symmetric connections from touches...')
-
     astrocyte_data = generate_glialglial(touches_dir)
 
     LOGGER.info('Exporting to SONATA file...')
-
     n_astrocytes = len(CellData(cell_data))
     export_glialglial_connectivity(astrocyte_data, n_astrocytes, output_connectivity)
 

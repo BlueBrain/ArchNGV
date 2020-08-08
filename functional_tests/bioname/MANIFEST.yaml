@@ -1,4 +1,5 @@
 common:
+  seed: 0
   atlas: '../data/atlas/'
   vasculature: '../data/atlas/vasculature.h5'
   vasculature_mesh: '../data/atlas/vasculature.mesh.obj'
