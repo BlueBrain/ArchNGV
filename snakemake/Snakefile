@@ -347,7 +347,9 @@ rule glialglial_connectivity:
                 '--touches-dir',
                     '{TOUCHES_DIR}',
                 '--output-connectivity',
-                    '{output[connectivity]}'
+                    '{output[connectivity]}',
+                '--seed',
+                    SEED
                 ],
                 module_env='glialglial_connectivity',
                 dump_log='{log}')
