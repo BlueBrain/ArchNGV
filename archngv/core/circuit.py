@@ -103,6 +103,19 @@ def _collect_ngv_populations(partial_config, extra_config, cls):
     return result
 
 
+class AstrocytesMorphHelper(MorphHelper):
+    """Specific class for accessing the astrocyte's morphologies.
+
+    The astrocyte's morphologies cannot be stored as a swc file due to missing fields such as
+    the missing astrocytes radius. This class aims at allowing the use of h5 morphology files for
+    the astrocytes and returning the correct morphology path.
+    """
+    def get_filepath(self, node_id):
+        """Return path to h5 morphology file corresponding to `node_id`."""
+        name = self._nodes.get(node_id, "morphology")
+        return str(Path(self._morph_dir, f"{name}.h5"))
+
+
 class NGVNodes(NodePopulation):
     """The standard NGV node population.
 
@@ -153,8 +166,10 @@ class Astrocytes(NGVNodes):
         Notes:
             The morphologies are produced in a different morphology directory
             (neuronal circuits can be read only) so the morphology dir path is overloaded.
+            Moreover the astrocytes morphologies are stored as h5 file and not swc (see :
+            AstrocytesMorphHelper class).
         """
-        return MorphHelper(self._extra_conf["morphologies_dir"], self)
+        return AstrocytesMorphHelper(self._extra_conf["morphologies_dir"], self)
 
 
 class Vasculature(NGVNodes):

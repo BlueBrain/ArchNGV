@@ -106,7 +106,7 @@ class TestCircuit:
         assert astrocytes.morphology is astrocytes.morph
         assert astrocytes.morphology.get_filepath(0) == astrocytes.morph.get_filepath(0)
         npt.assert_allclose(astrocytes.morphology.get(0).points, astrocytes.morph.get(0).points)
-        assert astrocytes.morph.get_filepath(0) == get_data('morphologies-astro/morph-A.swc')
+        assert astrocytes.morph.get_filepath(0) == get_data('morphologies-astro/morph-A.h5')
         # Using the same morph for the neurons and the astrocytes explains why we have the
         # same test as for neurons
         actual = astrocytes.morph.get(0).points
