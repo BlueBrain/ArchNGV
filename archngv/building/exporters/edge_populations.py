@@ -177,21 +177,17 @@ def gliovascular_connectivity(output_path, astrocytes, vasculature, endfeet_to_a
     )
 
 
-def glialglial_connectivity(astrocyte_data, n_astrocytes, output_path):
+def glialglial_connectivity(glialglial_data, n_astrocytes, output_path):
     """
     Export he connectivity between glia and glia to SONATA Edges HDF5
 
     Args:
 
-        astrocyte_data: DataFrame, with the columns:
-        - 'astrocyte_source_id'
-        - 'astrocyte_target_id'
-        - 'connection_id'
+        glialglial_data: DataFrame, with the touch properties
         sorted by ['astrocyte_source_id', 'astrocyte_target_id', 'connection_id']
         n_astrocytes: The number of astrocytes
         output_path: path to output HDF5 file
     """
-    edge_properties = {'connection_id': astrocyte_data['connection_id'].to_numpy(dtype=np.uint64)}
 
     _write_edge_population(
         output_path=output_path,
@@ -199,8 +195,8 @@ def glialglial_connectivity(astrocyte_data, n_astrocytes, output_path):
         target_population_name=Population.ASTROCYTES,
         source_population_size=n_astrocytes,
         target_population_size=n_astrocytes,
-        source_node_ids=astrocyte_data['astrocyte_source_id'],
-        target_node_ids=astrocyte_data['astrocyte_target_id'],
+        source_node_ids=glialglial_data.pop('pre_id').to_numpy(),
+        target_node_ids=glialglial_data.pop('post_id').to_numpy(),
         edge_population_name=Population.GLIALGLIAL,
-        edge_properties=edge_properties
+        edge_properties=glialglial_data
     )

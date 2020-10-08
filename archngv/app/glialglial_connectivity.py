@@ -23,9 +23,9 @@ def cmd(astrocytes, touches_dir, seed, output_connectivity):
     np.random.seed(seed)
 
     LOGGER.info('Creating symmetric connections from touches...')
-    astrocyte_data = generate_glialglial(touches_dir)
+    glialglial_data = generate_glialglial(touches_dir)
 
     LOGGER.info('Exporting to SONATA file...')
-    glialglial_connectivity(astrocyte_data, len(CellData(astrocytes)), output_connectivity)
+    glialglial_connectivity(glialglial_data, len(CellData(astrocytes)), output_connectivity)
 
     LOGGER.info("Done!")

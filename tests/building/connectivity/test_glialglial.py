@@ -1,21 +1,20 @@
 import sys
 from unittest.mock import Mock
-import pytest
 
 import numpy as np
-import pandas as pd
 from numpy import testing as npt
 
-import archngv.building.connectivity.glialglial as _gg
+import archngv.building.connectivity.glialglial as tested
 
-
-PRE_IDS = [0, 0, 0, 0, 1, 1, 1, 2, 1, 3, 5, 3, 4, 5]
-PST_IDS = [1, 1, 2, 3, 4, 4, 4, 4, 3, 1, 0, 2, 5, 1]
-
-
-@pytest.fixture
-def edges():
-    return np.column_stack((PRE_IDS, PST_IDS))
+DATA = {"pre_ids": np.array([[0, 0, 0], [1, 1, 1]], np.int32),
+        "post_ids": np.array([[3, 3, 3], [2, 2, 2]], np.int32),
+        "distances": np.array([[1.0, 1.1, 1.2], [2.1, 2.2, 2.3]]),
+        "pre_section_fraction": np.array([0.0, 1.0]),
+        "post_section_fraction": np.array([0.0, 1.0]),
+        "spine_length": np.array([0.0, 1.0]),
+        "pre_position": np.array([[10.0, 10.1, 10.2], [20.1, 20.2, 20.3]]),
+        "post_position": np.array([[11.0, 11.1, 11.2], [21.1, 21.2, 21.3]]),
+        "branch_type": np.array([0, 0], dtype=np.int8)}
 
 
 class MockCachedDataset:
@@ -26,6 +25,17 @@ class MockCachedDataset:
         return self.data
 
 
+class MockTouches:
+    def __init__(self, data):
+        self.data = {k: MockCachedDataset(v) for k, v in data.items()}
+
+    def __getitem__(self, item):
+        return self.data[item]
+
+    def __len__(self):
+        return 2
+
+
 class MockTouchInfo:
 
     def __init__(self, _):
@@ -33,69 +43,31 @@ class MockTouchInfo:
 
     @property
     def touches(self):
-        pre_ids = np.array([PRE_IDS]).T
-        pst_ids = np.array([PST_IDS]).T
-        return {'pre_ids': MockCachedDataset(pre_ids),
-                'post_ids': MockCachedDataset(pst_ids)}
+        return MockTouches(DATA)
 
 
-def test_edges_from_touchreader(edges):
-    """ We mock the TouchInfo class to produce the data we want to test
-    """
-    sys.modules['pytouchreader'] = Mock(TouchInfo=MockTouchInfo) 
+def test_glialglial_dataframe():
+    sys.modules['pytouchreader'] = Mock(TouchInfo=MockTouchInfo)
 
-    result_edges = _gg._edges_from_touchreader(None)
+    returned = tested.generate_glialglial("unused")
 
-    npt.assert_array_equal(result_edges, edges)
+    assert sorted(list(returned)) == sorted(["pre_id", "pre_section_id", "pre_segment_id",
+                                             "post_id", "post_section_id", "post_segment_id",
+                                             "distances_x", "distances_y", "distances_z",
+                                             "pre_section_fraction", "post_section_fraction",
+                                             "spine_length", "efferent_center_x",
+                                             "efferent_center_y", "efferent_center_z",
+                                             "afferent_surface_x", "afferent_surface_y",
+                                             "afferent_surface_z", "branch_type"])
 
+    assert len(returned) == 2
+
+    # correctly ordered
+    npt.assert_equal(returned["post_id"].to_numpy(), [2, 3])
+    npt.assert_equal(returned["pre_id"].to_numpy(), [1, 0])
+    npt.assert_allclose(returned[["efferent_center_x", "efferent_center_y", "efferent_center_z"]],
+                        np.array([[20.1, 20.2, 20.3], [10.0, 10.1, 10.2]]))
+    npt.assert_allclose(returned[["afferent_surface_x", "afferent_surface_y",
+                                  "afferent_surface_z"]],
+                        np.array([[21.1, 21.2, 21.3], [11.0, 11.1, 11.2]]))
     del sys.modules['pytouchreader']
-
-
-def test_symmetric_connections_and_ids(edges):
-
-    result_edges, result_ids = _gg._symmetric_connections_and_ids(edges)
-
-    expected_edges = [
-        [0, 1],
-        [0, 2],
-        [0, 3],
-        [0, 5],
-        [1, 3],
-        [1, 4],
-        [1, 5],
-        [2, 3],
-        [2, 4],
-        [4, 5],
-
-        # symmetric
-
-        [1, 0],
-        [2, 0],
-        [3, 0],
-        [5, 0],
-        [3, 1],
-        [4, 1],
-        [5, 1],
-        [3, 2],
-        [4, 2],
-        [5, 4],
-    ]
-    expected_ids = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
-                    0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-
-    npt.assert_array_equal(result_edges, expected_edges)
-    npt.assert_array_equal(result_ids, expected_ids)
-
-
-def test_glialglial_dataframe(edges):
-
-    edges, ids = _gg._symmetric_connections_and_ids(edges)
-
-    result_df = _gg._glialglial_dataframe(edges, ids)
-
-    expected_df = pd.DataFrame({
-        'astrocyte_source_id': np.array([1, 2, 3, 5, 0, 3, 4, 5, 0, 3, 4, 0, 1, 2, 1, 2, 5, 0, 1, 4]),
-        'astrocyte_target_id': np.array([0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5]),
-        'connection_id': np.array([0, 1, 2, 3, 0, 4, 5, 6, 1, 7, 8, 2, 4, 7, 5, 8, 9, 3, 6, 9])})
-
-    npt.assert_array_equal(result_df.values, expected_df.values)
