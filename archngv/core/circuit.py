@@ -424,12 +424,12 @@ class NGVCircuit(Circuit):
         """Access to the glialglial connectivity edge population."""
         return self._get_population("connectivities", Population.GLIALGLIAL)
 
-    def __repr__(self):
-        """Representation of circuit."""
-        return f"<NGVCircuit : {self.path}>"
-
     @cached_property
     def atlases(self):
         """Access to the Voxel atlases"""
         config = self._config["atlases"]
         return {name: Atlas(name, filepath) for name, filepath in config.items()}
+
+    def __repr__(self):
+        """Representation of circuit."""
+        return f"<NGVCircuit : {self.path}>"

@@ -18,3 +18,4 @@ snakemake \
 popd
 
 ./compare.sh expected $BUILD_DIR
+pytest .

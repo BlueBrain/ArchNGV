@@ -12,9 +12,7 @@ from mock import patch, PropertyMock
 
 import archngv.core.circuit as test_module
 from archngv.core.structures import Microdomains, Atlas
-from archngv.core.datasets import Vasculature
-from archngv.core.datasets import MicrodomainTesselation
-from archngv.core.datasets import EndfootSurfaceMeshes
+from archngv.core.datasets import Vasculature, MicrodomainTesselation, EndfootSurfaceMeshes
 
 from archngv.exceptions import NGVError
 
