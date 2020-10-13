@@ -7,12 +7,12 @@
   },
   "circuit_dir": "$CIRCUIT_DIR",
   "components": {
-    "morphologies_dir": "/home/tdelemon/1.Workdir/ArchNGV/functional_tests/data/circuit/sonata/morphologies"
+    "morphologies_dir": "$CIRCUIT_DIR/data/circuit/sonata/morphologies"
   },
   "networks": {
     "nodes": [
       {
-        "nodes_file": "/home/tdelemon/1.Workdir/ArchNGV/functional_tests/data/circuit/sonata/networks/nodes/All/nodes.h5",
+        "nodes_file": "$CIRCUIT_DIR/data/circuit/sonata/networks/nodes/All/nodes.h5",
         "node_types_file": null
       },
       {
@@ -26,7 +26,7 @@
     ],
     "edges": [
       {
-        "edges_file": "/home/tdelemon/1.Workdir/ArchNGV/functional_tests/data/circuit/sonata/networks/edges/functional/All/edges.h5",
+        "edges_file": "$CIRCUIT_DIR/data/circuit/sonata/networks/edges/functional/All/edges.h5",
         "edge_types_file": null
       },
       {
@@ -51,8 +51,8 @@
     },
     "vasculature": {
       "population": "vasculature",
-      "vasculature_file": "/home/tdelemon/1.Workdir/ArchNGV/functional_tests/data/atlas/vasculature.h5",
-      "vasculature_mesh_file": "/home/tdelemon/1.Workdir/ArchNGV/functional_tests/data/atlas/vasculature.mesh.obj"
+      "vasculature_file": "$CIRCUIT_DIR/data/atlas/vasculature.h5",
+      "vasculature_mesh_file": "$CIRCUIT_DIR/data/atlas/vasculature.mesh.obj"
     }
   },
   "connectivities": {
@@ -71,8 +71,8 @@
     }
   },
   "atlases": {
-    "intensity": "/home/tdelemon/1.Workdir/ArchNGV/functional_tests/data/atlas/[density]astrocytes.nrrd",
-    "brain_regions": "/home/tdelemon/1.Workdir/ArchNGV/functional_tests/data/atlas/brain_regions.nrrd"
+    "intensity": "$CIRCUIT_DIR/data/atlas/[density]astrocytes.nrrd",
+    "brain_regions": "$CIRCUIT_DIR/data/atlas/brain_regions.nrrd"
   },
   "parameters": {
     "cell_placement": {

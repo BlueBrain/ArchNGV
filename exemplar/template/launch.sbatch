@@ -30,6 +30,7 @@ snakemake --snakefile $PROJECT_PATH/Snakefile \
           --config bioname=$PROJECT_PATH/bioname \
           --directory $PROJECT_PATH/build \
           --cluster-config $PROJECT_PATH/bioname/cluster.yaml \
+          -p 72 \
           -F all
 
 popd
