@@ -54,4 +54,4 @@ def test_circuit():
         morphology_name = astrocytes.get(astro_id, "morphology")
         morphology_points = astrocytes.morphology.get(astro_id, transform=True).points
         expected_points = np.load("expected/morphologies/{}.npy".format(morphology_name))
-        npt.assert_allclose(morphology_points, expected_points)
+        npt.assert_allclose(morphology_points, expected_points, atol=1e-4)

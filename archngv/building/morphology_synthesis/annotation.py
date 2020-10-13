@@ -1,14 +1,15 @@
 """ Annotations for synapses and endfeet surface targets
 """
 import os
+
 import numpy as np
 import pandas as pd
-
 from scipy.spatial import cKDTree
 
 import morphio
-from archngv.core.datasets import CellData
+from morph_tool.transform import translate
 
+from archngv.core.datasets import CellData
 from archngv.building.morphology_synthesis.endfoot_compartment import create_endfeet_compartment_data
 from archngv.building.morphology_synthesis.data_extraction import obtain_endfeet_data
 from archngv.building.morphology_synthesis.data_extraction import obtain_synapse_data
@@ -110,12 +111,17 @@ def create_astrocyte_annotations(astrocyte_index, paths):
     and astrocyte section perimeters.
     """
     # need the value itself
-    cell_name = CellData(paths.cell_data).get_properties('morphology', astrocyte_index)[0][0]
+    astrocyte = CellData(paths.cell_data)
+    cell_name = astrocyte.get_properties('morphology', astrocyte_index)[0][0]
+    position = astrocyte.positions(astrocyte_index)[0]
 
     # For the annotations the morphology should be in readonly mode. If it is mutated for any reason
     # there will be reordering of the sections ids and thus the annotations would be invalid
     morph_filepath = os.path.join(paths.morphology_directory, cell_name + '.h5')
-    morphology = morphio.Morphology(morph_filepath, options=morphio.Option.nrn_order)
+
+    morphology = morphio.mut.Morphology(morph_filepath)  # pylint: disable=no-member
+    translate(morphology, position)
+    morphology = morphology.as_immutable()
 
     # pylint: disable=too-many-arguments
     annotations = {}
@@ -128,6 +134,7 @@ def create_astrocyte_annotations(astrocyte_index, paths):
     if endfeet_data is not None:
         annotations['endfeet'] = endfeet_dict = {}
         endfeet_dict['morph_section_ids'] = annotate_endfoot_location(morphology, endfeet_data.targets)
+        # morphology is not used even if present in the signature
         endfeet_dict['compartments'] = create_endfeet_compartment_data(morphology, endfeet_data)
 
     # extract synapses coordinates

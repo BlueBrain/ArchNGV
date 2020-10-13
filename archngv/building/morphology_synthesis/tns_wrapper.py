@@ -45,7 +45,8 @@ def create_tns_inputs(tns_data,
     parameters, distributions, context = deepcopy(tns_data)
 
     # set origin and radius of cell soma
-    parameters['origin'] = np.asarray(cell_properties.soma_position, dtype=np.float32)
+    # removed the dtype=np.float32 due to precision loss for some reasons
+    parameters['origin'] = np.asarray(cell_properties.soma_position)
     distributions['soma']['size'] = {'norm': {'mean': cell_properties.soma_radius, 'std': 0.0}}
 
     L.debug('Parameters: %s', parameters)

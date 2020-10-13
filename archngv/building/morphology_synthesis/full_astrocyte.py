@@ -4,6 +4,8 @@ import logging
 import numpy as np
 
 import morphio
+from morph_tool.transform import translate
+
 from tns import AstrocyteGrower
 from diameter_synthesis import build_diameters
 
@@ -18,7 +20,7 @@ from archngv.building.morphology_synthesis.perimeters import add_perimeters_to_m
 L = logging.getLogger(__name__)
 
 
-def _write_with_NEURON_ordering_hack(morphology, filepath):
+def _post_growing(morphology, position, filepath):
     """Writes the morphology, opens it again in NEURON ordering and then
     writes it again to ensure NEURON ordering
 
@@ -27,6 +29,7 @@ def _write_with_NEURON_ordering_hack(morphology, filepath):
         filepath (str): Output filepath
     """
     # pylint: disable=no-member
+    translate(morphology, -np.asarray(position))
     morphio.mut.Morphology(morphology, options=morphio.Option.nrn_order).write(filepath)
 
 
@@ -97,8 +100,8 @@ def synthesize_astrocyte(astrocyte_index, paths, parameters):
         paths (SynthesisInputPaths): The various paths need by this function
         parameters (dict): Input synthesis parameters
     """
-    cell_properties, endfeet_attraction_data, space_colonization_data = astrocyte_circuit_data(
-        astrocyte_index, paths, parameters)
+    (cell_properties, endfeet_attraction_data,
+     space_colonization_data) = astrocyte_circuit_data(astrocyte_index, paths, parameters)
 
     morphology = grow_circuit_astrocyte(
         tns_inputs(paths), cell_properties, endfeet_attraction_data, space_colonization_data)
@@ -110,5 +113,5 @@ def synthesize_astrocyte(astrocyte_index, paths, parameters):
     filepath = os.path.join(paths.morphology_directory, cell_properties.name[0] + '.h5')
 
     # TODO: replace this when direct NEURON ordering write is available in MorphIO
-    _write_with_NEURON_ordering_hack(morphology, filepath)
+    _post_growing(morphology, cell_properties.soma_position, filepath)
     _sanity_checks(filepath)

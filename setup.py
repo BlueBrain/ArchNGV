@@ -26,7 +26,8 @@ EXTRA_ALL = [
     'openmesh>=1.1.2',
     'pyyaml>=3.0',
     'tns>=2.2.1',
-    'diameter-synthesis>=0.1.6'
+    'diameter-synthesis>=0.1.6',
+    'morph-tool>=0.2.10'
 ]
 
 setup(
