@@ -26,6 +26,7 @@ def _post_growing(morphology, position, filepath):
 
     Args:
         morphology (morphio.mut.Morphology): Mutable morphology
+        position (numpy.array): the position of the cell somata
         filepath (str): Output filepath
     """
     # pylint: disable=no-member
