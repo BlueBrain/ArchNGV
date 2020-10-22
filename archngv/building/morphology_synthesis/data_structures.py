@@ -6,13 +6,9 @@ EndfeetData = namedtuple('EndfeetData', ['targets', 'area_meshes'])
 
 AstrocyteProperties = namedtuple('AstrocyteProperties', ['name', 'soma_position', 'soma_radius', 'microdomain'])
 
-SpaceColonizationData = namedtuple(
-    'SpaceColonizationData',
-    ['point_cloud', 'influence_distance_factor', 'kill_distance_factor'])
+SpaceColonizationData = namedtuple('SpaceColonizationData', ['point_cloud'])
 
-EndfeetAttractionData = namedtuple(
-    'EndfeetAttractionData',
-    ['targets', 'field_function'])
+EndfeetAttractionData = namedtuple('EndfeetAttractionData', ['targets'])
 
 TNSData = namedtuple('TNSData', ['parameters', 'distributions', 'context'])
 

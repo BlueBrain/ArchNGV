@@ -255,13 +255,12 @@ def tns_inputs(paths):
         context=context)
 
 
-def astrocyte_circuit_data(astrocyte_index, paths, parameters):
+def astrocyte_circuit_data(astrocyte_index, paths):
     """Extract astrocyte circuit information
 
     Args:
         astrocyte_index (int): Astrocyte positional id
         paths (SynthesisInputPaths): All the input paths to synthesis
-        parameters (dict): Synthesis parameters
 
     Returns:
         AstrocyteProperties: namedtuple properties
@@ -279,9 +278,7 @@ def astrocyte_circuit_data(astrocyte_index, paths, parameters):
         L.warning('No point cloud is available for astrocyte %d.', astrocyte_index)
     else:
         space_colonization_data = SpaceColonizationData(
-            point_cloud=point_cloud,
-            influence_distance_factor=parameters['point_cloud'][0],
-            kill_distance_factor=parameters['point_cloud'][1]
+            point_cloud=point_cloud
         )
 
     endfeet_data = obtain_endfeet_data(astrocyte_index, paths.gliovascular_connectivity,
@@ -292,8 +289,7 @@ def astrocyte_circuit_data(astrocyte_index, paths, parameters):
         L.warning('No endfeet for astrocyte %d', astrocyte_index)
     else:
         attraction_data = EndfeetAttractionData(
-            targets=endfeet_data.targets,
-            field_function=eval(parameters['attraction_field'])  # pylint: disable=eval-used
+            targets=endfeet_data.targets
         )
 
     return properties, attraction_data, space_colonization_data

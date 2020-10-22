@@ -4,6 +4,5 @@ graph_targeting:
 connection:
     reachout_strategy: 'maximum_reachout'
     endfeet_distribution: [2, 2, 0, 15]
-    endfeet_minimum_distance_with_neighbors: 0.1
 
 surface_targeting: {}

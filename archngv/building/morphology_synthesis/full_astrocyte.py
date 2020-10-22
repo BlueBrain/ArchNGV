@@ -102,7 +102,7 @@ def synthesize_astrocyte(astrocyte_index, paths, parameters):
         parameters (dict): Input synthesis parameters
     """
     (cell_properties, endfeet_attraction_data,
-     space_colonization_data) = astrocyte_circuit_data(astrocyte_index, paths, parameters)
+     space_colonization_data) = astrocyte_circuit_data(astrocyte_index, paths)
 
     morphology = grow_circuit_astrocyte(
         tns_inputs(paths), cell_properties, endfeet_attraction_data, space_colonization_data)
