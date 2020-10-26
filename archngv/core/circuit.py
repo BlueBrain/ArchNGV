@@ -295,6 +295,29 @@ class Neuronal(NGVEdges):
 class GlialGlial(NGVEdges):
     """GlialGlial edges API."""
 
+    def astrocyte_gap_junctions(self, astrocyte_id):
+        """Returns the gap junction (edge) connected to the source node:`astrocyte_id`."""
+        return self.efferent_edges(astrocyte_id)
+
+    def astrocyte_astrocytes(self, astrocyte_id):
+        """Returns the astrocyte ids connected to the node:`astrocyte_id`.
+
+        Args:
+            astrocyte_id (int): the source astrocyte id.
+
+        Returns:
+            numpy.array: all the astrocyte ids connected to the astrocyte_id. The ids are for the
+            ongoing or outgoing edges.
+
+        Notes:
+            uses the unique inside the e/afferent_nodes but from rapid bench it is quite
+            similar to : np.unique(np.append(a, b)) or np.unique(np.append(np.unique(a),
+            np.unique(b))). The last one being less memory consuming I kept this one.
+            TODO : Need to test on a real circuit with touches.
+        """
+        return np.unique(np.append(self.efferent_nodes(astrocyte_id, unique=True),
+                                   self.afferent_nodes(astrocyte_id, unique=True)))
+
 
 class NeuroGlial(NGVEdges):
     """NeuroGlial edges API."""
