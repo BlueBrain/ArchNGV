@@ -41,6 +41,8 @@ def cmd(config, atlas, atlas_cache, vasculature, seed, output):
     spatial_indexes = []
     if vasculature is not None:
 
+        from spatial_index import sphere_rtree
+
         vasc = Vasculature.load(vasculature)
 
         assert_bbox_alignment(
@@ -49,7 +51,7 @@ def cmd(config, atlas, atlas_cache, vasculature, seed, output):
                         voxelized_intensity.bbox[1])
         )
 
-        spatial_indexes.append(vasc.spatial_index())
+        spatial_indexes.append(sphere_rtree(vasc.points, vasc.radii))
 
     LOGGER.info('Generating cell positions / radii...')
     somata_positions, somata_radii = create_positions(

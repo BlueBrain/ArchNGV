@@ -5,7 +5,6 @@ from cached_property import cached_property
 
 import numpy as np
 import h5py
-from spatial_index import sphere_rtree
 
 from archngv.exceptions import NGVError
 from archngv.core.sonata_readers import EdgesReader, NodesReader
@@ -184,10 +183,6 @@ class Vasculature:
         """ Returns the total length of the vasculature """
         from vasculatureapi.point_graph.features import segment_lengths
         return segment_lengths(self._impl).sum()
-
-    def spatial_index(self):
-        """ Returns vasculature spatial index """
-        return sphere_rtree(self.points, self.radii)
 
     @property
     def point_graph(self):

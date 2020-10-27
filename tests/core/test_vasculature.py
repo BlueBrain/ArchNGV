@@ -1,5 +1,4 @@
 import h5py
-from spatial_index import sphere_rtree
 
 import pytest
 from numpy import testing as npt
@@ -114,9 +113,6 @@ class TestVasculature:
     def test_length(self):
         # TODO : need to find a better test
         npt.assert_allclose([self.vasculature.length], [151500.34])
-
-    def test_spacial_index(self):
-        assert isinstance(self.vasculature.spatial_index(), sphere_rtree)
 
     def test_point_graph(self):
         from vasculatureapi.utils.adjacency import AdjacencyMatrix
