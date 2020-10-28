@@ -296,8 +296,12 @@ class GlialGlial(NGVEdges):
     """GlialGlial edges API."""
 
     def astrocyte_gap_junctions(self, astrocyte_id):
-        """Returns the gap junction (edge) connected to the source node:`astrocyte_id`."""
-        return self.efferent_edges(astrocyte_id)
+        """Returns the gap junctions (edges) connected to node:`astrocyte_id`."""
+        res = np.append(self.efferent_edges(astrocyte_id), self.afferent_edges(astrocyte_id))
+        # inplace sort for better perfs (much better for small arrays and bit better for large)
+        # sort allows for chunked data queries in libsonata
+        res.sort()
+        return res
 
     def astrocyte_astrocytes(self, astrocyte_id):
         """Returns the astrocyte ids connected to the node:`astrocyte_id`.

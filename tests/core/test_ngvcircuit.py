@@ -199,8 +199,8 @@ class TestCircuit:
     def test_glialglial_api(self):
         gg = self.circuit.glialglial_connectome
         # should return the gap juction ids. That is, the corresponding edge ids
-        npt.assert_equal(gg.astrocyte_gap_junctions(0), [1, 2])
-        npt.assert_equal(gg.astrocyte_gap_junctions(1), [])
+        npt.assert_equal(gg.astrocyte_gap_junctions(0), [0, 1, 2])
+        npt.assert_equal(gg.astrocyte_gap_junctions(1), [1, 2, 3])
         npt.assert_equal(gg.astrocyte_gap_junctions(2), [0, 3])
 
         npt.assert_equal(gg.astrocyte_astrocytes(0), [1, 2])
@@ -211,9 +211,9 @@ class TestCircuit:
         gap_junctions = gg.astrocyte_gap_junctions(0)
         prop = gg.properties(gap_junctions, properties=['spine_length', '@source_node',
                                                         '@target_node'])
-        npt.assert_allclose(prop['spine_length'], [0.1, 0.2])
-        npt.assert_allclose(prop['@source_node'], [0, 0])
-        npt.assert_allclose(prop['@target_node'], [1, 1])
+        npt.assert_allclose(prop['spine_length'], [0.0, 0.1, 0.2])
+        npt.assert_allclose(prop['@source_node'], [2, 0, 0])
+        npt.assert_allclose(prop['@target_node'], [0, 1, 1])
 
     def test_atlas(self):
         assert isinstance(self.circuit.atlases["my_atlas"].get_atlas(), VoxelData)
