@@ -1,5 +1,4 @@
 """ Synthesis entry function """
-import os
 import logging
 import numpy as np
 
@@ -20,32 +19,30 @@ from archngv.building.morphology_synthesis.perimeters import add_perimeters_to_m
 L = logging.getLogger(__name__)
 
 
-def _post_growing(morphology, position, filepath):
-    """Writes the morphology, opens it again in NEURON ordering and then
-    writes it again to ensure NEURON ordering
+def _post_growing(morphology, position):
+    """Returns the same morphology but repositioned and NEURON ordered
 
     Args:
         morphology (morphio.mut.Morphology): Mutable morphology
         position (numpy.array): the position of the cell somata
-        filepath (str): Output filepath
     """
     # pylint: disable=no-member
     translate(morphology, -np.asarray(position))
-    morphio.mut.Morphology(morphology, options=morphio.Option.nrn_order).write(filepath)
+    return morphio.mut.Morphology(morphology, options=morphio.Option.nrn_order)
 
 
-def _sanity_checks(filepath):
+def _sanity_checks(morph):
     """Various checks ensuring morphology corectedness
         - existence of duplicate points
         - at least two points in each section
 
     Args:
-        filepath (str): The morphology filepath
+        morph (morphio.mut.Morphology): The morphology
 
     Raises:
         NGVError: If any of the tests are not satisfied
     """
-    for section in morphio.Morphology(filepath).iter():
+    for section in morph.iter():
 
         if section.is_root:
             continue
@@ -55,13 +52,13 @@ def _sanity_checks(filepath):
 
         if not np.allclose(points[0], parent_points[-1]):
             raise NGVError(
-                f'Morphology {filepath} is missing duplicate points.\n'
+                f'Morphology {morph} is missing duplicate points.\n'
                 f'\t Section {section.id}, Points: {points}, Parent last point: {parent_points}'
             )
 
         if not len(points) > 1:
             raise NGVError(
-                f'Morphology {filepath} has one point sections.\n'
+                f'Morphology {morph} has one point sections.\n'
                 f'\t Section {section.id}, Points: {points}'
             )
 
@@ -111,8 +108,7 @@ def synthesize_astrocyte(astrocyte_index, paths, parameters):
         L.info('Distributing perimeters...')
         add_perimeters_to_morphology(morphology, parameters['perimeter_distribution'])
 
-    filepath = os.path.join(paths.morphology_directory, cell_properties.name[0] + '.h5')
-
     # TODO: replace this when direct NEURON ordering write is available in MorphIO
-    _post_growing(morphology, cell_properties.soma_position, filepath)
-    _sanity_checks(filepath)
+    morph = _post_growing(morphology, cell_properties.soma_position)
+    _sanity_checks(morph)
+    return morph

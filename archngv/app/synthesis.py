@@ -1,7 +1,10 @@
 """
 Synthesize astrocyte morphologies
 """
+from pathlib import Path
+
 import click
+from archngv.building.morphology_synthesis.data_extraction import astrocyte_circuit_data
 
 
 class Worker:
@@ -12,17 +15,22 @@ class Worker:
 
     def __call__(self, astrocyte_index):
         import numpy as np
-        from archngv.building.morphology_synthesis.full_astrocyte import synthesize_astrocyte
+        from archngv.building.morphology_synthesis.full_astrocyte import \
+            synthesize_astrocyte
 
         seed = hash((self._kwargs['seed'], astrocyte_index)) % (2 ** 32)
         np.random.seed(seed)
 
         paths = _synthesis_input_paths(self._kwargs)
-        synthesize_astrocyte(astrocyte_index, paths, self._config)
+        morph = synthesize_astrocyte(astrocyte_index, paths, self._config)
+
+        cell_properties = astrocyte_circuit_data(astrocyte_index, paths)[0]
+        morph.write(Path(paths.morphology_directory, cell_properties.name[0] + '.h5'))
 
 
 def _synthesis_input_paths(kwargs):
-    from archngv.building.morphology_synthesis.data_structures import SynthesisInputPaths
+    from archngv.building.morphology_synthesis.data_structures import \
+        SynthesisInputPaths
     return SynthesisInputPaths(
             astrocytes=kwargs['astrocytes'],
             microdomains=kwargs['microdomains'],
@@ -43,7 +51,9 @@ def _apply_func(func, data_generator):
 
 def _apply_parallel_func(func, data_generator):
     import multiprocessing
+
     from archngv.app.logger import LOGGER
+
     # If all the available cores are used the workers accumulate running time
     # as if there is a sequential bottleneck somewhere
     # Not sure if it is the hyperthreading, or some gpfs io issue. Using only the physical cores seems to fix it
@@ -71,8 +81,8 @@ def _apply_parallel_func(func, data_generator):
 @click.option("--seed", help="Pseudo-random generator seed", type=int, default=0, show_default=True)
 def cmd(config, **kwargs):
     # pylint: disable=missing-docstring
+    from archngv.app.utils import ensure_dir, load_yaml
     from archngv.core.datasets import CellData
-    from archngv.app.utils import load_yaml, ensure_dir
 
     config = load_yaml(config)
     ensure_dir(kwargs['out_morph_dir'])
