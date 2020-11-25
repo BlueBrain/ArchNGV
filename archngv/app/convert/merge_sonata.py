@@ -5,7 +5,7 @@ https://bbpteam.epfl.ch/project/issues/browse/NGV-132?focusedCommentId=99967&pag
 """
 import os
 
-from voxcell.sonata import NodePopulation
+from voxcell import CellCollection
 import click
 import h5py
 import libsonata
@@ -106,7 +106,9 @@ def _merge_nodes(nodes_paths, output_path):
     populations = []
     for nodes in nodes_paths:
         offsets[nodes] = total_population
-        population = NodePopulation.load(nodes).to_dataframe()
+        population = CellCollection.load_sonata(nodes).as_dataframe()
+        if population.index[0] == 1:
+            population.index = population.index - 1
         total_population += len(population)
 
         for attr in population:
@@ -116,8 +118,9 @@ def _merge_nodes(nodes_paths, output_path):
 
     populations = pd.concat(populations, ignore_index=True, sort=False)
 
-    new_population = NodePopulation(POPULATION_NAME, size=total_population)
+    new_population = CellCollection(POPULATION_NAME)
     new_population.positions = populations[['x', 'y', 'z']].to_numpy()
+    new_population.properties = pd.DataFrame(index=range(total_population))
 
     for attr in seen_attributes:
         if attr in 'xyz':  # already handled in positions
@@ -125,7 +128,7 @@ def _merge_nodes(nodes_paths, output_path):
 
         values = np.nan_to_num(populations[attr].to_numpy(dtype=seen_attributes[attr]),
                                DEFAULT_VALUE)
-        new_population.attributes[attr] = values
+        new_population.properties[attr] = values
 
     new_population.save(output_path)
 
