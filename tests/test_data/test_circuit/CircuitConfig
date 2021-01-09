@@ -1,5 +1,0 @@
-Run Default
-{
-    MorphologyPath ./test_circuit/morphology
-    CircuitPath ./test_circuit
-}
