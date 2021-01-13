@@ -32,7 +32,7 @@ def cmd(config, vasculature_mesh, gliovascular_connectivity, seed, output):
     vasculature_mesh = openmesh.read_trimesh(vasculature_mesh)
 
     gliovascular_connectivity = GliovascularConnectivity(gliovascular_connectivity)
-    endfeet_points = gliovascular_connectivity.vasculature_surface_targets
+    endfeet_points = gliovascular_connectivity.vasculature_surface_targets()
 
     LOGGER.info('Setting up generator...')
     data_generator = endfeet_area_generation(

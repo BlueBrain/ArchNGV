@@ -55,3 +55,36 @@ def test_circuit():
         morphology_points = astrocytes.morphology.get(astro_id, transform=True).points
         expected_points = np.load("expected/morphologies/{}.npy".format(morphology_name))
         npt.assert_allclose(morphology_points, expected_points, atol=1e-4)
+
+
+def test_vasculature_representations_consistency():
+
+    circuit = NGVCircuit("build/ngv_config.json")
+
+    from morphio.vasculature import Vasculature as mVasculature
+    from archngv.core.datasets import Vasculature as sVasculature
+
+    astrocytes = circuit.astrocytes
+    gv_connectivity = circuit.gliovascular_connectome
+
+    c_vasc = circuit.vasculature
+
+    morphio_vasculature = mVasculature(c_vasc._extra_conf['vasculature_file'])
+    sonata_vasculature = sVasculature.load_sonata('build/sonata/nodes/vasculature.h5')
+
+    morphio_sections = morphio_vasculature.sections
+
+    sonata_points = sonata_vasculature.points
+    sonata_edges = sonata_vasculature.edges
+
+    for aid in range(astrocytes.size):
+
+        endfeet_ids = gv_connectivity.astrocyte_endfeet(aid)
+        data = gv_connectivity.vasculature_sections_segments(endfeet_ids).to_numpy(dtype=np.int64)
+
+        for edge_id, sec_id, seg_id in data:
+
+            sonata_segment = sonata_points[sonata_edges[edge_id]]
+            morphio_segment = morphio_sections[sec_id].points[seg_id: seg_id + 2]
+
+            npt.assert_allclose(sonata_segment, morphio_segment)

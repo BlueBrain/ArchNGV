@@ -50,7 +50,11 @@ class LibSonataReader:
             ids = [ids]
         return libsonata.Selection(ids)
 
-    def _get_property(self, property_name, ids=None):
+    def get_source_nodes(self, ids=None):
+        """Returns source nodes"""
+        return self._impl.source_nodes(self._selection(ids=ids)).astype(np.int64)
+
+    def get_property(self, property_name, ids=None):
         """Returns a numpy array containing the values corresponding to property_name"""
         selection = self._selection(ids=ids)
         try:
@@ -62,9 +66,9 @@ class LibSonataReader:
         """Returns a numpy array containing the values corresponding to property_names"""
         ids = self._selection(ids)
         props = ensure_list(property_names)
-        properties = [self._get_property(p, ids=ids) for p in props]
+        properties = [self.get_property(p, ids=ids) for p in props]
         if all(prop.dtype == properties[0].dtype for prop in properties):
-            return np.column_stack([self._get_property(p, ids=ids) for p in props])
+            return np.column_stack([self.get_property(p, ids=ids) for p in props])
         raise NGVError("Can't stack properties with different types {}".format(
             prop.dtype for prop in properties))
 

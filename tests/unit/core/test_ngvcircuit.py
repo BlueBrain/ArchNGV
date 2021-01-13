@@ -165,8 +165,10 @@ class TestCircuit:
 
         npt.assert_allclose(gv.vasculature_surface_targets([0, 1]).to_numpy(),
                             [[0.11, 0.12, 0.13], [0.21, 0.22, 0.23]])
+
         npt.assert_equal(gv.vasculature_sections_segments([0, 1]).to_numpy(),
-                         [[0, 0], [0, 1]])
+                         [[0, 0, 0], [1, 0, 1]])
+
 
     def test_neuroglial_api(self):
         ng = self.circuit.neuroglial_connectome

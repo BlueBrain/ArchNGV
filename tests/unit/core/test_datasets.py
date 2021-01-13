@@ -23,7 +23,7 @@ class TestGliovascularConnectivity:
 
     def test_vasculature_surface_targets(self):
         expected = np.array([[0.11, 0.21, 0.31], [0.12, 0.22, 0.32], [0.13, 0.23, 0.33]])
-        npt.assert_allclose(self.gliovascular.vasculature_surface_targets, expected.T)
+        npt.assert_allclose(self.gliovascular.vasculature_surface_targets(), expected.T)
 
     def test_astrocyte_endfeet(self):
         assert self.gliovascular.astrocyte_endfeet(0) == 2

@@ -35,14 +35,21 @@ class CellData(NodesReader):
 class GliovascularConnectivity(EdgesReader):
     """Access to the Gliovascular Data"""
 
-    @property
-    def vasculature_surface_targets(self):
-        """Endfeet surface targets on vasculature."""
-        return self.get_properties(['endfoot_surface_x', 'endfoot_surface_y', 'endfoot_surface_z'])
-
     def astrocyte_endfeet(self, astrocyte_ids):
         """endfoot_id is equivalent to the edge id. Can resolve quicker using afferent_edges"""
         return self.afferent_edges(astrocyte_ids)
+
+    def vasculature_surface_targets(self, endfeet_ids=None):
+        """Endfeet surface targets on vasculature."""
+        return self.get_properties(
+            ['endfoot_surface_x', 'endfoot_surface_y', 'endfoot_surface_z'], ids=endfeet_ids)
+
+    def vasculature_sections_segments(self, endfeet_ids):
+        """Returns the edge id, morphology section and segment id for each endfoot"""
+        return np.column_stack((
+            self.get_source_nodes(endfeet_ids),
+            self.get_properties(['efferent_section_id', 'efferent_segment_id'], ids=endfeet_ids)
+        ))
 
 
 class NeuronalConnectivity(EdgesReader):

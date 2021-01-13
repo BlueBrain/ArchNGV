@@ -8,6 +8,7 @@ from cached_property import cached_property
 import numpy as np
 
 from bluepysnap import Circuit
+from bluepysnap.sonata_constants import Edge
 from bluepysnap.nodes import NodeStorage, NodePopulation
 from bluepysnap.edges import EdgeStorage, EdgePopulation
 from bluepysnap.morph import MorphHelper
@@ -282,8 +283,14 @@ class GlioVascular(NGVEdges):
                                                         'endfoot_surface_z'])
 
     def vasculature_sections_segments(self, endfoot_ids):
-        """Returns the Endfeet section segment from the vasculature."""
-        return self.properties(endfoot_ids, properties=['efferent_section_id',
+        """Returns:
+            edge_id: The sonata Vasculature node id that corresponds to the
+                edge id in core.Vasculature and VasculatureAPI.PointVasculature
+            efferent_section_id: The section id of the vasculature morphology
+            efferent_segment_id: The segment id of the vaculature morphology
+        """
+        return self.properties(endfoot_ids, properties=[Edge.SOURCE_NODE_ID,
+                                                        'efferent_section_id',
                                                         'efferent_segment_id'])
 
 
