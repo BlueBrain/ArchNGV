@@ -2,7 +2,7 @@
 from collections import namedtuple
 
 
-EndfeetData = namedtuple('EndfeetData', ['targets', 'area_meshes'])
+EndfeetData = namedtuple('EndfeetData', ['ids', 'targets', 'area_meshes'])
 
 AstrocyteProperties = namedtuple('AstrocyteProperties', ['name', 'soma_position', 'soma_radius', 'microdomain'])
 

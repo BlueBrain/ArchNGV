@@ -1,144 +1,190 @@
 import morphio
 import numpy as np
+from numpy import testing as npt
 import pytest
 from unittest.mock import Mock
 
-from archngv.building.morphology_synthesis import endfoot_compartment as ec
+from archngv.building.morphology_synthesis import endfoot_compartment as tested
+from archngv.core.datasets import EndfootMesh
 
 
-def points():
-    return np.array([[0.39837784, 0.26220273, 0.063706  ],
-                     [0.02642341, 0.83682305, 0.1745578 ],
-                     [0.60209137, 0.4267205 , 0.99843931],
-                     [0.93499858, 0.89701073, 0.08564404],
-                     [0.2880215 , 0.91225645, 0.78189027],
-                     [0.68814504, 0.46642128, 0.49170066],
-                     [0.14743094, 0.29872451, 0.23291819],
-                     [0.06752298, 0.80174692, 0.55350953],
-                     [0.71539294, 0.23468221, 0.41481889],
-                     [0.69081039, 0.85747751, 0.51872049]])
+def _rot2D(p, theta):
+
+    c = np.cos(theta)
+    s = np.sin(theta)
+
+    p1 = p.copy()
+
+    if p.ndim == 1:
+        p1[0] = p[0] * c - p[1] * s
+        p1[1] = p[0] * s + p[1] * c
+    else:
+        p1[:, 0] = p[:, 0] * c - p[:, 1] * s
+        p1[:, 1] = p[:, 0] * s + p[:, 1] * c
+
+    return p1
 
 
-class MockSection:
+def test_extent_across_vasculature_segment_medial_axis():
+    """
+      0,1,0
+        |  . (0.25, 0.75, 0.0)
+        |
+        |    * ref_point (1.0, 0.0, 0.0)
+        |
+        |  . (0.25, -0.75, 0.0)
+      0,-1,0
+    """
 
-    def __init__(self):
-        self.type = 2
-        self.children = []
-        self.id = 0
+    ref_point = np.array([1.0, 0.0, 0.0])
 
-    @property
-    def points(self):
-        return points()
+    segment = np.array([
+        [0.,1.,0.],
+        [0.,-1.,0.]
+    ])
 
-    def append_section(self, point_level, section_type):
-        self.children.append((point_level, section_type))
+    points = np.array([
+        [0.25, 0.75, 0.0],
+        [0.25, -0.75, 0.0]
+    ])
 
+    npt.assert_allclose(
+        tested._extent_across_vasculature_segment_medial_axis(
+            points, ref_point, segment),
+        0.75 + 0.75
+    )
 
-class MockMorphology:
-    def __init__(self):
-        self.sections = [MockSection()]
+    npt.assert_allclose(
+        tested._extent_across_vasculature_segment_medial_axis(
+            points, ref_point, segment[[1, 0]]),
+        0.75 + 0.75
+    )
 
-    def iter(self):
-        return iter(self.sections)
+    # adding the symmetric points should not change the result
+    points = np.array([
+        [0.25, 0.75, 0.0],
+        [0.25, -0.75, 0.0],
+        [-0.25, 0.75, 0.0],
+        [-0.25, -0.75, 0.0]
+    ])
 
-    def section(self, section_id):
-        return self.sections[section_id]
+    npt.assert_allclose(
+        tested._extent_across_vasculature_segment_medial_axis(
+            points, ref_point, segment),
+        0.75 + 0.75
+    )
 
+    # rotations should not change the result
+    theta = np.pi / 4.
+    ref_point = _rot2D(ref_point, theta)
+    points = _rot2D(points, theta)
+    segment = _rot2D(segment, theta)
 
-@pytest.fixture
-def endfeet_data():
+    npt.assert_allclose(
+        tested._extent_across_vasculature_segment_medial_axis(
+            points, ref_point, segment),
+        0.75 + 0.75
+    )
 
-    mock_mesh = Mock()
-    mock_mesh.area = 2.
-    mock_mesh.points = points()
-    mock_mesh.triangles = [[0, 1, 2]]
-    mock_mesh.thickness = 0.3
+    theta = np.pi / 4.
+    ref_point = _rot2D(ref_point, theta)
+    points = _rot2D(points, theta)
+    segment = _rot2D(segment, theta)
 
-    mock_endfeet_data = Mock()
-    mock_endfeet_data.area_meshes = [mock_mesh]
-    mock_endfeet_data.targets = [np.random.random(3)]
-
-    return mock_endfeet_data
-
-
-def test_principal_direction_and_extents():
-
-    principal_direction, centroid, left_extent, right_extent = \
-        ec._principal_direction(points())
-
-    expected_direction = (-0.94319842,  0.32081538, -0.08633785)
-    expected_left_extent = 0.3602942167490586
-    expected_right_extent = 0.5034604220178519
-    expected_centroid = (0.4559215, 0.59940659, 0.43159052)
-
-    assert np.allclose(expected_centroid, centroid)
-    assert np.isclose(left_extent, expected_left_extent)
-    assert np.isclose(right_extent, expected_right_extent)
-    assert np.allclose(principal_direction, expected_direction)
-
-
-def test_target_to_maximal_extent():
-
-    ps = points()
-
-    target = np.array([0.1, 0.1, 0.1], dtype=np.float)
-
-    direction, extent = ec._target_to_maximal_extent(ps, target)
-
-    expected_direction = (0.79654393, 0.43942254, 0.41524161)
-    expected_length = 0.873461474423381
-
-    assert np.allclose(direction, expected_direction)
-    assert np.isclose(expected_length, extent)
-
-    # These are the left and right extent points from the principal
-    # direction
-    target1 = np.array([0.79575044, 0.48381866, 0.46269755])
-    target2 = np.array([-0.01894157,  0.76092444,  0.38812283])
-
-    direction, extent = ec._target_to_maximal_extent(ps, target1)
-
-    # thus we should get the opposite point as a result
-    expected_direction = target2 - target1
-    expected_length = np.linalg.norm(expected_direction)
-    expected_direction /= expected_length
-
-    assert np.allclose(expected_direction, direction)
-    assert np.allclose(expected_length, extent)
-
-    direction, extent = ec._target_to_maximal_extent(ps, target2)
-
-    # thus we should get the opposite point as a result
-    expected_direction = target1 - target2
-    expected_length = np.linalg.norm(expected_direction)
-    expected_direction /= expected_length
-
-    assert np.allclose(expected_direction, direction)
-    assert np.allclose(expected_length, extent)
+    npt.assert_allclose(
+        tested._extent_across_vasculature_segment_medial_axis(
+            points, ref_point, segment),
+        0.75 + 0.75
+    )
 
 
-def test_endfoot_compartment_data():
+def test_endfoot_compartment_features():
 
-    section = MockSection()
-
-    target = np.array([0.1, 0.1, 0.1], dtype=np.float)
-
-    area, thickness  = 5., 1.2
+    area = 3.12
+    thickness = 1.1
+    length = 1.32
 
     expected_volume = area * thickness
 
-    (
-        res_length,
-        res_diameter,
-        res_perimeter
-    ) = ec._endfoot_compartment_data(target, points(), area, thickness)
+    diameter, perimeter = tested._endfoot_compartment_features(length, area, thickness)
 
-    expected_length = 0.873461474423381
-    np.testing.assert_allclose(res_length, expected_length)
+    volume = np.pi  * (0.5 * diameter) ** 2 * length
 
-    expected_diameter =  2.0 * np.sqrt(expected_volume / (np.pi * expected_length))
+    npt.assert_allclose(volume, expected_volume)
+    npt.assert_allclose(length * perimeter, area)
 
-    np.testing.assert_allclose(res_diameter, expected_diameter)
 
-    expected_perimeter = area / (np.pi * expected_length)
-    np.testing.assert_allclose(res_perimeter, expected_perimeter)
+def test_create_endfeet_compartment_data():
+
+    segments = np.array([
+        [
+            [0., 0., 0.],
+            [0., 1., 0.]
+        ],
+        [
+            [0., 0., 1.],
+            [0., 0., 0.]
+        ],
+        [
+            [1., 0., 0.],
+            [0., 0., 0.]
+        ],
+        [
+            [1., 0., 0.],
+            [0., 0., 0.]
+        ]
+    ])
+    
+    ref_points = np.array([
+        [1.0, 0.5, 0.0],
+        [0.0, 1.0, 0.5],
+        [0.5, 0.0, 1.0],
+        [1.0, 0.0, 0.0]
+    ])
+
+    meshes = [
+        EndfootMesh(
+            index=0,
+            points=np.array([
+                [0.25, 0.75, 0.0],
+                [0.25, 0.25, 0.0]
+            ]),
+            triangles=np.array([[0, 1, 0]]),
+            area=4.0, thickness=0.5 * np.pi
+        ),
+        EndfootMesh(
+            index=1,
+            points=np.array([
+                [0.0, 0.25, 0.75],
+                [0.0, 0.25, 0.25]
+            ]),
+            triangles=np.empty(shape=(0, 3), dtype=np.int),
+            area=4.0, thickness=0.5 * np.pi
+        ),
+        EndfootMesh(
+            index=2,
+            points=np.array([
+                [0.75, 0.0, 0.25],
+                [0.25, 0.0, 0.25]
+            ]),
+            triangles=np.array([[0, 1, 0]]),
+            area=4.0, thickness=0.5 * np.pi
+        ),
+        EndfootMesh(
+            index=2,
+            points=np.array([
+                [1.0, 0.0, 0.0],
+                [1.0, 0.0, 0.0]
+            ]),
+            triangles=np.array([[0, 1, 0]]),
+            area=4.0, thickness=0.5 * np.pi
+        )
+    ]
+
+    lengths, diameters, perimeters = tested.create_endfeet_compartment_data(
+        segments, ref_points, meshes)
+
+    # 2nd has no triangles and 4th zero length
+    npt.assert_allclose(lengths, [0.5, 0., 0.5, 0.])
+    npt.assert_allclose(diameters, [4., 0., 4., 0.])
+    npt.assert_allclose(perimeters, [8., 0., 8., 0.])

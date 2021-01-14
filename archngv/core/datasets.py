@@ -11,6 +11,7 @@ from archngv.core.sonata_readers import EdgesReader, NodesReader
 
 from archngv.spatial import ConvexPolygon
 
+
 DOMAIN_TRIANGLE_TYPE = {
     'polygon_id': 0,
     'vertices': slice(1, 4)}
@@ -46,10 +47,9 @@ class GliovascularConnectivity(EdgesReader):
 
     def vasculature_sections_segments(self, endfeet_ids):
         """Returns the edge id, morphology section and segment id for each endfoot"""
-        return np.column_stack((
-            self.get_source_nodes(endfeet_ids),
-            self.get_properties(['efferent_section_id', 'efferent_segment_id'], ids=endfeet_ids)
-        ))
+        edge_ids = self.get_source_nodes(endfeet_ids)
+        efferent = self.get_properties(['efferent_section_id', 'efferent_segment_id'], ids=endfeet_ids)
+        return np.column_stack((edge_ids, efferent))
 
 
 class NeuronalConnectivity(EdgesReader):
@@ -81,10 +81,18 @@ class NeuronalConnectivity(EdgesReader):
 class NeuroglialConnectivity(EdgesReader):
     """Neuroglial connectivity access."""
 
+    def astrocyte_neuron_connections(self, astrocyte_id):
+        """Returns edge ids between astrocyte and neurons"""
+        return self.efferent_edges(astrocyte_id)
+
+    def neuronal_synapses(self, connection_ids):
+        """Returns the synapse ids"""
+        return self.get_property('synapse_id', ids=connection_ids)
+
     def astrocyte_synapses(self, astrocyte_id):
         """Get the synapse ids connected to a given `astrocyte_id`."""
-        edge_ids = self.efferent_edges(astrocyte_id)
-        return self.get_properties('synapse_id', ids=edge_ids).flatten()
+        edge_ids = self.astrocyte_neuron_connections(astrocyte_id)
+        return self.neuronal_synapses(edge_ids)
 
     def astrocyte_number_of_synapses(self, astrocyte_id):
         """Get the number of synapses to a given `astrocyte_id`."""
@@ -401,9 +409,11 @@ class MicrodomainTesselation(H5ContextManager):
         cell_mesh.save(filename)
 
 
+EndfootMesh = namedtuple('EndfootMesh', ['index', 'points', 'triangles', 'area', 'thickness'])
+
+
 class EndfootSurfaceMeshes(H5ContextManager):
     """Access to the endfeet meshes."""
-    EndfootMesh = namedtuple('EndfootMesh', ['index', 'points', 'triangles', 'area', 'thickness'])
 
     @staticmethod
     def _index_to_key(endfoot_index):
@@ -445,7 +455,7 @@ class EndfootSurfaceMeshes(H5ContextManager):
         triangles = entry['triangles'][:]
         surface_area = self._get_mesh_surface_area(endfoot_index)
         surface_thickness = self._get_mesh_surface_thickness(endfoot_index)
-        return self.EndfootMesh(endfoot_index, points, triangles, surface_area, surface_thickness)
+        return EndfootMesh(endfoot_index, points, triangles, surface_area, surface_thickness)
 
     def __iter__(self):
         """Endfoot iterator."""

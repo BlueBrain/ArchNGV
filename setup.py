@@ -26,7 +26,7 @@ EXTRA_ALL = [
     'openmesh>=1.1.2',
     'pyyaml>=3.0',
     'tns>=2.2.1',
-    'diameter-synthesis>=0.1.6',
+    'diameter-synthesis==0.1.7',  # TODO: Unpin this and fix breaking changes
     'morph-tool>=0.2.10'
 ]
 
@@ -46,12 +46,12 @@ setup(
         'pandas==1.0.5',
         'bluepy-configfile>=0.1.11',
         'six>=1.15.0',
-        'h5py>=2.3.1,<3.0.0',
+        'h5py>=3.1.0',
         'scipy>=1.0.0',
         'libsonata>=0.1.1',
-        'bluepysnap>=0.7.1,<0.8.0',
+        'bluepysnap>=0.8.0',
         'cached-property>=1.5',
-        'voxcell>=2.6.2,<3.0.0',
+        'voxcell>=3.0.0',
         'vasculatureapi>=0.0.6',
     ],
     extras_require={

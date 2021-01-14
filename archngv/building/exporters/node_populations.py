@@ -56,12 +56,14 @@ def save_vasculature_node_population(vasculature, filepath):
     # for multiple columns assignment
     columns = ['start_x', 'start_y', 'start_z', 'end_x', 'end_y', 'end_z']
     properties = pd.DataFrame(index=np.arange(len(indices)), columns=columns)
-    properties['type'] = vasculature.edge_types
-    properties['section_id'] = indices.get_level_values('section_id').to_numpy().astype(np.int64)
-    properties['segment_id'] = indices.get_level_values('segment_id').to_numpy().astype(np.int64)
 
-    properties['start_node_id'] = start_node_ids.astype(np.int64)
-    properties['end_node_id'] = end_node_ids.astype(np.int64)
+    properties['type'] = vasculature.edge_types.astype(np.int32)
+    properties['section_id'] = indices.get_level_values('section_id').to_numpy().astype(np.uint32)
+    properties['segment_id'] = indices.get_level_values('segment_id').to_numpy().astype(np.uint32)
+
+    properties['start_node_id'] = start_node_ids.astype(np.uint64)
+    properties['end_node_id'] = end_node_ids.astype(np.uint64)
+
     properties[['start_x', 'start_y', 'start_z']] = points[start_node_ids].astype(np.float32)
     properties[['end_x', 'end_y', 'end_z']] = points[end_node_ids].astype(np.float32)
     properties['start_diameter'] = diameters[start_node_ids].astype(np.float32)

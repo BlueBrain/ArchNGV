@@ -160,7 +160,6 @@ rule all:
         'sonata/edges/neuroglial.h5',
         'sonata/edges/glialglial.h5',
         'sonata/edges/gliovascular.h5',
-        'astrocyte_annotations.h5'
 
 
 rule sonata:
@@ -314,13 +313,13 @@ rule gliovascular_connectivity:
         vasculature_sonata = 'sonata/nodes/vasculature.h5'
 
     output:
-        'sonata/edges/gliovascular.h5',
+        'sonata.tmp/edges/gliovascular.connectivity.h5',
 
     log:
         log_path('gliovascular_connectivity')
 
     shell:
-        ngv_run('gliovascular-connectivity',
+        ngv_run('gliovascular connectivity',
                 [
                 '--config',
                     bioname_path('gliovascular_connectivity.yaml'),
@@ -433,7 +432,7 @@ rule glialglial_connectivity:
 
 rule endfeet_area:
     input:
-        gliovascular_connectivity = 'sonata/edges/gliovascular.h5',
+        gliovascular_connectivity = 'sonata.tmp/edges/gliovascular.connectivity.h5',
 
     output:
         'endfeet_areas.h5'
@@ -463,7 +462,7 @@ rule synthesis:
     input:
         astrocytes = 'sonata/nodes/glia.h5',
         microdomains = 'microdomains/overlapping_microdomains.h5',
-        gliovascular_connectivity = 'sonata/edges/gliovascular.h5',
+        gliovascular_connectivity = 'sonata.tmp/edges/gliovascular.connectivity.h5',
         neuroglial_connectivity = 'sonata.tmp/edges/neuroglial.connectivity.h5',
         endfeet_areas = 'endfeet_areas.h5'
 
@@ -506,45 +505,33 @@ rule synthesis:
         )
 
 
-rule annotations_and_properties:
+rule finalize_gliovascular_connectivity:
     input:
-        cell_data = 'sonata/nodes/glia.h5',
-        microdomains = 'microdomains/overlapping_microdomains.h5',
-        gliovascular_connectivity = 'sonata/edges/gliovascular.h5',
-        neuroglial_connectivity = 'sonata.tmp/edges/neuroglial.connectivity.h5',
+        astrocytes = 'sonata/nodes/glia.h5',
+        connectivity = 'sonata.tmp/edges/gliovascular.connectivity.h5',
         endfeet_areas = 'endfeet_areas.h5',
         morphologies = MORPH_DIR + '/_DONE',
+        vasculature_sonata = 'sonata/nodes/vasculature.h5'
 
     output:
-        properties = 'astrocyte_properties.h5',
-        annotations = 'astrocyte_annotations.h5'
-
+        'sonata/edges/gliovascular.h5'
     log:
-        log_path('annotations_and_properties')
-
+        log_path('finalize_gliovascular_connectivity')
     shell:
-        ngv_run('annotations_and_properties',
+        ngv_run('gliovascular finalize',
                 [
-                '--config',
-                    bioname_path('synthesis.yaml'),
-                '--cell-data',
-                    '{input[cell_data]}',
-                '--microdomains',
-                    '{input[microdomains]}',
-                '--gliovascular-connectivity',
-                    '{input[gliovascular_connectivity]}',
-                '--neuroglial-connectivity',
-                    '{input[neuroglial_connectivity]}',
+                '--input-file',
+                    '{input[connectivity]}',
+                '--output-file',
+                    '{output}',
+                '--astrocytes',
+                    '{input[astrocytes]}',
                 '--endfeet-areas',
                     '{input[endfeet_areas]}',
-                '--synaptic-data',
-                    BASE_CIRCUIT_CONNECTOME,
+                '--vasculature-sonata',
+                    '{input[vasculature_sonata]}',
                 '--morph-dir',
                     MORPH_DIR,
-                '--annotations_output',
-                    '{output[annotations]}',
-                '--properties_output',
-                    '{output[properties]}',
                 ('--parallel' if PARALLEL else ''),
                 '--seed',
                     SEED,
@@ -553,26 +540,37 @@ rule annotations_and_properties:
         )
 
 
-rule neuroglial_bind_annotations:
+rule finalize_neuroglial_connectivity:
     input:
-        connectivity = 'sonata.tmp/edges/neuroglial.connectivity.h5',
         astrocytes = 'sonata/nodes/glia.h5',
+        microdomains = 'microdomains/overlapping_microdomains.h5',
+        connectivity = 'sonata.tmp/edges/neuroglial.connectivity.h5',
         morphologies = MORPH_DIR + '/_DONE',
-        annotations= 'astrocyte_annotations.h5',
 
     output:
         'sonata/edges/neuroglial.h5'
 
+    log:
+        log_path('finalize_neuroglial_connectivity')
+
     shell:
-        ngv_run('neuroglial bind-annotations',
+        ngv_run('neuroglial finalize',
                 [
-                '--input',
+                '--input-file',
                     '{input[connectivity]}',
+                '--output-file',
+                    '{output}',
                 '--astrocytes',
                     '{input[astrocytes]}',
-                '--annotations',
-                    '{input[annotations]}',
-                '--output',
-                    '{output}'
-                ]
+                '--microdomains',
+                    '{input[microdomains]}',
+                '--synaptic-data',
+                    BASE_CIRCUIT_CONNECTOME,
+                '--morph-dir',
+                    MORPH_DIR,
+                ('--parallel' if PARALLEL else ''),
+                '--seed',
+                    SEED,
+                ],
+                dump_log='{log}'
         )

@@ -181,12 +181,12 @@ class TestCircuit:
         npt.assert_equal(ng.astrocyte_synapses(2), [0, 1])
 
         data = {'afferent_center_x': [1110.0, 1111.0], 'syn_weight': [1.0, 1.0]}
-        expected = pd.DataFrame(data=data, index=np.array([0, 1], dtype=np.uint64))
+        expected = pd.DataFrame(data=data, index=np.array([0, 1], dtype=np.int64))
         res = ng.astrocyte_synapses_properties(2, properties=['afferent_center_x', 'syn_weight'])
         assert_frame_equal(res, expected)
 
         data = {'x': [1111.0], 'y': [1121.0], 'z': [1131.0]}
-        expected = pd.DataFrame(data=data, index=np.array([1], dtype=np.uint64))
+        expected = pd.DataFrame(data=data, index=np.array([1], dtype=np.int64))
         res = ng.synapses.positions(ng.astrocyte_synapses(0), 'afferent', 'center')
         assert_frame_equal(res, expected)
 

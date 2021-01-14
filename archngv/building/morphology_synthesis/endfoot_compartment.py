@@ -1,73 +1,33 @@
 """
 Endfoot equivalent compartment for NEURON
 """
-
 import logging
 import numpy as np
 
-from archngv.utils.linear_algebra import principal_directions
 from archngv.utils.projections import vectorized_scalar_projection
 
 
 L = logging.getLogger(__name__)
 
 
-def _principal_direction(points):
-    """ Given an array of points return the principal direction
-    of their covariance matrix and the left and right projections
-    from the origin along that direction.
+def _extent_across_vasculature_segment_medial_axis(points, ref_point, segment):
+    """Projects all the vectors from the ref_point to points on the direction of
+    the segment and returns the max(proj) - min(proj).
+    Args:
+        points (np.ndarrat): (N, 3)
+        ref_point (np.ndarray): (3,)
+        segment (np.ndarray): (2, 3)
+
+    Returns:
+        extent (float): max(projections) - min(projections)
     """
-    centroid = np.mean(points, axis=0)
-    vectors = points - centroid
-
-    # returns sorted dirs by eigenvalue magnitude (big-->small)
-    principal_direction = principal_directions(vectors)[0]
-    projs = vectorized_scalar_projection(vectors, principal_direction)
-
-    # biggest extend right of zero + biggest extent left of zero
-    right_extent, left_extent = max(projs), abs(min(projs))
-
-    return principal_direction, centroid, left_extent, right_extent
+    segment_direction = segment[1] - segment[0]
+    segment_direction /= np.linalg.norm(segment_direction)
+    projs = vectorized_scalar_projection(points - ref_point, segment_direction)
+    return np.ptp(projs)
 
 
-def _target_to_maximal_extent(points, target):
-    """
-    Find the longest vector from the target to the extent points
-    along the principal direction of variation of the surface points of
-    the endfoot.
-
-           target
-         /        |
-        /          |
-       /            |
-      /              |
-    p0 -- centroid -- p1 ----> principal direction
-       ||          ||
-      left       right
-      extent     extent
-
-    Returns the direction and length from the target to either p0 or p1.
-    """
-    p_dir, centroid, left_extent, right_extent = _principal_direction(points)
-
-    p0 = centroid - left_extent * p_dir
-    p1 = centroid + right_extent * p_dir
-
-    v0 = p0 - target
-    v1 = p1 - target
-
-    l0 = np.linalg.norm(v0)
-    l1 = np.linalg.norm(v1)
-
-    if l0 > l1:
-        return v0 / l0, l0
-    return v1 / l1, l1
-
-
-def _endfoot_compartment_data(endfoot_target,
-                              endfoot_mesh_points,
-                              endfoot_mesh_area,
-                              endfoot_mesh_thickness):
+def _endfoot_compartment_features(endfoot_length, endfoot_mesh_area, endfoot_mesh_thickness):
     """ Given the mesh information of the endfoot, it generates the length,
     diameter and perimeter of an equivalent cylinder that will encode this info.
 
@@ -78,46 +38,73 @@ def _endfoot_compartment_data(endfoot_target,
     to encode the information of its geometry.
 
     Args:
-        endfoot_target: array[float, (3,)]
-        endfoot_mesh_points: array[float, (N, 3)]
-        endfoot_mesh_area: float
-        endfoot_mesh_thickness: float
+        endfoot_length (float): Length of compartments
+        endfoot_mesh_area (float): Surface area of endfoot
+        endfoot_mesh_thickness (float): Thickness of endfoot
 
     Returns:
-        total_length, diameter, perimeter
+        tuple:
+            diameter (float): A diameter which can be used to reconstruct the volume
+                in combination with the length.
+            perimeter (float): A perimeter which can be used to reconstruct the area
+                in combination with the lengthj.
     """
-    _, total_length = _target_to_maximal_extent(endfoot_mesh_points, endfoot_target)
-
     endfoot_volume = endfoot_mesh_area * endfoot_mesh_thickness
 
-    diameter = 2.0 * np.sqrt(endfoot_volume / (np.pi * total_length))
-    perimeter = endfoot_mesh_area / (np.pi * total_length)
+    diameter = 2.0 * np.sqrt(endfoot_volume / (np.pi * endfoot_length))
+    perimeter = endfoot_mesh_area / endfoot_length
 
-    return total_length, diameter, perimeter
+    return diameter, perimeter
 
 
-def create_endfeet_compartment_data(_, endfeet_data):
+def create_endfeet_compartment_data(vasculature_segments, targets, area_meshes):
     """ Creates the data that is required to construct endfeet compartments in NEURON, using
-    the area mesh and target of the endfoot.
+    the area mesh and target of the endfoot. The compartment length is calculed by the extent
+    of the endfoot across the medial axis of its respective segment. The diameters and perimeters
+    correspond to the volumes and area of the endfeet respectively.
+
+    Args:
+        vasculature_segments (np.ndarray): (N, 2, 3) Vasculature segments corresponding to
+            each endfoot
+        targets (np.ndarray): (N, 3) Reference points on the surface of the vasculature
+            corresponding to the starting points of the endfeet
+        area_meshes (List[namedtuple]): List of namedtuple that have the following endfoot
+            mesh fields:
+                - index (int): Endfoot Index
+                - points (np.ndarray): Mesh points
+                - triangles (np.ndarray): Mesh triangles
+                - area (float): Endfoot surface area
+                - thickness (float): Endfoot thickness
 
     Returns:
-        compartment_data: array[float, (N, 3)]
-        The total length, diameter and perimeter for each endfoot compartment that will be
-        created in NEURON.
+        tuple:
+            lengths (np.ndarray): (N,) Compartment lengths
+            diameters (np.ndarray): (N,) Compartment diameters
+            perimeters (np.ndarray): (N,) Compartment perimeters
+
+    Notes:
+        If there are no triangle in and endfoot mesh, it returns [0., 0.,0.]
+        If a calculated length is zero, it returns [0., 0., 0.].
     """
-    targets, area_meshes = endfeet_data.targets, endfeet_data.area_meshes
-    compartment_data = np.zeros((len(targets), 3), dtype=np.float)
+    assert len(vasculature_segments) == len(targets) == len(area_meshes)
 
-    for i, (endfoot_target, area_mesh) in enumerate(zip(targets, area_meshes)):
+    lengths = np.zeros(len(targets), dtype=np.float32)
+    diameters = np.zeros(len(targets), dtype=np.float32)
+    perimeters = np.zeros(len(targets), dtype=np.float32)
 
-        if len(area_mesh.triangles) == 0:
-            L.info('Endfoot %d has no triangles. Mesh has not been grown.', area_mesh.index)
+    for i, (segment, target, mesh) in enumerate(zip(vasculature_segments, targets, area_meshes)):
+
+        if len(mesh.triangles) == 0:
+            L.info('Endfoot %d has no triangles. Mesh has not been grown.', mesh.index)
             continue
 
-        compartment_data[i] = _endfoot_compartment_data(
-            endfoot_target,
-            area_mesh.points,
-            area_mesh.area,
-            area_mesh.thickness)
+        lengths[i] = _extent_across_vasculature_segment_medial_axis(mesh.points, target, segment)
 
-    return compartment_data
+        if np.isclose(lengths[i], 0.0):
+            L.info('Endfoot %d length is zero.', mesh.index)
+            continue
+
+        diameters[i], perimeters[i] = _endfoot_compartment_features(
+            lengths[i], mesh.area, mesh.thickness)
+
+    return lengths, diameters, perimeters

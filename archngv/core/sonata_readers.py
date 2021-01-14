@@ -70,7 +70,7 @@ class LibSonataReader:
         if all(prop.dtype == properties[0].dtype for prop in properties):
             return np.column_stack([self.get_property(p, ids=ids) for p in props])
         raise NGVError("Can't stack properties with different types {}".format(
-            prop.dtype for prop in properties))
+            [prop.dtype for prop in properties]))
 
     def __len__(self):
         return self._impl.size

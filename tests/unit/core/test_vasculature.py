@@ -1,3 +1,4 @@
+from pathlib import Path
 import h5py
 
 import pytest
@@ -9,12 +10,13 @@ from archngv.exceptions import NGVError
 
 from tempfile import NamedTemporaryFile
 
-from utils import get_data
+
+DATA_DIR = Path(__file__).resolve().parent / 'data'
 
 
 @pytest.fixture
 def old_vasculature():
-    with h5py.File(get_data('vasculature_old_spec.h5'), 'r') as fd:
+    with h5py.File(DATA_DIR / 'vasculature_old_spec.h5', 'r') as fd:
         points = fd['points'][:]
         diameters = fd['point_properties']['diameter'][:]
         edges = fd['edges'][:]
@@ -24,8 +26,7 @@ def old_vasculature():
 
 @pytest.fixture
 def vasculature():
-    path = str(get_data('vasculature_new_spec.h5'))
-    return Vasculature.load(path)
+    return Vasculature.load(DATA_DIR / 'vasculature_new_spec.h5')
 
 
 def test_vasculature_wrapper__integration(vasculature, old_vasculature):
@@ -50,20 +51,21 @@ def test_vasculature_sonata_cycle(vasculature):
         v2 = Vasculature.load_sonata(filename)
 
         # check that they are identical
-        pdt.assert_frame_equal(v1.node_properties, v2.node_properties)
-        pdt.assert_frame_equal(v1.edge_properties, v2.edge_properties)
+        pdt.assert_frame_equal(v1.node_properties, v2.node_properties, check_dtype=False, check_index_type=False)
+
+        pdt.assert_frame_equal(v1.edge_properties, v2.edge_properties, check_dtype=False, check_index_type=False)
 
 
 class TestVasculature:
     def setup(self):
-        self.vasculature = Vasculature.load(get_data('vasculature_new_spec.h5'))
+        self.vasculature = Vasculature.load(DATA_DIR / 'vasculature_new_spec.h5')
 
     def test_fail_init(self):
         with pytest.raises(NGVError):
             Vasculature([])
 
     def test_load_sonata(self):
-        Vasculature.load_sonata(get_data('vasculature_sonata.h5'))
+        Vasculature.load_sonata(DATA_DIR / 'vasculature_sonata.h5')
 
     def test_node_properties(self):
         assert list(self.vasculature.node_properties) == ["x", "y", "z", "diameter"]

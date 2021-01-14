@@ -17,8 +17,6 @@ def _extract_section_perimeters(morphology):
         radii = perimeters / (2. * np.pi)
         lengths = np.linalg.norm(points[1:] - points[:-1], axis=1)
 
-        print(radii.shape, lengths.shape, perimeters.shape)
-
         areas = 0.5 * (perimeters[1:] + perimeters[:-1]) * np.sqrt(lengths ** 2 + (radii[1:] - radii[:-1]) ** 2)
 
         return areas.sum() / lengths.sum()

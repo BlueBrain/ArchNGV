@@ -32,14 +32,11 @@ def test_circuit():
     assert circuit.vasculature.size == 10211
     assert circuit.neuronal_connectome.size == 641
     assert circuit.glialglial_connectome.size == 0  # no touches on functional
-    assert circuit.neuroglial_connectome.size == 598
-    assert circuit.gliovascular_connectome.size == 23
     assert len(circuit.atlases) == 2
 
     assert isinstance(circuit.astrocytes.microdomains, api.Microdomains)
     assert isinstance(circuit.astrocytes.microdomains.tesselation, MicrodomainTesselation)
     assert isinstance(circuit.astrocytes.microdomains.overlapping, MicrodomainTesselation)
-    assert isinstance(circuit.gliovascular_connectome.surface_meshes, EndfootSurfaceMeshes)
 
     assert isinstance(circuit.atlases["intensity"], api.Atlas)
     assert isinstance(circuit.atlases["intensity"].get_atlas(), voxcell.VoxelData)
@@ -57,8 +54,71 @@ def test_circuit():
         npt.assert_allclose(morphology_points, expected_points, atol=1e-4)
 
 
-def test_vasculature_representations_consistency():
+def test_neuroglial_connectome():
 
+    circuit = NGVCircuit("build/ngv_config.json")
+
+    assert circuit.neuroglial_connectome.size == 598
+
+    ng_conn = circuit.neuroglial_connectome
+
+    npt.assert_equal(ng_conn.size, 598)
+
+    prop_dtypes = {
+        '@source_node': np.uint64,
+        '@target_node': np.uint64,
+        'synapse_id': np.uint64,
+        'efferent_section_id': np.uint32,
+        'efferent_segment_id': np.uint32,
+        'efferent_segment_offset': np.float32
+    }
+
+    expected_properties = set(prop_dtypes.keys())
+    assert ng_conn.property_names == expected_properties, (ng_conn.property_names, expected_properties)
+
+    for property_name, expected_dtype in prop_dtypes.items():
+
+        arr = ng_conn.properties([0, 1], property_name)
+        npt.assert_equal(arr.dtype, expected_dtype)
+
+
+def test_gliovascular_connectome():
+
+    circuit = NGVCircuit("build/ngv_config.json")
+
+    gv_conn = circuit.gliovascular_connectome
+
+    npt.assert_equal(gv_conn.size, 23)
+    assert isinstance(gv_conn.surface_meshes, EndfootSurfaceMeshes)
+
+    prop_dtypes = {
+        '@source_node' : np.uint64,
+        '@target_node': np.uint64,
+        'endfoot_id': np.uint64,
+        'endfoot_surface_x': np.float32,
+        'endfoot_surface_y': np.float32,
+        'endfoot_surface_z': np.float32,
+        'endfoot_compartment_length': np.float32,
+        'endfoot_compartment_diameter': np.float32,
+        'endfoot_compartment_perimeter': np.float32,
+        'morph_section_id': np.uint32,
+        'efferent_section_id': np.uint32,
+        'efferent_segment_id': np.uint32
+    }
+
+    expected_properties = set(prop_dtypes.keys())
+    assert gv_conn.property_names == expected_properties, (gv_conn.property_names, expected_properties)
+
+    circuit_dtypes = gv_conn.property_dtypes
+
+    for property_name, expected_dtype in prop_dtypes.items():
+        npt.assert_equal(circuit_dtypes[property_name], expected_dtype)
+
+
+def test_vasculature_representations_consistency():
+    """Test that it is equivalent to get the segment coordinates
+    via the sonata and morphio representations
+    """
     circuit = NGVCircuit("build/ngv_config.json")
 
     from morphio.vasculature import Vasculature as mVasculature

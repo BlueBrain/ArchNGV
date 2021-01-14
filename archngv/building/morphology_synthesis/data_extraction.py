@@ -58,7 +58,7 @@ def obtain_endfeet_data(astrocyte_index,
     L.debug('Endfeet Area Meshes: %s', endfeet_areas)
 
     assert targets.ndim == 2
-    return EndfeetData(targets=targets, area_meshes=endfeet_areas)
+    return EndfeetData(ids=endfeet_indices, targets=targets, area_meshes=endfeet_areas)
 
 
 def obtain_cell_properties(astrocyte_index,

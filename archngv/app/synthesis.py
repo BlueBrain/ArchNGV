@@ -44,27 +44,6 @@ def _synthesis_input_paths(kwargs):
             morphology_directory=kwargs['out_morph_dir'])
 
 
-def _apply_func(func, data_generator):
-    for data in data_generator:
-        func(data)
-
-
-def _apply_parallel_func(func, data_generator):
-    import multiprocessing
-
-    from archngv.app.logger import LOGGER
-
-    # If all the available cores are used the workers accumulate running time
-    # as if there is a sequential bottleneck somewhere
-    # Not sure if it is the hyperthreading, or some gpfs io issue. Using only the physical cores seems to fix it
-    n_cores = multiprocessing.cpu_count() // 2
-    LOGGER.info('Run in parallel enabled. N cores: %d', n_cores)
-    with multiprocessing.Pool(n_cores) as p:
-        for n, _ in enumerate(p.imap_unordered(func, data_generator), start=1):
-            if n % 1000 == 0:
-                LOGGER.info('%d astrocytes were synthesized', n)
-
-
 @click.command(help=__doc__)
 @click.option("--config", help="Path to synthesis YAML config", required=True)
 @click.option("--tns-distributions", help="Path to TNS distributions (JSON)", required=True)
@@ -81,15 +60,18 @@ def _apply_parallel_func(func, data_generator):
 @click.option("--seed", help="Pseudo-random generator seed", type=int, default=0, show_default=True)
 def cmd(config, **kwargs):
     # pylint: disable=missing-docstring
-    from archngv.app.utils import ensure_dir, load_yaml
+    from archngv.app.utils import ensure_dir, load_yaml, apply_parallel_function
     from archngv.core.datasets import CellData
+    from archngv.app.logger import LOGGER
 
     config = load_yaml(config)
     ensure_dir(kwargs['out_morph_dir'])
 
-    map_func = _apply_parallel_func if kwargs['parallel'] else _apply_func
+    map_func = apply_parallel_function if kwargs['parallel'] else map
 
     n_astrocytes = len(CellData(kwargs['astrocytes']))
 
     worker = Worker(config, kwargs)
-    map_func(worker, range(n_astrocytes))
+    for n, _ in enumerate(map_func(worker, range(n_astrocytes)), start=1):
+        if n % 1000 == 0:
+            LOGGER.info('Synthesized %d astrocytes', n)

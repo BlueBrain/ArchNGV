@@ -5,9 +5,40 @@ import libsonata
 import numpy as np
 import pandas as pd
 
+from archngv.exceptions import NGVError
 from archngv.core.constants import Population
 
 L = logging.getLogger(__name__)
+
+
+def add_properties_to_edge_population(filepath, population_name, properties):
+    """Add properties that are not already existing to an edge population.
+
+    Args:
+        filepath (str): EdgePopulation h5 file path
+        populaton_name (str): The name of the EdgePopulation
+        properties (dict): A dict with property names as keys and 1D numpy arrays
+            as values.
+
+    Raises:
+        AssertionError: If property name exists or if property values length is not
+            compatible with the edge population
+    """
+    with h5py.File(filepath, 'r+') as h5f:
+
+        group = h5f[f'/edges/{population_name}/0']
+        length = h5f[f'/edges/{population_name}/source_node_id'].shape[0]
+
+        for name, values in properties.items():
+
+            if name in group:
+                raise NGVError(f"'{name}' property already exists.")
+
+            if values.size != length:
+                raise NGVError(f"Incompatible length. Expected: {length}. Given: {values.size}")
+
+            group.create_dataset(name, data=values)
+            L.info('Added edge Property: %s', name)
 
 
 def _write_edge_population(output_path,
@@ -83,58 +114,6 @@ def neuroglial_connectivity(astrocyte_data, neurons, astrocytes, output_path):
     )
 
 
-def _load_annotations(annotations_path):
-    ret = []
-    with h5py.File(annotations_path, 'r') as h5:
-        for glia_name in h5:
-            synapses = h5[glia_name]['synapses']
-            if(not len(synapses) or
-               ('ids' in synapses and not len(synapses['ids']))
-               ):
-                continue
-
-            synapse_ids = synapses['ids'][:]
-            assert len(np.unique(synapse_ids)) == len(synapse_ids), \
-                'duplicate synapse IDs per astrocyte'
-
-            ret.append(pd.DataFrame({'morphology': glia_name,
-                                     'synapse_id': synapse_ids,
-                                     'section_id': synapses['morph_section_ids'][:],
-                                     'segment_id': synapses['morph_segment_ids'][:],
-                                     'segment_offset': synapses['morph_segment_offsets'][:],
-                                     },
-                                    ))
-
-    return pd.concat(ret, ignore_index=True, sort=False)
-
-
-def bind_annotations(output_path, astrocytes, annotations_file):
-    """ Bind synapse annotations with closest astrocyte sections. """
-    sections = _load_annotations(annotations_file).set_index(
-        ['synapse_id', 'morphology']).sort_index()
-
-    with h5py.File(output_path, 'a') as h5:
-        population_path = '/edges/{}'.format(Population.NEUROGLIAL)
-        h5group = h5[population_path + '/0']
-
-        neuroglial = pd.DataFrame(np.column_stack(
-            [h5[population_path + '/source_node_id'][:], h5[population_path + '/0/synapse_id'][:]]),
-            columns=['astro_id', 'synapse_id'])
-
-        astrocytes_data = astrocytes.as_dataframe()["morphology"]
-        if astrocytes_data.index[0] == 1:
-            astrocytes_data.index = astrocytes_data.index - 1
-        synapses = neuroglial.join(astrocytes_data, on='astro_id').join(sections, on=['synapse_id',
-                                                                                      'morphology'])
-
-        h5group.create_dataset('efferent_section_id',
-                               data=synapses["section_id"].to_numpy(), dtype=np.int32)
-        h5group.create_dataset('efferent_segment_id',
-                               data=synapses["segment_id"].to_numpy(), dtype=np.int32)
-        h5group.create_dataset('efferent_segment_offset',
-                               data=synapses["segment_offset"].to_numpy(), dtype=np.float32)
-
-
 def gliovascular_connectivity(output_path, astrocytes, vasculature, endfeet_to_astrocyte,
                               endfeet_to_vasculature, endfoot_surface_positions):
     """Creation of the gliovascular connectivity."""
@@ -144,7 +123,7 @@ def gliovascular_connectivity(output_path, astrocytes, vasculature, endfeet_to_a
         endfoot_surface_positions)
 
     # endfoot ids are the positional indices from these datasets
-    endfoot_ids = np.arange(len(endfeet_to_astrocyte)).astype(np.uint64)  # becomes the edge_ids
+    endfoot_ids = np.arange(len(endfeet_to_astrocyte), dtype=np.uint64)
     astrocyte_ids = endfeet_to_astrocyte
 
     # get the section/segment ids and use them to get the vasculature node ids
@@ -160,8 +139,8 @@ def gliovascular_connectivity(output_path, astrocytes, vasculature, endfeet_to_a
         'endfoot_surface_x': endfoot_surface_positions[:, 0].astype(np.float32),
         'endfoot_surface_y': endfoot_surface_positions[:, 1].astype(np.float32),
         'endfoot_surface_z': endfoot_surface_positions[:, 2].astype(np.float32),
-        'efferent_section_id': endfeet_to_vasculature[:, 0].astype(np.uint64),
-        'efferent_segment_id': endfeet_to_vasculature[:, 1].astype(np.uint64),
+        'efferent_section_id': endfeet_to_vasculature[:, 0].astype(np.uint32),
+        'efferent_segment_id': endfeet_to_vasculature[:, 1].astype(np.uint32),
     }
 
     _write_edge_population(
