@@ -11,24 +11,24 @@ spec.loader.exec_module(module)
 VERSION = module.VERSION
 
 
-EXTRA_CORE = [
-    'tess>=0.2.2',
-    'tmd>=2.0.6',
-    'MorphIO>=2.3.4',
-    'numpy-stl>=2.7',
-    'trimesh>=2.21.15',
-    'spatial-index==0.0.1',
+BUILDING = [
     'archngv-building>=0.1.3',
-]
-
-EXTRA_ALL = [
+    'bluepy-configfile>=0.1.11',
     'Click>=7.0',
+    'diameter-synthesis==0.1.7',  # TODO: Unpin this and fix breaking changes
+    'MorphIO>=2.3.4',
+    'morph-tool>=0.2.10',
+    'numpy-stl>=2.7',
     'openmesh>=1.1.2',
     'pyyaml>=3.0',
+    'pandas<1.1.0',  # py-touchreader spack module overwrites numpy version to 1.15.2, making pandas throw
+    'spatial-index==0.0.1',
+    'tess>=0.2.2',
+    'tmd>=2.0.6',
     'tns>=2.2.1',
-    'diameter-synthesis==0.1.7',  # TODO: Unpin this and fix breaking changes
-    'morph-tool>=0.2.10'
+    'trimesh>=2.21.15'
 ]
+
 
 setup(
     classifiers=[
@@ -40,23 +40,21 @@ setup(
     author='Eleftherios Zisis',
     author_email='eleftherios.zisis@epfl.ch',
     setup_requires=[
-        'numpy>=1.13',
+        'numpy>=1.15.4',
     ],
     install_requires=[
-        'pandas==1.0.5',
-        'bluepy-configfile>=0.1.11',
+        'numpy>=1.15.4',
         'six>=1.15.0',
         'h5py>=3.1.0',
         'scipy>=1.0.0',
         'libsonata>=0.1.1',
-        'bluepysnap>=0.8.0',
+        'bluepysnap>=0.9.0',
         'cached-property>=1.5',
         'voxcell>=3.0.0',
         'vasculatureapi>=0.0.6',
     ],
     extras_require={
-        'all': EXTRA_CORE + EXTRA_ALL,
-        'core': EXTRA_CORE,
+        'all': BUILDING,
     },
     packages=find_packages(),
     scripts=[
