@@ -8,4 +8,4 @@ __default__:
 
 glial_gap_junctions:
     jobname: 'glial_gap_junctions'
-    tasks: 60
+    tasks: 36
