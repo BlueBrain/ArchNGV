@@ -15,7 +15,7 @@ BUILDING = [
     'archngv-building>=0.1.3',
     'bluepy-configfile>=0.1.11',
     'Click>=7.0',
-    'diameter-synthesis==0.1.7',  # TODO: Unpin this and fix breaking changes
+    'diameter-synthesis>=0.1.7',
     'MorphIO>=2.3.4',
     'morph-tool>=0.2.10',
     'numpy-stl>=2.7',

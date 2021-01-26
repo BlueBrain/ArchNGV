@@ -43,16 +43,6 @@ def test_circuit():
     assert isinstance(circuit.atlases["brain_regions"], api.Atlas)
     assert isinstance(circuit.atlases["brain_regions"].get_atlas(), voxcell.VoxelData)
 
-    astrocytes = circuit.astrocytes
-    # the morphologies.npy are created from the morphologies outputted from tns
-    # (so translated / rotated). This verifies the positions / rotations are correctly propagated to
-    # the sonata astrocyte node file.
-    for astro_id in range(astrocytes.size):
-        morphology_name = astrocytes.get(astro_id, "morphology")
-        morphology_points = astrocytes.morphology.get(astro_id, transform=True).points
-        expected_points = np.load("expected/morphologies/{}.npy".format(morphology_name))
-        npt.assert_allclose(morphology_points, expected_points, atol=1e-4)
-
 
 def test_neuroglial_connectome():
 
