@@ -22,7 +22,7 @@ BUILDING = [
     'openmesh>=1.1.2',
     'pyyaml>=3.0',
     'pandas<1.1.0',  # py-touchreader spack module overwrites numpy version to 1.15.2, making pandas throw
-    'spatial-index==0.0.1',
+    'spatial-index==0.0.2',
     'tess>=0.2.2',
     'tmd>=2.0.6',
     'tns>=2.2.1',
