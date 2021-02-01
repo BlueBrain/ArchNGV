@@ -9,3 +9,7 @@ __default__:
 
 glial_gap_junctions:
   jobname: astro_conn
+
+synthesis:
+  jobname: ngv_synthesis
+  time: '00:20:00'

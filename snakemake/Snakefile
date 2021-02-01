@@ -45,8 +45,8 @@ BASE_CIRCUIT_CELLS = config['common']['base_circuit_cells']
 BASE_CIRCUIT_CONNECTOME = config['common']['base_circuit_connectome']
 BUILDER_RECIPE = bioname_path('astrocyte_gap_junction_recipe.xml')
 
-NGV_APP = 'ngv -v {cmd} '
-PARALLEL = True
+NGV_APP = 'ngv -v {cmd}'
+PARALLEL = config['common'].get('parallel', True)
 
 SPACK_MODULEPATH = "/gpfs/bbp.cscs.ch/ssd/apps/hpc/jenkins/modules/all"
 
@@ -54,7 +54,9 @@ MODULES = {
     'glial_gap_junctions':
         (SPACK_MODULEPATH, ['archive/2019-12', 'touchdetector/5.3.2']),
     'glialglial_connectivity':
-        (SPACK_MODULEPATH, ['archive/2019-12', 'py-pytouchreader/1.4.3/python3'])
+        (SPACK_MODULEPATH, ['archive/2019-12', 'py-pytouchreader/1.4.3/python3']),
+    'synthesis':
+        (SPACK_MODULEPATH, ['archive/2019-12', 'py-mpi4py']),
 }
 
 
@@ -86,6 +88,12 @@ def salloc_cmd(slurm_env):
             jobname=cfg['jobname'],
             time=cfg['time'],
         )
+        if 'cpus-per-task' in cfg:
+            salloc_options += f" --cpus-per-task {cfg['cpus-per-task']}"
+        if 'exclusive' in cfg:
+            salloc_options += " --exclusive"
+        if 'mem' in cfg:
+            salloc_options += f" --mem {cfg['mem']}"
         return "salloc {salloc_options}".format(salloc_options=salloc_options)
     return ""
 
@@ -124,7 +132,7 @@ def bbp_env(module_env, command, dump_log=False, slurm_env=None, skip_srun=False
     return result
 
 
-def ngv_run(command, args, module_env=None, dump_log=False):
+def ngv_run(command, args, module_env=None, dump_log=False, slurm_env=None):
     """
     Args:
         command: ngv command
@@ -132,10 +140,14 @@ def ngv_run(command, args, module_env=None, dump_log=False):
         module_env: modules specified for this command in MODULES
         dump_log: produce log
     """
+    salloc = ''
+    if slurm_env is not None:
+        salloc = salloc_cmd(slurm_env) + ' srun'
 
-    result = '{module_setup} {cmd}{args}'.format(
-        module_setup=modules_cmd(module_env),
+    result = '{module} {salloc} {cmd} {args}'.format(
+        module=modules_cmd(module_env),
         cmd=NGV_APP.format(cmd=command),
+        salloc=salloc,
         args=' '.join(args)
     )
 
@@ -501,7 +513,9 @@ rule synthesis:
                 '--seed',
                     SEED
                 ],
-                dump_log='{log}'
+                dump_log='{log}',
+                module_env='synthesis' if PARALLEL else None,
+                slurm_env='synthesis' if PARALLEL else None,
         )
 
 

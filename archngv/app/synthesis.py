@@ -2,46 +2,29 @@
 Synthesize astrocyte morphologies
 """
 from pathlib import Path
+import time
 
 import click
-from archngv.building.morphology_synthesis.data_extraction import astrocyte_circuit_data
+from dask import bag
+from dask.distributed import Client, progress
+import dask_mpi
+import numpy as np
+
+from archngv.app.utils import load_yaml
 
 
-class Worker:
-    """Morphology synthesis helper"""
-    def __init__(self, config, kwargs):
-        self._config = config
-        self._kwargs = kwargs
+def _synthesize(astrocyte_index, seed, paths, config):
+    # imports must be local, otherwise when used with modules, they use numpy of the loaded
+    # module which might be outdated
+    from archngv.building.morphology_synthesis.data_extraction import astrocyte_circuit_data
+    from archngv.building.morphology_synthesis.full_astrocyte import synthesize_astrocyte
 
-    def __call__(self, astrocyte_index):
-        import numpy as np
-        from archngv.building.morphology_synthesis.full_astrocyte import \
-            synthesize_astrocyte
+    seed = hash((seed, astrocyte_index)) % (2 ** 32)
+    np.random.seed(seed)
 
-        seed = hash((self._kwargs['seed'], astrocyte_index)) % (2 ** 32)
-        np.random.seed(seed)
-
-        paths = _synthesis_input_paths(self._kwargs)
-        morph = synthesize_astrocyte(astrocyte_index, paths, self._config)
-
-        cell_properties = astrocyte_circuit_data(astrocyte_index, paths)[0]
-        morph.write(Path(paths.morphology_directory, cell_properties.name[0] + '.h5'))
-
-
-def _synthesis_input_paths(kwargs):
-    from archngv.building.morphology_synthesis.data_structures import \
-        SynthesisInputPaths
-    return SynthesisInputPaths(
-            astrocytes=kwargs['astrocytes'],
-            microdomains=kwargs['microdomains'],
-            neuronal_connectivity=kwargs['neuronal_connectivity'],
-            gliovascular_connectivity=kwargs['gliovascular_connectivity'],
-            neuroglial_connectivity=kwargs['neuroglial_connectivity'],
-            endfeet_areas=kwargs['endfeet_areas'],
-            tns_parameters=kwargs['tns_parameters'],
-            tns_distributions=kwargs['tns_distributions'],
-            tns_context=kwargs['tns_context'],
-            morphology_directory=kwargs['out_morph_dir'])
+    morph = synthesize_astrocyte(astrocyte_index, paths, config)
+    cell_properties = astrocyte_circuit_data(astrocyte_index, paths)[0]
+    morph.write(Path(paths.morphology_directory, cell_properties.name[0] + '.h5'))
 
 
 @click.command(help=__doc__)
@@ -51,27 +34,61 @@ def _synthesis_input_paths(kwargs):
 @click.option("--tns-context", help="Path to TNS context (JSON)", required=True)
 @click.option("--astrocytes", help="Path to HDF5 with somata positions and radii", required=True)
 @click.option("--microdomains", help="Path to microdomains structure (HDF5)", required=True)
-@click.option("--gliovascular-connectivity", help="Path to gliovascular connectivity sonata", required=True)
-@click.option("--neuroglial-connectivity", help="Path to neuroglial connectivity (HDF5)", required=True)
+@click.option(
+    "--gliovascular-connectivity", help="Path to gliovascular connectivity sonata", required=True)
+@click.option(
+    "--neuroglial-connectivity", help="Path to neuroglial connectivity (HDF5)", required=True)
 @click.option("--endfeet-areas", help="Path to HDF5 endfeet areas", required=True)
 @click.option("--neuronal-connectivity", help="Path to HDF5 with synapse positions", required=True)
 @click.option("--out-morph-dir", help="Path to output morphology folder", required=True)
-@click.option("--parallel", help="Parallelize with 'multiprocessing'", is_flag=True, default=False)
+@click.option("--parallel", help="Use Dask's mpi client", is_flag=True, default=False)
 @click.option("--seed", help="Pseudo-random generator seed", type=int, default=0, show_default=True)
-def cmd(config, **kwargs):
-    # pylint: disable=missing-docstring
-    from archngv.app.utils import ensure_dir, load_yaml, apply_parallel_function
+def cmd(config,
+        tns_distributions,
+        tns_parameters,
+        tns_context,
+        astrocytes,
+        microdomains,
+        gliovascular_connectivity,
+        neuroglial_connectivity,
+        endfeet_areas,
+        neuronal_connectivity,
+        out_morph_dir,
+        parallel,
+        seed):
+    # pylint: disable=too-many-arguments
+    """Cli interface to synthesis."""
     from archngv.core.datasets import CellData
-    from archngv.app.logger import LOGGER
+    from archngv.building.morphology_synthesis.data_structures import SynthesisInputPaths
 
+    if parallel:
+        dask_mpi.initialize()
+        client = Client()
+    else:
+        client = Client(processes=False, threads_per_worker=1)
+
+    Path(out_morph_dir).mkdir(exist_ok=True, parents=True)
     config = load_yaml(config)
-    ensure_dir(kwargs['out_morph_dir'])
+    n_astrocytes = len(CellData(astrocytes))
+    paths = SynthesisInputPaths(
+        astrocytes=astrocytes,
+        microdomains=microdomains,
+        neuronal_connectivity=neuronal_connectivity,
+        gliovascular_connectivity=gliovascular_connectivity,
+        neuroglial_connectivity=neuroglial_connectivity,
+        endfeet_areas=endfeet_areas,
+        tns_parameters=tns_parameters,
+        tns_distributions=tns_distributions,
+        tns_context=tns_context,
+        morphology_directory=out_morph_dir)
 
-    map_func = apply_parallel_function if kwargs['parallel'] else map
+    synthesize = bag.from_sequence(range(n_astrocytes)) \
+        .map(_synthesize, seed=seed, paths=paths, config=config) \
+        .persist()
+    # print is intentional here because it is for showing the progress bar title
+    print(f'Synthesizing {n_astrocytes} astrocytes')
+    progress(synthesize)
+    synthesize.compute()
 
-    n_astrocytes = len(CellData(kwargs['astrocytes']))
-
-    worker = Worker(config, kwargs)
-    for n, _ in enumerate(map_func(worker, range(n_astrocytes)), start=1):
-        if n % 1000 == 0:
-            LOGGER.info('Synthesized %d astrocytes', n)
+    time.sleep(10)  # this sleep is necessary to let dask syncronize state across the cluster
+    client.retire_workers()

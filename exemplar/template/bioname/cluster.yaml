@@ -1,11 +1,18 @@
 __default__:
     account: 'proj62'
-    nodes: 1
-    tasks: 72
-    time: '24:00:00'
+    time: '08:00:00'
     partition: 'prod'
     constraint: 'cpu'
 
 glial_gap_junctions:
     jobname: 'glial_gap_junctions'
+    nodes: 1
     tasks: 36
+
+synthesis:
+    jobname: ngv_synthesis
+    nodes: 6
+    time: '04:00:00'
+    exclusive: true
+    mem: 0
+    cpus-per-task: 2

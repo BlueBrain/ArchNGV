@@ -19,14 +19,18 @@ BUILDING = [
     'MorphIO>=2.3.4',
     'morph-tool>=0.2.10',
     'numpy-stl>=2.7',
-    'openmesh>=1.1.2',
+    'openmesh>=1.1.2,<1.1.6',  # 1.1.6 can't be installed for py38
     'pyyaml>=3.0',
     'pandas<1.1.0',  # py-touchreader spack module overwrites numpy version to 1.15.2, making pandas throw
     'spatial-index==0.0.2',
     'tess>=0.2.2',
     'tmd>=2.0.6',
     'tns>=2.2.1',
-    'trimesh>=2.21.15'
+    'trimesh>=2.21.15',
+    # constrain dask dependencies <=2.21 according to their BB5 deployed versions
+    'dask[distributed,bag]>=2.0,<=2.21',
+    'distributed>=2.0,<=2.21',
+    'dask_mpi>=2.0,<=2.21',
 ]
 
 
@@ -40,10 +44,10 @@ setup(
     author='Eleftherios Zisis',
     author_email='eleftherios.zisis@epfl.ch',
     setup_requires=[
-        'numpy>=1.15.4',
+        'numpy>=1.17',
     ],
     install_requires=[
-        'numpy>=1.15.4',
+        'numpy>=1.17',
         'six>=1.15.0',
         'h5py>=3.1.0',
         'scipy>=1.0.0',

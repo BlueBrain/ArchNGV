@@ -59,3 +59,98 @@ build/sonata.tmp
 build/sonata.tmp/nodes
 build/sonata.tmp/nodes/glia.h5.somata
 ```
+
+## Astrocyte Synthesis
+
+It uses Dask for parallel calculations.
+
+An example for a local machine usage. Pay attention that `--parallel` option is not used:
+```shell
+ngv synthesis \
+    --config /path/to/synthesis_config.yaml' \
+    --tns-distributions /path/to/tns_distributions.json \
+    --tns-parameters /path/to/tns_parameters.json \
+    --tns-context /path/to/tns_context.json \
+    --astrocytes /path/to/glia.h5 \
+    --microdomains /path/to/microdomains.h5 \
+    --gliovascular-connectivity /path/to/gliovascular.h5 \
+    --neuroglial-connectivity /path/to/neuroglial.h5 \
+    --endfeet-areas /path/to/endfeet_areas.h5 \
+    --neuronal-connectivity /path/to/edges.h5 \
+    --out-morph-dir /path/to/out_morphologies
+```
+An example for a BB5 usage. `--parallel` option is used in conjunction with multiple exclusive
+nodes, otherwise no benefits from `--parallel`:
+```shell
+srun -Aproj<your_project> -N2 -t=24:00:00 --exclusive \
+ngv synthesis \
+    --config ... \
+    // all above options as before
+    --parallel
+```
+An example of Snakemake usage. 
+```shell
+snakemake \
+    --snakefile snakemake/Snakefile \
+    --cluster-config path/to/cluster.yaml \  # see an example below
+    --config bioname path/to/bioname \
+    synthesis
+```
+
+Don't forget to have an entry in your `cluster.yaml` for `synthesis`
+```yaml
+synthesis:
+  jobname: ngv_synthesis
+  account: '<your project>'
+  nodes: <better have at least 2, 4 is recommended>
+  partition: 'prod'
+  constraint: 'cpu'
+  time: '04:00:00' # feel free to increase time 
+  cpus-per-task: 2
+  exclusive: true
+  mem: 0
+```
+
+Also it is highly recommended to export in advance next Dask variables for better performance:
+```shell
+export DASK_DISTRIBUTED__WORKER__USE_FILE_LOCKING=False
+export DASK_DISTRIBUTED__WORKER__MEMORY__TARGET=False  # don't spill to disk
+export DASK_DISTRIBUTED__WORKER__MEMORY__SPILL=False  # don't spill to disk
+export DASK_DISTRIBUTED__WORKER__MEMORY__PAUSE=0.80  # pause execution at 80% memory use
+export DASK_DISTRIBUTED__WORKER__MEMORY__TERMINATE=0.95  # restart the worker at 95% use
+# Reduce dask profile memory usage/leak (see https://github.com/dask/distributed/issues/4091)
+export DASK_DISTRIBUTED__WORKER__PROFILE__INTERVAL=10000ms  # Time between statistical profiling queries
+export DASK_DISTRIBUTED__WORKER__PROFILE__CYCLE=1000000ms  # Time between starting new profile
+```
+
+A final sbatch script example
+```shell
+#!/bin/bash
+# below SBATCH options are not related to options from cluster.yaml 
+#SBATCH --partition prod
+#SBATCH --account proj62
+#SBATCH --nodes 1  # It is not recommended to set higher because synthesis task will be launched with SBATCH options from its entry in `cluster.yaml`  
+#SBATCH --time 08:00:00
+#SBATCH --job-name sNGV
+#SBATCH --output out-%J.log
+#SBATCH --error err-%J.log
+#SBATCH --mem 200000
+#SBATCH --exclusive
+​
+export DASK_DISTRIBUTED__WORKER__USE_FILE_LOCKING=False
+export DASK_DISTRIBUTED__WORKER__MEMORY__TARGET=False  # don't spill to disk
+export DASK_DISTRIBUTED__WORKER__MEMORY__SPILL=False  # don't spill to disk
+export DASK_DISTRIBUTED__WORKER__MEMORY__PAUSE=0.80  # pause execution at 80% memory use
+export DASK_DISTRIBUTED__WORKER__MEMORY__TERMINATE=0.95  # restart the worker at 95% use
+# Reduce dask profile memory usage/leak (see https://github.com/dask/distributed/issues/4091)
+export DASK_DISTRIBUTED__WORKER__PROFILE__INTERVAL=10000ms  # Time between statistical profiling queries
+export DASK_DISTRIBUTED__WORKER__PROFILE__CYCLE=1000000ms  # Time between starting new profile
+
+source <venv with ArchNGV installed>/bin/activate
+​
+snakemake --snakefile <path to Snakefile of this project> \
+          --config bioname=<path to bioname> \
+          --directory <path to save results> \
+          --cluster-config <path to your cluster.yaml> \
+          -f synthesis
+​```

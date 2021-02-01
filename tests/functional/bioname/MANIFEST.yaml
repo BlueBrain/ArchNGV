@@ -1,4 +1,5 @@
 common:
+  parallel: true
   seed: 0
   atlas: '../data/atlas/'
   vasculature: '../data/atlas/vasculature.h5'
