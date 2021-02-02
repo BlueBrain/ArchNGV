@@ -48,7 +48,7 @@ class GliovascularConnectivity(EdgesReader):
     def vasculature_sections_segments(self, endfeet_ids):
         """Returns the edge id, morphology section and segment id for each endfoot"""
         edge_ids = self.get_source_nodes(endfeet_ids)
-        efferent = self.get_properties(['efferent_section_id', 'efferent_segment_id'], ids=endfeet_ids)
+        efferent = self.get_properties(['vasculature_section_id', 'vasculature_segment_id'], ids=endfeet_ids)
         return np.column_stack((edge_ids, efferent))
 
 

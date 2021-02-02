@@ -139,8 +139,8 @@ def gliovascular_connectivity(output_path, astrocytes, vasculature, endfeet_to_a
         'endfoot_surface_x': endfoot_surface_positions[:, 0].astype(np.float32),
         'endfoot_surface_y': endfoot_surface_positions[:, 1].astype(np.float32),
         'endfoot_surface_z': endfoot_surface_positions[:, 2].astype(np.float32),
-        'efferent_section_id': endfeet_to_vasculature[:, 0].astype(np.uint32),
-        'efferent_segment_id': endfeet_to_vasculature[:, 1].astype(np.uint32),
+        'vasculature_section_id': endfeet_to_vasculature[:, 0].astype(np.uint32),
+        'vasculature_segment_id': endfeet_to_vasculature[:, 1].astype(np.uint32),
     }
 
     _write_edge_population(

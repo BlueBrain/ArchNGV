@@ -15,6 +15,7 @@ from archngv.building.morphology_synthesis.tns_wrapper import create_tns_inputs
 from archngv.building.morphology_synthesis.data_extraction import tns_inputs
 from archngv.building.morphology_synthesis.data_extraction import astrocyte_circuit_data
 from archngv.building.morphology_synthesis.perimeters import add_perimeters_to_morphology
+from archngv.building.morphology_synthesis.endoplasmic_reticulum import add_endoplasmic_reticulum_to_morphology
 
 L = logging.getLogger(__name__)
 
@@ -107,6 +108,9 @@ def synthesize_astrocyte(astrocyte_index, paths, parameters):
     if parameters['perimeter_distribution']['enabled']:
         L.info('Distributing perimeters...')
         add_perimeters_to_morphology(morphology, parameters['perimeter_distribution'])
+
+    L.info('Adding endoplasmic reticulum')
+    add_endoplasmic_reticulum_to_morphology(morphology)
 
     # TODO: replace this when direct NEURON ordering write is available in MorphIO
     morph = _post_growing(morphology, cell_properties.soma_position)

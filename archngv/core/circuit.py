@@ -286,12 +286,12 @@ class GlioVascular(NGVEdges):
         """Returns:
             edge_id: The sonata Vasculature node id that corresponds to the
                 edge id in core.Vasculature and VasculatureAPI.PointVasculature
-            efferent_section_id: The section id of the vasculature morphology
-            efferent_segment_id: The segment id of the vaculature morphology
+            vasculature_section_id: The section id of the vasculature morphology
+            vasculature_segment_id: The segment id of the vaculature morphology
         """
         return self.properties(endfoot_ids, properties=[Edge.SOURCE_NODE_ID,
-                                                        'efferent_section_id',
-                                                        'efferent_segment_id'])
+                                                        'vasculature_section_id',
+                                                        'vasculature_segment_id'])
 
 
 class Neuronal(NGVEdges):

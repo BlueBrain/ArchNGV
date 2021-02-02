@@ -74,7 +74,7 @@ def _endfeet_properties_from_astrocyte(data):
     Returns:
         tuple:
             endfeet_ids (np.ndarray): (N,) int array of endfeet ids
-            morph_section_ids (np.ndarray): (N,) int array of astrocyte section ids
+            astrocyte_section_ids (np.ndarray): (N,) int array of astrocyte section ids
             lengths (np.ndarray): (N,) float array of endfeet compartment lengths
             diameters (np.ndarray): (N,) float array of endfeet compartment diameters
             perimeters (np.ndarray): (N,) float array of endfeet compartment perimeters
@@ -84,7 +84,7 @@ def _endfeet_properties_from_astrocyte(data):
     from archngv.app.utils import readonly_morphology
 
     morphology = readonly_morphology(data['morphology_path'], data['morphology_position'])
-    morph_section_ids = annotate_endfoot_location(morphology, data['endfeet_surface_targets'])
+    astrocyte_section_ids = annotate_endfoot_location(morphology, data['endfeet_surface_targets'])
 
     lengths, diameters, perimeters = create_endfeet_compartment_data(
         data['vasculature_segments'],
@@ -92,7 +92,7 @@ def _endfeet_properties_from_astrocyte(data):
         data['endfeet_meshes']
     )
 
-    return data['endfeet_ids'], morph_section_ids, lengths, diameters, perimeters
+    return data['endfeet_ids'], astrocyte_section_ids, lengths, diameters, perimeters
 
 
 class Worker:
@@ -196,7 +196,7 @@ def _endfeet_properties(seed, astrocytes, gv_connectivity,
     Returns:
         dict: A dictionary with additional endfeet properties:
             ids (np.ndarray): (N,) int array of endfeet ids
-            morph_section_id (np.ndarray): int array of astrocyte morphology section id that
+            astrocyte_section_id (np.ndarray): int array of astrocyte morphology section id that
                 connects to the surface of the vasculature
             endfoot_compartment_length (np.ndarray): (N,) float array of compartment lengths
             endfoot_compartment_diameter (np.ndarray): (N,) float array of compartment diameters
@@ -211,7 +211,7 @@ def _endfeet_properties(seed, astrocytes, gv_connectivity,
         raise NGVError('endfeet_ids should be a contiguous array from 0 to number of endfeet')
 
     properties = {
-        'morph_section_id': np.empty(n_endfeet, dtype=np.uint32),
+        'astrocyte_section_id': np.empty(n_endfeet, dtype=np.uint32),
         'endfoot_compartment_length': np.empty(n_endfeet, dtype=np.float32),
         'endfoot_compartment_diameter': np.empty(n_endfeet, dtype=np.float32),
         'endfoot_compartment_perimeter': np.empty(n_endfeet, dtype=np.float32)
@@ -224,7 +224,7 @@ def _endfeet_properties(seed, astrocytes, gv_connectivity,
 
     for ids, section_ids, lengths, diameters, perimeters in it_results:
 
-        properties['morph_section_id'][ids] = section_ids
+        properties['astrocyte_section_id'][ids] = section_ids
         properties['endfoot_compartment_length'][ids] = lengths
         properties['endfoot_compartment_diameter'][ids] = diameters
         properties['endfoot_compartment_perimeter'][ids] = perimeters
@@ -246,7 +246,7 @@ def finalize(input_file, output_file, astrocytes, endfeet_areas, vasculature_son
     Finalizes gliovascular connectivity. It needs to be ran after synthesis and endfeet area growing.
     It copies to the input GliovascularConnectivity population and adds the following edge properties:
 
-        - morph_section_id
+        - astrocyte_section_id
             The last section id of the astrocytic morphology that connects to the endfoot locaiton on
             the vascular surface
 

@@ -58,9 +58,9 @@ def test_neuroglial_connectome():
         '@source_node': np.uint64,
         '@target_node': np.uint64,
         'synapse_id': np.uint64,
-        'efferent_section_id': np.uint32,
-        'efferent_segment_id': np.uint32,
-        'efferent_segment_offset': np.float32
+        'astrocyte_section_id': np.uint32,
+        'astrocyte_segment_id': np.uint32,
+        'astrocyte_segment_offset': np.float32
     }
 
     expected_properties = set(prop_dtypes.keys())
@@ -91,9 +91,9 @@ def test_gliovascular_connectome():
         'endfoot_compartment_length': np.float32,
         'endfoot_compartment_diameter': np.float32,
         'endfoot_compartment_perimeter': np.float32,
-        'morph_section_id': np.uint32,
-        'efferent_section_id': np.uint32,
-        'efferent_segment_id': np.uint32
+        'astrocyte_section_id': np.uint32,
+        'vasculature_section_id': np.uint32,
+        'vasculature_segment_id': np.uint32
     }
 
     expected_properties = set(prop_dtypes.keys())

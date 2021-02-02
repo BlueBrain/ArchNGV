@@ -146,18 +146,18 @@ def _neuroglial_properties(seed, astrocytes, n_connections, paths, map_func):
 
     Returns:
         properties (dict): Dictionary with string keys
-            morph_section_id (np.ndarray): Array of ints corresponding to the
+            astrocyte_section_id (np.ndarray): Array of ints corresponding to the
                 astrocyte section id associated with each connected synapse
-            morph_segment_id (np.ndarray): Array of ints corresponding to the
+            astrocyte_segment_id (np.ndarray): Array of ints corresponding to the
                 astrocyte segment id associated with each connected synapse
-            morph_segment_offset (np.ndarray): Array of floats corresponding
+            astrocyte_segment_offset (np.ndarray): Array of floats corresponding
                 to the segment offset associated with each connected synapse
     """
 
     properties = {
-        'efferent_section_id': np.empty(n_connections, dtype=np.uint32),
-        'efferent_segment_id': np.empty(n_connections, dtype=np.uint32),
-        'efferent_segment_offset': np.empty(n_connections, dtype=np.float32)
+        'astrocyte_section_id': np.empty(n_connections, dtype=np.uint32),
+        'astrocyte_segment_id': np.empty(n_connections, dtype=np.uint32),
+        'astrocyte_segment_offset': np.empty(n_connections, dtype=np.float32)
     }
 
     it_results = filter(
@@ -167,9 +167,9 @@ def _neuroglial_properties(seed, astrocytes, n_connections, paths, map_func):
 
     for ids, section_ids, segment_ids, segment_offsets in it_results:
 
-        properties['efferent_section_id'][ids] = section_ids
-        properties['efferent_segment_id'][ids] = segment_ids
-        properties['efferent_segment_offset'][ids] = segment_offsets
+        properties['astrocyte_section_id'][ids] = section_ids
+        properties['astrocyte_segment_id'][ids] = segment_ids
+        properties['astrocyte_segment_offset'][ids] = segment_offsets
 
     return properties
 
@@ -188,9 +188,9 @@ def finalize(input_file, output_file, astrocytes, microdomains, synaptic_data, m
     for each synapse.
 
     It adds in neuroglial connectivity the following properties:
-        - efferent_section_id: int32
-        - efferent_segment_id: int32
-        - efferent_segment_offset: float32
+        - astrocyte_section_id: int32
+        - astrocyte_segment_id: int32
+        - astrocyte_segment_offset: float32
     """
     import shutil
     from archngv.core.datasets import CellData, NeuroglialConnectivity
