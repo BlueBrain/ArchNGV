@@ -79,15 +79,16 @@ def salloc_cmd(slurm_env):
             slurm_env = '__default__'
 
         cfg = cluster_config[slurm_env]
-        salloc_options = '-C {constraint} -A {account} -N {nodes} -n {tasks} -p {partition} -J {jobname} -t {time}'.format(
+        salloc_options = '-C {constraint} -A {account} -N {nodes} -p {partition} -J {jobname} -t {time}'.format(
             constraint=cfg['constraint'],
             account=cfg['account'],
             nodes=cfg['nodes'],
-            tasks=cfg['tasks'],
             partition=cfg['partition'],
             jobname=cfg['jobname'],
             time=cfg['time'],
         )
+        if 'tasks' in cfg:
+            salloc_options += f" -n {cfg['tasks']}"
         if 'cpus-per-task' in cfg:
             salloc_options += f" --cpus-per-task {cfg['cpus-per-task']}"
         if 'exclusive' in cfg:
