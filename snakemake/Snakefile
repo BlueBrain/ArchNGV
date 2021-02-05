@@ -1,6 +1,7 @@
 import os
 import yaml
 import datetime
+import logging
 
 LOGS_DIR = 'logs'
 MORPH_DIR = 'morphologies'
@@ -32,6 +33,17 @@ def escape_single_quotes(value):
     return value.replace("'", "'\\''")
 
 
+def get_log_level_for_cli(level):
+    levels = (logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG)
+    level = logging.getLevelName(level)
+    assert level in levels, f'Unknown log level {level}. Allowed levels: {levels}'
+    idx = levels.index(level)
+    cli_level = ''.join(['v'] * idx)
+    if cli_level:
+        return f'-{cli_level}'
+    return ''
+
+
 # Load MANIFEST.yaml into workflow config
 workflow.configfile(MANIFEST)
 
@@ -39,14 +51,13 @@ workflow.configfile(MANIFEST)
 ATLAS = config['common']['atlas']
 ATLAS_CACHE_DIR = ".atlas"
 VASCULATURE = config['common']['vasculature']
+PARALLEL = config['common'].get('parallel', True)
+LOG_LEVEL = get_log_level_for_cli(config['common'].get('log_level', 'WARNING'))
 
 BASE_CIRCUIT_SONATA = config['common']['base_circuit_sonata']
 BASE_CIRCUIT_CELLS = config['common']['base_circuit_cells']
 BASE_CIRCUIT_CONNECTOME = config['common']['base_circuit_connectome']
 BUILDER_RECIPE = bioname_path('astrocyte_gap_junction_recipe.xml')
-
-NGV_APP = 'ngv -v {cmd}'
-PARALLEL = config['common'].get('parallel', True)
 
 SPACK_MODULEPATH = "/gpfs/bbp.cscs.ch/ssd/apps/hpc/jenkins/modules/all"
 
@@ -79,23 +90,17 @@ def salloc_cmd(slurm_env):
             slurm_env = '__default__'
 
         cfg = cluster_config[slurm_env]
-        salloc_options = '-C {constraint} -A {account} -N {nodes} -p {partition} -J {jobname} -t {time}'.format(
-            constraint=cfg['constraint'],
-            account=cfg['account'],
-            nodes=cfg['nodes'],
-            partition=cfg['partition'],
-            jobname=cfg['jobname'],
-            time=cfg['time'],
-        )
+        options = (f"-C {cfg['constraint']} -A {cfg['account']} -N {cfg['nodes']}" +
+                   f" -p {cfg['partition']} -J {cfg['jobname']} -t {cfg['time']}")
         if 'tasks' in cfg:
-            salloc_options += f" -n {cfg['tasks']}"
+            options += f' -n {cfg["tasks"]}'
         if 'cpus-per-task' in cfg:
-            salloc_options += f" --cpus-per-task {cfg['cpus-per-task']}"
+            options += f' --cpus-per-task {cfg["cpus-per-task"]}'
         if 'exclusive' in cfg:
-            salloc_options += " --exclusive"
+            options += ' --exclusive'
         if 'mem' in cfg:
-            salloc_options += f" --mem {cfg['mem']}"
-        return "salloc {salloc_options}".format(salloc_options=salloc_options)
+            options += f' --mem {cfg["mem"]}'
+        return f'salloc {options}'
     return ""
 
 
@@ -113,48 +118,21 @@ def modules_cmd(module_env):
     return ""
 
 
-def srun_cmd(skip_srun, mpi_opt):
-    if not skip_srun:
-        return "srun {mpi} sh -c".format(
-                mpi=('' if mpi_opt is None else '--mpi={}'.format(mpi_opt)),
-            )
-    return ""
-
-
-def bbp_env(module_env, command, dump_log=False, slurm_env=None, skip_srun=False, mpi_opt=None):
-
-    result = "{module} {salloc} {srun} \'{command}\'"
-    result = result.format(module=modules_cmd(module_env),
-                            salloc=salloc_cmd(slurm_env),
-                            srun= srun_cmd(skip_srun, mpi_opt),
-                            command=" ".join(map(str, command)))
-    if dump_log:
-        result += " 2>&1 | tee {log}"
-    return result
-
-
-def ngv_run(command, args, module_env=None, dump_log=False, slurm_env=None):
+def run_cmd(cmd, dump_log=False, module_env=None, slurm_env=None):
     """
     Args:
-        command: ngv command
-        args: arguments for ngv command
-        module_env: modules specified for this command in MODULES
-        dump_log: produce log
+        cmd (array): shell command to run with its arguments
+        dump_log (bool): whether to produce a log file
+        module_env (str): modules specified for this command in MODULES
+        slurm_env (str): slurm environment specified in cluster config
     """
-    salloc = ''
-    if slurm_env is not None:
-        salloc = salloc_cmd(slurm_env) + ' srun'
-
-    result = '{module} {salloc} {cmd} {args}'.format(
-        module=modules_cmd(module_env),
-        cmd=NGV_APP.format(cmd=command),
-        salloc=salloc,
-        args=' '.join(args)
-    )
+    module = modules_cmd(module_env)
+    salloc = salloc_cmd(slurm_env)
+    command = ' '.join(map(str, cmd))
+    result = f'{module} {salloc} {command}'
 
     if dump_log:
         result += " 2>&1 | tee {log}"
-
     return result
 
 
@@ -186,14 +164,11 @@ rule ngv_config:
         'ngv_config.json'
 
     shell:
-        ngv_run('config-file',
-                [
-                '--bioname',
-                    BIONAME,
-                '--output',
-                    '{output}',
-                ]
-        )
+        run_cmd([
+            f'ngv {LOG_LEVEL} config-file',
+            '--bioname', BIONAME,
+            '--output', '{output}',
+        ])
 
 
 rule cell_placement:
@@ -204,23 +179,15 @@ rule cell_placement:
         log_path('cell_placement')
 
     shell:
-        ngv_run('cell-placement',
-                [
-                '--config',
-                    bioname_path('cell_placement.yaml'),
-                '--atlas',
-                    ATLAS,
-                '--atlas-cache',
-                    ATLAS_CACHE_DIR,
-                '--vasculature',
-                    VASCULATURE,
-                '--output',
-                    '{output}',
-                '--seed',
-                    SEED,
-                ],
-                dump_log='{log}'
-        )
+        run_cmd([
+            f'ngv {LOG_LEVEL} cell-placement',
+            f'--config {bioname_path("cell_placement.yaml")}',
+            f'--atlas {ATLAS}',
+            f'--atlas-cache {ATLAS_CACHE_DIR}',
+            f'--vasculature {VASCULATURE}',
+            '--output {output}',
+            f'--seed {SEED}'],
+            dump_log=True)
 
 
 rule assign_emodels:
@@ -231,16 +198,12 @@ rule assign_emodels:
         'sonata.tmp/nodes/glia.emodels.h5'
 
     shell:
-        ngv_run('assign-emodels',
-                [
-                '--input',
-                    '{input}',
-                '--output',
-                    '{output}',
-                '--hoc',
-                    config['assign_emodels']['hoc_template'],
-                ]
-        )
+        run_cmd([
+            f'ngv {LOG_LEVEL} assign-emodels',
+            '--input {input}',
+            '--output {output}',
+            f'--hoc {config["assign_emodels"]["hoc_template"]}',
+        ])
 
 
 rule finalize_astrocytes:
@@ -255,17 +218,12 @@ rule finalize_astrocytes:
         log_path('finalize_astrocytes')
 
     shell:
-        ngv_run('finalize-astrocytes',
-                [
-                '--somata-file',
-                    '{input[somata]}',
-                '--emodels-file',
-                    '{input[emodels]}',
-                '--output',
-                    '{output}'
-                ],
-                dump_log='{log}'
-        )
+        run_cmd([
+            f'ngv {LOG_LEVEL} finalize-astrocytes',
+            '--somata-file {input[somata]}',
+            '--emodels-file {input[emodels]}',
+            '--output {output}'],
+            dump_log=True)
 
 
 rule microdomains:
@@ -280,23 +238,15 @@ rule microdomains:
         log_path('microdomains')
 
     shell:
-        ngv_run('microdomains',
-                [
-                '--config',
-                    bioname_path('microdomains.yaml'),
-                '--astrocytes',
-                    '{input}',
-                '--atlas',
-                    ATLAS,
-                '--atlas-cache',
-                    ATLAS_CACHE_DIR,
-                '--output-dir',
-                    'microdomains',
-                '--seed',
-                    SEED,
-                ],
-                dump_log='{log}'
-        )
+        run_cmd([
+            f'ngv {LOG_LEVEL} microdomains',
+            f'--config {bioname_path("microdomains.yaml")}',
+            '--astrocytes {input}',
+            f'--atlas {ATLAS}',
+            f'--atlas-cache {ATLAS_CACHE_DIR}',
+            '--output-dir microdomains',
+            f'--seed {SEED}'],
+            dump_log=True)
 
 
 rule sonata_vasculature:
@@ -310,12 +260,10 @@ rule sonata_vasculature:
         log_path('sonata_vasculature')
 
     shell:
-        ngv_run('convert vasculature-to-sonata',
-                ['{input}',
-                '{output}',
-                ],
-                dump_log='{log}'
-                )
+        run_cmd([
+            f'ngv {LOG_LEVEL} convert vasculature-to-sonata',
+            '{input} {output}'],
+            dump_log=True)
 
 
 rule gliovascular_connectivity:
@@ -332,25 +280,16 @@ rule gliovascular_connectivity:
         log_path('gliovascular_connectivity')
 
     shell:
-        ngv_run('gliovascular connectivity',
-                [
-                '--config',
-                    bioname_path('gliovascular_connectivity.yaml'),
-                '--astrocytes',
-                    '{input[astrocytes]}',
-                '--microdomains',
-                    '{input[microdomains]}',
-                '--vasculature',
-                    '{input[vasculature]}',
-                '--vasculature-sonata',
-                    '{input[vasculature_sonata]}',
-                '--seed',
-                    SEED,
-                '--output',
-                    '{output}',
-                ],
-                dump_log='{log}'
-        )
+        run_cmd([
+            f'ngv {LOG_LEVEL} gliovascular connectivity',
+            f'--config {bioname_path("gliovascular_connectivity.yaml")}',
+            '--astrocytes {input[astrocytes]}',
+            '--microdomains {input[microdomains]}',
+            '--vasculature {input[vasculature]}',
+            '--vasculature-sonata {input[vasculature_sonata]}',
+            f'--seed {SEED}',
+            '--output {output}'],
+            dump_log=True)
 
 
 rule neuroglial_connectivity:
@@ -365,23 +304,15 @@ rule neuroglial_connectivity:
         log_path('neuroglial_connectivity')
 
     shell:
-        ngv_run('neuroglial connectivity',
-                [
-                '--neurons',
-                    BASE_CIRCUIT_CELLS,
-                '--astrocytes',
-                    '{input[astrocytes]}',
-                '--microdomains',
-                    '{input[microdomains]}',
-                '--neuronal-connectivity',
-                    BASE_CIRCUIT_CONNECTOME,
-                '--output',
-                    '{output}',
-                '--seed',
-                    SEED,
-                ],
-                dump_log='{log}'
-        )
+        run_cmd([
+            f'ngv {LOG_LEVEL} neuroglial connectivity',
+            f'--neurons {BASE_CIRCUIT_CELLS}',
+            '--astrocytes {input[astrocytes]}',
+            '--microdomains {input[microdomains]}',
+            f'--neuronal-connectivity {BASE_CIRCUIT_CONNECTOME}',
+            '--output {output}',
+            f'--seed {SEED}'],
+            dump_log=True)
 
 rule glial_gap_junctions:
     message:
@@ -398,19 +329,19 @@ rule glial_gap_junctions:
         log_path('touchdetector')
 
     shell:
-        bbp_env('glial_gap_junctions',
-                ["touchdetector",
-                "--output",
-                    "{TOUCHES_DIR}",
-                "--save-state",
-                "--from {input[astrocytes]} astrocytes",
-                "--to {input[astrocytes]} astrocytes",
-                "{BUILDER_RECIPE}",
-                "{MORPH_DIR}",
-            ],
+        run_cmd([
+            'srun --mpi pmi2 sh -c "' +
+            ' '.join(['touchdetector',
+            f'--output {TOUCHES_DIR}',
+            '--save-state',
+            '--from {input[astrocytes]} astrocytes',
+            '--to {input[astrocytes]} astrocytes',
+            BUILDER_RECIPE,
+            MORPH_DIR]) + '"'],
             dump_log=True,
-            slurm_env='glial_gap_junctions',
-            mpi_opt='pmi2')
+            module_env='glial_gap_junctions',
+            slurm_env='glial_gap_junctions'
+        )
 
 
 rule glialglial_connectivity:
@@ -428,19 +359,15 @@ rule glialglial_connectivity:
         log_path('glialglial_connectivity')
 
     shell:
-        ngv_run('glialglial-connectivity',
-                [
-                '--astrocytes',
-                    '{input[astrocytes]}',
-                '--touches-dir',
-                    '{TOUCHES_DIR}',
-                '--output-connectivity',
-                    '{output[glialglial_connectivity]}',
-                '--seed',
-                    SEED
-                ],
-                module_env='glialglial_connectivity',
-                dump_log='{log}')
+        run_cmd([
+            f'ngv {LOG_LEVEL} glialglial-connectivity',
+            '--astrocytes {input[astrocytes]}',
+            f'--touches-dir {TOUCHES_DIR}',
+            '--output-connectivity {output[glialglial_connectivity]}',
+            f'--seed {SEED}'],
+            dump_log=True,
+            module_env='glialglial_connectivity',
+        )
 
 
 rule endfeet_area:
@@ -454,21 +381,14 @@ rule endfeet_area:
         log_path('endfeet_area')
 
     shell:
-        ngv_run('endfeet-area',
-                [
-                '--config',
-                    bioname_path('endfeet_area.yaml'),
-                '--vasculature-mesh',
-                    config['common']['vasculature_mesh'],
-                '--gliovascular-connectivity',
-                    '{input[gliovascular_connectivity]}',
-                '--output',
-                    '{output}',
-                '--seed',
-                    SEED
-                ],
-                dump_log='{log}'
-        )
+        run_cmd([
+            f'ngv {LOG_LEVEL} endfeet-area',
+            f'--config {bioname_path("endfeet_area.yaml")}',
+            f'--vasculature-mesh {config["common"]["vasculature_mesh"]}',
+            '--gliovascular-connectivity {input[gliovascular_connectivity]}',
+            '--output {output}',
+            f'--seed {SEED}'],
+            dump_log=True)
 
 
 rule synthesis:
@@ -486,37 +406,25 @@ rule synthesis:
         log_path('synthesis')
 
     shell:
-        ngv_run('synthesis',
-                [
-                '--config',
-                    bioname_path('synthesis.yaml'),
-                '--tns-distributions',
-                    bioname_path('tns_distributions.json'),
-                '--tns-parameters',
-                    bioname_path('tns_parameters.json'),
-                '--tns-context',
-                    bioname_path('tns_context.json'),
-                '--astrocytes',
-                    '{input[astrocytes]}',
-                '--microdomains',
-                    '{input[microdomains]}',
-                '--gliovascular-connectivity',
-                    '{input[gliovascular_connectivity]}',
-                '--neuroglial-connectivity',
-                    '{input[neuroglial_connectivity]}',
-                '--endfeet-areas',
-                    '{input[endfeet_areas]}',
-                '--neuronal-connectivity',
-                    BASE_CIRCUIT_CONNECTOME,
-                '--out-morph-dir',
-                    MORPH_DIR,
-                ('--parallel' if PARALLEL else ''),
-                '--seed',
-                    SEED
-                ],
-                dump_log='{log}',
-                module_env='synthesis' if PARALLEL else None,
-                slurm_env='synthesis' if PARALLEL else None,
+        run_cmd([
+            'srun' if PARALLEL else '',
+            f'ngv {LOG_LEVEL} synthesis',
+            f'--config {bioname_path("synthesis.yaml")}',
+            f'--tns-distributions {bioname_path("tns_distributions.json")}',
+            f'--tns-parameters {bioname_path("tns_parameters.json")}',
+            f'--tns-context {bioname_path("tns_context.json")}',
+            '--astrocytes {input[astrocytes]}',
+            '--microdomains {input[microdomains]}',
+            '--gliovascular-connectivity {input[gliovascular_connectivity]}',
+            '--neuroglial-connectivity {input[neuroglial_connectivity]}',
+            '--endfeet-areas {input[endfeet_areas]}',
+            f'--neuronal-connectivity {BASE_CIRCUIT_CONNECTOME}',
+            f'--out-morph-dir {MORPH_DIR}',
+            ('--parallel' if PARALLEL else ''),
+            f'--seed {SEED}'],
+            dump_log=True,
+            module_env='synthesis' if PARALLEL else None,
+            slurm_env='synthesis' if PARALLEL else None,
         )
 
 
@@ -533,25 +441,17 @@ rule finalize_gliovascular_connectivity:
     log:
         log_path('finalize_gliovascular_connectivity')
     shell:
-        ngv_run('gliovascular finalize',
-                [
-                '--input-file',
-                    '{input[connectivity]}',
-                '--output-file',
-                    '{output}',
-                '--astrocytes',
-                    '{input[astrocytes]}',
-                '--endfeet-areas',
-                    '{input[endfeet_areas]}',
-                '--vasculature-sonata',
-                    '{input[vasculature_sonata]}',
-                '--morph-dir',
-                    MORPH_DIR,
-                ('--parallel' if PARALLEL else ''),
-                '--seed',
-                    SEED,
-                ],
-                dump_log='{log}'
+        run_cmd([
+            f'ngv {LOG_LEVEL} gliovascular finalize',
+            '--input-file {input[connectivity]}',
+            '--output-file {output}',
+            '--astrocytes {input[astrocytes]}',
+            '--endfeet-areas {input[endfeet_areas]}',
+            '--vasculature-sonata {input[vasculature_sonata]}',
+            f'--morph-dir {MORPH_DIR}',
+            ('--parallel' if PARALLEL else ''),
+            f'--seed {SEED}'],
+            dump_log=True
         )
 
 
@@ -569,23 +469,14 @@ rule finalize_neuroglial_connectivity:
         log_path('finalize_neuroglial_connectivity')
 
     shell:
-        ngv_run('neuroglial finalize',
-                [
-                '--input-file',
-                    '{input[connectivity]}',
-                '--output-file',
-                    '{output}',
-                '--astrocytes',
-                    '{input[astrocytes]}',
-                '--microdomains',
-                    '{input[microdomains]}',
-                '--synaptic-data',
-                    BASE_CIRCUIT_CONNECTOME,
-                '--morph-dir',
-                    MORPH_DIR,
-                ('--parallel' if PARALLEL else ''),
-                '--seed',
-                    SEED,
-                ],
-                dump_log='{log}'
-        )
+        run_cmd([
+            f'ngv {LOG_LEVEL} neuroglial finalize',
+            '--input-file {input[connectivity]}',
+            '--output-file {output}',
+            '--astrocytes {input[astrocytes]}',
+            '--microdomains {input[microdomains]}',
+            f'--synaptic-data {BASE_CIRCUIT_CONNECTOME}',
+            f'--morph-dir {MORPH_DIR}',
+            ('--parallel' if PARALLEL else ''),
+            f'--seed {SEED}'],
+            dump_log=True)

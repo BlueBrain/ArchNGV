@@ -1,4 +1,5 @@
 common:
+  log_level: 'WARNING'
   seed: 0
   atlas: '/gpfs/bbp.cscs.ch/project/proj62/NGV/atlases/O1-230/20190517'
   vasculature: '/gpfs/bbp.cscs.ch/project/proj62/NGV/ARCHNGV/Data/vasculature_datasets/raw_pruned_cap_circuit_coo_inscribed_spec_atlas_translated_new_spec.h5'
