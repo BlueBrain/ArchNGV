@@ -72,6 +72,8 @@ def create_tns_inputs(tns_data,
 
         # remove endfeet properties
         parameters['grow_types'].remove(PERIVASCULAR_TYPE)
+        parameters['diameter_params']['neurite_types'].remove(PERIVASCULAR_TYPE)
+
         L.info('No endfeet available')
     else:
         endfeet_targets = attraction_data.targets

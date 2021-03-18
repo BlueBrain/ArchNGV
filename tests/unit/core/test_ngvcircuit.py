@@ -90,7 +90,7 @@ class TestCircuit:
         assert neurons.morphology.get_filepath(0) == neurons.morph.get_filepath(0)
         npt.assert_allclose(neurons.morphology.get(0).points,
                             neurons.morph.get(0).points)
-        assert neurons.morph.get_filepath(0) == get_data('morphologies/morph-A.swc')
+        assert str(neurons.morph.get_filepath(0)) == get_data('morphologies/morph-A.swc')
         actual = neurons.morph.get(0).points
         assert len(actual) == 32
         expected = [

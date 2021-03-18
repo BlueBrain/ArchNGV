@@ -7,10 +7,8 @@
 $ git clone ssh://bbpcode.epfl.ch/molecularsystems/ArchNGV /path/to/repo
 
 # Load most recent stable modules
-$ module load `date +%Y-%m`
-
-# Load modules required to build ArchNGV
-$ module load cmake python snakemake
+$ module purge
+$ module load archive/2019-12 python/3.6.5 cmake/3.13.0
 
 # Create a Python virtualenv in repository source directory
 $ python -m venv /path/to/repo/.venv

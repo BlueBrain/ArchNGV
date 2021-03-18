@@ -9,6 +9,8 @@ from archngv import NGVCircuit
 import archngv.core.circuit as api
 from archngv.core.datasets import Vasculature, MicrodomainTesselation, EndfootSurfaceMeshes
 
+from bluepysnap.utils import IDS_DTYPE
+
 
 def test_circuit():
     circuit = NGVCircuit("build/ngv_config.json")
@@ -55,8 +57,8 @@ def test_neuroglial_connectome():
     npt.assert_equal(ng_conn.size, 598)
 
     prop_dtypes = {
-        '@source_node': np.uint64,
-        '@target_node': np.uint64,
+        '@source_node': IDS_DTYPE,
+        '@target_node': IDS_DTYPE,
         'synapse_id': np.uint64,
         'astrocyte_section_id': np.uint32,
         'astrocyte_segment_id': np.uint32,
@@ -82,8 +84,8 @@ def test_gliovascular_connectome():
     assert isinstance(gv_conn.surface_meshes, EndfootSurfaceMeshes)
 
     prop_dtypes = {
-        '@source_node' : np.uint64,
-        '@target_node': np.uint64,
+        '@source_node' : IDS_DTYPE,
+        '@target_node': IDS_DTYPE,
         'endfoot_id': np.uint64,
         'endfoot_surface_x': np.float32,
         'endfoot_surface_y': np.float32,
@@ -102,7 +104,7 @@ def test_gliovascular_connectome():
     circuit_dtypes = gv_conn.property_dtypes
 
     for property_name, expected_dtype in prop_dtypes.items():
-        npt.assert_equal(circuit_dtypes[property_name], expected_dtype)
+        npt.assert_equal(circuit_dtypes[property_name], expected_dtype, err_msg=f'Property: {property_name}')
 
 
 def test_vasculature_representations_consistency():

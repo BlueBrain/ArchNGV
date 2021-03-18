@@ -113,7 +113,7 @@ class AstrocytesMorphHelper(MorphHelper):
     """
     def get_filepath(self, node_id):
         """Return path to h5 morphology file corresponding to `node_id`."""
-        return super().get_filepath(node_id).replace(".swc", ".h5", 1)
+        return str(super().get_filepath(node_id)).replace('.swc', '.h5', 1)
 
 
 class NGVNodes(NodePopulation):
