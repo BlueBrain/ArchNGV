@@ -16,15 +16,15 @@ BUILDING = [
     'spatial-index==0.0.2',
     'bluepy-configfile>=0.1.11',
     'Click>=7.0',
-    'morph-tool<2.0.11',
     'numpy-stl>=2.10',
     'openmesh>=1.1.2,<1.1.6',  # 1.1.6 can't be installed for py38
     'pyyaml>=3.0',
     'pandas<1.1.0',  # py-touchreader spack module overwrites numpy version to 1.15.2, making pandas throw
     'tess>=0.2.2',
-    'MorphIO<2.6.2',
-    'tmd<2.0.11',
-    'tns<2.3.2',
+    'MorphIO>=2.7.1',
+    'morph-tool>=2.4.0',
+    'tmd>=2.0.11',  # 2.0.11 and on uses morphio unsanitazed morphology
+    'tns==2.3.2',
     'diameter-synthesis==0.1.11',
     'trimesh>=3.9.9',
     # constrain dask dependencies <=2.21 according to their BB5 deployed versions
