@@ -15,12 +15,12 @@ BUILDING = [
     'archngv-building>=0.1.3',
     'spatial-index==0.0.2',
     'bluepy-configfile>=0.1.11',
-    'Click>=7.0',
+    'Click>=7.0, <8.0',
     'numpy-stl>=2.10',
     'openmesh>=1.1.2,<1.1.6',  # 1.1.6 can't be installed for py38
-    'pyyaml>=3.0',
+    'pyyaml>=5.0',
     'pandas<1.1.0',  # py-touchreader spack module overwrites numpy version to 1.15.2, making pandas throw
-    'tess>=0.2.2',
+    'tess>=0.3.1',
     'MorphIO>=2.7.1',
     'morph-tool>=2.4.0',
     'tmd>=2.0.11',  # 2.0.11 and on uses morphio unsanitazed morphology
@@ -47,10 +47,10 @@ setup(
         'numpy>=1.17',
     ],
     install_requires=[
-        'numpy>=1.17',
+        'numpy>=1.19',
         'six>=1.15.0',
         'h5py>=3.1.0',
-        'scipy>=1.0.0',
+        'scipy>=1.5.0',
         'libsonata>=0.1.8',
         'bluepysnap==0.10.0',
         'cached-property>=1.5',
