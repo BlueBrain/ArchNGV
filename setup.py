@@ -55,7 +55,7 @@ setup(
         'bluepysnap==0.10.0',
         'cached-property>=1.5',
         'voxcell>=3.0.0',
-        'vasculatureapi>=0.0.6',
+        'vasculatureapi>=0.0.9',
     ],
     extras_require={
         'all': BUILDING,
