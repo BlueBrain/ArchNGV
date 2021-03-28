@@ -17,5 +17,5 @@ snakemake \
 
 popd
 
-./compare.sh expected $BUILD_DIR
-pytest .
+pytest test_build.py
+pytest test_circuit_integrity.py
