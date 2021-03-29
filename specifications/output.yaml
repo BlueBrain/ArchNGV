@@ -1,0 +1,260 @@
+
+
+custom:
+
+  - description: >
+      Microdomains are convex polygons representing the available bounding region for each
+      astrocyte. Each polygon is reresented as a collection of points linked together via
+      triangles. In addition, each microdomain has access to its adjacent neighbors. Their size
+      is n_astrocytes, i.e. one per astrocyte.
+
+    filepath: microdomains/microdomains.h5
+    file_hierarchy:
+
+      data:
+
+        object_type: group
+        contents:
+
+          neighbors:
+
+            description: >
+              Astrocytic neighbors. Positive indices correspond to astrocytic node ids, negative
+              ones to adjacent walls. A circuit hyperrectangle has six bounding faces or walls.
+              Currently, the respective wall geometry to each negative id is not stored.
+            object_type: dataset
+            number_of_columns: 1
+            dtype: int64
+
+          points:
+
+            description: >
+              3D points  of microdomain's triangulated faces.
+              Columns [x, y, z]
+            object_type: dataset
+            number_of_columns: 3
+            dtype: float32
+
+          triangle_data:
+
+            description: >
+              Triangulated connectivity of microdomain's points. One polygonal face can have
+              multiple triangles. To allow for polygonal face reconstruction a polygon_id is
+              stored for each triangle, so that all the triangles with the same polygon_id can
+              be calculated.
+              Columns [polygon_id, point_index_i, point_index_j, point_index_k]
+            object_type: dataset
+            number_of_columns: 4
+            dtype: uint64
+
+    offsets:
+
+      description: >
+        Offsets specify the ranges in the datasets above. For microdomain i, its respective
+        points will be points[offsets[i, 0]: offsets[i+1, 0]].
+        Columns [points_offsets, triangle_data_offsets, neighbors_offsets]
+      object_type: dataset
+      number_of_columns: 3
+      dtype: uint64
+
+sonata:
+
+  - description: SONATA node population of astrocytes.
+    filepath: sonata/nodes/glia.h5
+    population_name: astrocytes
+    population_type: nodes
+    attributes:
+
+      x:
+        description: x coordinate of soma position.
+        dtype: float64
+
+      y:
+        description: y coordinate of soma position.
+        dtype: float64
+
+      z:
+        description: z coordinate of soma position.
+        dtype: float64
+
+      radius:
+        description: Radius of the astrocytic soma.
+        dtype: float64
+
+      mtype:
+        description: Morphological type of astrocyte.
+        dtype: string
+
+      morphology:
+        description: Name of the astrocytic morphology file without its extension.
+        dtype: string
+
+      model_type:
+        description: SONATA biological type of the astrocytes. Should be defined.
+        dtype: string
+
+      model_template:
+        description: Electrical model hoc file.
+        dtype: string
+
+
+  - description: >
+      SONATA node population of the vasculature's geometry. This representation is essential
+      for the gliovascular edges that require a target node population. The vasculature is stored
+      as an EdgePopulation of the geometrical segments (flat edges, not organized in sections)
+      comprising the vascular morphology. Thus, the id of the EdgePopulation corresponds to the
+      i-th edge in the vascular morphogy. In order, to maintain the mapping between the edge
+      representation and the section/segment one, the section and segment ids for each edge are
+      stored so that the section representation can be uniquely reconstructed if needed.
+
+    filepath: sonata/nodes/vasculature.h5
+    population_name: vasculature
+    population_type: nodes
+    attributes:
+
+      start_x:
+        description: X coordinate of the starting points of vasculature's segments.
+        dtype: float64
+
+      end_x:
+        description: X coordinate of the ending points of vasculature's segments.
+        dtype: float64
+
+      start_y:
+        description: Y coordinate of the starting points of vasculature's segments.
+        dtype: float64
+
+      end_y:
+        description: Y coordinate of the ending points of vasculature's segments.
+        dtype: float64
+
+      start_z:
+        description: Z coordinate of the starting points of vasculature's segments.
+        dtype: float64
+
+      end_z:
+        description: Z coordinate of the ending points of vasculature's segments.
+        dtype: float64
+
+      start_diameter:
+        description: Diameter of the starting points of vasculature's segments.
+        dtype: float32
+
+      end_diameter:
+        description: Diameter of the ending points of vasculature's segments.
+        dtype: float32
+
+      start_node_id:
+        description: Start node id of the starting point of vasculature's segment.
+        dtype: uint64
+
+      end_node_id:
+        description: End node id of the starting point of vasculature's segment.
+        dtype: uint64
+
+      type:
+        description: >
+          The edge type is an integer in the list [1, 2, 3, 4, 5, 6, 7] corresponding to
+          vein, artery, venule, arteriole, venous-capillary, arterial-capillary, transitional.
+        dtype: int32
+
+      section_id:
+        description: >
+          For each segment, the corresponding section id in the vascular hdf5 morphology file.
+        dtype: uint32
+
+      segment_id:
+        description: >
+          For each segment, the corresponding segment id in the vacular hdf5 morphology file.
+        dtype: uint32
+
+
+  - description: >
+      Neuroglial connectivity. Astrocytes establish tripartite connections with synapses, wrapping
+      around them forming a three-way ensemble. There are four distrinct elements in a tripartite
+      connection, the astrocyte, the synapse, and the pre and post synaptic neurons. In sonata an
+      edge corresponds to a connection between an astrocyte, a synapse and its post-synaptic neuron.
+      The pre-synaptic neuron, although not directly accessible, it can be retrieved via the syna-
+      ptic connectivity using the synapse id. The synapse id is stored as a property on the edges.
+    filepath: sonata/edges/neuroglial.h5
+    population_name: neuroglial
+    population_type: edges
+    source_node_population_name: astrocytes
+    target_node_population_name: All
+    attributes:
+
+      astrocyte_section_id:
+        description: >
+            The id of the closest astrocyte's morphology section to the connected neuron-neuron
+            synapse.
+        dtype: uint32
+
+      astrocyte_segment_id:
+        description: >
+            The id of the closest astrocyte's morphology segment to the connected neuron-neuron
+            synapse.
+        dtype: uint32
+
+      astrocyte_segment_offset:
+        description: >
+            The offset on the respective segment corresponding to the closest point to the
+            respective synapse.
+        dtype: float32
+
+      synapse_id:
+        description: Edge id of the neuron-neuron connectome to which the astrocyte connects.
+        dtype: uint64
+
+  - description: >
+      Gliovascular connectivity. Connection between the vasculature and astrocytes. Each edge
+      corresponds to a perivascular endfoot that links an astrocyte with a vasculature segment.
+    filepath: sonata/edges/gliovascular.h5
+    population_name: gliovascular
+    population_type: edges
+    source_node_population_name: vasculature
+    target_node_population_name: astrocytes
+    attributes:
+
+      endfoot_id:
+        description: The edge id of the endfoot.
+        dtype: uint64
+
+      endfoot_surface_x:
+        description: >
+          The x-coordinate of the endfoot connection on the vasculature's surface.
+        dtype: float32
+
+      endfoot_surface_y:
+        description: >
+          The y-coordinate of the endfoot connection on the vasculature's surface.
+        dtype: float32
+
+      endfoot_surface_z:
+        description: >
+          The z-coordinate of the endfoot connection on the vasculature's surface.
+        dtype: float32
+
+      vasculature_section_id:
+        description: The section id of the segment in the vascular hdf5 morphology representation.
+        dtype: uint32
+
+      vasculature_segment_id:
+        description: The segment id of the segment in the vascular hdf5 morphology representation.
+        dtype: uint32
+
+      astrocyte_section_id:
+        description: >
+          The section id of the astrocytic section that connects to the endfoot surface point.
+        dtype: uint32
+
+      endfoot_compartment_length:
+        description: The length of the virtual endfoot compartment to construct in NEURON.
+        dtype: float32
+
+      endfoot_compartment_diameter:
+        description: The diameter of the virtual endfoot compartment to construct in NEURON.
+        dtype: float32
+
+      endfoot_compartment_perimeter:
+        description: The perimeter of the virtual endfoot compartment to construct in NEURON.
+        dtype: float32

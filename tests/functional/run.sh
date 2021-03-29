@@ -17,5 +17,6 @@ snakemake \
 
 popd
 
+pytest test_specifications.py
 pytest test_build.py
 pytest test_circuit_integrity.py
