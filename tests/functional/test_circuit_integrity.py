@@ -62,7 +62,8 @@ def test_neuroglial_connectome():
         'synapse_id': np.uint64,
         'astrocyte_section_id': np.uint32,
         'astrocyte_segment_id': np.uint32,
-        'astrocyte_segment_offset': np.float32
+        'astrocyte_segment_offset': np.float32,
+        'astrocyte_section_pos': np.float32
     }
 
     expected_properties = set(prop_dtypes.keys())

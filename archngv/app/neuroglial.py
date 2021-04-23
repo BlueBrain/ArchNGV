@@ -93,14 +93,9 @@ def _properties_from_astrocyte(data):
     synapse_positions = synaptic_data.synapse_positions(synapse_ids)
 
     morphology = readonly_morphology(data['morphology_path'], data['morphology_position'])
-    locs = annotate_synapse_location(morphology, synapse_positions)
+    locations_dataframe = annotate_synapse_location(morphology, synapse_positions)
 
-    return (
-        connection_ids,
-        locs.section_id.to_numpy(),
-        locs.segment_id.to_numpy(),
-        locs.segment_offset.to_numpy()
-    )
+    return connection_ids, locations_dataframe
 
 
 class Worker:
@@ -157,7 +152,8 @@ def _neuroglial_properties(seed, astrocytes, n_connections, paths, map_func):
     properties = {
         'astrocyte_section_id': np.empty(n_connections, dtype=np.uint32),
         'astrocyte_segment_id': np.empty(n_connections, dtype=np.uint32),
-        'astrocyte_segment_offset': np.empty(n_connections, dtype=np.float32)
+        'astrocyte_segment_offset': np.empty(n_connections, dtype=np.float32),
+        'astrocyte_section_pos': np.empty(n_connections, dtype=np.float32)
     }
 
     it_results = filter(
@@ -165,11 +161,12 @@ def _neuroglial_properties(seed, astrocytes, n_connections, paths, map_func):
         map_func(Worker(seed), _dispatch_data(astrocytes, paths))
     )
 
-    for ids, section_ids, segment_ids, segment_offsets in it_results:
+    for ids, df_locations in it_results:
 
-        properties['astrocyte_section_id'][ids] = section_ids
-        properties['astrocyte_segment_id'][ids] = segment_ids
-        properties['astrocyte_segment_offset'][ids] = segment_offsets
+        properties['astrocyte_section_id'][ids] = df_locations.section_id
+        properties['astrocyte_segment_id'][ids] = df_locations.segment_id
+        properties['astrocyte_segment_offset'][ids] = df_locations.segment_offset
+        properties['astrocyte_section_pos'][ids] = df_locations.section_position
 
     return properties
 

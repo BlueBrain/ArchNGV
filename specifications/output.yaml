@@ -201,6 +201,12 @@ sonata:
             respective synapse.
         dtype: float32
 
+      astrocyte_section_pos:
+        description: >
+          Given the section of where a synapse is closest on the astrocyte the position along the length of that section
+          a (normalized to the range [0, 1], where 0 is at the start of the section and 1 is at the end of the section).
+        dtype: float32
+
       synapse_id:
         description: Edge id of the neuron-neuron connectome to which the astrocyte connects.
         dtype: uint64

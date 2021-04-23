@@ -18,6 +18,30 @@ MORPHIO_MAP = {
 }
 
 
+def _normalized_midpoint_path_distances(segment_begs, segment_ends, segment_offsets):
+    """Returns the path distances from the start of the section to each segment midpoint
+    normalized by length in the [0, 1]
+
+    Args:
+        segment_begs (np.ndarray): Starting points of segments
+        segment_ends (np.ndarray): Ending points of segments
+        segment_offsets (np.ndarray): The midpoint offset for each segment
+
+    Returns:
+        normalized_path_distances (np.ndarray)
+    """
+    segment_lengths = np.linalg.norm(segment_ends - segment_begs, axis=1)
+
+    path_distances = np.cumsum(segment_lengths)
+    total_length = path_distances[-1]
+    # shift elements to the right to remove total length and make space for 0.0
+    # as first path distance
+    path_distances[1:] = path_distances[:-1]
+    path_distances[0] = 0
+
+    return (path_distances + segment_offsets) / total_length
+
+
 def _morphology_unwrapped(morphology):
     """ Unwrap a MorphIO morphology into points and their
     respective section id they belong too.
@@ -39,14 +63,17 @@ def _morphology_unwrapped(morphology):
         midpoints = 0.5 * (p0s + p1s)
         offsets = np.linalg.norm(midpoints - p0s, axis=1)
 
-        for segment_id, (midpoint, offset) in enumerate(zip(midpoints, offsets)):
+        normalized_path_distances = _normalized_midpoint_path_distances(p0s, p1s, offsets)
+
+        for segment_id, (midpoint, offset, pdist) in enumerate(zip(midpoints, offsets, normalized_path_distances)):
             points.append(midpoint)
-            locations.append((section.id, segment_id, offset))
+            locations.append((section.id, segment_id, offset, pdist))
 
     if not points:
         raise NGVError("Morphology failed to be unwrapped. There are no points.")
 
-    return np.asarray(points), pd.DataFrame(locations, columns=['section_id', 'segment_id', 'segment_offset'])
+    df_locations = pd.DataFrame(locations, columns=['section_id', 'segment_id', 'segment_offset', 'section_position'])
+    return np.asarray(points), df_locations
 
 
 def _endfoot_termination_filter(sections):
