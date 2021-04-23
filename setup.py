@@ -22,6 +22,7 @@ BUILDING = [
     'pandas<1.1.0',  # py-touchreader spack module overwrites numpy version to 1.15.2, making pandas throw
     'tess>=0.3.1',
     'MorphIO>=3.0.0',
+    'NeuroM<2.0.0',
     'morph-tool>=2.4.0',
     'tmd>=2.0.11',
     'tns==2.3.2',
