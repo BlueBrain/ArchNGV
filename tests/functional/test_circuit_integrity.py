@@ -6,6 +6,7 @@ import numpy.testing as npt
 import voxcell
 
 from archngv import NGVCircuit
+from morphio import Morphology
 import archngv.core.circuit as api
 from archngv.core.datasets import Vasculature, MicrodomainTesselation, EndfootSurfaceMeshes
 
@@ -46,7 +47,7 @@ def test_circuit():
     assert isinstance(circuit.atlases["brain_regions"].get_atlas(), voxcell.VoxelData)
 
 
-def test_neuroglial_connectome():
+def test_neuroglial_connectome__property_dtypes():
 
     circuit = NGVCircuit("build/ngv_config.json")
 
@@ -75,7 +76,36 @@ def test_neuroglial_connectome():
         npt.assert_equal(arr.dtype, expected_dtype)
 
 
-def test_gliovascular_connectome():
+def test_neuroglial_connectome__annotation_equivalency():
+    """Check that the section_id, segment_id, segment_offset annotation is equivalent to section_id, section_pos
+    """
+    circuit = NGVCircuit("build/ngv_config.json")
+    ng_conn = circuit.neuroglial_connectome
+
+    data = ng_conn.get(edge_ids=None, properties=['@source_node', 'astrocyte_section_id', 'astrocyte_segment_id', 'astrocyte_segment_offset', 'astrocyte_section_pos'])
+
+    astro_ids = np.unique(data.loc[:, '@source_node'].to_numpy())
+    astro_morphs = {int(i): Morphology(circuit.astrocytes.morph.get_filepath(int(i))) for i in astro_ids}
+
+    for _, astrocyte_id, section_id, segment_id, segment_offset, expected_section_pos in data.itertuples():
+
+        points = astro_morphs[astrocyte_id].sections[section_id].points
+        segment_lengths = np.linalg.norm(points[1:] - points[:-1], axis=1)
+
+        path_length = 0.0
+        for i, length in enumerate(segment_lengths):
+            if i < segment_id:
+                path_length += length
+
+        path_length += segment_offset
+
+        # the section position is normalized by the section length
+        section_position = path_length / segment_lengths.sum()
+
+        npt.assert_allclose(section_position, expected_section_pos, atol=1e-6)
+
+
+def test_gliovascular_connectome__property_dtypes():
 
     circuit = NGVCircuit("build/ngv_config.json")
 
@@ -106,6 +136,7 @@ def test_gliovascular_connectome():
 
     for property_name, expected_dtype in prop_dtypes.items():
         npt.assert_equal(circuit_dtypes[property_name], expected_dtype, err_msg=f'Property: {property_name}')
+
 
 
 def test_vasculature_representations_consistency():
