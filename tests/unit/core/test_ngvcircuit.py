@@ -92,10 +92,10 @@ class TestCircuit:
                             neurons.morph.get(0).points)
         assert str(neurons.morph.get_filepath(0)) == get_data('morphologies/morph-A.swc')
         actual = neurons.morph.get(0).points
-        assert len(actual) == 32
+        assert len(actual) == 13
         expected = [
-            [-0.32, 1.0, 0., 0.725],
-            [-0.32, 0.9, 0., 0.820],
+            [0., 5., 0.],
+            [2., 9., 0.]
         ]
         npt.assert_almost_equal(expected, actual[:2])
 
@@ -108,12 +108,14 @@ class TestCircuit:
         # Using the same morph for the neurons and the astrocytes explains why we have the
         # same test as for neurons
         actual = astrocytes.morph.get(0).points
-        assert len(actual) == 32
+        assert len(actual) == 13
         expected = [
-            [-0.32, 1.0, 0., 0.725],
-            [-0.32, 0.9, 0., 0.820],
+            [0., 5., 0.],
+            [2., 9., 0.]
         ]
         npt.assert_almost_equal(expected, actual[:2])
+
+
 
     def test_vasculature_morphology(self):
         vasculature = self.circuit.vasculature

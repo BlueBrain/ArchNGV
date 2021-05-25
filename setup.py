@@ -22,11 +22,10 @@ BUILDING = [
     'pandas<1.1.0',  # py-touchreader spack module overwrites numpy version to 1.15.2, making pandas throw
     'tess>=0.3.1',
     'MorphIO>=3.0.0',
-    'NeuroM<2.0.0',
     'morph-tool>=2.4.0',
     'tmd>=2.0.11',
     'tns==2.3.2',
-    'diameter-synthesis==0.1.11',
+    'diameter-synthesis==0.2.3',
     'trimesh>=3.9.9',
     # constrain dask dependencies <=2.21 according to their BB5 deployed versions
     'dask[distributed,bag]>=2.0,<=2.21',
@@ -53,7 +52,7 @@ setup(
         'h5py>=3.1.0',
         'scipy>=1.5.0',
         'libsonata>=0.1.8',
-        'bluepysnap==0.10.0',
+        'bluepysnap>=0.10.0',
         'cached-property>=1.5',
         'voxcell>=3.0.0',
         'vasculatureapi>=0.0.9',
