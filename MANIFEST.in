@@ -1,2 +1,6 @@
+
+graft archngv/app/exemplar
+graft archngv/app/snakemake
+
 recursive-include archngv *.*
-global-exclude *.pyc *~ *.bak *.swp *.pyo
+global-exclude *.py[co] *~ *.bak *.swp .DS_Store

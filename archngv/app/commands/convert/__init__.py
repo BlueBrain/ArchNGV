@@ -4,7 +4,7 @@ Back and forth format conversion
 
 import click
 
-from archngv.app.convert import (
+from . import (
     sonata_vasculature
 )
 

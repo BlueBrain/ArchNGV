@@ -43,9 +43,6 @@ setup(
     description='NGV Architecture Modules',
     author='Eleftherios Zisis',
     author_email='eleftherios.zisis@epfl.ch',
-    setup_requires=[
-        'numpy>=1.17',
-    ],
     install_requires=[
         'numpy>=1.19',
         'six>=1.15.0',

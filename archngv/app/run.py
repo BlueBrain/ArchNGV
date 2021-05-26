@@ -1,73 +1,16 @@
-r"""
-Collection of tools for NGV building
-
-{esc}
-   _____                .__      _______    ____________   ____
-  /  _  \_______   ____ |  |__   \      \  /  _____/\   \ /   /
- /  /_\  \_  __ \_/ ___\|  |  \  /   |   \/   \  ___ \   Y   /
-/    |    \  | \/\  \___|   Y  \/    |    \    \_\  \ \     /
-\____|__  /__|    \___  >___|  /\____|__  /\______  /  \___/
-        \/            \/     \/         \/        \/
-"""
-import sys
-import json
+"""Run snakemake commands"""
 import logging
-import subprocess
-import pkg_resources
+import sys
 from datetime import datetime
 from pathlib import Path
-
+import subprocess
 import click
-from archngv.version import VERSION
-
-from archngv.app.commands import (
-    convert,
-    cell_placement,
-    assign_emodels,
-    finalize_astrocytes,
-    microdomains,
-    gliovascular,
-    neuroglial,
-    glialglial_connectivity,
-    synthesis,
-    endfeet_area,
-    ngv_config
-)
-
-from archngv.app.logger import setup_logging
-from archngv.version import VERSION
+import pkg_resources
+import json
 
 
-@click.group('ngv', help=__doc__.format(esc='\b'))
-@click.version_option(version=VERSION)
-@click.option("-v", "--verbose", count=True, default=0, help="-v for INFO, -vv for DEBUG")
-def app(verbose):
-    # pylint: disable=missing-docstring
-    setup_logging(
-        {
-            0: logging.WARNING,
-            1: logging.INFO,
-            2: logging.DEBUG,
-        }[min(verbose, 2)]
-    )
+L = logging.getLogger()
 
-app.add_command(name='convert', cmd=convert.group)  # see commands.convert.__init__.py
-app.add_command(name='cell-placement', cmd=cell_placement.cmd)
-app.add_command(name='assign-emodels', cmd=assign_emodels.cmd)
-app.add_command(name='finalize-astrocytes', cmd=finalize_astrocytes.cmd)
-app.add_command(name='microdomains', cmd=microdomains.cmd)
-app.add_command(name='gliovascular', cmd=gliovascular.group)
-app.add_command(name='neuroglial', cmd=neuroglial.group)
-app.add_command(name='glialglial-connectivity', cmd=glialglial_connectivity.cmd)
-app.add_command(name='synthesis', cmd=synthesis.cmd)
-app.add_command(name='endfeet-area', cmd=endfeet_area.cmd)
-app.add_command(name='config-file', cmd=ngv_config.cmd)
-
-
-@app.command(name='snakefile-path')
-def snakefile_path():
-    """Outputs a path to the default Snakefile."""
-    click.echo(pkg_resources.resource_filename(__name__, 'snakemake/Snakefile'))
 
 def _index(args, *opts):
     """Finds index position of `opts` in `args`"""
@@ -95,40 +38,37 @@ def _build_args(args, bioname, modules, timestamp):
 
 def _run_snakemake_process(cmd, errorcode=1):
     """Run the main snakemake process."""
-    from archngv.app.logger import LOGGER
     result = subprocess.run(cmd)
     if result.returncode != 0:
-        LOGGER.error("Snakemake process failed")
+        L.error("Snakemake process failed")
         return errorcode
     return 0
 
 
 def _run_summary_process(cmd, filepath: Path, errorcode=2):
     """Save the summary to file."""
-    from archngv.app.logger import LOGGER
     cmd = cmd + ['--detailed-summary']
     filepath.parent.mkdir(parents=True, exist_ok=True)
     with filepath.open('w') as fd:
         result = subprocess.run(cmd, stdout=fd)
     if result.returncode != 0:
-        LOGGER.error("Summary process failed")
+        L.error("Summary process failed")
         return errorcode
     return 0
 
 
 def _run_report_process(cmd, filepath: Path, errorcode=4):
     """Save the report to file."""
-    from archngv.app.logger import LOGGER
     cmd = cmd + ['--report', str(filepath)]
     filepath.parent.mkdir(parents=True, exist_ok=True)
     result = subprocess.run(cmd)
     if result.returncode != 0:
-        LOGGER.error("Report process failed")
+        L.error("Report process failed")
         return errorcode
     return 0
 
 
-@app.command(context_settings=dict(ignore_unknown_options=True, allow_extra_args=True))
+@cli.command(context_settings=dict(ignore_unknown_options=True, allow_extra_args=True))
 @click.option(
     '-u', '--cluster-config', required=True, type=click.Path(exists=True, dir_okay=False),
     help='Path to cluster config.',
@@ -161,7 +101,7 @@ Examples:\n
     '--with-report', is_flag=True, help='Save a report in `logs/<timestamp>/report.html`.'
 )
 @click.pass_context
-def run(
+def cmd(
     ctx,
     cluster_config: str,
     bioname: str,
@@ -174,7 +114,6 @@ def run(
 
     Any additional snakemake arguments or options can be passed at the end of this command's call.
     """
-    from archngv.app.logger import LOGGER
     args = ctx.args
     if snakefile is None:
         snakefile = pkg_resources.resource_filename(__name__, 'snakemake/Snakefile')
@@ -191,14 +130,14 @@ def run(
 
         # snakemake with the --summary/--detailed-summary option does not execute the workflow
         filepath = Path(f'logs/{timestamp}/summary.tsv')
-        LOGGER.info("Creating report in %s", filepath)
+        L.info("Creating report in %s", filepath)
         exit_code += _run_summary_process(cmd, filepath)
 
     if with_report:
 
         # snakemake with the --report option does not execute the workflow
         filepath = Path(f'logs/{timestamp}/report.html')
-        LOGGER.info("Creating summary in %s", filepath)
+        L.info("Creating summary in %s", filepath)
         exit_code += _run_report_process(cmd, filepath)
 
     # cumulative exit code given by the union of the exit codes, only for internal use
@@ -209,7 +148,8 @@ def run(
     sys.exit(exit_code)
 
 
+@cli.command()
+def snakefile_path():
+    """Outputs a path to the default Snakefile."""
+    click.echo(pkg_resources.resource_filename(__name__, 'snakemake/Snakefile'))
 
-
-if __name__ == '__main__':
-    app()
