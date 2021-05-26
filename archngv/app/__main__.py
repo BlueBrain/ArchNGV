@@ -78,19 +78,13 @@ def _index(args, *opts):
     return indices[0]
 
 
-def _build_args(args, bioname, modules, timestamp):
+def _build_args(args, bioname, timestamp):
     if _index(args, '--printshellcmds', '-p') is None:
         args = ['--printshellcmds'] + args
     if _index(args, '--cores', '--jobs', '-j') is None:
         args = ['--jobs', '8'] + args
     # force the timestamp to the same value in different executions of snakemake
     args = args + ['--config', f'bioname={bioname}', f'timestamp={timestamp}']
-    if modules:
-        raise NotImplementedError('This feature is not available yet')
-        # serialize the list of strings with json to be backward compatible with Snakemake:
-        # snakemake >= 5.28.0 loads config using yaml.BaseLoader,
-        # snakemake < 5.28.0 loads config using eval.
-        # args += [f'modules={json.dumps(modules)}']
     return args
 
 
@@ -100,31 +94,6 @@ def _run_snakemake_process(cmd, errorcode=1):
     result = subprocess.run(cmd, check=False)
     if result.returncode != 0:
         LOGGER.error("Snakemake process failed")
-        return errorcode
-    return 0
-
-
-def _run_summary_process(cmd, filepath: Path, errorcode=2):
-    """Save the summary to file."""
-    from archngv.app.logger import LOGGER
-    cmd = cmd + ['--detailed-summary']
-    filepath.parent.mkdir(parents=True, exist_ok=True)
-    with filepath.open('w') as fd:
-        result = subprocess.run(cmd, stdout=fd, check=False)
-    if result.returncode != 0:
-        LOGGER.error("Summary process failed")
-        return errorcode
-    return 0
-
-
-def _run_report_process(cmd, filepath: Path, errorcode=4):
-    """Save the report to file."""
-    from archngv.app.logger import LOGGER
-    cmd = cmd + ['--report', str(filepath)]
-    filepath.parent.mkdir(parents=True, exist_ok=True)
-    result = subprocess.run(cmd, check=False)
-    if result.returncode != 0:
-        LOGGER.error("Report process failed")
         return errorcode
     return 0
 
@@ -139,37 +108,16 @@ def _run_report_process(cmd, filepath: Path, errorcode=4):
     help='Path to `bioname` folder of a circuit.',
 )
 @click.option(
-    '-m', '--module', 'modules', multiple=True, required=False,
-    help='''
-Modules to be overwritten. Multiple configurations are allowed, and each one
-should be given in the format:\n
-    module_env:module_name/module_version[,module_name/module_version...][:module_path]\n
-Examples:\n
-    brainbuilder:archive/2020-08,brainbuilder/0.14.0\n
-    touchdetector:archive/2020-05,touchdetector/5.4.0,hpe-mpi\n
-    spykfunc:archive/2020-06,spykfunc/0.15.6:/gpfs/bbp.cscs.ch/ssd/apps/hpc/jenkins/modules/all
-    '''
-)
-@click.option(
     '-s', '--snakefile', required=False, type=click.Path(exists=True, dir_okay=False),
     default=pkg_resources.resource_filename(__name__, 'snakemake/Snakefile'), show_default=True,
     help='Path to workflow definition in form of a snakefile.',
-)
-@click.option(
-    '--with-summary', is_flag=True, help='Save a summary in `logs/<timestamp>/summary.tsv`.'
-)
-@click.option(
-    '--with-report', is_flag=True, help='Save a report in `logs/<timestamp>/report.html`.'
 )
 @click.pass_context
 def run(
     ctx,
     cluster_config: str,
     bioname: str,
-    modules: list,
     snakefile: str,
-    with_summary: bool,
-    with_report: bool,
 ):
     """Run a circuit-build task.
 
@@ -183,24 +131,10 @@ def run(
     assert _index(args, '--config', '-C') is None, 'snakemake `--config` option is not allowed'
 
     timestamp = f"{datetime.now():%Y%m%dT%H%M%S}"
-    args = _build_args(args, bioname, modules, timestamp)
+    args = _build_args(args, bioname, timestamp)
 
     cmd = ['snakemake', *args, '--snakefile', snakefile, '--cluster-config', cluster_config]
     exit_code = _run_snakemake_process(cmd)
-
-    if with_summary:
-
-        # snakemake with the --summary/--detailed-summary option does not execute the workflow
-        filepath = Path(f'logs/{timestamp}/summary.tsv')
-        LOGGER.info("Creating report in %s", filepath)
-        exit_code += _run_summary_process(cmd, filepath)
-
-    if with_report:
-
-        # snakemake with the --report option does not execute the workflow
-        filepath = Path(f'logs/{timestamp}/report.html')
-        LOGGER.info("Creating summary in %s", filepath)
-        exit_code += _run_report_process(cmd, filepath)
 
     # cumulative exit code given by the union of the exit codes, only for internal use
     #   0: success
