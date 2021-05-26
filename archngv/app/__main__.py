@@ -13,9 +13,9 @@ import sys
 import json
 import logging
 import subprocess
-import pkg_resources
-from datetime import datetime
 from pathlib import Path
+from datetime import datetime
+import pkg_resources
 
 import click
 from archngv.version import VERSION
@@ -35,7 +35,6 @@ from archngv.app.commands import (
 )
 
 from archngv.app.logger import setup_logging
-from archngv.version import VERSION
 
 
 @click.group('ngv', help=__doc__.format(esc='\b'))
@@ -50,6 +49,7 @@ def app(verbose):
             2: logging.DEBUG,
         }[min(verbose, 2)]
     )
+
 
 app.add_command(name='convert', cmd=convert.group)  # see commands.convert.__init__.py
 app.add_command(name='cell-placement', cmd=cell_placement.cmd)
@@ -68,6 +68,7 @@ app.add_command(name='config-file', cmd=ngv_config.cmd)
 def snakefile_path():
     """Outputs a path to the default Snakefile."""
     click.echo(pkg_resources.resource_filename(__name__, 'snakemake/Snakefile'))
+
 
 def _index(args, *opts):
     """Finds index position of `opts` in `args`"""
@@ -96,7 +97,7 @@ def _build_args(args, bioname, modules, timestamp):
 def _run_snakemake_process(cmd, errorcode=1):
     """Run the main snakemake process."""
     from archngv.app.logger import LOGGER
-    result = subprocess.run(cmd)
+    result = subprocess.run(cmd, check=False)
     if result.returncode != 0:
         LOGGER.error("Snakemake process failed")
         return errorcode
@@ -109,7 +110,7 @@ def _run_summary_process(cmd, filepath: Path, errorcode=2):
     cmd = cmd + ['--detailed-summary']
     filepath.parent.mkdir(parents=True, exist_ok=True)
     with filepath.open('w') as fd:
-        result = subprocess.run(cmd, stdout=fd)
+        result = subprocess.run(cmd, stdout=fd, check=False)
     if result.returncode != 0:
         LOGGER.error("Summary process failed")
         return errorcode
@@ -121,7 +122,7 @@ def _run_report_process(cmd, filepath: Path, errorcode=4):
     from archngv.app.logger import LOGGER
     cmd = cmd + ['--report', str(filepath)]
     filepath.parent.mkdir(parents=True, exist_ok=True)
-    result = subprocess.run(cmd)
+    result = subprocess.run(cmd, check=False)
     if result.returncode != 0:
         LOGGER.error("Report process failed")
         return errorcode
@@ -209,7 +210,5 @@ def run(
     sys.exit(exit_code)
 
 
-
-
 if __name__ == '__main__':
-    app()
+    app()  # pylint: disable=no-value-for-parameter
