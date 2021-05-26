@@ -123,7 +123,6 @@ def run(
 
     Any additional snakemake arguments or options can be passed at the end of this command's call.
     """
-    from archngv.app.logger import LOGGER
     args = ctx.args
     if snakefile is None:
         snakefile = pkg_resources.resource_filename(__name__, 'snakemake/Snakefile')
