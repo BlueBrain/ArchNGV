@@ -10,16 +10,10 @@ pushd $BUILD_DIR
 
 unset $(env | grep SLURM | cut -d= -f1 | xargs)
 
-
 ngv run \
     --bioname '../bioname' \
     --snakefile '../../../archngv/app/snakemake/Snakefile' \
     --cluster-config '../bioname/cluster.yaml'
-
-#snakemake \
-#    --snakefile '../../../snakemake/Snakefile' --cluster-config '../bioname/cluster.yaml'\
-#    --config bioname='../bioname' \
-#    --cores 5 \
 
 popd
 
