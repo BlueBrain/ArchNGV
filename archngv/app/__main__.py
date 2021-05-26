@@ -87,10 +87,11 @@ def _build_args(args, bioname, modules, timestamp):
     # force the timestamp to the same value in different executions of snakemake
     args = args + ['--config', f'bioname={bioname}', f'timestamp={timestamp}']
     if modules:
+        raise NotImplementedError('This feature is not available yet')
         # serialize the list of strings with json to be backward compatible with Snakemake:
         # snakemake >= 5.28.0 loads config using yaml.BaseLoader,
         # snakemake < 5.28.0 loads config using eval.
-        args += [f'modules={json.dumps(modules)}']
+        # args += [f'modules={json.dumps(modules)}']
     return args
 
 
