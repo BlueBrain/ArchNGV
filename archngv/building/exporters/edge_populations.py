@@ -174,8 +174,8 @@ def glialglial_connectivity(glialglial_data, n_astrocytes, output_path):
         target_population_name=Population.ASTROCYTES,
         source_population_size=n_astrocytes,
         target_population_size=n_astrocytes,
-        source_node_ids=glialglial_data.pop('pre_id').to_numpy(),
-        target_node_ids=glialglial_data.pop('post_id').to_numpy(),
+        source_node_ids=glialglial_data.pop('source_node_id').to_numpy(),
+        target_node_ids=glialglial_data.pop('target_node_id').to_numpy(),
         edge_population_name=Population.GLIALGLIAL,
         edge_properties=glialglial_data
     )

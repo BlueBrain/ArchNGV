@@ -264,3 +264,96 @@ sonata:
       endfoot_compartment_perimeter:
         description: The perimeter of the virtual endfoot compartment to construct in NEURON.
         dtype: float32
+
+  - description: >
+      Gap junctional connections between astrocytes and their neighbors
+    filepath: sonata/edges/glialglial.h5
+    population_name: glialglial
+    population_type: edges
+    source_node_population_name: astrocytes
+    target_node_population_name: astrocytes
+    attributes:
+
+      afferent_surface_x:
+        description: >
+            x position on the surface of a cylindrical cell segment, radially outward from the
+            center position in the direction of the other cell in microns
+        dtype: float32
+
+      afferent_surface_y:
+        description: >
+            y position on the surface of a cylindrical cell segment, radially outward from the
+            center position in the direction of the other cell in microns
+        dtype: float32
+
+      afferent_surface_z:
+        description: >
+            z position on the surface of a cylindrical cell segment, radially outward from the
+            center position in the direction of the other cell in microns
+        dtype: float32
+
+      afferent_section_id:
+        description: The specific section on the target node where a junction is placed.
+        dtype: int32
+
+      afferent_segment_id:
+        description: >
+            The specific segment id on the section specified by afferent_section_id on
+            the target node.
+        dtype: int32
+
+      afferent_segment_offset:
+        description: >
+            The offset within the segment in microns.
+        dtype: float32
+
+      afferent_section_pos:
+        description: >
+            Fractional position along the length of the section (normalized to the range [0, 1],
+            where 0 is at the start of the section and 1 is at the end of the section).
+        dtype: float32
+
+      afferent_section_type:
+        description: >
+            Neurite or soma type of the afferent as in morphIO: soma=1, perivascular_process=2,
+            glia_process=3.
+        dtype: uint8
+
+      efferent_center_x:
+        description: >
+            Same as afferent_center_x, but for the junctional position at the source astrocyte.
+        dtype: float32
+
+      efferent_center_y:
+        description: >
+            Same as afferent_center_y, but for the junctional position at the source astrocyte.
+        dtype: float32
+
+      efferent_center_z:
+        description: >
+            Same as afferent_center_z, but for the junctional position at the source astrocyte.
+        dtype: float32
+
+      efferent_section_id:
+        description: Same as afferent_section_id, but for source node.
+        dtype: int32
+
+      efferent_segment_id:
+        description: Same as afferent_segment_id, but for source node.
+        dtype: int32
+
+      efferent_segment_offset:
+        description: Samke as afferent_segment_offset, but for source node.
+        dtype: float32
+
+      efferent_section_pos:
+        description: Same as afferent_section_pos, but for source node.
+        dtype: float32
+
+      efferent_section_type:
+        description: Same as afferent_section_type but for the source node.
+        dtype: uint8
+
+      spine_length:
+        description: Distance between the two surface positions in microns.
+        dtype: float32
