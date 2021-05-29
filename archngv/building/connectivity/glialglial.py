@@ -42,13 +42,18 @@ def generate_glialglial(touches_directory):
     properties = {}
     for name, columns in touch_props:
         data = touches[name].to_nparray()
-        for i, column in enumerate(columns):
-            # if there are not touches we want to maintain the shape so that
+
+        if len(columns) == 1:
+            properties[columns[0]] = data
+        else:
+            # if there are no touches we want to maintain the shape so that
             # a sonata file is created, albeit empty
-            if data.shape[0] == 0:
-                properties[column] = np.empty(0, dtype=data.dtype)
+            if len(data) == 0:
+                for i, column in enumerate(columns):
+                    properties[column] = np.empty(0, dtype=data.dtype)
             else:
-                properties[column] = data[:, i]
+                for i, column in enumerate(columns):
+                    properties[column] = data[:, i]
 
     # convert branch type into efferent and afferent section types by unpacking it
     properties.update(_unpack_types(properties['branch_type']))
