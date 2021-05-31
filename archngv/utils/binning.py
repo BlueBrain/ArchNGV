@@ -1,3 +1,5 @@
+"""Binning utils"""
+import math
 import numpy as np
 
 
