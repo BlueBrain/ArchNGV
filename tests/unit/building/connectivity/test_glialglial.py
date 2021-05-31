@@ -32,6 +32,9 @@ EXPECTED_COLUMNS = {
 
 
 def _pack_types(pre_type, post_type):
+    # TD reduces the section type by one
+    pre_type -= 1
+    post_type -= 1
     return (post_type & BRANCH_MASK) | ((pre_type & BRANCH_MASK) << BRANCH_SHIFT)
 
 
