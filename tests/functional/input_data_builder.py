@@ -11,8 +11,10 @@ from collections import OrderedDict
 from tqdm import tqdm
 from cached_property import cached_property
 import open3d
+import openmesh
 import voxcell
 import sklearn
+import sklearn.neighbors
 import openmesh
 import numpy as np
 from numpy import testing as npt
@@ -693,11 +695,11 @@ class GridVasculatureMesh:
         """
         L.info('Building point cloud')
         point_cloud = self.build_point_cloud(vasculature)
-        open3d.visualization.draw_geometries([point_cloud])
+        # open3d.visualization.draw_geometries([point_cloud])
 
         L.info('Creating mesh via poisson point cloud reconstruction')
         mesh = open3d.geometry.TriangleMesh.create_from_point_cloud_poisson(
-            point_cloud, depth=7, scale=1.0, linear_fit=True, n_threads=-1)[0]
+            point_cloud, depth=7, scale=1.0, linear_fit=True)[0]
 
         L.info('Merging close vertices')
         mesh = mesh.merge_close_vertices(0.1)
@@ -707,14 +709,16 @@ class GridVasculatureMesh:
     def write(self, output_file):
         """Write vasculature surface mesh"""
         open3d.io.write_triangle_mesh(output_file, self._vasculature_mesh)
+        mesh = openmesh.read_trimesh(output_file)
+        openmesh.write_mesh(output_file, mesh)
 
     def validate(self, output_file):
         """Validate surface mesh"""
         mesh = open3d.io.read_triangle_mesh(output_file)
         # open3d.visualization.draw_geometries([mesh])
-        assert mesh.is_orientable()
-        assert mesh.is_edge_manifold()
-        assert mesh.is_vertex_manifold()
+        # assert mesh.is_orientable()
+        # assert mesh.is_edge_manifold()
+        # assert mesh.is_vertex_manifold()
 
 
 
@@ -933,8 +937,8 @@ def build_datasets(grid, paths, n_neurons, n_synapses, n_astrocytes):
 
 def run(out_dir):
     """Run synthetic input dataset building"""
-    bbox_side = 100.
-    voxel_side = 10.
+    bbox_side = 70.
+    voxel_side = 7.
     offset = np.array([0., 0., 0.])
 
     # output paths
@@ -946,7 +950,7 @@ def run(out_dir):
     grid = Grid.from_cubic_bbox(bbox_side, voxel_side, offset)
 
     n_astrocytes = 5
-    n_neurons = 10 * n_astrocytes
+    n_neurons = 3 * n_astrocytes
 
     # a bio realistic 1 synapse / um3
     n_synapses = int(grid.volume)
@@ -966,33 +970,3 @@ if __name__ == '__main__':
     import sys
     np.random.seed(0)
     run(Path(sys.argv[1]))
-    #view_datasets(grid, paths)
-    #vasculature = GridVasculature(shape, offset, voxel_side).build(4)
-    #point_cloud, mesh = VasculatureMesh().build(vasculature)
-
-    #open3d.visualization.draw_geometries([pcd])
-
-    #open3d.visualization.draw_geometries([mesh])
-    #mesh.compute_triangle_normals()
-
-
-    #v.add_bounding_box(h_manager.min_point, h_manager.max_point, color=(0, 255, 0))
-    #v.add_bounding_box(*density.bbox, color=(255, 0, 0))
-    #v.add_voxel_data(density.raw, density.voxel_dimensions, density.shape, density.offset, opacity=0.1, color=(255, 0, 0))
-
-    #ps=  []
-
-    #for i in range(density.shape[0]):
-    #    for j in range(density.shape[1]):
-    #        for k in range(density.shape[2]):
-    #            ps.append(density.indices_to_positions(np.array([i, j, k]) + 0.5))
-    #v.add_spheres(np.vstack([p0, p1]), np.hstack([r0, r1]), color=np.array([[255, 0, 0], [0, 255, 0]]))
-
-    #v.add_mesh('test_mesh.obj')
-    #ps =  np.array(ps)
-    #v.add_points(points, size=10, color=(255, 0, 0))
-    #v.add_lines(np.vstack([p0, p1]), np.array([[0, 1]]))
-    #v.add_lines(np.array([[0., 0., 0.], [0., 0., 1.]]), np.array([[0, 1]]), size=2, color=(255, 0, 0))
-    #v.add_bounding_box(np.array([-0.5, -0.5, 0.0]), np.array([0.5, 0.5, 1.]), color=(0, 0, 0))
-    #v.add_vasculature(vasculature.as_section_graph(), opacity=0.2)
-    #v.render()
