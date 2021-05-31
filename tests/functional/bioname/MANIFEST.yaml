@@ -3,11 +3,11 @@ common:
   seed: 0
   atlas: '../data/atlas/'
   vasculature: '../data/atlas/vasculature.h5'
-  vasculature_mesh: '../data/atlas/vasculature.mesh.obj'
+  vasculature_mesh: '../data/atlas/vasculature.obj'
   base_circuit: ''
-  base_circuit_sonata: '../data/circuit/sonata/circuit_config.json'
-  base_circuit_cells: '../data/circuit/sonata/networks/nodes/All/nodes.h5'
-  base_circuit_connectome: '../data/circuit/sonata/networks/edges/functional/All/edges.h5'
+  base_circuit_sonata: '../data/circuit/circuit_config.json'
+  base_circuit_cells: '../data/circuit/nodes.h5'
+  base_circuit_connectome: '../data/circuit/edges.h5'
 
 assign_emodels:
   templates_dir: '../data/emodels/'

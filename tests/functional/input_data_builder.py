@@ -950,10 +950,8 @@ def run(out_dir):
     grid = Grid.from_cubic_bbox(bbox_side, voxel_side, offset)
 
     n_astrocytes = 5
-    n_neurons = 3 * n_astrocytes
-
-    # a bio realistic 1 synapse / um3
-    n_synapses = int(grid.volume)
+    n_neurons = 10
+    n_synapses = 500
     n_synapses -= n_synapses % n_neurons
 
     build_datasets(

@@ -30,13 +30,6 @@ def test_circuit():
     assert isinstance(circuit.edges["neuroglial"], api.NeuroGlial)
     assert isinstance(circuit.atlases, dict)
 
-    assert circuit.neurons.size == 34
-    assert circuit.astrocytes.size == 14
-    assert circuit.vasculature.size == 10211
-    assert circuit.neuronal_connectome.size == 641
-    assert circuit.glialglial_connectome.size == 0  # no touches on functional
-    assert len(circuit.atlases) == 2
-
     assert isinstance(circuit.astrocytes.microdomains, api.Microdomains)
     assert isinstance(circuit.astrocytes.microdomains.tesselation, MicrodomainTesselation)
     assert isinstance(circuit.astrocytes.microdomains.overlapping, MicrodomainTesselation)
@@ -51,11 +44,7 @@ def test_neuroglial_connectome__property_dtypes():
 
     circuit = NGVCircuit("build/ngv_config.json")
 
-    assert circuit.neuroglial_connectome.size == 598
-
     ng_conn = circuit.neuroglial_connectome
-
-    npt.assert_equal(ng_conn.size, 598)
 
     prop_dtypes = {
         '@source_node': IDS_DTYPE,
@@ -111,7 +100,6 @@ def test_gliovascular_connectome__property_dtypes():
 
     gv_conn = circuit.gliovascular_connectome
 
-    npt.assert_equal(gv_conn.size, 23)
     assert isinstance(gv_conn.surface_meshes, EndfootSurfaceMeshes)
 
     prop_dtypes = {

@@ -1,334 +1,37 @@
 {
   "id": 65535,
-  "acronym": "test",
-  "name": "test",
+  "acronym": "H",
+  "name": "Hyperrectangle",
   "children": [
     {
-      "id": 100,
-      "acronym": "A",
-      "name": "region A",
-      "children": [
-        {
-          "id": 110,
-          "acronym": "A:L1",
-          "name": "region A, L1",
-          "children": [
-            {
-              "id": 111,
-              "acronym": "A:L1@left",
-              "name": "region A, L1, left"
-            },
-            {
-              "id": 112,
-              "acronym": "A:L1@right",
-              "name": "region A, L1, right"
-            }
-          ]
-        },
-        {
-          "id": 120,
-          "acronym": "A:L2",
-          "name": "region A, L2",
-          "children": [
-            {
-              "id": 121,
-              "acronym": "A:L2@left",
-              "name": "region A, L2, left"
-            },
-            {
-              "id": 122,
-              "acronym": "A:L2@right",
-              "name": "region A, L2, right"
-            }
-          ]
-        },
-        {
-          "id": 130,
-          "acronym": "A:L3",
-          "name": "region A, L3",
-          "children": [
-            {
-              "id": 131,
-              "acronym": "A:L3@left",
-              "name": "region A, L3, left"
-            },
-            {
-              "id": 132,
-              "acronym": "A:L3@right",
-              "name": "region A, L3, right"
-            }
-          ]
-        },
-        {
-          "id": 140,
-          "acronym": "A:L4",
-          "name": "region A, L4",
-          "children": [
-            {
-              "id": 141,
-              "acronym": "A:L4@left",
-              "name": "region A, L4, left"
-            },
-            {
-              "id": 142,
-              "acronym": "A:L4@right",
-              "name": "region A, L4, right"
-            }
-          ]
-        },
-        {
-          "id": 150,
-          "acronym": "A:L5",
-          "name": "region A, L5",
-          "children": [
-            {
-              "id": 151,
-              "acronym": "A:L5@left",
-              "name": "region A, L5, left"
-            },
-            {
-              "id": 152,
-              "acronym": "A:L5@right",
-              "name": "region A, L5, right"
-            }
-          ]
-        },
-        {
-          "id": 160,
-          "acronym": "A:L6",
-          "name": "region A, L6",
-          "children": [
-            {
-              "id": 161,
-              "acronym": "A:L6@left",
-              "name": "region A, L6, left"
-            },
-            {
-              "id": 162,
-              "acronym": "A:L6@right",
-              "name": "region A, L6, right"
-            }
-          ]
-        }
-      ]
+      "id": 1,
+      "acronym": "L1",
+      "name": "Hyperrectangle layer1, L1"
     },
     {
-      "id": 200,
-      "acronym": "B",
-      "name": "region B",
-      "children": [
-        {
-          "id": 210,
-          "acronym": "B:L1",
-          "name": "region B, L1",
-          "children": [
-            {
-              "id": 211,
-              "acronym": "B:L1@left",
-              "name": "region B, L1, left"
-            },
-            {
-              "id": 212,
-              "acronym": "B:L1@right",
-              "name": "region B, L1, right"
-            }
-          ]
-        },
-        {
-          "id": 220,
-          "acronym": "B:L2",
-          "name": "region B, L2",
-          "children": [
-            {
-              "id": 221,
-              "acronym": "B:L2@left",
-              "name": "region B, L2, left"
-            },
-            {
-              "id": 222,
-              "acronym": "B:L2@right",
-              "name": "region B, L2, right"
-            }
-          ]
-        },
-        {
-          "id": 230,
-          "acronym": "B:L3",
-          "name": "region B, L3",
-          "children": [
-            {
-              "id": 231,
-              "acronym": "B:L3@left",
-              "name": "region B, L3, left"
-            },
-            {
-              "id": 232,
-              "acronym": "B:L3@right",
-              "name": "region B, L3, right"
-            }
-          ]
-        },
-        {
-          "id": 240,
-          "acronym": "B:L4",
-          "name": "region B, L4",
-          "children": [
-            {
-              "id": 241,
-              "acronym": "B:L4@left",
-              "name": "region B, L4, left"
-            },
-            {
-              "id": 242,
-              "acronym": "B:L4@right",
-              "name": "region B, L4, right"
-            }
-          ]
-        },
-        {
-          "id": 250,
-          "acronym": "B:L5",
-          "name": "region B, L5",
-          "children": [
-            {
-              "id": 251,
-              "acronym": "B:L5@left",
-              "name": "region B, L5, left"
-            },
-            {
-              "id": 252,
-              "acronym": "B:L5@right",
-              "name": "region B, L5, right"
-            }
-          ]
-        },
-        {
-          "id": 260,
-          "acronym": "B:L6",
-          "name": "region B, L6",
-          "children": [
-            {
-              "id": 261,
-              "acronym": "B:L6@left",
-              "name": "region B, L6, left"
-            },
-            {
-              "id": 262,
-              "acronym": "B:L6@right",
-              "name": "region B, L6, right"
-            }
-          ]
-        }
-      ]
+      "id": 2,
+      "acronym": "L2",
+      "name": "Hyperrectangle layer2, L2"
     },
     {
-      "id": 300,
-      "acronym": "C",
-      "name": "region C",
-      "children": [
-        {
-          "id": 310,
-          "acronym": "C:L1",
-          "name": "region C, L1",
-          "children": [
-            {
-              "id": 311,
-              "acronym": "C:L1@left",
-              "name": "region C, L1, left"
-            },
-            {
-              "id": 312,
-              "acronym": "C:L1@right",
-              "name": "region C, L1, right"
-            }
-          ]
-        },
-        {
-          "id": 320,
-          "acronym": "C:L2",
-          "name": "region C, L2",
-          "children": [
-            {
-              "id": 321,
-              "acronym": "C:L2@left",
-              "name": "region C, L2, left"
-            },
-            {
-              "id": 322,
-              "acronym": "C:L2@right",
-              "name": "region C, L2, right"
-            }
-          ]
-        },
-        {
-          "id": 330,
-          "acronym": "C:L3",
-          "name": "region C, L3",
-          "children": [
-            {
-              "id": 331,
-              "acronym": "C:L3@left",
-              "name": "region C, L3, left"
-            },
-            {
-              "id": 332,
-              "acronym": "C:L3@right",
-              "name": "region C, L3, right"
-            }
-          ]
-        },
-        {
-          "id": 340,
-          "acronym": "C:L4",
-          "name": "region C, L4",
-          "children": [
-            {
-              "id": 341,
-              "acronym": "C:L4@left",
-              "name": "region C, L4, left"
-            },
-            {
-              "id": 342,
-              "acronym": "C:L4@right",
-              "name": "region C, L4, right"
-            }
-          ]
-        },
-        {
-          "id": 350,
-          "acronym": "C:L5",
-          "name": "region C, L5",
-          "children": [
-            {
-              "id": 351,
-              "acronym": "C:L5@left",
-              "name": "region C, L5, left"
-            },
-            {
-              "id": 352,
-              "acronym": "C:L5@right",
-              "name": "region C, L5, right"
-            }
-          ]
-        },
-        {
-          "id": 360,
-          "acronym": "C:L6",
-          "name": "region C, L6",
-          "children": [
-            {
-              "id": 361,
-              "acronym": "C:L6@left",
-              "name": "region C, L6, left"
-            },
-            {
-              "id": 362,
-              "acronym": "C:L6@right",
-              "name": "region C, L6, right"
-            }
-          ]
-        }
-      ]
+      "id": 3,
+      "acronym": "L3",
+      "name": "Hyperrectangle layer3, L3"
+    },
+    {
+      "id": 4,
+      "acronym": "L4",
+      "name": "Hyperrectangle layer4, L4"
+    },
+    {
+      "id": 5,
+      "acronym": "L5",
+      "name": "Hyperrectangle layer5, L5"
+    },
+    {
+      "id": 6,
+      "acronym": "L6",
+      "name": "Hyperrectangle layer6, L6"
     }
   ]
 }

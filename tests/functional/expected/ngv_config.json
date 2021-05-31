@@ -7,12 +7,12 @@
   },
   "circuit_dir": "$CIRCUIT_DIR",
   "components": {
-    "morphologies_dir": "$CIRCUIT_DIR/data/circuit/sonata/morphologies"
+    "morphologies_dir": "NA"
   },
   "networks": {
     "nodes": [
       {
-        "nodes_file": "$CIRCUIT_DIR/data/circuit/sonata/networks/nodes/All/nodes.h5",
+        "nodes_file": "/gpfs/bbp.cscs.ch/home/zisis/Projects/ARCHNGV/ArchNGV/tests/functional/data/circuit/nodes.h5",
         "node_types_file": null
       },
       {
@@ -26,11 +26,15 @@
     ],
     "edges": [
       {
-        "edges_file": "$CIRCUIT_DIR/data/circuit/sonata/networks/edges/functional/All/edges.h5",
+        "edges_file": "/gpfs/bbp.cscs.ch/home/zisis/Projects/ARCHNGV/ArchNGV/tests/functional/data/circuit/edges.h5",
         "edge_types_file": null
       },
       {
         "edges_file": "$NETWORK_DIR/sonata/edges/neuroglial.h5",
+        "edge_types_file": null
+      },
+      {
+        "edges_file": "$NETWORK_DIR/sonata/edges/glialglial.h5",
         "edge_types_file": null
       },
       {
@@ -51,8 +55,8 @@
     },
     "vasculature": {
       "population": "vasculature",
-      "vasculature_file": "$CIRCUIT_DIR/data/atlas/vasculature.h5",
-      "vasculature_mesh_file": "$CIRCUIT_DIR/data/atlas/vasculature.mesh.obj"
+      "vasculature_file": "/gpfs/bbp.cscs.ch/home/zisis/Projects/ARCHNGV/ArchNGV/tests/functional/data/atlas/vasculature.h5",
+      "vasculature_mesh_file": "/gpfs/bbp.cscs.ch/home/zisis/Projects/ARCHNGV/ArchNGV/tests/functional/data/atlas/vasculature.obj"
     }
   },
   "connectivities": {
@@ -71,8 +75,8 @@
     }
   },
   "atlases": {
-    "intensity": "$CIRCUIT_DIR/data/atlas/[density]astrocytes.nrrd",
-    "brain_regions": "$CIRCUIT_DIR/data/atlas/brain_regions.nrrd"
+    "intensity": "/gpfs/bbp.cscs.ch/home/zisis/Projects/ARCHNGV/ArchNGV/tests/functional/data/atlas/[density]astrocytes.nrrd",
+    "brain_regions": "/gpfs/bbp.cscs.ch/home/zisis/Projects/ARCHNGV/ArchNGV/tests/functional/data/atlas/brain_regions.nrrd"
   },
   "parameters": {
     "cell_placement": {
@@ -118,20 +122,12 @@
           2,
           0,
           15
-        ],
-        "endfeet_minimum_distance_with_neighbors": 0.1
+        ]
       },
       "surface_targeting": {}
     },
     "neuroglial_connectivity": {},
     "synthesis": {
-      "attraction_field": "lambda _: 1",
-      "point_cloud": [
-        5.0,
-        2.0
-      ],
-      "segment_length": 1.0,
-      "randomness": 0.6,
       "perimeter_distribution": {
         "enabled": true,
         "statistical_model": {
