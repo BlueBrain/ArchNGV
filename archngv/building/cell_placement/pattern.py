@@ -4,7 +4,7 @@ Handles the spatial point pattern generation and spatial indexing for the cell p
 
 import numpy
 
-from spatial_index import sphere_rtree
+from ngv_spatial_index import sphere_rtree
 
 
 class SpatialSpherePattern:

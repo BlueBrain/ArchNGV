@@ -5,7 +5,7 @@ from collections import deque
 import numpy as np
 from scipy.spatial import cKDTree
 
-from archngv_building.endfeet_reconstruction import fmm_growing
+from ngv_ctools.endfeet_reconstruction import fmm_growing
 from archngv.exceptions import NGVError
 from archngv.building.endfeet_reconstruction.groups import group_elements
 from archngv.building.endfeet_reconstruction.groups import GroupedElements

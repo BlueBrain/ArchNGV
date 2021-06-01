@@ -41,7 +41,7 @@ def cmd(config, atlas, atlas_cache, vasculature, seed, output):
     spatial_indexes = []
     if vasculature is not None:
 
-        from spatial_index import sphere_rtree
+        from ngv_spatial_index import sphere_rtree
 
         vasc = Vasculature.load(vasculature)
 

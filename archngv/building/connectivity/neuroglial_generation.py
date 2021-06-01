@@ -8,7 +8,7 @@ import logging
 import numpy as np
 import pandas as pd
 
-from spatial_index import point_rtree
+from ngv_spatial_index import point_rtree
 from archngv.spatial.collision import convex_shape_with_spheres
 
 

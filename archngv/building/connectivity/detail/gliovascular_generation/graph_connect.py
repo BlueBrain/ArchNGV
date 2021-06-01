@@ -4,7 +4,7 @@ import logging
 
 import numpy as np
 
-from spatial_index import point_rtree
+from ngv_spatial_index import point_rtree
 from archngv.spatial import collision
 
 from archngv.utils.statistics import truncated_normal

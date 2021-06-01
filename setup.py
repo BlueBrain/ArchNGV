@@ -12,8 +12,8 @@ VERSION = module.VERSION
 
 
 BUILDING = [
-    'archngv-building>=0.1.3',
-    'spatial-index==0.0.2',
+    'ngv-ctools>=0.1.4',
+    'ngv-spatial-index>=0.0.4',
     'bluepy-configfile>=0.1.11',
     'Click>=7.0,<8.0',
     'numpy-stl>=2.10',
