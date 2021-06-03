@@ -11,7 +11,7 @@ def paths(target_directory):
 
     archngv_path = Path(__file__).resolve().parent.parent
 
-    source_snakefile = archngv_path / 'snakemake/Snakefile'
+    source_snakefile = archngv_path / 'archngv/app/snakemake/Snakefile'
     source_bioname_dir = archngv_path / 'exemplar/template/bioname'
     source_run_script = archngv_path / 'exemplar/template/run.sh'
 
