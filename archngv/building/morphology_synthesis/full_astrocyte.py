@@ -64,7 +64,8 @@ def _sanity_checks(morph):
             )
 
 
-def grow_circuit_astrocyte(tns_data, properties, endfeet_attraction_data, space_colonization_data):
+def grow_circuit_astrocyte(
+        tns_data, properties, endfeet_attraction_data, space_colonization_data, random_generator):
     """
     Args:
         tns_data (TNSData): namedtuple of tns parameters, distributions and context
@@ -73,41 +74,56 @@ def grow_circuit_astrocyte(tns_data, properties, endfeet_attraction_data, space_
             namedtuple that contains data related to endfeet generation
         space_colonization_data (SpaceColonizationData):
             namedtuple that contains data concerning the space colonization
+        random_generator (numpy.random.Generator): Random generator instace to use
 
     Returns:
         morphio.mut.Morphology: The generated astrocyte morphology
     """
+    def diametrizer_function(cell, neurite_type, model_all, random_generator):
+        # external diametrizer function handle
+        return build_diameters.build(
+            cell, model_all, [neurite_type],
+            tns_data.parameters['diameter_params'], rng=random_generator
+        )
+
     tns_data = create_tns_inputs(
-        tns_data, properties, endfeet_attraction_data, space_colonization_data)
-    # external diametrizer function handle
-    diametrizer_function = lambda cell, model, neurite_type: build_diameters.build(
-        cell, model, [neurite_type], tns_data.parameters['diameter_params'])
+        tns_data=tns_data,
+        cell_properties=properties,
+        attraction_data=endfeet_attraction_data,
+        space_colonization_data=space_colonization_data,
+        rng=random_generator)
 
     return AstrocyteGrower(
         input_parameters=tns_data.parameters,
         input_distributions=tns_data.distributions,
         context=tns_data.context,
-        external_diametrizer=diametrizer_function).grow()
+        external_diametrizer=diametrizer_function,
+        rng_or_seed=random_generator).grow()
 
 
 @log_execution_time
-def synthesize_astrocyte(astrocyte_index, paths, parameters):
+def synthesize_astrocyte(astrocyte_index, paths, parameters, random_generator):
     """ Synthesize a circuit astrocyte and write it to file
 
     Args:
         astrocyte_index (int): The id of the astrocyte
         paths (SynthesisInputPaths): The various paths need by this function
         parameters (dict): Input synthesis parameters
+        random_generator (numpy.random.Generator): Random generator instance
     """
     (cell_properties, endfeet_attraction_data,
-     space_colonization_data) = astrocyte_circuit_data(astrocyte_index, paths)
+     space_colonization_data) = astrocyte_circuit_data(astrocyte_index, paths, random_generator)
 
     morphology = grow_circuit_astrocyte(
-        tns_inputs(paths), cell_properties, endfeet_attraction_data, space_colonization_data)
+        tns_inputs(paths),
+        cell_properties,
+        endfeet_attraction_data,
+        space_colonization_data,
+        random_generator)
 
     if parameters['perimeter_distribution']['enabled']:
         L.info('Distributing perimeters...')
-        add_perimeters_to_morphology(morphology, parameters['perimeter_distribution'])
+        add_perimeters_to_morphology(morphology, parameters['perimeter_distribution'], random_generator)
 
     L.info('Adding endoplasmic reticulum')
     add_endoplasmic_reticulum_to_morphology(morphology)

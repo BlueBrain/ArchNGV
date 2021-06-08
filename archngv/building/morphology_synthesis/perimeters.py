@@ -1,7 +1,6 @@
 """ Perimeter distribution on morphologies """
 from collections import deque
 import numpy as np
-from scipy import stats
 import morphio
 
 
@@ -16,14 +15,21 @@ class LinearRegressionNoiseModel:
                 - slope: float
                 - intercept : float
                 - standard_deviation : float
+        rng {None, int, RandomState, Generator}: Determines
+            object used for drawing random numbers
     """
-    def __init__(self, parameter_dict):
+    def __init__(self, parameter_dict, rng):
 
         self.coefficients = np.array([float(parameter_dict['slope'])])
         self.intercept = float(parameter_dict['intercept'])
 
-        # the gaussian noise generator
-        self._norm = stats.norm(0.0, parameter_dict['standard_deviation'])
+        self._loc = 0.0
+        self._scale = parameter_dict['standard_deviation']
+        self._rng = rng
+
+    def _sample(self, size=None):
+        """The gaussian noise generator"""
+        return self._rng.normal(loc=self._loc, scale=self._scale, size=size)
 
     def _linear_function(self, values):
         """ Returns the linear prediction of the values """
@@ -33,7 +39,7 @@ class LinearRegressionNoiseModel:
         """ Similar function signature with sklearn """
 
         n_values = len(input_values)
-        noise_values = self._norm.rvs(n_values)
+        noise_values = self._sample(size=n_values)
         predictions = self._linear_function(input_values)
         values = np.empty(n_values, dtype=np.float32)
 
@@ -44,7 +50,7 @@ class LinearRegressionNoiseModel:
 
             # resample until positive
             while value < 0.0:
-                value = prediction + self._norm.rvs()
+                value = prediction + self._sample()
 
             values[i] = value
 
@@ -235,7 +241,7 @@ def _smooth_morphology_perimeters(morphology, smoothing_window):
         section.perimeters = new_perimeters * scaling_factor
 
 
-def add_perimeters_to_morphology(morphology, parameters):
+def add_perimeters_to_morphology(morphology, parameters, rng):
     """
     Args:
         morphology: morphio.mut.Morphology
@@ -248,8 +254,11 @@ def add_perimeters_to_morphology(morphology, parameters):
                 - standard_deviation
             - smoothing
                 - window
+
+        rng {None, int, RandomState, Generator}: Determines
+            object used for drawing random numbers
     """
-    model = LinearRegressionNoiseModel(parameters['statistical_model'])
+    model = LinearRegressionNoiseModel(parameters['statistical_model'], rng)
 
     # first pass predict perimeters from diameters
     for section in morphology.iter():

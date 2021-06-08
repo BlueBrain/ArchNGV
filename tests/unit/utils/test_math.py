@@ -40,7 +40,7 @@ def test_vectorized_dot_product():
     vec1 = np.random.rand(3)
     vecs = np.random.rand(4, 3)
 
-    expected_result = np.fromiter((np.dot(vec1, v) for v in vecs), dtype=np.float)
+    expected_result = np.fromiter((np.dot(vec1, v) for v in vecs), dtype=np.float32)
 
     result = _la.vectorized_dot_product(vecs, vec1)
 
@@ -52,7 +52,7 @@ def test_rowwise_dot():
     vecs1 = np.random.rand(5, 4)
     vecs2 = np.random.rand(5, 4)
 
-    expected_result = np.fromiter((np.dot(v1, v2) for v1, v2 in zip(vecs1, vecs2)), dtype=np.float)
+    expected_result = np.fromiter((np.dot(v1, v2) for v1, v2 in zip(vecs1, vecs2)), dtype=np.float32)
 
     result = _la.rowwise_dot(vecs1, vecs2)
 
@@ -69,7 +69,7 @@ def test_are_in_the_same_side():
                          [1., 2., 1.],
                          [1., 1., 1.]])
 
-    expected_result = np.array([True, False, True], dtype=np.bool)
+    expected_result = np.array([True, False, True], dtype=bool)
 
     result = _la.are_in_the_same_side(vecs1, vecs2)
 
@@ -112,7 +112,7 @@ def test_are_in_the_same_side():
                          [1., 2., 1.],
                          [1., 1., 1.]])
 
-    expected_result = np.array([True, False, True], dtype=np.bool)
+    expected_result = np.array([True, False, True], dtype=bool)
 
     result = _la.are_in_the_same_side(vecs1, vecs2)
 

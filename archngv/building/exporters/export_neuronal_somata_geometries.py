@@ -128,7 +128,7 @@ def separate_contour_points_in_two_groups(max_dir, min_dir, contour_points):
     and the direction of minimum variation and split the contour_points in two groups
     using that plane.
     """
-    left_right_mask = np.fromiter((plane_point_sgn(min_dir, max_dir, p) for p in contour_points), dtype=np.bool)
+    left_right_mask = np.fromiter((plane_point_sgn(min_dir, max_dir, p) for p in contour_points), dtype=bool)
 
     group1_mask = left_right_mask
     group2_mask = ~ group1_mask
@@ -193,7 +193,7 @@ def generate_soma_points(contour_points):
 
         soma_points.extend(new_points + offsets)
 
-    return np.asarray(soma_points, dtype=np.float)
+    return np.asarray(soma_points, dtype=np.float32)
 
 
 def estimate_convex_hull_volume(points):
@@ -315,7 +315,7 @@ def _worker(output_directory, gid, path):
 
     with h5py.File(output_path, 'w') as fd:
 
-        fd.create_dataset('points', data=soma_points, dtype=np.float)
+        fd.create_dataset('points', data=soma_points, dtype=np.float32)
         fd.attrs['mean_radius'] = mean_radius
         fd.attrs['max_radius'] = max_radius
         fd.attrs['min_radius'] = min_radius
@@ -334,11 +334,11 @@ def extract_neuronal_somata_information(output_directory, neuronal_microcircuit,
 
     n_cells = len(paths)
 
-    data = {'max_radii': np.zeros(n_cells, dtype=np.float),
-            'min_radii': np.zeros(n_cells, dtype=np.float),
-            'mean_radii': np.zeros(n_cells, dtype=np.float),
-            'volume_contour_trunks': np.zeros(n_cells, dtype=np.float),
-            'volume_revolution_solid': np.zeros(n_cells, dtype=np.float)}
+    data = {'max_radii': np.zeros(n_cells, dtype=np.float32),
+            'min_radii': np.zeros(n_cells, dtype=np.float32),
+            'mean_radii': np.zeros(n_cells, dtype=np.float32),
+            'volume_contour_trunks': np.zeros(n_cells, dtype=np.float32),
+            'volume_revolution_solid': np.zeros(n_cells, dtype=np.float32)}
 
     L.info('calculating volumes')
 

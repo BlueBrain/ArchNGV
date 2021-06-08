@@ -61,7 +61,7 @@ def test_neuroglial_connectome__property_dtypes():
 
     for property_name, expected_dtype in prop_dtypes.items():
 
-        arr = ng_conn.properties([0, 1], property_name)
+        arr = ng_conn.get([0, 1], property_name)
         npt.assert_equal(arr.dtype, expected_dtype)
 
 

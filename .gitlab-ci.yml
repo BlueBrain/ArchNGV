@@ -5,7 +5,7 @@ include:
     - /ci/lib/tox-bb5.yml
     - /ci/jobs/check-version.yml
     - /ci/jobs/lint.yml
-    - /ci/jobs/py36.yml
+    - /ci/jobs/py38.yml
     - /ci/jobs/coverage.yml
     - /ci/jobs/build-package.yml
     - /ci/jobs/publish-package.yml
@@ -15,8 +15,8 @@ include:
   tags: [bb5]
   variables:
     EXTRA_MODULES:
-      archive/2019-12:gcc
-      archive/2019-12:cmake/3.13.0
+      archive/2021-05:gcc
+      archive/2021-05:cmake
 
 
 

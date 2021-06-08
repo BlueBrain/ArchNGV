@@ -82,7 +82,7 @@ def remove_overlapping_orientations(ref_point, points, to_remove_points):
     Returns:
         The cleaned points without overlapping orientations.
     """
-    to_remain = np.ones(len(points), dtype=np.bool)
+    to_remain = np.ones(len(points), dtype=bool)
 
     orientations = normalize_vectors(ref_point - points)
     fixed_orientations = normalize_vectors(ref_point - to_remove_points)

@@ -28,6 +28,9 @@ from archngv.building.morphology_synthesis.data_structures import (
 L = logging.getLogger(__name__)
 
 
+TARGET_DENSITY = 1.1
+
+
 def obtain_endfeet_data(astrocyte_index,
                         gliovascular_connectivity,
                         endfeet_areas_path):
@@ -120,7 +123,7 @@ def obtain_synapse_data(astrocyte_index, synaptic_data_filepath, neuroglial_file
     return pd.DataFrame(index=synapse_ids, data=positions, columns=['x', 'y', 'z'])
 
 
-def _create_target_point_cloud(microdomain, synapse_points, target_n_synapses):
+def _create_target_point_cloud(microdomain, synapse_points, target_n_synapses, rng):
     """Uniformly generates points inside the microdomains until the total number of
     synapse point reaches the target_n_synapses. If synapse_points are equal or more
     than target_n_synapses, nothing happens.
@@ -129,6 +132,7 @@ def _create_target_point_cloud(microdomain, synapse_points, target_n_synapses):
         microdomain (Microdomain): The bounding region of the astrocyte
         synapse_points (np.ndarray): The synapse points available from the neuronal circuit
         target_n_synapses (int): The desired number of synapses
+        rng (RandomState, Generator): Random generator object to use
 
     Returns:
         np.ndarray: new synapses
@@ -149,7 +153,7 @@ def _create_target_point_cloud(microdomain, synapse_points, target_n_synapses):
 
     for _ in range(100):
 
-        points = np.random.uniform(
+        points = rng.uniform(
             low=(xmin, ymin, zmin), high=(xmax, ymax, zmax), size=(target_n_synapses, 3))
 
         mask = convex_shape_with_spheres(
@@ -184,7 +188,8 @@ def _scale_domain(microdomain, scale_factor):
 
 
 def _obtain_point_cloud(astrocyte_index, microdomains_filepath,
-                        synaptic_data_filepath, neuroglial_conn_filepath, target_density=1.1):
+                        synaptic_data_filepath, neuroglial_conn_filepath, target_density,
+                        rng):
     """Given the astrocyte index it returns a point cloud for the astrocyte's microdomains
     and all neighboring ones. If the the density in each microdomain is smaller than the
     target_density, new uniform points inside the domain are created until the target one is
@@ -195,6 +200,7 @@ def _obtain_point_cloud(astrocyte_index, microdomains_filepath,
         microdomains_filepath (str): Path to microdomains file
         synaptic_data_filepath (str): Path to synaptic data file
         neuroglial_conn_filepath (str): Path to neuroglial connectivity file
+        rng (RandomState, Generator): Random generator to use
 
     Returns:
         np.ndarray: Array of 3D points
@@ -223,7 +229,7 @@ def _obtain_point_cloud(astrocyte_index, microdomains_filepath,
             target_n_synapses = int(1e6)
 
         if len(synapses) < target_n_synapses:
-            points = _create_target_point_cloud(microdomain, synapses.to_numpy(), target_n_synapses)
+            points = _create_target_point_cloud(microdomain, synapses.to_numpy(), target_n_synapses, rng=rng)
         else:
             points = synapse_points
 
@@ -255,7 +261,7 @@ def tns_inputs(paths):
         context=context)
 
 
-def astrocyte_circuit_data(astrocyte_index, paths):
+def astrocyte_circuit_data(astrocyte_index, paths, rng):
     """Extract astrocyte circuit information
 
     Args:
@@ -266,12 +272,13 @@ def astrocyte_circuit_data(astrocyte_index, paths):
         AstrocyteProperties: namedtuple properties
         EndfeetAttractionData: namedtuple with endfeet atraction data
         SpaceColonizationData: namedtuple with space colonization data
+        rng: Random generator to use
     """
     properties = obtain_cell_properties(astrocyte_index, paths.astrocytes, paths.microdomains)
 
     point_cloud = _obtain_point_cloud(
         astrocyte_index, paths.microdomains, paths.neuronal_connectivity,
-        paths.neuroglial_connectivity)
+        paths.neuroglial_connectivity, TARGET_DENSITY, rng)
 
     if point_cloud.size == 0:
         space_colonization_data = None

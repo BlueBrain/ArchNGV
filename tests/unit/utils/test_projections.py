@@ -10,7 +10,7 @@ def test_scalar_projection():
 
     u_vec = vec1 / numpy.linalg.norm(vec1)
 
-    expected_result = numpy.fromiter((numpy.dot(v, u_vec) for v in vecs), dtype=numpy.float)
+    expected_result = numpy.fromiter((numpy.dot(v, u_vec) for v in vecs), dtype=float)
 
     result = pj.vectorized_scalar_projection(vecs, vec1)
 
@@ -25,7 +25,7 @@ def test_scalar_projections():
     uvecs = numpy.linalg.norm(vecs2, axis=1)
 
     expected_result = \
-        numpy.fromiter((numpy.dot(v1, v2) / u2 for v1, v2, u2 in zip(vecs1, vecs2, uvecs)), dtype=numpy.float)
+        numpy.fromiter((numpy.dot(v1, v2) / u2 for v1, v2, u2 in zip(vecs1, vecs2, uvecs)), dtype=float)
 
     result = pj.rowwise_scalar_projections(vecs1, vecs2)
 

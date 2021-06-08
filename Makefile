@@ -19,4 +19,4 @@ clean: clean-build clean-general clean-cpp clean-pyc
 install: clean
 	pip3 install setuptools pip --upgrade
 	pip3 install numpy cython "snakemake<6"
-	pip3 install --use-deprecated=legacy-resolver --index-url https://bbpteam.epfl.ch/repository/devpi/bbprelman/dev/+simple/ -e .[all]
+	pip3 install --index-url https://bbpteam.epfl.ch/repository/devpi/bbprelman/dev/+simple/ -e .[all]

@@ -6,6 +6,7 @@ from numpy import testing as npt
 
 import morphio
 from archngv.building.morphology_synthesis import perimeters as _p
+from archngv.app.utils import random_generator
 
 
 @pytest.fixture
@@ -28,8 +29,8 @@ def statistical_model_parameters(parameters):
 @pytest.fixture
 def lrn_model(statistical_model_parameters):
     """ linear regression with noise model """
-    np.random.seed(0)
-    return _p.LinearRegressionNoiseModel(statistical_model_parameters)
+    rng = random_generator(0)
+    return _p.LinearRegressionNoiseModel(statistical_model_parameters, rng=rng)
 
 
 def test_linear_regression_noise_model(statistical_model_parameters, lrn_model):
@@ -43,7 +44,7 @@ def test_linear_regression_noise_model(statistical_model_parameters, lrn_model):
     ys_without_noise = lrn_model._linear_function(xs[:, None])
 
     sdev = np.std(ys - ys_without_noise)
-    npt.assert_allclose(sdev, standard_deviation, rtol=1e-2)
+    npt.assert_allclose(sdev, standard_deviation, rtol=1e-1)
 
 
 @pytest.fixture
@@ -368,7 +369,7 @@ def test_add_perimeters_to_morphology(morphology, parameters):
     intercept = parameters['statistical_model']['intercept']
 
 
-    _p.add_perimeters_to_morphology(morphology, parameters)
+    _p.add_perimeters_to_morphology(morphology, parameters, rng=random_generator(seed=0))
 
     for section in morphology.iter():
         npt.assert_allclose(section.perimeters, section.diameters * slope + intercept)

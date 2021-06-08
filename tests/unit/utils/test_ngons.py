@@ -356,7 +356,7 @@ def test_polygon_to_triangles__unique_triangulation():
 
     for points in [circle_inscribed_polygon(6), circle_inscribed_polygon(5)]:
 
-        base_array = np.arange(len(points), dtype=np.int)
+        base_array = np.arange(len(points), dtype=np.int32)
 
         ref_tris, ref_tris_to_polys_map = ngons.polygons_to_triangles(points, [base_array])
 

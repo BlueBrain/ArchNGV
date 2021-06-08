@@ -3,6 +3,7 @@
 import os
 import click
 import yaml
+import numpy
 
 
 REQUIRED_PATH = click.Path(exists=True, readable=True, dir_okay=False, resolve_path=True)
@@ -56,3 +57,8 @@ def readonly_morphology(filepath, position):
     morphology = morphology.as_immutable()
 
     return morphology
+
+
+def random_generator(seed):
+    """Returns random generator instance"""
+    return numpy.random.default_rng(seed=seed)

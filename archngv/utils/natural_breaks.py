@@ -129,20 +129,20 @@ def kmeans_1d(data, n_clusters):
             https://github.com/llimllib/ckmeans/blob/master/ckmeans.py
     """
     if n_clusters == 1:
-        return np.array([0], dtype=np.int)
+        return np.array([0], dtype=np.int64)
     if n_clusters == len(data):
-        return np.arange(len(data), dtype=np.int)
+        return np.arange(len(data), dtype=np.int64)
 
     n_values = len(data)
 
     S = np.zeros((n_clusters, n_values), dtype=np.float64)
 
-    backtracking_matrix = np.zeros((n_clusters, n_values), dtype=np.int)
+    backtracking_matrix = np.zeros((n_clusters, n_values), dtype=np.int64)
 
     _fill_dp_matrix(data, S, backtracking_matrix, n_clusters, n_values)
 
     cluster_right = n_values - 1
-    ids = np.empty(n_clusters, dtype=np.int)
+    ids = np.empty(n_clusters, dtype=np.int64)
 
     # Backtrack the clusters from the dynamic programming matrix. This
     # starts at the bottom-right corner of the matrix (if the top-left is 0, 0),

@@ -155,7 +155,7 @@ def are_consecutive_pairs_different(points):
 
         result: [True, False, True, False]
     """
-    are_diff = np.empty(len(points), dtype=np.bool)
+    are_diff = np.empty(len(points), dtype=bool)
     are_diff[0] = True
 
     # check if the difference of the i-th and (i-1)th entries is zero

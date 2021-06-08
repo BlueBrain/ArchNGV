@@ -278,7 +278,7 @@ class GlioVascular(NGVEdges):
     def vasculature_surface_targets(self, endfoot_ids):
         """Returns the Endfeet surface targets on vasculature."""
 
-        return self.properties(endfoot_ids, properties=['endfoot_surface_x',
+        return self.get(endfoot_ids, properties=['endfoot_surface_x',
                                                         'endfoot_surface_y',
                                                         'endfoot_surface_z'])
 
@@ -289,7 +289,7 @@ class GlioVascular(NGVEdges):
             vasculature_section_id: The section id of the vasculature morphology
             vasculature_segment_id: The segment id of the vaculature morphology
         """
-        return self.properties(endfoot_ids, properties=[Edge.SOURCE_NODE_ID,
+        return self.get(endfoot_ids, properties=[Edge.SOURCE_NODE_ID,
                                                         'vasculature_section_id',
                                                         'vasculature_segment_id'])
 
@@ -358,13 +358,13 @@ class NeuroGlial(NGVEdges):
     def astrocyte_synapses(self, astrocyte_id):
         """Returns the synapse ids connected to a given `astrocyte_id`."""
         edge_ids = self.efferent_edges(astrocyte_id)
-        return self.properties(edge_ids=edge_ids, properties="synapse_id").to_numpy()
+        return self.get(edge_ids=edge_ids, properties="synapse_id").to_numpy()
 
     def astrocyte_synapses_properties(self, astrocyte_id, properties=None):
         """Returns the synapse properties and ids connected to a given `astrocyte_id`."""
         synapse_ids = self.astrocyte_synapses(astrocyte_id)
-        return self._edge_storage.circuit.neuronal_connectome.properties(synapse_ids,
-                                                                         properties=properties)
+        return self._edge_storage.circuit.neuronal_connectome.get(synapse_ids,
+                                                                  properties=properties)
 
     def connected_neurons(self, astrocyte_group=None):
         """Returns all the neuron ids connected to the astrocytes."""

@@ -8,7 +8,7 @@ $ git clone ssh://bbpcode.epfl.ch/molecularsystems/ArchNGV /path/to/repo
 
 # Load most recent stable modules
 $ module purge
-$ module load archive/2019-12 python/3.6.5 cmake/3.13.0
+$ module load archive/2021-05 python/3.8.3 cmake
 
 # Create a Python virtualenv in repository source directory
 $ python -m venv /path/to/repo/.venv

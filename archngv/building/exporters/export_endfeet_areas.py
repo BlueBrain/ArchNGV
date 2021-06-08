@@ -27,7 +27,7 @@ def export_endfeet_areas(filepath, data_generator, n_endfeet):
         meshes = fd.create_group('objects')
         attributes = fd.create_group('attributes')
 
-        is_empty = np.ones(n_endfeet, dtype=np.bool)
+        is_empty = np.ones(n_endfeet, dtype=bool)
 
         # datasets with 1D properties
         endfeet_areas = np.zeros(n_endfeet, dtype=np.float32)

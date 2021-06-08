@@ -26,7 +26,7 @@ class BoundingBox:
 
     def __init__(self, min_coordinates, max_coordinates):
         self._bb = np.array((min_coordinates,
-                             max_coordinates), dtype=np.float)
+                             max_coordinates), dtype=np.float32)
 
     def __eq__(self, other):
         """ Equality of bboxes"""

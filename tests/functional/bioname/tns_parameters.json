@@ -67,7 +67,6 @@
       "basal": 0.05
     },
     "n_samples": 1,
-    "seed": 0,
     "trunk_max_tries": 100,
     "n_cpu": 8,
     "method": "external"

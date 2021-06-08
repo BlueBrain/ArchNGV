@@ -63,11 +63,11 @@ SPACK_MODULEPATH = "/gpfs/bbp.cscs.ch/ssd/apps/hpc/jenkins/modules/all"
 
 MODULES = {
     'glial_gap_junctions':
-        (SPACK_MODULEPATH, ['archive/2019-12', 'touchdetector/5.3.2']),
+        (SPACK_MODULEPATH, ['archive/2021-05', 'touchdetector']),
     'glialglial_connectivity':
-        (SPACK_MODULEPATH, ['archive/2019-12', 'py-pytouchreader/1.4.3/python3']),
+        (SPACK_MODULEPATH, ['archive/2021-05', 'py-pytouchreader']),
     'synthesis':
-        (SPACK_MODULEPATH, ['archive/2019-12', 'py-mpi4py']),
+        (SPACK_MODULEPATH, ['archive/2021-05', 'py-mpi4py']),
 }
 
 

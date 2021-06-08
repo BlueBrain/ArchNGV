@@ -24,7 +24,8 @@ PERIVASCULAR_TYPE = ASTROCYTE_TO_NEURON['endfoot']
 def create_tns_inputs(tns_data,
                       cell_properties,
                       attraction_data=None,
-                      space_colonization_data=None):
+                      space_colonization_data=None,
+                      rng=np.random):
     """Generate inputs for tns astrocyte grower
 
     Args:
@@ -57,7 +58,11 @@ def create_tns_inputs(tns_data,
         L.warning('No microdomain boundary provided.')
     else:
         context['collision_handle'] = StopAtConvexBoundary(
-            microdomain.points, microdomain.triangles, microdomain.face_normals)
+            points=microdomain.points,
+            triangles=microdomain.triangles,
+            triangle_normals=microdomain.face_normals,
+            hazard_rate=0.01,
+            rng=rng)
 
     if space_colonization_data is None:
         point_cloud = np.empty((0, 3), dtype=np.float32)
@@ -89,7 +94,7 @@ def create_tns_inputs(tns_data,
         cell_properties.soma_position,
         microdomain.points,
         microdomain.triangles,
-        sample.n_neurites(distributions[PERISYNAPTIC_TYPE]['num_trees']),
+        sample.n_neurites(distributions[PERISYNAPTIC_TYPE]['num_trees'], random_generator=rng),
         fixed_targets=endfeet_targets)
 
     for tree_type in parameters['grow_types']:

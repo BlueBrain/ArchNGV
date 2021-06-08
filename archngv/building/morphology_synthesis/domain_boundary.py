@@ -24,6 +24,7 @@ class StopAtConvexBoundary:
         triangles (np.ndarray): Array of triangles, the faces of the microdomain
         triangle_normals (np.ndarra): Array of normals, one per microdomain face
         hazard_rate(float)
+        rng (RandomState, Generator): Random generator to use
 
     Attrs:
         face_points (np.ndarray): Microdomain face points
@@ -35,7 +36,7 @@ class StopAtConvexBoundary:
         surface area. This seeds are used for the calculation of closest distance
         to the domain. There are generated 100 x domain vertices
     """
-    def __init__(self, points, triangles, triangle_normals, hazard_rate=0.01):
+    def __init__(self, points, triangles, triangle_normals, hazard_rate, rng):
 
         self.face_points = points[triangles[:, 0]]
         self.face_normals = triangle_normals
@@ -47,6 +48,7 @@ class StopAtConvexBoundary:
             subdivide_triangles_by_total_area(points, triangles, len(points) * 100)
 
         self._seed_tree = cKDTree(seeds)
+        self._rng = rng
 
     def survival(self, distance):
         """Exponential survival function S(d) = exp(-l*d) """
@@ -64,7 +66,7 @@ class StopAtConvexBoundary:
         Returns:
             bool: False if we stop, True otherwise
         """
-        return not (1.0 - self.survival(distance)) * fraction < np.random.random()
+        return not (1.0 - self.survival(distance)) * fraction < self._rng.random()
 
     def closest_point(self, point):
         """ Closest point on the surface of the convex hull

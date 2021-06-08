@@ -8,9 +8,8 @@ import click
 from dask import bag
 from dask.distributed import Client, progress
 import dask_mpi
-import numpy as np
 
-from archngv.app.utils import load_yaml
+from archngv.app.utils import load_yaml, random_generator
 
 
 def _synthesize(astrocyte_index, seed, paths, config):
@@ -20,10 +19,10 @@ def _synthesize(astrocyte_index, seed, paths, config):
     from archngv.building.morphology_synthesis.full_astrocyte import synthesize_astrocyte
 
     seed = hash((seed, astrocyte_index)) % (2 ** 32)
-    np.random.seed(seed)
+    rng = random_generator(seed)
 
-    morph = synthesize_astrocyte(astrocyte_index, paths, config)
-    cell_properties = astrocyte_circuit_data(astrocyte_index, paths)[0]
+    morph = synthesize_astrocyte(astrocyte_index, paths, config, rng)
+    cell_properties = astrocyte_circuit_data(astrocyte_index, paths, rng)[0]
     morph.write(Path(paths.morphology_directory, cell_properties.name[0] + '.h5'))
 
 

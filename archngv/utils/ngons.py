@@ -400,7 +400,7 @@ def local_to_global_polygon_ids(polygon_ids):
         polygon_ids = [0, 0, 1, 1, 0, 1, 1, 2]
         global_poly = [0, 0, 1, 1, 2, 3, 3, 4]
     """
-    is_different = np.empty(polygon_ids.shape, dtype=np.bool)
+    is_different = np.empty(polygon_ids.shape, dtype=bool)
     is_different[0] = False
     # check if the i and i-1 ids are different
     is_different[1:] = polygon_ids[1:] != polygon_ids[:-1]

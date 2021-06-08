@@ -3,6 +3,7 @@ import numpy as np
 
 from archngv.spatial import ConvexPolygon
 from archngv.building.morphology_synthesis.domain_boundary import StopAtConvexBoundary
+from archngv.app.utils import random_generator
 
 
 HAZARD_RATE = 0.01
@@ -56,11 +57,13 @@ def convex_polygon():
 
 @pytest.fixture
 def domain_boundary(convex_polygon):
+    rng = random_generator(seed=0)
     return StopAtConvexBoundary(
         convex_polygon.points,
         convex_polygon.triangles,
         convex_polygon.face_normals,
-        hazard_rate=HAZARD_RATE
+        hazard_rate=HAZARD_RATE,
+        rng=rng
     )
 
 
