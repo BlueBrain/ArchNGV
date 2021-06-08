@@ -82,7 +82,7 @@ def cmd(config,
         tns_context=tns_context,
         morphology_directory=out_morph_dir)
 
-    synthesize = bag.from_sequence(range(n_astrocytes)) \
+    synthesize = bag.from_sequence(range(n_astrocytes), partition_size=1) \
         .map(_synthesize, seed=seed, paths=paths, config=config) \
         .persist()
     # print is intentional here because it is for showing the progress bar title
