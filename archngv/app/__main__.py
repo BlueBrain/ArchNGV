@@ -9,7 +9,9 @@ Collection of tools for NGV building
 \____|__  /__|    \___  >___|  /\____|__  /\______  /  \___/
         \/            \/     \/         \/        \/
 """
+import os
 import sys
+import stat
 import logging
 import subprocess
 from pathlib import Path
@@ -61,6 +63,34 @@ app.add_command(name='glialglial-connectivity', cmd=glialglial_connectivity.cmd)
 app.add_command(name='synthesis', cmd=synthesis.cmd)
 app.add_command(name='endfeet-area', cmd=endfeet_area.cmd)
 app.add_command(name='config-file', cmd=ngv_config.cmd)
+
+
+@app.command(name='create-exemplar')
+@click.argument('project-dir', type=Path)
+def create_exemplar(project_dir):
+    """Create an exemplar circuit to build"""
+    import shutil
+
+    def copy_and_overwrite(from_path, to_path):
+        if from_path.is_dir():
+            if to_path.exists():
+                shutil.rmtree(to_path)
+            shutil.copytree(from_path, to_path)
+        else:
+            shutil.copyfile(from_path, to_path)
+
+    if not project_dir.exists():
+        os.mkdir(project_dir)
+
+    exemplar_dir = Path(pkg_resources.resource_filename(__name__, 'exemplar'))
+
+    copy_and_overwrite(exemplar_dir / 'bioname', project_dir / 'bioname')
+    copy_and_overwrite(exemplar_dir / 'run.sh', project_dir / 'run.sh')
+    copy_and_overwrite(exemplar_dir / 'launch.sbatch', project_dir / 'launch.sbatch')
+
+    # make run script executable
+    st = os.stat(project_dir / 'run.sh')
+    os.chmod(project_dir / 'run.sh', st.st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
 
 
 @app.command(name='snakefile-path')

@@ -17,9 +17,12 @@ export DASK_DISTRIBUTED__WORKER__MEMORY__TERMINATE=0.95  # restart the worker at
 export DASK_DISTRIBUTED__WORKER__PROFILE__INTERVAL=10000ms  # Time between statistical profiling queries
 export DASK_DISTRIBUTED__WORKER__PROFILE__CYCLE=1000000ms  # Time between starting new profile
 
-snakemake --snakefile ./Snakefile \
-          --config bioname=../bioname \
-          --directory ./build \
-          --cluster-config ./bioname/cluster.yaml \
-          --cores 5 \
-          -f "${1:-all}"
+mkdir -p build && pushd build
+
+unset $(env | grep SLURM | cut -d= -f1 | xargs)
+
+ngv run \
+    --bioname '../bioname' \
+    --cluster-config '../bioname/cluster.yaml'
+
+popd
