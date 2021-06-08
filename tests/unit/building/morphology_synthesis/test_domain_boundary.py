@@ -94,7 +94,7 @@ def test_acceptance_criterion(domain_boundary):
     # values that hasn't stopped
     accepted = np.fromiter(
         (val for val in values if not domain_boundary.acceptance_criterion(val, 1.0)),
-        dtype=np.float
+        dtype=np.float32
     )
 
     # density histogram

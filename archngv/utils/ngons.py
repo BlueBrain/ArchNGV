@@ -174,8 +174,8 @@ def subdivide_triangles_by_total_area(points, triangles, min_number_of_points):
             result_triangles.extend(sorted_triangles[i + 1::])
             break
 
-    return np.asarray(result_points, dtype=np.float), \
-           np.asarray(result_triangles, dtype=np.int)
+    return np.asarray(result_points, dtype=points.dtype), \
+           np.asarray(result_triangles, dtype=triangles.dtype)
 
 
 def subdivide_triangles(initial_points, initial_triangles, max_level=0, max_points=np.inf):

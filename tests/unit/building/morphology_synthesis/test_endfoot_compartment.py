@@ -158,7 +158,7 @@ def test_create_endfeet_compartment_data():
                 [0.0, 0.25, 0.75],
                 [0.0, 0.25, 0.25]
             ]),
-            triangles=np.empty(shape=(0, 3), dtype=np.int),
+            triangles=np.empty(shape=(0, 3), dtype=np.int32),
             area=4.0, thickness=0.5 * np.pi
         ),
         EndfootMesh(

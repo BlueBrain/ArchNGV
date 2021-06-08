@@ -28,7 +28,7 @@ class MockObjective:
 
         self._f = func
         self.points = points
-        self.occupied = np.zeros(len(points), dtype=np.bool)
+        self.occupied = np.zeros(len(points), dtype=bool)
     def __call__(self, index, selected):
         return self._f(self.points[index])
 

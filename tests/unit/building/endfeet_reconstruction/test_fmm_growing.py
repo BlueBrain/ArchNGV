@@ -19,7 +19,7 @@ def test_closest_mesh_nodes():
                             [0.9, 1.5, 3.5],
                             [-2., 2., 1.]])
 
-    empty = np.empty(5, dtype=np.int)
+    empty = np.empty(5, dtype=np.int32)
     mesh_vertices = _fmm._find_closest_mesh_nodes(endfeet_points, mesh_points, empty, empty)
 
     npt.assert_array_equal(mesh_vertices, [2, 0, 3, 1])

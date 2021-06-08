@@ -131,7 +131,7 @@ def _find_closest_mesh_nodes(endfeet_points, mesh_points, neighbors, nn_offsets)
     L.info('Multiple endfeet points converged to the same mesh node (%d, %d). Fixing...',
            overlapping_groups.ids.size, overlapping_groups.groups.size)
 
-    vertex_neighbors = GroupedElements(neighbors, nn_offsets, np.arange(len(nn_offsets) - 1, dtype=np.int))
+    vertex_neighbors = GroupedElements(neighbors, nn_offsets, np.arange(len(nn_offsets) - 1, dtype=np.int64))
 
     return _find_non_overlapping_mesh_nodes(closest_mesh_nodes, overlapping_groups, vertex_neighbors, distances)
 

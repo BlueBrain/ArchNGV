@@ -13,7 +13,7 @@ def line_lengths(points, edges):
 
 
 def sequential_edges(Npoints):
-    return np.asarray([(n, n + 1) for n in range(Npoints - 1)], dtype=np.int)
+    return np.asarray([(n, n + 1) for n in range(Npoints - 1)], dtype=np.int32)
 
 
 def _create_test_line(Npoints, dP, target_linear_density):
@@ -27,7 +27,7 @@ def _create_test_line(Npoints, dP, target_linear_density):
 
     points = np.asarray([parametric_line(start, u_d, t)
                          for t in dP * np.arange(0., float(Npoints))],
-                        dtype=np.float64)
+                        dtype=np.float32)
 
     edges = sequential_edges(Npoints)
 
@@ -35,7 +35,7 @@ def _create_test_line(Npoints, dP, target_linear_density):
 
     targets = np.asarray([parametric_line(start, u_d, t)
                           for t in (1. / l_T) * np.arange(0., float(Ntargets))],
-                         dtype=np.float)
+                         dtype=np.float32)
 
     return points, edges, targets
 

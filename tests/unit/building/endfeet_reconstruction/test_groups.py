@@ -47,7 +47,7 @@ def test_grouped_elements_iter_assigned_grouped(grouped_elements):
 
 def test_group_elements():
 
-    v_group_index = np.array([-1, 3, 3, 3, 2, 2, 1, 0, -1, -1], dtype=np.int)
+    v_group_index = np.array([-1, 3, 3, 3, 2, 2, 1, 0, -1, -1], dtype=np.int32)
     grouped_elements = _g.group_elements(v_group_index)
 
     npt.assert_array_equal(grouped_elements.groups, [-1, 0, 1, 2, 3])

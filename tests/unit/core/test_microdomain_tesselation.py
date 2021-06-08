@@ -30,7 +30,7 @@ class MockMicrodomainTesselation(object):
         return [(i, j) for i, neighbors in enumerate(self.connectivity) for j in neighbors]
 
     def domain_points(self, index):
-        vals = np.arange(10, dtype=np.float)
+        vals = np.arange(10, dtype=np.float32)
         thetas = np.linspace(0., 1.8 * np.pi, 10)
         zs = np.full(10, fill_value=float(index))
         return np.column_stack((np.cos(thetas), np.sin(thetas), zs))
@@ -122,7 +122,7 @@ def test_connectivity(microdomains):
      [1, 3],
      [1, 4],
      [2, 3],
-     [2, 4]], dtype=np.intp)
+     [2, 4]], dtype=np.int32)
 
     np.testing.assert_allclose(expected, microdomains.connectivity)
 

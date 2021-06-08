@@ -16,7 +16,7 @@ def test_cartesian_product():
                      [8, 1, 0],
                      [8, 1, 3],
                      [8, 2, 0],
-                     [8, 2, 3]], dtype=np.intp)
+                     [8, 2, 3]], dtype=np.int32)
 
     result = cb.cartesian_product(arr1, arr2, arr3)
 

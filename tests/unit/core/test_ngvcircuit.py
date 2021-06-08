@@ -213,7 +213,7 @@ class TestCircuit:
 
         # accessing data from touches
         gap_junctions = gg.astrocyte_gap_junctions(0)
-        prop = gg.properties(gap_junctions, properties=['spine_length', '@source_node',
+        prop = gg.get(gap_junctions, properties=['spine_length', '@source_node',
                                                         '@target_node'])
         npt.assert_allclose(prop['spine_length'], [0.0, 0.1, 0.2])
         npt.assert_allclose(prop['@source_node'], [2, 0, 0])

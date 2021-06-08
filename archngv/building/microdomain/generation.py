@@ -22,7 +22,7 @@ def _microdomain_from_tess_cell(cell):
     points = np.asarray(cell.vertices(), dtype=np.float32)
 
     # polygon face neighbors
-    neighbors = np.asarray(cell.neighbors(), dtype=np.intp)
+    neighbors = np.asarray(cell.neighbors(), dtype=np.int64)
 
     triangles, tris_to_polys_map = polygons_to_triangles(points, cell.face_vertices())
     triangle_data = np.column_stack((tris_to_polys_map, triangles))

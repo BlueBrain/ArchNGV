@@ -174,7 +174,7 @@ def choose_ids(total_number, points, objective):
     available_ids = set(range(len(points)))
 
     if total_number >= len(available_ids):
-        return np.asarray(list(available_ids), dtype=np.int)
+        return np.asarray(list(available_ids), dtype=np.int32)
 
     selected = []
 
@@ -191,4 +191,4 @@ def choose_ids(total_number, points, objective):
         selected.append(best_index)
         available_ids.remove(best_index)
 
-    return np.asarray(list(selected), dtype=np.intp)
+    return np.asarray(list(selected), dtype=np.int32)

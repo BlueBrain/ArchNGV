@@ -28,8 +28,8 @@ def _argsort_components(source, components):
         closest_vertices ndarray: int[(N,)]
             The closest global vertex of each component.
     """
-    closest_vertices = np.empty(len(components), dtype=np.int)
-    closest_distances = np.empty(len(components), dtype=np.float)
+    closest_vertices = np.empty(len(components), dtype=np.int64)
+    closest_distances = np.empty(len(components), dtype=np.float32)
 
     for i, comp in enumerate(components):
 
@@ -80,7 +80,7 @@ def _distribute_elements_in_buckets(n_elements, bucket_capacities):
 
     quotient, remainder = divmod(n_elements, n_buckets)
 
-    elements_per_bucket = np.full(n_buckets, fill_value=quotient, dtype=np.int)
+    elements_per_bucket = np.full(n_buckets, fill_value=quotient, dtype=np.int64)
 
     # find buckets, the capacity of which is smaller than the number
     # of elements they currently have
@@ -200,13 +200,13 @@ def _maximum_reachout(source, targets, n_classes):
 
     # sort components by closest point inside each compoenent to the source
     sorted_components = [components[sorted_index] for sorted_index in sorted_indices]
-    component_sizes = np.fromiter(map(len, sorted_components), np.int)
+    component_sizes = np.fromiter(map(len, sorted_components), np.int64)
 
     # find how many targets we will have in each component given the number their available
     # points
     n_elements_per_component = _distribute_elements_in_buckets(n_classes, component_sizes)
 
-    selected = np.empty(n_classes, dtype=np.int)
+    selected = np.empty(n_classes, dtype=np.int64)
 
     n = 0
     for comp, n_elements in zip(sorted_components, n_elements_per_component):

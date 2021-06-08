@@ -9,7 +9,7 @@ def test_endfeet_areas():
 
     triangle_areas = np.random.random(20)
 
-    triangle_ids = np.arange(20, dtype=np.int)
+    triangle_ids = np.arange(20, dtype=np.int32)
     np.random.shuffle(triangle_ids)
 
     group_ids = np.array([-1, 5, 10])
@@ -20,7 +20,7 @@ def test_endfeet_areas():
 
     areas = _a._endfeet_areas(g_elements, triangle_areas, n_endfeet=12)
 
-    expected_areas = np.zeros(12, dtype=np.float)
+    expected_areas = np.zeros(12, dtype=np.float32)
     expected_areas[5] = triangle_areas[triangle_ids[group_offsets[1]: group_offsets[2]]].sum()
     expected_areas[10] = triangle_areas[triangle_ids[group_offsets[2]: group_offsets[3]]].sum()
 

@@ -23,7 +23,7 @@ def _extract_section_perimeters(morphology):
     """
     def equivalent_perimeters(_):
         return 1.0
-    return np.fromiter(map(equivalent_perimeters, morphology.iter()), dtype=np.float)
+    return np.fromiter(map(equivalent_perimeters, morphology.iter()), dtype=np.float32)
 
 
 def create_astrocyte_properties(astrocyte_index, paths):

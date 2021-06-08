@@ -223,7 +223,7 @@ def voxel_grid_centers(voxel_grid):
     Returns: 2D array[float]
         Array of the centers of the grid voxels
     """
-    unit_voxel_corners = np.indices(voxel_grid.shape, dtype=np.float).reshape(3, -1).T
+    unit_voxel_corners = np.indices(voxel_grid.shape, dtype=np.float32).reshape(3, -1).T
     return voxel_grid.indices_to_positions(unit_voxel_corners + 0.5)
 
 
@@ -262,7 +262,7 @@ def counts_per_group(intensity_per_group, voxels_per_group, voxel_volume):
     """
     counts = 1e-9 * intensity_per_group * voxels_per_group * voxel_volume
     L.debug('Counts per group: %s, Total %s', counts, counts.sum())
-    return counts.astype(np.intp)
+    return counts.astype(np.int64)
 
 
 def nonzero_intensity_groups(voxelized_intensity):

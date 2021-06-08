@@ -218,7 +218,7 @@ def test_proposal():
 
 def test_voxel_grid_centers():
 
-    raw_array = np.zeros((2, 2, 2), dtype=np.float)
+    raw_array = np.zeros((2, 2, 2), dtype=np.float32)
     voxel_dimensions = (2, 2, 2)
 
     offset = (-1., 2., 3.)
@@ -241,7 +241,7 @@ def test_voxel_grid_centers():
 
 def test_voxel_group_centers():
 
-    raw_array = np.zeros((2, 2, 2), dtype=np.float)
+    raw_array = np.zeros((2, 2, 2), dtype=np.float32)
 
     raw_array[..., 0] = 1e10
     raw_array[0, ...] = 2e10
@@ -278,14 +278,14 @@ def test_counts_per_group():
 
     results = generation.counts_per_group(intensity_per_group, voxels_per_group, voxel_volume)
 
-    expected = np.array([10, 24, 73], dtype=np.int)
+    expected = np.array([10, 24, 73], dtype=np.int32)
 
     assert np.all(results == expected)
 
 
 def test_nonzero_intensity_groups():
 
-    raw_array = np.zeros((2, 2, 2), dtype=np.float)
+    raw_array = np.zeros((2, 2, 2), dtype=np.float32)
 
     raw_array[..., 0] = 1e10
     raw_array[0, ...] = 2e10
