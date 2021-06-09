@@ -38,12 +38,18 @@ setup(
     classifiers=[
         'Programming Language :: Python :: 3.6',
     ],
-    name='archngv',
+    name='ArchNGV',
     version=VERSION,
     description='NGV Architecture Modules',
     author='Eleftherios Zisis',
     author_email='eleftherios.zisis@epfl.ch',
     setup_requires=['cython'],  # needed to correctly compile tess by generating new c files
+    url="https://bbpteam.epfl.ch/documentation/projects/ArchNGV",
+    project_urls={
+        "Tracker": "",
+        "Source": "https://bbpgitlab.epfl.ch/molsys/ArchNGV.git",
+    },
+    license="BBP-internal-confidential",
     install_requires=[
         'numpy>=1.19.5',
         'six>=1.15.0',
@@ -57,6 +63,7 @@ setup(
     ],
     extras_require={
         'all': BUILDING,
+        'docs': ['sphinx', 'sphinx-bluebrain-theme']
     },
     packages=find_packages(),
     scripts=[
