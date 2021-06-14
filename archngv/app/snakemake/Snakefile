@@ -50,7 +50,7 @@ workflow.configfile(MANIFEST)
 
 ATLAS = config['common']['atlas']
 ATLAS_CACHE_DIR = ".atlas"
-VASCULATURE = config['common']['vasculature']
+VASCULATURE_MORPHOLOGY = config['common']['vasculature']
 PARALLEL = config['common'].get('parallel', True)
 LOG_LEVEL = get_log_level_for_cli(config['common'].get('log_level', 'WARNING'))
 
@@ -171,7 +171,27 @@ rule ngv_config:
         ])
 
 
+rule sonata_vasculature:
+    input:
+        VASCULATURE_MORPHOLOGY
+
+    output:
+        'sonata/nodes/vasculature.h5'
+
+    log:
+        log_path('sonata_vasculature')
+
+    shell:
+        run_cmd([
+            f'vasculatureapi morphology-to-sonata',
+            '{input} {output}'],
+            dump_log=True)
+
+
 rule cell_placement:
+    input:
+        'sonata/nodes/vasculature.h5'
+
     output:
         'sonata.tmp/nodes/glia.somata.h5'
 
@@ -184,7 +204,7 @@ rule cell_placement:
             f'--config {bioname_path("cell_placement.yaml")}',
             f'--atlas {ATLAS}',
             f'--atlas-cache {ATLAS_CACHE_DIR}',
-            f'--vasculature {VASCULATURE}',
+            f'--vasculature {input}',
             '--output {output}',
             f'--seed {SEED}'],
             dump_log=True)
@@ -249,29 +269,11 @@ rule microdomains:
             dump_log=True)
 
 
-rule sonata_vasculature:
-    input:
-        VASCULATURE
-
-    output:
-        'sonata/nodes/vasculature.h5'
-
-    log:
-        log_path('sonata_vasculature')
-
-    shell:
-        run_cmd([
-            f'vasculatureapi morphology-to-sonata',
-            '{input} {output}'],
-            dump_log=True)
-
-
 rule gliovascular_connectivity:
     input:
         astrocytes = 'sonata/nodes/glia.h5',
         microdomains = 'microdomains/overlapping_microdomains.h5',
-        vasculature = VASCULATURE,
-        vasculature_sonata = 'sonata/nodes/vasculature.h5'
+        vasculature = 'sonata/nodes/vasculature.h5'
 
     output:
         'sonata.tmp/edges/gliovascular.connectivity.h5',
@@ -286,7 +288,6 @@ rule gliovascular_connectivity:
             '--astrocytes {input[astrocytes]}',
             '--microdomains {input[microdomains]}',
             '--vasculature {input[vasculature]}',
-            '--vasculature-sonata {input[vasculature_sonata]}',
             f'--seed {SEED}',
             '--output {output}'],
             dump_log=True)

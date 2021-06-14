@@ -9,7 +9,7 @@ import click
 @click.option("--config", help="Path to astrocyte placement YAML config", required=True)
 @click.option("--atlas", help="Atlas URL / path", required=True)
 @click.option("--atlas-cache", help="Path to atlas cache folder", default=None, show_default=True)
-@click.option("--vasculature", help="Path to vasculature dataset", default=None)
+@click.option("--vasculature", help="Path to vasculature node population", default=None, required=True)
 @click.option("--seed", help="Pseudo-random generator seed", type=int, default=0, show_default=True)
 @click.option("-o", "--output", help="Path to output HDF5", required=True)
 def cmd(config, atlas, atlas_cache, vasculature, seed, output):
@@ -17,7 +17,7 @@ def cmd(config, atlas, atlas_cache, vasculature, seed, output):
     import numpy as np
 
     from voxcell.nexus.voxelbrain import Atlas
-    from vasculatureapi import SectionVasculature
+    from vasculatureapi import PointVasculature
 
     from archngv.building.cell_placement.positions import create_positions
     from archngv.building.exporters.node_populations import export_astrocyte_population
@@ -43,7 +43,7 @@ def cmd(config, atlas, atlas_cache, vasculature, seed, output):
 
         from ngv_spatial_index import sphere_rtree
 
-        vasc = SectionVasculature.load(vasculature).as_point_graph()
+        vasc = PointVasculature.load_sonata(vasculature)
 
         assert_bbox_alignment(
             BoundingBox.from_points(vasc.points),
