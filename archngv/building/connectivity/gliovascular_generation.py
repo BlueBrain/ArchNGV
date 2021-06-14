@@ -19,11 +19,11 @@ L = logging.getLogger(__name__)
 
 
 def _vasculature_annotation_from_edges(vasculature, edge_indices):
-
-    index = vasculature.edge_properties.index[edge_indices]
-    section_ids = index.get_level_values('section_id').to_numpy(dtype=np.int64)
-    segment_ids = index.get_level_values('segment_id').to_numpy(dtype=np.int64)
-    return section_ids, segment_ids
+    edge_properties = vasculature.edge_properties
+    return (
+        edge_properties.loc[edge_indices, 'section_id'].to_numpy(dtype=np.int64),
+        edge_properties.loc[edge_indices, 'segment_id'].to_numpy(dtype=np.int64)
+    )
 
 
 def _create_point_sampling_on_vasculature_skeleton(vasculature, graph_targeting_params):
@@ -39,7 +39,7 @@ def _create_point_sampling_on_vasculature_skeleton(vasculature, graph_targeting_
 
     L.info('STEP 2: Connection of astrocytes with vasculature started.')
 
-    beg_radii, end_radii = vasculature.segment_radii
+    beg_radii, end_radii = 0.5 * vasculature.segment_diameters
     radii = np.min((beg_radii[edge_indices], end_radii[edge_indices]), axis=0)
 
     section_ids, segment_ids = _vasculature_annotation_from_edges(vasculature, edge_indices)

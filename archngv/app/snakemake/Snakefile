@@ -261,7 +261,7 @@ rule sonata_vasculature:
 
     shell:
         run_cmd([
-            f'ngv {LOG_LEVEL} convert vasculature-to-sonata',
+            f'vasculatureapi morphology-to-sonata',
             '{input} {output}'],
             dump_log=True)
 

@@ -2,13 +2,14 @@
 
 import numpy as np
 import numpy.testing as npt
+import pandas.testing as pdt
 
 import voxcell
 
 from archngv import NGVCircuit
 from morphio import Morphology
 import archngv.core.circuit as api
-from archngv.core.datasets import Vasculature, MicrodomainTesselation, EndfootSurfaceMeshes
+from archngv.core.datasets import MicrodomainTesselation, EndfootSurfaceMeshes
 
 from bluepysnap.utils import IDS_DTYPE
 
@@ -134,7 +135,7 @@ def test_vasculature_representations_consistency():
     circuit = NGVCircuit("build/ngv_config.json")
 
     from morphio.vasculature import Vasculature as mVasculature
-    from archngv.core.datasets import Vasculature as sVasculature
+    from vasculatureapi.point_vasculature import PointVasculature as sVasculature
 
     astrocytes = circuit.astrocytes
     gv_connectivity = circuit.gliovascular_connectome
@@ -160,3 +161,12 @@ def test_vasculature_representations_consistency():
             morphio_segment = morphio_sections[sec_id].points[seg_id: seg_id + 2]
 
             npt.assert_allclose(sonata_segment, morphio_segment)
+
+    # convert section morphology to point graph
+    v1 = circuit.vasculature.morphology.as_point_graph()
+
+    # load point graph from sonata
+    v2 = circuit.vasculature.point_graph
+
+    pdt.assert_frame_equal(v1.node_properties, v2.node_properties, check_dtype=False)
+    pdt.assert_frame_equal(v1.edge_properties, v2.edge_properties, check_dtype=False)

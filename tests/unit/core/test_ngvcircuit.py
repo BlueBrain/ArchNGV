@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import trimesh
 from voxcell import VoxelData
+import vasculatureapi
 
 import pytest
 from numpy import testing as npt
@@ -12,7 +13,7 @@ from mock import patch, PropertyMock
 
 import archngv.core.circuit as test_module
 from archngv.core.structures import Microdomains, Atlas
-from archngv.core.datasets import Vasculature, MicrodomainTesselation, EndfootSurfaceMeshes
+from archngv.core.datasets import MicrodomainTesselation, EndfootSurfaceMeshes
 
 from archngv.exceptions import NGVError
 
@@ -120,7 +121,7 @@ class TestCircuit:
     def test_vasculature_morphology(self):
         vasculature = self.circuit.vasculature
         assert vasculature.morphology is vasculature.morph
-        assert isinstance(vasculature.morphology, Vasculature)
+        assert isinstance(vasculature.morphology, vasculatureapi.SectionVasculature)
 
         npt.assert_allclose(vasculature.morphology.points, vasculature.morph.points)
         npt.assert_allclose(vasculature.morphology.points[:3], [[0., 0., 4650.],

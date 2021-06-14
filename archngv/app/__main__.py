@@ -22,7 +22,6 @@ import click
 from archngv.version import VERSION
 
 from archngv.app.commands import (
-    convert,
     cell_placement,
     assign_emodels,
     finalize_astrocytes,
@@ -52,7 +51,6 @@ def app(verbose):
     )
 
 
-app.add_command(name='convert', cmd=convert.group)  # see commands.convert.__init__.py
 app.add_command(name='cell-placement', cmd=cell_placement.cmd)
 app.add_command(name='assign-emodels', cmd=assign_emodels.cmd)
 app.add_command(name='finalize-astrocytes', cmd=finalize_astrocytes.cmd)

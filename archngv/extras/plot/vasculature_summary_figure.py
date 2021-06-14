@@ -53,7 +53,7 @@ def summary_figure(vasculature, cutoff_radius=6., xz_shape='rectangle', figsize=
 
     x_range, y_range, z_range = bb.ranges.T
 
-    graph = vasculature.point_graph
+    graph = vasculature.adjacency_matrix
 
     points = vasculature.points
     radii  = vasculature.radii

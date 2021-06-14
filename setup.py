@@ -56,10 +56,10 @@ setup(
         'h5py>=3.1.0',
         'scipy>=1.5.0',
         'libsonata>=0.1.8',
-        'bluepysnap>=0.10.0',
+        'bluepysnap>=0.12.1',
         'cached-property>=1.5',
         'voxcell>=3.0.0',
-        'vasculatureapi>=0.0.9',
+        'vasculatureapi>=0.2.1',
     ],
     extras_require={
         'all': BUILDING,

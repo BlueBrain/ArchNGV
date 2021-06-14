@@ -64,7 +64,7 @@ def _h5_compare(actual_filepath, expected_filepath):
     import subprocess
 
     completed_process = subprocess.run(
-        ['h5diff', '-v', '-c', '--delta=5e-07', actual_filepath, expected_filepath]
+        ['h5diff', '-v', '-c', '--delta=1e-6', actual_filepath, expected_filepath]
     )
 
     assert completed_process.returncode == 0

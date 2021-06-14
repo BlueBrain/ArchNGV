@@ -187,13 +187,23 @@ class Vasculature(NGVNodes):
         """Access to the Vasculature morphology.
 
         Returns:
-            archngv.core.datasets.Vasculature: A wrapper of the more low level VasculatureApi.
+            vasculatureapi.SectionVasculature: A wrapper of the more low level VasculatureApi.
 
         Notes:
             The morphologies of the vasculature is handled by the VasculatureAPI package.
         """
-        from archngv.core.datasets import Vasculature as VasculatureMorphology
-        return VasculatureMorphology.load(self._extra_conf["vasculature_file"])
+        from vasculatureapi import SectionVasculature
+        return SectionVasculature.load(self._extra_conf["vasculature_file"])
+
+    @cached_property
+    def point_graph(self):
+        """Access to the Vasculature point-edges representation
+
+        Returns:
+            vasculatureapi.PointVasculature
+        """
+        from vasculatureapi import PointVasculature
+        return PointVasculature.load_sonata(self._node_storage.h5_filepath)
 
     @cached_property
     def surface_mesh(self):

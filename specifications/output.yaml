@@ -144,11 +144,11 @@ sonata:
         description: Diameter of the ending points of vasculature's segments.
         dtype: float32
 
-      start_node_id:
+      start_node:
         description: Start node id of the starting point of vasculature's segment.
         dtype: uint64
 
-      end_node_id:
+      end_node:
         description: End node id of the starting point of vasculature's segment.
         dtype: uint64
 

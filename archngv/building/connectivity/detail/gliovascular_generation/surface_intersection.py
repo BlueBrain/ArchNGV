@@ -212,9 +212,9 @@ def surface_intersect(astrocyte_positions, potential_targets, astrocyte_target_e
     astrocyte_positions = astrocyte_positions.astype(np.float32)
 
     segments_start, segments_end = vasculature.segment_points.astype(np.float32)
-    sg_radii_start, sg_radii_end = vasculature.segment_radii.astype(np.float32)
+    sg_radii_start, sg_radii_end = 0.5 * vasculature.segment_diameters.astype(np.float32)
     edges = vasculature.edges.astype(np.int64)
-    graph = vasculature.point_graph
+    graph = vasculature.adjacency_matrix
 
     somata_idx, target_idx = astrocyte_target_edges.T.astype(np.int64)
 

@@ -24,11 +24,9 @@ def connectivity(config, astrocytes, microdomains, vasculature, vasculature_sona
     # pylint: disable=missing-docstring,redefined-argument-from-local,too-many-locals
     import numpy as np
     from voxcell import CellCollection
+    from vasculatureapi import PointVasculature
 
-    from archngv.core.datasets import (
-        Vasculature,
-        MicrodomainTesselation
-    )
+    from archngv.core.datasets import MicrodomainTesselation
 
     from archngv.building.connectivity.gliovascular_generation import generate_gliovascular
     from archngv.building.exporters.edge_populations import gliovascular_connectivity
@@ -40,7 +38,9 @@ def connectivity(config, astrocytes, microdomains, vasculature, vasculature_sona
     np.random.seed(seed)
 
     params = load_yaml(config)
-    vasculature = Vasculature.load(vasculature)
+
+    # point - edges representation of vasculature
+    vasculature = PointVasculature.load_sonata(vasculature_sonata)
 
     LOGGER.info('Generating gliovascular connectivity...')
 
@@ -260,7 +260,8 @@ def finalize(input_file, output_file, astrocytes, endfeet_areas, vasculature_son
             A perimeter value so that perimeter * length = area of endfoot
     """
     import shutil
-    from archngv.core.datasets import CellData, GliovascularConnectivity, Vasculature, EndfootSurfaceMeshes
+    from vasculatureapi import PointVasculature
+    from archngv.core.datasets import CellData, GliovascularConnectivity, EndfootSurfaceMeshes
     from archngv.building.exporters.edge_populations import add_properties_to_edge_population
     from archngv.app.utils import apply_parallel_function
 
@@ -270,7 +271,7 @@ def finalize(input_file, output_file, astrocytes, endfeet_areas, vasculature_son
         seed=seed,
         astrocytes=CellData(astrocytes),
         gv_connectivity=gv_connectivity,
-        vasculature=Vasculature.load_sonata(vasculature_sonata),
+        vasculature=PointVasculature.load_sonata(vasculature_sonata),
         endfeet_meshes=EndfootSurfaceMeshes(endfeet_areas),
         morph_dir=morph_dir,
         map_func=apply_parallel_function if parallel else map
