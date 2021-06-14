@@ -9,7 +9,6 @@ include:
     - /ci/jobs/docs.yml
     - /ci/jobs/coverage.yml
     - /ci/jobs/build-package.yml
-    - /ci/jobs/publish-docs.yml
     - /ci/jobs/publish-package.yml
     - /ci/jobs/tag.yml
 
