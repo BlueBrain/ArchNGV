@@ -13,7 +13,7 @@ include:
     - /ci/jobs/tag.yml
 
 .tox-template:
-  tags: [bb5]
+  tags: [bb5_map]
   variables:
     EXTRA_MODULES:
       archive/2021-05:gcc
