@@ -11,55 +11,187 @@ from archngv.core.constants import Population
 from archngv.core.sonata_readers import NodesReader, EdgesReader
 
 
+def _make_abs(parent_dir, *paths):
+    path = Path(*paths)
+    if not (str(path).startswith("$") or path.is_absolute()):
+        return str(Path(parent_dir, path).resolve())
+    return str(Path(*paths))
+
+
 def _check_sonata_file(filepath, sonata_type):
     """Check if a h5 file is a sonata file."""
     if sonata_type not in ["nodes", "edges"]:
-        raise NGVError("sonata_type must be 'nodes' or 'edges' not %s" % sonata_type)
+        raise NGVError(f"sonata_type must be 'nodes' or 'edges' not {sonata_type}")
     with h5py.File(filepath, "r") as h5:
         if sonata_type not in h5:
-            raise NGVError("%s is not a sonata file" % filepath)
+            raise NGVError(f"{filepath} is not a sonata file")
     return filepath
 
 
 def _find_neuron_config(circuit_path, neuron_config_filename):
+    """Returns the absolute path to the neuronal circuit config depending on what
+    type of config it is (BlueConfig, Sonata config etc.).
+    """
     if neuron_config_filename is not None:
+
         config_filepath = Path(circuit_path) / neuron_config_filename
         if not config_filepath.exists():
-            raise NGVError("Neuron circuit config {} does not exists".format(config_filepath))
+            raise NGVError(f"Neuron circuit config {config_filepath} does not exist")
+
     else:
-        default_names = ["CircuitConfig", "circuit_config.json"]
+
+        default_names = ["CircuitConfig", "BlueConfig", "circuit_config.json"]
         for default_name in default_names:
             config_filepath = Path(circuit_path) / default_name
             if config_filepath.exists():
                 break
         else:
-            raise NGVError("Neuron circuit config not found in {} ".format(circuit_path))
+            raise NGVError(f"Neuron circuit config not found in {config_filepath}")
+
     return config_filepath
 
 
-def _find_neuron_files(circuit_path, neuron_config_filename):
+def _add_neuronal_circuit(config, circuit_path, neuron_config_filename):
     config_filepath = _find_neuron_config(circuit_path, neuron_config_filename)
     L.warning("Use %s as neuronal config file", config_filepath)
-
     try:
         # must be a sonata file i.e.: absolute path.
         from bluepy_configfile.configfile import BlueConfig
-        config = BlueConfig(open(config_filepath))
-        nodes = [_check_sonata_file(config.Run.CircuitPath, "nodes")]
-        edges = [_check_sonata_file(config.Run.nrnPath, "edges")]
-        morph = config.Run.MorphologyPath
-        return edges, nodes, morph
-    except BlueConfigError:
+
+        with open(config_filepath) as f:
+            blue_config = BlueConfig(f)
+
+        config['networks']['nodes'].extend(
+            [{
+                "nodes_file": _check_sonata_file(blue_config.Run.CircuitPath, "nodes"),
+                "node_types_file": None,
+            }]
+        )
+
+        config['networks']['edges'].extend(
+            [{
+                "edges_file": _check_sonata_file(blue_config.Run.nrnPath, "edges"),
+                "edge_types_file": None
+            }]
+        )
+
+        morph_type = blue_config.Run.get("MorphologyType", "neurolucida-asc").lower()
+        morph_path = blue_config.Run.MorphologyPath
+
+        if morph_type == "neurolucida-asc":
+            morph_path = str(Path(morph_path, "ascii"))
+
+        if morph_type == "swc":
+            config["components"] = {"morphologies_dir": morph_path}
+        else:
+            config["components"] = {"alternate_morphologies": {morph_type: morph_path}}
+
+    except BlueConfigError as bc_e:
         try:
             from bluepysnap import Config
-            config = Config(config_filepath).resolve()
-            nodes = [node["nodes_file"] for node in config["networks"]["nodes"]]
-            edges = [edge["edges_file"] for edge in config["networks"]["edges"]]
-            morph = config["components"]["morphologies_dir"]
-            return edges, nodes, morph
+            tmp_config = Config(config_filepath).resolve()
+
+            if len(tmp_config["networks"]["nodes"]) > 1:
+                raise NGVError("Only neuron circuits with a single node population are allowed.") \
+                    from bc_e
+
+            if len(tmp_config["networks"]["edges"]) > 1:
+                raise NGVError("Only neuron circuits with a single edge population are allowed.") \
+                    from bc_e
+
+            tmp_config.pop('manifest', None)
+            config.update(tmp_config)
         except (JSONDecodeError, KeyError) as e:
-            raise NGVError(
-                "{} is not a bbp/sonata circuit config file".format(config_filepath)) from e
+            raise NGVError(f"{config_filepath} is not a bbp/sonata circuit config file") from e
+
+    neuronal_nodes = config['networks']['nodes'][0]
+    neuron_node_population = NodesReader(neuronal_nodes["nodes_file"]).name
+
+    if "populations" not in neuronal_nodes:
+        neuronal_nodes["populations"] = {}
+
+    neuronal_nodes["populations"][neuron_node_population] = {"type": "biophysical"}
+
+    # move the global components inside the neuronal node population
+    # this is only valid for single population files
+    if 'components' in config:
+        neuronal_nodes['populations'][neuron_node_population].update(config['components'])
+        config.pop('components', None)
+
+    neuronal_edges = config['networks']['edges'][0]
+    neuron_edge_population = EdgesReader(neuronal_edges["edges_file"]).name
+
+    if "populations" not in neuronal_edges:
+        neuronal_edges["populations"] = {}
+
+    neuronal_edges["populations"][neuron_edge_population] = {"type": Population.NEURONAL}
+
+    return config
+
+
+def _add_ngv_sonata_nodes(config, bioname, manifest):
+    """Adds ngv additional to neurons nodes, such as glia and vasculature
+    """
+    config["networks"]["nodes"].extend([
+        {
+            "nodes_file": "$NETWORK_DIR/sonata/nodes/vasculature.h5",
+            "node_types_file": None,
+            "populations": {
+                Population.VASCULATURE: {
+                    "type": "vasculature",
+                    "vasculature_file": _make_abs(bioname, manifest["vasculature"]),
+                    "vasculature_mesh": _make_abs(bioname, manifest["vasculature_mesh"])
+                }
+            }
+        },
+        {
+            "nodes_file": "$NETWORK_DIR/sonata/nodes/glia.h5",
+            "node_types_file": None,
+            "populations": {
+                Population.ASTROCYTES: {
+                    "type": "protoplasmic_astrocytes",
+                    "alternate_morphologies": {
+                        "h5v1": "$BUILD_DIR/morphologies"
+                    },
+                    "microdomains_file": "$BUILD_DIR/microdomains/microdomains.h5",
+                    "microdomains_overlapping_file": "$BUILD_DIR/microdomains/overlapping_microdomains.h5"
+                }
+            }
+        }
+    ])
+
+
+def _add_ngv_sonata_edges(config):
+    """Add the ngv nodes and connectivities. They need to be predefined instead of
+    searched because the ngv config should be able to be created at any time for accessing data
+    from partial circuits that a subset of rules are ran.
+    """
+    config['networks']['edges'].extend([
+        {
+            "edges_file": f"$NETWORK_DIR/sonata/edges/{Population.NEUROGLIAL}.h5",
+            "edge_types_file": None,
+            "populations": {
+                Population.NEUROGLIAL: {"type": Population.NEUROGLIAL}
+            }
+        },
+        {
+            "edges_file": f"$NETWORK_DIR/sonata/edges/{Population.GLIALGLIAL}.h5",
+            "edge_types_file": None,
+            "populations": {
+                Population.GLIALGLIAL: {"type": Population.GLIALGLIAL}
+            }
+        },
+        {
+            "edges_file": f"$NETWORK_DIR/sonata/edges/{Population.GLIOVASCULAR}.h5",
+            "edge_types_file": None,
+            "populations": {
+                Population.GLIOVASCULAR: {
+                    "type": Population.GLIOVASCULAR,
+                    "endfeet_areas": "$BUILD_DIR/endfeet_areas.h5"
+                }
+            }
+        },
+    ])
 
 
 @click.command(help=__doc__)
@@ -75,46 +207,12 @@ def cmd(bioname, output):
     def _load_config(name):
         return load_yaml(os.path.join(bioname, '%s.yaml' % name))
 
-    def _make_abs(parent_dir, *paths):
-        path = Path(*paths)
-        if not (str(path).startswith("$") or path.is_absolute()):
-            return str(Path(parent_dir, path).resolve())
-        return str(Path(*paths))
-
     manifest = _load_config('MANIFEST')['common']
     bioname = Path(bioname).resolve()
 
-    cell_placement_config = _load_config('cell_placement')
+    placement_config = _load_config('cell_placement')
     synthesis_config = _load_config('synthesis')
     synthesis_config['endfeet_area_reconstruction'] = _load_config('endfeet_area')
-
-    # neuronal nodes, connectivities and morphologies_dir path
-    edges, nodes, morph = _find_neuron_files(
-        manifest['base_circuit'], manifest['base_circuit_sonata'])
-
-    # TODO : if more_itertools becomes a deps use more_itertools.one here instead
-    if len(nodes) == 1:
-        neuron_node_population = NodesReader(nodes[0]).name
-    else:
-        raise NGVError("Only neuron circuit with a single node population are allowed.")
-
-    if len(edges) == 1:
-        neuron_edge_population = EdgesReader(edges[0]).name
-    else:
-        raise NGVError("Only neuron circuit with a single edge population are allowed.")
-
-    def _create_node(node_file):
-        return {"nodes_file": node_file, "node_types_file": None}
-
-    def _create_edge(edge_file):
-        return {"edges_file": edge_file, "edge_types_file": None}
-
-    # add the ngv nodes and connectivities
-    # they need to be predefined instead of searched because the ngv config
-    # should be able to be created at any time for accessing data from partial
-    # circuits that a subset of rules are ran.
-    nodes.extend([f'$NETWORK_DIR/sonata/nodes/{node}.h5' for node in ['glia', 'vasculature']])
-    edges.extend([f'$NETWORK_DIR/sonata/edges/{edge}.h5' for edge in ['neuroglial', 'glialglial', 'gliovascular']])
 
     config = {
         "manifest": {
@@ -124,47 +222,33 @@ def cmd(bioname, output):
             "$NETWORK_DIR": "$BUILD_DIR"
         },
         "circuit_dir": "$CIRCUIT_DIR",
-        "components": {
-            "morphologies_dir": morph
-        },
+        "components": {},
         "networks": {
-            "nodes": [_create_node(node) for node in nodes],
-            "edges": [_create_edge(edge) for edge in edges]
-        },
-        "cells": {
-            "protoplasmic_astrocytes": {
-                "population": Population.ASTROCYTES,
-                "microdomains_file": "$BUILD_DIR/microdomains/microdomains.h5",
-                "microdomains_overlapping_file": "$BUILD_DIR/microdomains/overlapping_microdomains.h5",
-                "morphologies_dir": "$BUILD_DIR/morphologies"
-            },
-            Population.NEURONS: {"population": neuron_node_population},
-            Population.VASCULATURE: {
-                "population": Population.VASCULATURE,
-                "vasculature_file": _make_abs(bioname, manifest["vasculature"]),
-                "vasculature_mesh_file": _make_abs(bioname, manifest["vasculature_mesh"])
-            }
-        },
-        "connectivities": {
-            Population.NEURONAL: {"population": neuron_edge_population},
-            Population.GLIOVASCULAR: {"population": Population.GLIOVASCULAR,
-                                      "endfeet_areas": "$BUILD_DIR/endfeet_areas.h5"
-                                      },
-            Population.NEUROGLIAL: {"population": Population.NEUROGLIAL},
-            Population.GLIALGLIAL: {"population": Population.GLIALGLIAL}
-        },
-        "atlases": {
-            "intensity": _make_abs(bioname, manifest['atlas'],
-                                   f"{cell_placement_config['density']}.nrrd"),
-            "brain_regions": _make_abs(bioname, manifest['atlas'], 'brain_regions.nrrd'),
-        },
-        'parameters': {
-            'cell_placement': _load_config('cell_placement'),
-            'microdomain_tesselation': _load_config('microdomains'),
-            'gliovascular_connectivity': _load_config('gliovascular_connectivity'),
-            'neuroglial_connectivity': {},
-            'synthesis': synthesis_config,
+            "nodes": [],
+            "edges": []
         }
+    }
+
+    # add neuronal nodes and edges from existing circuit
+    _add_neuronal_circuit(config, manifest['base_circuit'], manifest['base_circuit_sonata'])
+
+    # the ngv specific nodes and edges of the current build
+    _add_ngv_sonata_nodes(config, bioname, manifest)
+    _add_ngv_sonata_edges(config)
+
+    # add intensity and brain regions used for this build
+    config['atlases'] = {
+        "intensity": _make_abs(bioname, manifest['atlas'], f"{placement_config['density']}.nrrd"),
+        "brain_regions": _make_abs(bioname, manifest['atlas'], 'brain_regions.nrrd'),
+    }
+
+    # add the parameters used for this build
+    config['parameters'] = {
+        'cell_placement': _load_config('cell_placement'),
+        'microdomain_tesselation': _load_config('microdomains'),
+        'gliovascular_connectivity': _load_config('gliovascular_connectivity'),
+        'neuroglial_connectivity': {},
+        'synthesis': synthesis_config,
     }
 
     with open(output, 'w') as f:

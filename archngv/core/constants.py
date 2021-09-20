@@ -23,7 +23,7 @@ class Astrocyte(ConstContainer):
 class Population(ConstContainer):
     """NGV population names."""
 
-    NEURONS = "neurons"
+    NEURONS = "biophysical"
     ASTROCYTES = "astrocytes"
     VASCULATURE = "vasculature"
 

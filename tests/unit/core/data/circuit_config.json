@@ -10,67 +10,79 @@
   "networks": {
     "nodes": [
       {
-        "nodes_file": "$NETWORK_DIR/glia.h5",
-        "node_types_file": null
+        "nodes_file": "$NETWORK_DIR/nodes.h5",
+        "node_types_file": null,
+        "populations": {
+          "default": {
+            "type": "biophysical"
+          }
+        }
       },
       {
-        "nodes_file": "$NETWORK_DIR/nodes.h5",
-        "node_types_file": null
+        "nodes_file": "$NETWORK_DIR/glia.h5",
+        "node_types_file": null,
+        "populations": {
+          "astrocytes": {
+            "type": "protoplasmic_astrocytes",
+            "alternate_morphologies": {
+              "h5v1": "$NETWORK_DIR/morphologies-astro"
+            },
+            "microdomains_file": "$NETWORK_DIR/microdomains.h5",
+            "microdomains_overlapping_file": "$NETWORK_DIR/overlapping_microdomains.h5"
+          }
+        }
       },
       {
         "nodes_file": "$NETWORK_DIR/vasculature_sonata.h5",
-        "node_types_file": null
+        "node_types_file": null,
+        "populations": {
+          "vasculature": {
+            "type": "vasculature",
+            "vasculature_file": "$NETWORK_DIR/vasculature.h5",
+            "vasculature_mesh_file": "$NETWORK_DIR/vasculature_mesh.obj"
+          }
+        }
       }
     ],
     "edges": [
       {
+        "edges_file": "$NETWORK_DIR/edges.h5",
+        "edge_types_file": null,
+        "populations": {
+          "default": {
+            "type": "neuronal"
+          }
+        }
+      },
+      {
         "edges_file": "$NETWORK_DIR/glialglial.h5",
-        "edge_types_file": null
+        "edge_types_file": null,
+        "populations": {
+          "glialglial": {
+            "type": "glialglial"
+          }
+        }
       },
       {
         "edges_file": "$NETWORK_DIR/neuroglial.h5",
-        "edge_types_file": null
-      },
-      {
-        "edges_file": "$NETWORK_DIR/edges.h5",
-        "edge_types_file": null
+        "edge_types_file": null,
+        "populations": {
+          "neuroglial": {
+            "type": "neuroglial"
+          }
+        }
       },
       {
         "edges_file": "$NETWORK_DIR/gliovascular.h5",
-        "edge_types_file": null
+        "edge_types_file": null,
+        "populations": {
+          "gliovascular": {
+            "type": "gliovascular",
+            "endfeet_areas": "$NETWORK_DIR/endfeet_areas.h5"
+          }
+        }
       }
     ]
-  },
-  "cells": {
-    "protoplasmic_astrocytes": {
-        "population": "astrocytes",
-        "microdomains_file": "$NETWORK_DIR/microdomains.h5",
-        "microdomains_overlapping_file": "$NETWORK_DIR/overlapping_microdomains.h5",
-        "morphologies_dir": "$NETWORK_DIR/morphologies-astro"
-      },
-    "neurons": {
-        "population": "default"
-    },
-    "vasculature": {
-      "population": "vasculature",
-      "vasculature_file": "$NETWORK_DIR/vasculature.h5",
-      "vasculature_mesh_file": "$NETWORK_DIR/vasculature_mesh.obj"
-    }
-  },
-  "connectivities": {
-    "neuronal": {
-      "population": "default"
-    },
-    "gliovascular": {
-      "population": "gliovascular",
-      "endfeet_areas": "$NETWORK_DIR/endfeet_areas.h5"
-    },
-    "neuroglial": {
-      "population": "neuroglial"
-    },
-    "glialglial": {
-      "population": "glialglial"
-    }
   },
   "atlases": {
       "my_atlas": "$NETWORK_DIR/my_atlas.nrrd"

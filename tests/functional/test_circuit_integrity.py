@@ -142,7 +142,7 @@ def test_vasculature_representations_consistency():
 
     c_vasc = circuit.vasculature
 
-    morphio_vasculature = mVasculature(c_vasc._extra_conf['vasculature_file'])
+    morphio_vasculature = mVasculature(c_vasc.config['vasculature_file'])
     sonata_vasculature = sVasculature.load_sonata('build/sonata/nodes/vasculature.h5')
 
     morphio_sections = morphio_vasculature.sections

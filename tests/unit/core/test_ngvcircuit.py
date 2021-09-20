@@ -10,6 +10,7 @@ import pytest
 from numpy import testing as npt
 from pandas.testing import assert_frame_equal
 from mock import patch, PropertyMock
+from bluepysnap.nodes import NodeStorage
 
 import archngv.core.circuit as test_module
 from archngv.core.structures import Microdomains, Atlas
@@ -40,16 +41,27 @@ class TestCircuit:
         assert (
                 self.circuit.config['networks']["nodes"][0] ==
                 {
-                    "nodes_file": str(Path(TEST_DATA_DIR, "glia.h5").resolve()),
+                    "nodes_file": str(Path(TEST_DATA_DIR, "nodes.h5").resolve()),
                     "node_types_file": None,
+                    "populations": {"default": {"type": "biophysical"}}
                 }
         )
 
         assert (
                 self.circuit.config['networks']["nodes"][1] ==
                 {
-                    "nodes_file": str(Path(TEST_DATA_DIR, "nodes.h5").resolve()),
+                    "nodes_file": str(Path(TEST_DATA_DIR, "glia.h5").resolve()),
                     "node_types_file": None,
+                    "populations": {
+                        "astrocytes": {
+                            "type": "protoplasmic_astrocytes",
+                            "alternate_morphologies": {
+                                "h5v1": f"{TEST_DATA_DIR}/morphologies-astro"
+                            },
+                            "microdomains_file": f"{TEST_DATA_DIR}/microdomains.h5",
+                            "microdomains_overlapping_file": f"{TEST_DATA_DIR}/overlapping_microdomains.h5"
+                        }
+                    }
                 }
         )
 
@@ -235,4 +247,4 @@ class TestCircuit:
 
     def test_failing_get_population(self):
         with pytest.raises(NGVError):
-            self.circuit._get_population("cells", "unknown")
+            self.circuit._get_population(NodeStorage)

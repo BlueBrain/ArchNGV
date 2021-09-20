@@ -13,7 +13,7 @@ ignore=extras,tests
 #C0330 - bad-continuation
 #C1801 - len-as-condition
 #R1705 - no-else-return
-disable=C0103,R0904,R0903,W0511,W0232,C0325,C0330,C1801,R1705,import-outside-toplevel,unsubscriptable-object,unsupported-assignment-operation,unbalanced-tuple-unpacking
+disable=C0103,R0904,R0903,W0511,W0232,C0325,C0330,C1801,R1705,import-outside-toplevel,unsubscriptable-object,unsupported-assignment-operation,unbalanced-tuple-unpacking,unspecified-encoding,consider-using-f-string
 
 [FORMAT]
 # Maximum number of characters on a single line.
