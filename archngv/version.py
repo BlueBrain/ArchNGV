@@ -1,2 +1,2 @@
 """ archngv version """
-VERSION = "1.4.1.dev0"
+VERSION = "1.5.0"
