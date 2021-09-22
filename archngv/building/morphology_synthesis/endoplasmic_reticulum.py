@@ -1,7 +1,13 @@
+"""
+Endoplasmic reticulum data creation and distribution methods
+"""
 import json
 import numpy as np
+import pandas as pd
+
 import morphio
 import tmd
+
 from tmd.Topology.statistics import get_lengths
 from tmd.io.conversion import _section_to_data
 from tmd.Topology.methods import _filtration_function
@@ -18,8 +24,6 @@ def add_endoplasmic_reticulum_to_morphology(morphology, barcodes_file):
     Args:
         morhology (morphio.mut.Morphology): morphio mutable morphology
     """
-    n_sections = len(morphology.sections)
-
     bio_barcodes = _load_barcodes(barcodes_file)
     syn_barcodes = _morphology_to_tree_barcodes(morphology)
     barcode_matching = _match_barcodes(syn_barcodes, bio_barcodes)
@@ -34,7 +38,6 @@ def add_endoplasmic_reticulum_to_morphology(morphology, barcodes_file):
     for i, sid in enumerate(section_indices):
         surface_areas[i], volumes[i], filament_counts[i] = section_ids_to_er[sid]
 
-
     er = morphology.endoplasmic_reticulum
     er.section_indices = section_indices
     er.surface_areas = surface_areas
@@ -45,13 +48,13 @@ def add_endoplasmic_reticulum_to_morphology(morphology, barcodes_file):
 def _morphology_to_tree_barcodes(morphology):
 
     class MorphIOSectionId:
-
-        def __init__(self, morphology):
+        """Class for mapping morphio section id to tmd point tree"""
+        def __init__(self, _):
 
             self.data = {}
 
         def update(self, section_id, termination_id):
-
+            """Update termination with section id"""
             self.data[termination_id] = section_id
 
     def path_distances_from_terminations(neurite, bar_terminations):
@@ -79,7 +82,7 @@ def _morphology_to_tree_barcodes(morphology):
     return [_get_barcode(syn_neurite, apply=apply_classes) for syn_neurite in syn_neurites]
 
 
-def _convert_morphio_trees(cell, property_builders={}):
+def _convert_morphio_trees(cell, property_builders=None):
     """Convert morphio morphology's trees to tmd ones
 
     Args:
@@ -96,6 +99,9 @@ def _convert_morphio_trees(cell, property_builders={}):
         def __init__(self, x, y, z, d, t, p, properties=None):
             super().__init__(x, y, z, d, t, p)
             self.properties = properties
+
+    if property_builders is None:
+        property_builders = {}
 
     total_points = len(cell.diameters)
 
@@ -159,15 +165,18 @@ def _convert_morphio_trees(cell, property_builders={}):
         )
 
 
-def _get_barcode(neurite, apply={}):
+def _get_barcode(neurite, apply=None):
     """Get barcode and barcode data from neurite. If apply is empty, barcode_data will be empty"""
-    barcode, bars_to_terminations = _tree_to_property_barcode(
+    barcode, bars_to_terms = _tree_to_property_barcode(
         tree=neurite,
         filtration_function=_filtration_function('path_distances')
     )
 
+    if apply is None:
+        apply = {}
+
     barcode_data = [
-      {key: list(func(neurite, terminations)) for key, func in apply.items()} for terminations in bars_to_terminations
+        {key: list(func(neurite, terms)) for key, func in apply.items()} for terms in bars_to_terms
     ]
 
     return barcode, barcode_data
@@ -247,7 +256,7 @@ def _tree_to_property_barcode(tree, filtration_function, property_class=NoProper
 
 
 def create_bio_barcodes(morphology_paths):
-
+    """Create biological barcodes from a list of morphology paths"""
     bio_neurites = []
 
     for bio_path in morphology_paths:
@@ -262,7 +271,7 @@ def create_bio_barcodes(morphology_paths):
 class EndoplasmicReticulum:
     """
     Args:
-        morphology (morphio.Morphology): 
+        morphology (morphio.Morphology):
     Attrs:
         data (dict): A mapping between termination_id and morphology section data
     """
@@ -271,36 +280,34 @@ class EndoplasmicReticulum:
         self._morphology = morphology
         er_data = self.extract_morphio_er_data(morphology)
 
-        self._section_id_to_er = {
-            sec_id: row for sec_id, row in zip(er_data.index, er_data.itertuples(index=False, name='ER'))
-        }
+        self._section_id_to_er = dict(zip(er_data.index, er_data.itertuples(index=False, name='ER')))
 
         self.data = {}
 
     @staticmethod
     def extract_morphio_er_data(morphology):
         """Extracts morphio endoplasmic reticulum info as a pandas dataframe
-        
+
         Returns:
             pandas.DataFrame: The ER data in a dataframe having three columns corresponding to the
                 surface area, volume and filament count of the sections that have ER in the morphology.
                 The dataframe index stores the section index where the ER was located.
         """
         er = morphology.endoplasmic_reticulum
-        
+
         section_indices = er.section_indices
         counts = er.filament_counts
 
         if len(counts) == 0:
             counts = np.zeros(len(section_indices), dtype=np.float32)
-        
+
         return pd.DataFrame(
             {
                 'surface_area': er.surface_areas,
                 'volume': er.volumes,
                 'filament_count': counts
             },
-            index = section_indices
+            index=section_indices
         )
 
     def update(self, section_id, termination_id):
@@ -346,7 +353,7 @@ def _match_barcodes(to_match, available_barcodes):
 
     # identical barcodes
     if len(bars_per_barcode_match) == len(bars_per_barcode_avail) and \
-        np.all(bars_per_barcode_match == bars_per_barcode_avail):
+            np.all(bars_per_barcode_match == bars_per_barcode_avail):
         return np.arange(len(bars_per_barcode_match), dtype=np.int32)
 
     closest_bar = lambda n_bars: np.argmin(np.abs(bars_per_barcode_avail - n_bars))
@@ -374,14 +381,14 @@ def _find_in(paths, in_paths):
 
     paths = np.asarray(paths)
     in_paths = np.asarray(in_paths)
-    
+
     if paths.size == in_paths.size and np.allclose(paths, in_paths):
         return np.arange(paths.size, dtype=np.int32)
-    
+
     sorted_ids = np.argsort(in_paths)
-    
+
     sorted_pos = np.searchsorted(in_paths[sorted_ids], paths)
-    
+
     sorted_pos[sorted_pos < 0] = 0
     sorted_pos[sorted_pos >= len(in_paths)] = len(in_paths) - 1
 
@@ -392,13 +399,13 @@ def _assign_er_to_sections(syn_barcodes, bio_barcodes, barcode_matching):
 
     section_ids_to_er_data = {}
 
-    for syn_id, (syn_barcode, syn_barcode_data) in enumerate(syn_barcodes):
+    for syn_barcode_id, (syn_barcode, syn_barcode_data) in enumerate(syn_barcodes):
 
         # get the biological bar and its respective data that is matched to the current synthetic bar
-        bio_barcode, bio_barcode_data = bio_barcodes[barcode_matching[syn_id]]
+        bio_barcode, bio_barcode_data = bio_barcodes[barcode_matching[syn_barcode_id]]
 
         for syn_bar_id, bio_bar_id in enumerate(_match_bars(syn_barcode, bio_barcode)):
-            
+
             if bio_bar_id == -1:
                 continue
 
