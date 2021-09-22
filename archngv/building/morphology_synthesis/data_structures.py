@@ -21,5 +21,6 @@ SynthesisInputPaths = namedtuple('SynthesisInputPaths', [
     'tns_parameters',
     'tns_distributions',
     'tns_context',
+    'er_data',
     'morphology_directory',
     'endfeet_areas'])

@@ -31,6 +31,7 @@ def _synthesize(astrocyte_index, seed, paths, config):
 @click.option("--tns-distributions", help="Path to TNS distributions (JSON)", required=True)
 @click.option("--tns-parameters", help="Path to TNS parameters (JSON)", required=True)
 @click.option("--tns-context", help="Path to TNS context (JSON)", required=True)
+@click.option("--er-data", help="Path to the Endoplasmic Reticulum data (JSON)", required=True)
 @click.option("--astrocytes", help="Path to HDF5 with somata positions and radii", required=True)
 @click.option("--microdomains", help="Path to microdomains structure (HDF5)", required=True)
 @click.option(
@@ -46,6 +47,7 @@ def cmd(config,
         tns_distributions,
         tns_parameters,
         tns_context,
+        er_data,
         astrocytes,
         microdomains,
         gliovascular_connectivity,
@@ -79,6 +81,7 @@ def cmd(config,
         tns_parameters=tns_parameters,
         tns_distributions=tns_distributions,
         tns_context=tns_context,
+        er_data=er_data,
         morphology_directory=out_morph_dir)
 
     synthesize = bag.from_sequence(range(n_astrocytes), partition_size=1) \

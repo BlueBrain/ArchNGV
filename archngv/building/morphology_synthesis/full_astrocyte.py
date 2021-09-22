@@ -126,7 +126,7 @@ def synthesize_astrocyte(astrocyte_index, paths, parameters, random_generator):
         add_perimeters_to_morphology(morphology, parameters['perimeter_distribution'], random_generator)
 
     L.info('Adding endoplasmic reticulum')
-    add_endoplasmic_reticulum_to_morphology(morphology)
+    add_endoplasmic_reticulum_to_morphology(morphology, paths.er_data)
 
     # TODO: replace this when direct NEURON ordering write is available in MorphIO
     morph = _post_growing(morphology, cell_properties.soma_position)

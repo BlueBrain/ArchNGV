@@ -414,6 +414,7 @@ rule synthesis:
             f'--tns-distributions {bioname_path("tns_distributions.json")}',
             f'--tns-parameters {bioname_path("tns_parameters.json")}',
             f'--tns-context {bioname_path("tns_context.json")}',
+            f'--er-data {bioname_path("er_data.json")}',
             '--astrocytes {input[astrocytes]}',
             '--microdomains {input[microdomains]}',
             '--gliovascular-connectivity {input[gliovascular_connectivity]}',
