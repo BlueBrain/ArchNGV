@@ -2,7 +2,7 @@ How to create a new ngv circuit build
 =====================================
 
 Preparation
-===========
+-----------
 
 
 1. Load the necessary modules
@@ -37,7 +37,7 @@ Which will create the ``project_dir`` directory with a ``bioname`` folder, which
 
 
 Running
-=======
+-------
 
 The ``ngv`` command will appear to the path following the package installation. The ``ngv run`` command is a wrapper around snakemake with default preset options and arguments. It uses the same options and arguments as snakemake. For example:
 
