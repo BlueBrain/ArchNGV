@@ -114,27 +114,27 @@ sonata:
 
       start_x:
         description: X coordinate of the starting points of vasculature's segments.
-        dtype: float64
+        dtype: float32
 
       end_x:
         description: X coordinate of the ending points of vasculature's segments.
-        dtype: float64
+        dtype: float32
 
       start_y:
         description: Y coordinate of the starting points of vasculature's segments.
-        dtype: float64
+        dtype: float32
 
       end_y:
         description: Y coordinate of the ending points of vasculature's segments.
-        dtype: float64
+        dtype: float32
 
       start_z:
         description: Z coordinate of the starting points of vasculature's segments.
-        dtype: float64
+        dtype: float32
 
       end_z:
         description: Z coordinate of the ending points of vasculature's segments.
-        dtype: float64
+        dtype: float32
 
       start_diameter:
         description: Diameter of the starting points of vasculature's segments.
@@ -167,6 +167,10 @@ sonata:
         description: >
           For each segment, the corresponding segment id in the vacular hdf5 morphology file.
         dtype: uint32
+
+      model_type:
+        description: Population type per segment, always vasculature
+        dtype: string
 
 
   - description: >
