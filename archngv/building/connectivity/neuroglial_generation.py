@@ -8,7 +8,7 @@ import logging
 import numpy as np
 import pandas as pd
 
-from ngv_spatial_index import point_rtree
+from spatial_index import SphereIndex
 from archngv.spatial.collision import convex_shape_with_spheres
 
 
@@ -20,9 +20,9 @@ def spheres_inside_domain(index, synapse_coordinates, domain):
         Returns the indices of the spheres that are inside
         the convex geometry
     """
-    query_window = tuple(domain.bounding_box)
+    query_window = domain.bounding_box
 
-    idx = index.intersection(*query_window)
+    idx = index.find_intersecting_window(query_window[:3], query_window[3:])
     mask = convex_shape_with_spheres(
         domain.face_points,
         domain.face_normals,
@@ -60,7 +60,7 @@ def generate_neuroglial(astrocytes, microdomains, neuronal_connectivity):
     synapse_coordinates = neuronal_connectivity.synapse_positions()
     synapse_to_neuron = neuronal_connectivity.target_neurons()
 
-    index = point_rtree(synapse_coordinates)
+    index = SphereIndex(synapse_coordinates, radii=None)
 
     ret = []
     for astrocyte_id in range(len(astrocytes.properties)):

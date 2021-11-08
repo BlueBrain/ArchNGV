@@ -69,4 +69,4 @@ extension-pkg-whitelist=libsonata,
                         morphio,
                         cKDTree,
                         ngv_ctools,
-                        ngv_spatial_index
+                        spatial_index

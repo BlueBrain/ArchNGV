@@ -18,6 +18,7 @@ def cmd(config, atlas, atlas_cache, vasculature, seed, output):
 
     from voxcell.nexus.voxelbrain import Atlas
     from vasculatureapi import PointVasculature
+    from spatial_index import SphereIndex
 
     from archngv.building.cell_placement.positions import create_positions
     from archngv.building.exporters.node_populations import export_astrocyte_population
@@ -41,8 +42,6 @@ def cmd(config, atlas, atlas_cache, vasculature, seed, output):
     spatial_indexes = []
     if vasculature is not None:
 
-        from ngv_spatial_index import sphere_rtree
-
         vasc = PointVasculature.load_sonata(vasculature)
 
         assert_bbox_alignment(
@@ -51,7 +50,7 @@ def cmd(config, atlas, atlas_cache, vasculature, seed, output):
                         voxelized_intensity.bbox[1])
         )
 
-        spatial_indexes.append(sphere_rtree(vasc.points, 0.5 * vasc.diameters))
+        spatial_indexes.append(SphereIndex(vasc.points, 0.5 * vasc.diameters))
 
     LOGGER.info('Generating cell positions / radii...')
     somata_positions, somata_radii = create_positions(

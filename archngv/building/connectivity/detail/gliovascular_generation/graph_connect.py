@@ -4,7 +4,7 @@ import logging
 
 import numpy as np
 
-from ngv_spatial_index import point_rtree
+from spatial_index import SphereIndex
 from archngv.spatial import collision
 
 from archngv.utils.statistics import truncated_normal
@@ -44,7 +44,7 @@ def domains_to_vasculature(cell_ids, reachout_strategy_function, potential_targe
     L.info('Endfeet Distribution Paremeters %s', properties['endfeet_distribution'])
 
     domain_target_edges = []
-    index = point_rtree(potential_targets.loc[:, ('x', 'y', 'z')].to_numpy())
+    index = SphereIndex(potential_targets.loc[:, ('x', 'y', 'z')].to_numpy(), radii=None)
 
     n_distr = truncated_normal(*properties['endfeet_distribution'])
     endfeet_per_domain = n_distr.rvs(size=len(cell_ids)).round().astype(np.int)
@@ -57,7 +57,9 @@ def domains_to_vasculature(cell_ids, reachout_strategy_function, potential_targe
             continue
 
         domain = domains[int(cell_id)]
-        idx = index.intersection(*domain.bounding_box)
+
+        points = np.array(domain.bounding_box)
+        idx = index.find_intersecting_window(points[:3], points[3:])
 
         if idx.size == 0:
             continue

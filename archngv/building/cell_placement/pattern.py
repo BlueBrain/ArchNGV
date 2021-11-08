@@ -4,7 +4,7 @@ Handles the spatial point pattern generation and spatial indexing for the cell p
 
 import numpy
 
-from ngv_spatial_index import sphere_rtree
+from spatial_index import SphereIndex
 
 
 class SpatialSpherePattern:
@@ -32,7 +32,7 @@ class SpatialSpherePattern:
 
         self._index = 0
 
-        self._si = sphere_rtree()
+        self._si = SphereIndex()
 
     def __getitem__(self, pos):
         """ Get sphere center and radius at position pos """
@@ -60,7 +60,7 @@ class SpatialSpherePattern:
         self._coordinates[self._index] = position
         self._radii[self._index] = radius
 
-        self._si.insert(position[0], position[1], position[2], radius)
+        self._si.insert(self._index, position, radius)
         self._index += 1
 
     def is_intersecting(self, new_position, new_radius):
@@ -75,7 +75,7 @@ class SpatialSpherePattern:
         Returns: Bool
             True if there is intersection with another object.
         """
-        return self._si.is_intersecting(new_position[0], new_position[1], new_position[2], new_radius)
+        return self._si.is_intersecting(new_position, new_radius)
 
     def nearest_neighbor(self, trial_position):
         """ Yields the nearest neighbor index of the sphere (new_position, new_radius)
@@ -86,7 +86,7 @@ class SpatialSpherePattern:
         Returns:
             Index of the nearest neighbor.
         """
-        return self._si.nearest(trial_position[0], trial_position[1], trial_position[2], 1)
+        return self._si.find_nearest(trial_position, 1)
 
     def distance_to_nearest_neighbor(self, trial_position):
         """ Distance to nearest neighbor

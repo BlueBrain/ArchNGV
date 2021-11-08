@@ -120,7 +120,7 @@ def test_placement_generator_is_colliding__empty_index_list():
 
         p_gen = placement_generator()
 
-        mock_index = Mock(is_intersecting = lambda x, y, z, r: True)
+        mock_index = Mock(is_intersecting = lambda p, r: True)
 
         p_gen.index_list = [mock_index]
 
@@ -136,7 +136,7 @@ def test_placement_generator_is_colliding__pattern():
 
         p_gen = placement_generator()
 
-        mock_index = Mock(is_intersecting = lambda x, y, z, r: False)
+        mock_index = Mock(is_intersecting = lambda p, r: False)
         p_gen.index_list = [mock_index]
 
         assert not p_gen.is_colliding(test_point, test_radius)

@@ -82,10 +82,7 @@ class PlacementGenerator:
 
         if self.index_list:
             for static_index in self.index_list:
-                if static_index.is_intersecting(trial_position[0],
-                                                trial_position[1],
-                                                trial_position[2],
-                                                trial_radius):
+                if static_index.is_intersecting(trial_position, trial_radius):
                     return True
 
         return self.pattern.is_intersecting(trial_position, trial_radius)
