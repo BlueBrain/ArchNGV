@@ -2,8 +2,8 @@
 import logging
 
 import h5py
-import stl.mesh
 import numpy as np
+
 
 from archngv.exceptions import NGVError
 
@@ -67,7 +67,7 @@ def export_endfeet_areas(filepath, data_generator, n_endfeet):
 def export_endfoot_mesh(endfoot_coordinates, endfoot_triangles, filepath):
     """ Exports either all the faces of the laguerre cells separately or as one object in stl format
     """
-
+    import stl.mesh
     try:
         cell_mesh = stl.mesh.Mesh(np.zeros(len(endfoot_triangles), dtype=stl.mesh.Mesh.dtype))
 
@@ -85,6 +85,8 @@ def export_endfoot_mesh(endfoot_coordinates, endfoot_triangles, filepath):
 
 def export_joined_endfeet_meshes(endfoot_iterator, filepath):
     """ Exports the joined meshes TODO: fix this by replacing the endfoot iterato"""
+    import stl.mesh
+
     vectors = np.array([
         triangle.tolist()
         for endfoot in endfoot_iterator

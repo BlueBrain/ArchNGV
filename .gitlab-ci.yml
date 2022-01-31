@@ -1,6 +1,5 @@
 include:
 - project: 'nse/ci'
-  ref: main
   file:
     - /ci/lib/tox-bb5.yml
     - /ci/jobs/check-version.yml
@@ -16,10 +15,7 @@ include:
   tags: [bb5_map]
   variables:
     EXTRA_MODULES:
-      archive/2021-05:gcc
       archive/2021-05:cmake
-
-
 
 functional-tests:
   extends: .tox-template

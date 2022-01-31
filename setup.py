@@ -12,17 +12,21 @@ VERSION = module.VERSION
 
 
 BUILDING = [
-    'ngv-ctools>=0.1.4',
+    # py{38,39,310} wheels for >=0.1.6
+    # pinned to 0.1.6 because the next version will be implemented in c++
+    'ngv-ctools==0.1.6',
     'spatial-index>=0.4.2',
     'bluepy-configfile>=0.1.11',
-    'Click>=7.0,<8.0',
+    'Click>=7.0',
     'numpy-stl>=2.10',
     'openmesh>=1.1.2',
     'pyyaml>=5.0',
     'pandas>=1.1.0',
     'tess>=0.3.1',
-    'MorphIO>=3.0.0',
+    # archive/2021-05 touchdetector crashes for >3.3.0 due to hdf5 file version incompatibility
+    'MorphIO>=3.0.0,<=3.3.0',
     'morph-tool>=2.4.0',
+    'pytouchreader>=1.4.7',
     'tmd>=2.0.11',
     'tns==2.4.3',
     'diameter-synthesis==0.2.4',
@@ -51,7 +55,7 @@ setup(
     },
     license="BBP-internal-confidential",
     install_requires=[
-        'numpy>=1.19.5',
+        'numpy>=1.19.5,<1.22.0',  # functional tests break for >=1.22.0
         'six>=1.15.0',
         'h5py>=3.1.0',
         'scipy>=1.5.0',

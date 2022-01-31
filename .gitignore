@@ -17,6 +17,7 @@ output/
 *.o
 *.so
 uild/*
+dask-worker-space/
 
 # jupyter notebook
 *jupyter-log*

@@ -64,8 +64,6 @@ SPACK_MODULEPATH = "/gpfs/bbp.cscs.ch/ssd/apps/hpc/jenkins/modules/all"
 MODULES = {
     'glial_gap_junctions':
         (SPACK_MODULEPATH, ['archive/2021-05', 'touchdetector']),
-    'glialglial_connectivity':
-        (SPACK_MODULEPATH, ['archive/2021-05', 'py-pytouchreader']),
     'synthesis':
         (SPACK_MODULEPATH, ['archive/2021-05', 'py-mpi4py']),
 }
@@ -367,7 +365,6 @@ rule glialglial_connectivity:
             '--output-connectivity {output[glialglial_connectivity]}',
             f'--seed {SEED}'],
             dump_log=True,
-            module_env='glialglial_connectivity',
         )
 
 
