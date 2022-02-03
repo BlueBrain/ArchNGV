@@ -1,5 +1,7 @@
-from numpy.testing import assert_allclose
 import numpy as np
+from numpy.testing import assert_allclose
+
+import pytest
 
 from archngv.building.connectivity.detail.gliovascular_generation import graph_targeting
 
@@ -56,24 +58,27 @@ def test_targeting_on_straight_line():
     assert np.allclose(a_targets, e_targets), _format_output(a_targets, e_targets)
 
 
-def test_targeting_on_random_lines():
+@pytest.mark.parametrize("step_size, linear_density", [
+    (3.61816436, 0.02763832),
+    (31.05553495, 0.00322004),
+    (18.86324392, 0.00530132),
+    (7.67710489, 0.01302574),
+    (94.63568747, 0.00105668),
+    (26.16099122, 0.00382249),
+    (96.88912477, 0.00103211),
+    (13.84102589, 0.0072249),
+    (99.9146877, 0.00100085),
+    (70.11148696, 0.0014263)
+])
+def test_targeting_on_random_lines(step_size, linear_density):
 
-    for _ in range(10):
 
-        L = np.random.uniform(0.02, 100.)
-        linear_density = 1. / (10. * np.random.uniform(0.01, L - 0.01))
+    points, edges, e_targets = _create_test_line(20, step_size, linear_density)
 
-        points, edges, e_targets = _create_test_line(20, L, linear_density)
+    a_targets, a_segments = graph_targeting._distribution_on_line_graph(
+        points[edges[:, 0]], points[edges[:, 1]], linear_density)
 
-        a_targets, a_segments = graph_targeting._distribution_on_line_graph(
-            points[edges[:, 0]], points[edges[:, 1]], linear_density)
-
-        txt = "\nRandomized line test Failed: \n"
-        txt += "parameters: L = {0}, linear density = {1}\n".format(L, linear_density)
-        txt += "Mismatch in target point generation \n\nActual: \n{0},\n\nExpected: \n{1}".format(a_targets, e_targets)
-
-        assert len(a_targets) == len(e_targets), txt
-        assert np.allclose(a_targets, e_targets), txt
+    assert_allclose(a_targets, e_targets)
 
 
 def test_create_targets():

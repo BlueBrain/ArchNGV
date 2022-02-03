@@ -59,13 +59,13 @@ BASE_CIRCUIT_CELLS = config['common']['base_circuit_cells']
 BASE_CIRCUIT_CONNECTOME = config['common']['base_circuit_connectome']
 BUILDER_RECIPE = bioname_path('astrocyte_gap_junction_recipe.xml')
 
-SPACK_MODULEPATH = "/gpfs/bbp.cscs.ch/ssd/apps/hpc/jenkins/modules/all"
+SPACK_MODULEPATH = "/gpfs/bbp.cscs.ch/ssd/apps/bsd/modules/_meta"
 
 MODULES = {
     'glial_gap_junctions':
-        (SPACK_MODULEPATH, ['archive/2021-05', 'touchdetector']),
+        (SPACK_MODULEPATH, ['archive/2021-10', 'touchdetector/5.6.1']),
     'synthesis':
-        (SPACK_MODULEPATH, ['archive/2021-05', 'py-mpi4py']),
+        (SPACK_MODULEPATH, ['archive/2022-01', 'py-mpi4py/3.1.2']),
 }
 
 
@@ -124,10 +124,8 @@ def run_cmd(cmd, dump_log=False, module_env=None, slurm_env=None):
         module_env (str): modules specified for this command in MODULES
         slurm_env (str): slurm environment specified in cluster config
     """
-    module = modules_cmd(module_env)
-    salloc = salloc_cmd(slurm_env)
     command = ' '.join(map(str, cmd))
-    result = f'{module} {salloc} {command}'
+    result = f"{modules_cmd(module_env)} {salloc_cmd(slurm_env)} {command}"
 
     if dump_log:
         result += " 2>&1 | tee {log}"

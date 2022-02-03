@@ -4,7 +4,9 @@ include:
     - /ci/lib/tox-bb5.yml
     - /ci/jobs/check-version.yml
     - /ci/jobs/lint.yml
+    - /ci/jobs/py37.yml
     - /ci/jobs/py38.yml
+    - /ci/jobs/py39.yml
     - /ci/jobs/docs.yml
     - /ci/jobs/coverage.yml
     - /ci/jobs/build-package.yml
@@ -15,7 +17,22 @@ include:
   tags: [bb5_map]
   variables:
     EXTRA_MODULES:
-      archive/2021-05:cmake
+      unstable:cmake
+      unstable:gcc/11.2.0
+
+py37:
+  extends: .tox-template
+  variables:
+    EXTRA_MODULES:
+      unstable:cmake
+      archive/2020-12:gcc/8.3.0
+
+py38:
+  extends: .tox-template
+  variables:
+    EXTRA_MODULES:
+      unstable:cmake
+      archive/2020-12:gcc/9.3.0
 
 functional-tests:
   extends: .tox-template

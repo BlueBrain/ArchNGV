@@ -18,29 +18,31 @@ BUILDING = [
     'spatial-index>=0.4.2',
     'bluepy-configfile>=0.1.11',
     'Click>=7.0',
-    'numpy-stl>=2.10',
+    'numpy-stl>=2.10,<2.16.0',  # More recent versions require >1.22.0 which is not in spack yet
     'openmesh>=1.1.2',
     'pyyaml>=5.0',
     'pandas>=1.1.0',
     'tess>=0.3.1',
-    # archive/2021-05 touchdetector crashes for >3.3.0 due to hdf5 file version incompatibility
-    'MorphIO>=3.0.0,<=3.3.0',
+    # writes spec format 1.3 for >= 3.3.1: touchdetector throws (NSETM-1759)
+    'MorphIO>=3.0.0,<3.3.1',
     'morph-tool>=2.4.0',
     'pytouchreader>=1.4.7',
+    'snakemake>=5.0.0',
     'tmd>=2.0.11',
     'tns==2.4.3',
     'diameter-synthesis==0.2.4',
     'trimesh>=3.9.9',
-    # constrain dask dependencies <=2.21 according to their BB5 deployed versions
-    'dask[distributed,bag]>=2.0,<=2.21',
-    'distributed>=2.0,<=2.21',
-    'dask_mpi>=2.0,<=2.21',
+    'dask[distributed,bag]>=2.0',
+    'distributed>=2.0',
+    'dask_mpi>=2.0',
 ]
 
 
 setup(
     classifiers=[
-        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
     ],
     name='ArchNGV',
     version=VERSION,
@@ -55,8 +57,7 @@ setup(
     },
     license="BBP-internal-confidential",
     install_requires=[
-        'numpy>=1.19.5,<1.22.0',  # functional tests break for >=1.22.0
-        'six>=1.15.0',
+        'numpy>=1.19.5',
         'h5py>=3.1.0',
         'scipy>=1.5.0',
         'libsonata>=0.1.8',

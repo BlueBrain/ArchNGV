@@ -1,11 +1,10 @@
 """Generic utilities."""
 from collections.abc import Iterable
-import six
 
 
 def is_iterable(v):
     """Check if `v` is any iterable (strings are considered scalar)."""
-    return isinstance(v, Iterable) and not isinstance(v, six.string_types)
+    return isinstance(v, Iterable) and not isinstance(v, str)
 
 
 def ensure_list(v):
