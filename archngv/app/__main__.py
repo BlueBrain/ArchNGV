@@ -21,19 +21,8 @@ import pkg_resources
 import click
 from archngv.version import VERSION
 
-from archngv.app.commands import (
-    cell_placement,
-    assign_emodels,
-    finalize_astrocytes,
-    microdomains,
-    gliovascular,
-    neuroglial,
-    glialglial_connectivity,
-    synthesis,
-    endfeet_area,
-    ngv_config
-)
 
+from archngv.app import ngv
 from archngv.app.logger import setup_logging
 
 
@@ -51,16 +40,16 @@ def app(verbose):
     )
 
 
-app.add_command(name='cell-placement', cmd=cell_placement.cmd)
-app.add_command(name='assign-emodels', cmd=assign_emodels.cmd)
-app.add_command(name='finalize-astrocytes', cmd=finalize_astrocytes.cmd)
-app.add_command(name='microdomains', cmd=microdomains.cmd)
-app.add_command(name='gliovascular', cmd=gliovascular.group)
-app.add_command(name='neuroglial', cmd=neuroglial.group)
-app.add_command(name='glialglial-connectivity', cmd=glialglial_connectivity.cmd)
-app.add_command(name='synthesis', cmd=synthesis.cmd)
-app.add_command(name='endfeet-area', cmd=endfeet_area.cmd)
-app.add_command(name='config-file', cmd=ngv_config.cmd)
+app.add_command(name='cell-placement', cmd=ngv.cell_placement)
+app.add_command(name='assign-emodels', cmd=ngv.assign_emodels)
+app.add_command(name='finalize-astrocytes', cmd=ngv.finalize_astrocytes)
+app.add_command(name='microdomains', cmd=ngv.build_microdomains)
+app.add_command(name='gliovascular', cmd=ngv.gliovascular_group)
+app.add_command(name='neuroglial', cmd=ngv.neuroglial_group)
+app.add_command(name='synthesis', cmd=ngv.synthesis)
+app.add_command(name='glialglial-connectivity', cmd=ngv.build_glialglial_connectivity)
+app.add_command(name='endfeet-area', cmd=ngv.build_endfeet_surface_meshes)
+app.add_command(name='config-file', cmd=ngv.ngv_config)
 
 
 @app.command(name='create-exemplar')

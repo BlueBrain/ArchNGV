@@ -34,6 +34,8 @@ def _filenames_verify_cardinality(actual_directory, expected_directory):
 
     npt.assert_equal(actual_filenames, desired_filenames, err_msg=(
         f'Differing output filenames:\n'
+        f"Actual  : {sorted(actual_filenames)}\n"
+        f"Expected: {sorted(desired_filenames)}"
     ))
 
     return desired_filenames

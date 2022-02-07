@@ -16,7 +16,6 @@ output/
 *.c
 *.o
 *.so
-uild/*
 dask-worker-space/
 
 # jupyter notebook

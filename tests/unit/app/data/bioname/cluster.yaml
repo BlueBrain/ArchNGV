@@ -1,0 +1,15 @@
+__default__:
+  jobname: default_ngv
+  account: 'proj62'
+  nodes: 1
+  tasks: 5
+  partition: 'prod_small'
+  constraint: 'cpu'
+  time: '00:05:00'
+
+glial_gap_junctions:
+  jobname: astro_conn
+
+synthesis:
+  jobname: ngv_synthesis
+  time: '00:20:00'

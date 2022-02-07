@@ -1,0 +1,165 @@
+{
+  "manifest": {
+    "$CIRCUIT_DIR": "../",
+    "$BUILD_DIR": "$CIRCUIT_DIR/build",
+    "$COMPONENT_DIR": "$BUILD_DIR",
+    "$NETWORK_DIR": "$BUILD_DIR"
+  },
+  "circuit_dir": "$CIRCUIT_DIR",
+  "components": {
+    "morphologies_dir": "NA"
+  },
+  "networks": {
+    "nodes": [
+      {
+        "nodes_file": "/gpfs/bbp.cscs.ch/home/zisis/Projects/ARCHNGV/ArchNGV/tests/functional/data/circuit/nodes.h5",
+        "node_types_file": null
+      },
+      {
+        "nodes_file": "$NETWORK_DIR/sonata/nodes/glia.h5",
+        "node_types_file": null
+      },
+      {
+        "nodes_file": "$NETWORK_DIR/sonata/nodes/vasculature.h5",
+        "node_types_file": null
+      }
+    ],
+    "edges": [
+      {
+        "edges_file": "/gpfs/bbp.cscs.ch/home/zisis/Projects/ARCHNGV/ArchNGV/tests/functional/data/circuit/edges.h5",
+        "edge_types_file": null
+      },
+      {
+        "edges_file": "$NETWORK_DIR/sonata/edges/neuroglial.h5",
+        "edge_types_file": null
+      },
+      {
+        "edges_file": "$NETWORK_DIR/sonata/edges/glialglial.h5",
+        "edge_types_file": null
+      },
+      {
+        "edges_file": "$NETWORK_DIR/sonata/edges/gliovascular.h5",
+        "edge_types_file": null
+      }
+    ]
+  },
+  "cells": {
+    "protoplasmic_astrocytes": {
+      "population": "astrocytes",
+      "microdomains_file": "$BUILD_DIR/microdomains/microdomains.h5",
+      "microdomains_overlapping_file": "$BUILD_DIR/microdomains/overlapping_microdomains.h5",
+      "morphologies_dir": "$BUILD_DIR/morphologies"
+    },
+    "neurons": {
+      "population": "All"
+    },
+    "vasculature": {
+      "population": "vasculature",
+      "vasculature_file": "/gpfs/bbp.cscs.ch/home/zisis/Projects/ARCHNGV/ArchNGV/tests/functional/data/atlas/vasculature.h5",
+      "vasculature_mesh_file": "/gpfs/bbp.cscs.ch/home/zisis/Projects/ARCHNGV/ArchNGV/tests/functional/data/atlas/vasculature.obj"
+    }
+  },
+  "connectivities": {
+    "neuronal": {
+      "population": "All"
+    },
+    "gliovascular": {
+      "population": "gliovascular",
+      "endfeet_areas": "$BUILD_DIR/endfeet_areas.h5"
+    },
+    "neuroglial": {
+      "population": "neuroglial"
+    },
+    "glialglial": {
+      "population": "glialglial"
+    }
+  },
+  "atlases": {
+    "intensity": "/gpfs/bbp.cscs.ch/home/zisis/Projects/ARCHNGV/ArchNGV/tests/functional/data/atlas/[density]astrocytes.nrrd",
+    "brain_regions": "/gpfs/bbp.cscs.ch/home/zisis/Projects/ARCHNGV/ArchNGV/tests/functional/data/atlas/brain_regions.nrrd"
+  },
+  "parameters": {
+    "cell_placement": {
+      "density": "[density]astrocytes",
+      "soma_radius": [
+        5.6,
+        0.74,
+        0.1,
+        20
+      ],
+      "Energy": {
+        "potentials": {
+          "spring": [
+            32.0,
+            1.0
+          ]
+        }
+      },
+      "MetropolisHastings": {
+        "n_initial": 10,
+        "beta": 0.01,
+        "ntrials": 3,
+        "cutoff_radius": 60.0
+      }
+    },
+    "microdomain_tesselation": {
+      "overlap_distribution": {
+        "type": "normal",
+        "values": [
+          0.1,
+          1e-07
+        ]
+      }
+    },
+    "gliovascular_connectivity": {
+      "graph_targeting": {
+        "linear_density": 0.17
+      },
+      "connection": {
+        "reachout_strategy": "maximum_reachout",
+        "endfeet_distribution": [
+          2,
+          2,
+          0,
+          15
+        ]
+      },
+      "surface_targeting": {}
+    },
+    "neuroglial_connectivity": {},
+    "synthesis": {
+      "perimeter_distribution": {
+        "enabled": true,
+        "statistical_model": {
+          "slope": 2.060005867796768,
+          "intercept": 1.0219733661696733,
+          "standard_deviation": 1.1161359624857308
+        },
+        "smoothing": {
+          "window": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      },
+      "endfeet_area_reconstruction": {
+        "fmm_cutoff_radius": 1000.0,
+        "area_distribution": [
+          200.0,
+          10.0,
+          0.0,
+          1000.0
+        ],
+        "thickness_distribution": [
+          1.0,
+          0.1,
+          0.01,
+          2.0
+        ]
+      }
+    }
+  }
+}

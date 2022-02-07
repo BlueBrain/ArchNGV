@@ -1,19 +1,27 @@
 """ Miscellaneous utilities. """
 
+from pathlib import Path
 import os
+import json
+from typing import Union
 import click
 import yaml
 import numpy
-
 
 REQUIRED_PATH = click.Path(exists=True, readable=True, dir_okay=False, resolve_path=True)
 
 
 def load_yaml(filepath):
     """ Load YAML file. """
-    with open(filepath) as f:
+    with open(filepath, mode="r", encoding="utf-8") as f:
         # TODO: verify config schema?
         return yaml.safe_load(f)
+
+
+def write_json(filepath: Union[str, Path], data: dict):
+    """Write data to json file"""
+    with open(filepath, mode="w", encoding="utf-8") as out_file:
+        json.dump(data, out_file, indent=2)
 
 
 def ensure_dir(dirpath):
