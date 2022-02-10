@@ -4,6 +4,7 @@
 ignore=extras,tests
 
 [MESSAGES CONTROL]
+#W503  - Line break before binary operator
 #C0103 -  Invalid name "%s" (should match %s) - matches too many things, like variables w/ single char names
 #R0904 - Too Many public methods
 #R0903 - Too Few public methods

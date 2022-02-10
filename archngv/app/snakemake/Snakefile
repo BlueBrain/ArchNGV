@@ -279,7 +279,7 @@ rule gliovascular_connectivity:
 
     shell:
         run_cmd([
-            f'ngv {LOG_LEVEL} gliovascular connectivity',
+            f'ngv {LOG_LEVEL} gliovascular-connectivity',
             f'--config {bioname_path("gliovascular_connectivity.yaml")}',
             '--astrocytes {input[astrocytes]}',
             '--microdomains {input[microdomains]}',
@@ -379,10 +379,10 @@ rule endfeet_area:
     shell:
         run_cmd([
             f'ngv {LOG_LEVEL} endfeet-area',
-            f'--config {bioname_path("endfeet_area.yaml")}',
-            f'--vasculature-mesh {config["common"]["vasculature_mesh"]}',
-            '--gliovascular-connectivity {input[gliovascular_connectivity]}',
-            '--output {output}',
+            f'--config-path {bioname_path("endfeet_area.yaml")}',
+            f'--vasculature-mesh-path {config["common"]["vasculature_mesh"]}',
+            '--gliovascular-connectivity-path {input[gliovascular_connectivity]}',
+            '--output-path {output}',
             f'--seed {SEED}'],
             dump_log=True)
 
@@ -405,17 +405,17 @@ rule synthesis:
         run_cmd([
             'srun' if PARALLEL else '',
             f'ngv {LOG_LEVEL} synthesis',
-            f'--config {bioname_path("synthesis.yaml")}',
-            f'--tns-distributions {bioname_path("tns_distributions.json")}',
-            f'--tns-parameters {bioname_path("tns_parameters.json")}',
-            f'--tns-context {bioname_path("tns_context.json")}',
-            f'--er-data {bioname_path("er_data.json")}',
-            '--astrocytes {input[astrocytes]}',
-            '--microdomains {input[microdomains]}',
-            '--gliovascular-connectivity {input[gliovascular_connectivity]}',
-            '--neuroglial-connectivity {input[neuroglial_connectivity]}',
-            '--endfeet-areas {input[endfeet_areas]}',
-            f'--neuronal-connectivity {BASE_CIRCUIT_CONNECTOME}',
+            f'--config-path {bioname_path("synthesis.yaml")}',
+            f'--tns-distributions-path {bioname_path("tns_distributions.json")}',
+            f'--tns-parameters-path {bioname_path("tns_parameters.json")}',
+            f'--tns-context-path {bioname_path("tns_context.json")}',
+            f'--er-data-path {bioname_path("er_data.json")}',
+            '--astrocytes-path {input[astrocytes]}',
+            '--microdomains-path {input[microdomains]}',
+            '--gliovascular-connectivity-path {input[gliovascular_connectivity]}',
+            '--neuroglial-connectivity-path {input[neuroglial_connectivity]}',
+            '--endfeet-areas-path {input[endfeet_areas]}',
+            f'--neuronal-connectivity-path {BASE_CIRCUIT_CONNECTOME}',
             f'--out-morph-dir {MORPH_DIR}',
             ('--parallel' if PARALLEL else ''),
             f'--seed {SEED}'],
@@ -439,7 +439,7 @@ rule finalize_gliovascular_connectivity:
         log_path('finalize_gliovascular_connectivity')
     shell:
         run_cmd([
-            f'ngv {LOG_LEVEL} gliovascular finalize',
+            f'ngv {LOG_LEVEL} attach-endfeet-info-to-gliovascular-connectivity',
             '--input-file {input[connectivity]}',
             '--output-file {output}',
             '--astrocytes {input[astrocytes]}',

@@ -100,7 +100,7 @@ def test_microdomains():
 def test_gliovascular_connectivity():
 
     assert_cli_run(
-        tested.build_gliovascular_connectivity,
+        tested.gliovascular_connectivity,
         [
             "--config", BIONAME_DIR / "gliovascular_connectivity.yaml",
             "--astrocytes", FIN_SONATA_DIR / "nodes/glia.h5",
@@ -115,7 +115,7 @@ def test_gliovascular_connectivity():
 def test_gliovascular_finalize():
 
     assert_cli_run(
-        tested.gliovascular_finalize,
+        tested.attach_endfeet_info_to_gliovascular_connectivity,
         [
             "--input-file", TMP_SONATA_DIR / "edges/gliovascular.connectivity.h5",
             "--output-file", "gliovascular.h5",
@@ -176,11 +176,11 @@ def test_endfeet_areas():
     assert_cli_run(
         tested.build_endfeet_surface_meshes,
         [
-            "--config", BIONAME_DIR / "endfeet_area.yaml",
-            "--vasculature-mesh", EXTERNAL_DIR / "atlas/vasculature.obj",
-            "--gliovascular-connectivity", FIN_SONATA_DIR / "edges/gliovascular.h5",
+            "--config-path", BIONAME_DIR / "endfeet_area.yaml",
+            "--vasculature-mesh-path", EXTERNAL_DIR / "atlas/vasculature.obj",
+            "--gliovascular-connectivity-path", FIN_SONATA_DIR / "edges/gliovascular.h5",
             "--seed", 0,
-            "--output", "endfeet_areas.h5",
+            "--output-path", "endfeet_areas.h5",
         ]
     )
 
@@ -190,17 +190,17 @@ def test_synthesis():
     assert_cli_run(
         tested.synthesis,
         [
-            "--config", BIONAME_DIR / "synthesis.yaml",
-            "--tns-distributions", BIONAME_DIR / "tns_distributions.json",
-            "--tns-parameters", BIONAME_DIR / "tns_parameters.json",
-            "--tns-context", BIONAME_DIR / "tns_context.json",
-            "--er-data", BIONAME_DIR / "er_data.json",
-            "--astrocytes", FIN_SONATA_DIR / "nodes/glia.h5",
-            "--microdomains", BUILD_DIR / "microdomains/overlapping_microdomains.h5",
-            "--gliovascular-connectivity", FIN_SONATA_DIR / "edges/gliovascular.h5",
-            "--neuroglial-connectivity", FIN_SONATA_DIR / "edges/neuroglial.h5",
-            "--endfeet-areas", BUILD_DIR / "endfeet_areas.h5",
-            "--neuronal-connectivity", EXTERNAL_DIR / "circuit/edges.h5",
+            "--config-path", BIONAME_DIR / "synthesis.yaml",
+            "--tns-distributions-path", BIONAME_DIR / "tns_distributions.json",
+            "--tns-parameters-path", BIONAME_DIR / "tns_parameters.json",
+            "--tns-context-path", BIONAME_DIR / "tns_context.json",
+            "--er-data-path", BIONAME_DIR / "er_data.json",
+            "--astrocytes-path", FIN_SONATA_DIR / "nodes/glia.h5",
+            "--microdomains-path", BUILD_DIR / "microdomains/overlapping_microdomains.h5",
+            "--gliovascular-connectivity-path", FIN_SONATA_DIR / "edges/gliovascular.h5",
+            "--neuroglial-connectivity-path", FIN_SONATA_DIR / "edges/neuroglial.h5",
+            "--endfeet-areas-path", BUILD_DIR / "endfeet_areas.h5",
+            "--neuronal-connectivity-path", EXTERNAL_DIR / "circuit/edges.h5",
             "--out-morph-dir", "morphologies",
             "--seed", 0,
         ]

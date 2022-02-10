@@ -6,8 +6,9 @@ import click
 import numpy
 import voxcell
 
+
+from archngv.app.logger import LOGGER
 from archngv.app.utils import load_yaml, write_json
-from archngv.exceptions import NGVError
 
 
 @click.command()
@@ -79,7 +80,6 @@ def cell_placement(config, atlas, atlas_cache, vasculature, seed, output):
     from archngv.building.checks import assert_bbox_alignment
 
     from archngv.spatial import BoundingBox
-    from archngv.app.logger import LOGGER
 
     numpy.random.seed(seed)
     LOGGER.info("Seed: %d", seed)
@@ -156,7 +156,6 @@ def build_microdomains(config, astrocytes, atlas, atlas_cache, seed, output_dir)
 
     from archngv.spatial import BoundingBox
 
-    from archngv.app.logger import LOGGER
     from archngv.app.utils import ensure_dir
 
     def _output_path(filename):
@@ -196,39 +195,31 @@ def build_microdomains(config, astrocytes, atlas, atlas_cache, seed, output_dir)
     LOGGER.info('Done!')
 
 
-@click.group()
-def gliovascular_group():
-    """Gliovascular group"""
-
-
-@gliovascular_group.command(name="connectivity")
+@click.command()
 @click.option("--config", help="Path to astrocyte placement YAML config", required=True)
 @click.option("--astrocytes", help="Path to the sonata file with astrocyte's positions", required=True)
 @click.option("--microdomains", help="Path to microdomains structure (HDF5)", required=True)
 @click.option("--vasculature", help="Path to vasculature sonata dataset", required=True)
 @click.option("--seed", help="Pseudo-random generator seed", type=int, default=0, show_default=True)
 @click.option("--output", help="Path to output edges HDF5 (data)", required=True)
-def build_gliovascular_connectivity(config, astrocytes, microdomains, vasculature, seed, output):
+def gliovascular_connectivity(config, astrocytes, microdomains, vasculature, seed, output):
     """
     Build connectivity between astrocytes and the vasculature graph.
     """
-    # pylint: disable=redefined-argument-from-local,too-many-locals
+    # pylint: disable=too-many-locals
     from vasculatureapi import PointVasculature
 
     from archngv.core.datasets import MicrodomainTesselation
 
-    from archngv.building.connectivity.gliovascular_generation import generate_gliovascular
-    from archngv.building.exporters.edge_populations import gliovascular_connectivity
-
-    from archngv.app.logger import LOGGER
+    from archngv.building.connectivity.gliovascular import generate_gliovascular
+    from archngv.building.exporters.edge_populations import write_gliovascular_connectivity
 
     LOGGER.info('Seed: %d', seed)
     numpy.random.seed(seed)
 
-    LOGGER.info('Generating gliovascular connectivity...')
-
     astrocytes = voxcell.CellCollection.load_sonata(astrocytes)
 
+    LOGGER.info('Generating gliovascular connectivity...')
     (
         endfoot_surface_positions,
         endfeet_to_astrocyte_mapping,
@@ -242,7 +233,7 @@ def build_gliovascular_connectivity(config, astrocytes, microdomains, vasculatur
     )
 
     LOGGER.info('Exporting sonata edges...')
-    gliovascular_connectivity(
+    write_gliovascular_connectivity(
         output,
         astrocytes,
         voxcell.CellCollection.load_sonata(vasculature),
@@ -254,169 +245,7 @@ def build_gliovascular_connectivity(config, astrocytes, microdomains, vasculatur
     LOGGER.info("Done!")
 
 
-def _endfeet_properties_from_astrocyte(data):
-    """Calculates data for one astrocyte
-    Args:
-        data (dict): Input data dict. See _dispatch_data for the dict key, values
-    Returns:
-        tuple:
-            endfeet_ids (np.ndarray): (N,) int array of endfeet ids
-            astrocyte_section_ids (np.ndarray): (N,) int array of astrocyte section ids
-            lengths (np.ndarray): (N,) float array of endfeet compartment lengths
-            diameters (np.ndarray): (N,) float array of endfeet compartment diameters
-            perimeters (np.ndarray): (N,) float array of endfeet compartment perimeters
-    """
-    from archngv.building.morphology_synthesis.annotation import annotate_endfoot_location
-    from archngv.building.morphology_synthesis.endfoot_compartment import create_endfeet_compartment_data
-    from archngv.app.utils import readonly_morphology
-
-    morphology = readonly_morphology(data['morphology_path'], data['morphology_position'])
-    astrocyte_section_ids = annotate_endfoot_location(morphology, data['endfeet_surface_targets'])
-
-    lengths, diameters, perimeters = create_endfeet_compartment_data(
-        data['vasculature_segments'],
-        data['endfeet_surface_targets'],
-        data['endfeet_meshes']
-    )
-
-    return data['endfeet_ids'], astrocyte_section_ids, lengths, diameters, perimeters
-
-
-class GliovascularWorker:
-    """Endfeet properties parallel helper"""
-    def __init__(self, seed):
-        self._seed = seed
-
-    def __call__(self, data):
-        """
-        Args:
-            data (dict)
-        """
-        numpy.random.seed(hash((self._seed, data['index'])) % (2 ** 32))
-        return _endfeet_properties_from_astrocyte(data)
-
-
-def _apply_parallel_func(func, data_generator):
-    """Apply the function on the data generator in parallel and yield the results"""
-    import multiprocessing
-    from archngv.app.logger import LOGGER
-    n_cores = multiprocessing.cpu_count()
-    LOGGER.info('Run in parallel enabled. N cores: %d', n_cores)
-    with multiprocessing.Pool(n_cores) as p:
-        for result in p.imap(func, data_generator):
-            yield result
-
-
-def _dispatch_endfeet_data(astrocytes, gv_connectivity, vasculature, endfeet_meshes, morph_dir):
-    """Dispatches data for parallel worker
-    Args:
-        astrocytes (CellData): Astrocyte population
-        gv_connectivity (GliovascularConnectivity): Edges population
-        vasculature (Vasculature): Sonata vasculature
-        endfeet_meshes (EndfeetSurfaceMeshes): The data for the endfeet meshes
-        morph_dir (str): Path to morphology directory
-
-    Yields:
-        data (dict): The following pairs:
-            index (float): astrocyte index
-            endfeet_ids (np.ndarray): (N,) Endfeet ids for astrocyte index
-            endfeet_surface_targets (np.ndarray): (N, 3) Surface starting points
-                of endfeet
-            endfeet_meshes (List(namedtuple)): (N,) Meshes of endfeet surfaces with:
-                index (int): endfoot index
-                points (np.ndarray): mesh points
-                triangles (np.ndarray): mesh triangles
-                area (float): mesh surface area
-                thickness (float): mesh thickness
-            morphology_path (str): Path to astrocyte morphology
-            morphology_position (np.ndarray): (3,) Position of astrocyte
-            vasculature_segments (np.ndarray): (N, 2, 3) Vasculature segments per
-                endfoot
-    """
-    vasculature_points = vasculature.points
-    vasculature_edges = vasculature.edges
-
-    for astro_id in range(len(astrocytes)):
-
-        endfeet_ids = gv_connectivity.astrocyte_endfeet(astro_id)
-
-        # no endfeet, no processing to do
-        if endfeet_ids.size == 0:
-            continue
-
-        morphology_name = astrocytes.get_property('morphology', ids=astro_id)[0]
-        morphology_path = str(Path(morph_dir, morphology_name + '.h5'))
-        morphology_pos = astrocytes.positions(index=astro_id)[0]
-
-        vasc_segment_ids = gv_connectivity.vasculature_sections_segments(endfeet_ids)[:, 0]
-        vasc_segments = vasculature_points[vasculature_edges[vasc_segment_ids]]
-
-        endfeet_surface_targets = gv_connectivity.vasculature_surface_targets(endfeet_ids)
-
-        yield {
-            'index': astro_id,
-            'endfeet_ids': endfeet_ids,
-            'endfeet_surface_targets': endfeet_surface_targets,
-            'endfeet_meshes': endfeet_meshes[endfeet_ids],
-            'morphology_path': morphology_path,
-            'morphology_position': morphology_pos,
-            'vasculature_segments': vasc_segments
-        }
-
-
-def _endfeet_properties(seed, astrocytes, gv_connectivity,
-                        vasculature, endfeet_meshes, morph_dir, map_func):
-    """Generates the endfeet properties that required the astrocyte morphologies and
-    endfeet areas. These properties will then be added to the GliovascularConnectivity edges
-    as properties along with the previous ones, calculated at the first stages of the framework
-
-    Args:
-        seed (int): The seed for the random generator
-        astrocytes (CellData): astrocytes population
-        gv_connectivity: (GliovascularConnectivity): edges population
-        vasculature (Vasculature): sonata vasculature
-        endfeet_meshes (EndfootSurfaceMeshes): Meshes for endfeet
-        morph_dir (str): Morphology directory
-        map_func (Callable): map function to run the processing, parallel or not
-
-    Returns:
-        dict: A dictionary with additional endfeet properties:
-            ids (np.ndarray): (N,) int array of endfeet ids
-            astrocyte_section_id (np.ndarray): int array of astrocyte morphology section id that
-                connects to the surface of the vasculature
-            endfoot_compartment_length (np.ndarray): (N,) float array of compartment lengths
-            endfoot_compartment_diameter (np.ndarray): (N,) float array of compartment diameters
-            endfoot_compartmen_perimeter (np.ndarray): (N,) float array of compartment perimeters
-    """
-    endfeet_ids = gv_connectivity.get_property('endfoot_id')
-    n_endfeet = len(endfeet_ids)
-
-    if not numpy.array_equal(endfeet_ids, numpy.arange(n_endfeet)):
-        raise NGVError('endfeet_ids should be a contiguous array from 0 to number of endfeet')
-
-    properties = {
-        'astrocyte_section_id': numpy.empty(n_endfeet, dtype=numpy.uint32),
-        'endfoot_compartment_length': numpy.empty(n_endfeet, dtype=numpy.float32),
-        'endfoot_compartment_diameter': numpy.empty(n_endfeet, dtype=numpy.float32),
-        'endfoot_compartment_perimeter': numpy.empty(n_endfeet, dtype=numpy.float32)
-    }
-
-    it_results = map_func(
-        GliovascularWorker(seed),
-        _dispatch_endfeet_data(astrocytes, gv_connectivity, vasculature, endfeet_meshes, morph_dir)
-    )
-
-    for ids, section_ids, lengths, diameters, perimeters in it_results:
-
-        properties['astrocyte_section_id'][ids] = section_ids
-        properties['endfoot_compartment_length'][ids] = lengths
-        properties['endfoot_compartment_diameter'][ids] = diameters
-        properties['endfoot_compartment_perimeter'][ids] = perimeters
-
-    return properties
-
-
-@gliovascular_group.command(name="finalize")
+@click.command()
 @click.option("--input-file", help="Path to sonata edges file (HDF5)", required=True)
 @click.option("--output-file", help="Path to sonata edges file (HDF5)", required=True)
 @click.option("--astrocytes", help="Path to HDF5 with somata positions and radii", required=True)
@@ -425,7 +254,7 @@ def _endfeet_properties(seed, astrocytes, gv_connectivity,
 @click.option("--morph-dir", help="Path to morphology folder", required=True)
 @click.option("--seed", help="Pseudo-random generator seed", type=int, default=0, show_default=True)
 @click.option("--parallel", help="Parallelize with 'multiprocessing'", is_flag=True, default=False)
-def gliovascular_finalize(
+def attach_endfeet_info_to_gliovascular_connectivity(
         input_file, output_file, astrocytes, endfeet_areas, vasculature_sonata, morph_dir, seed, parallel):
     """
     Finalizes gliovascular connectivity. It needs to be ran after synthesis and endfeet area growing.
@@ -448,18 +277,20 @@ def gliovascular_finalize(
     from vasculatureapi import PointVasculature
     from archngv.core.datasets import CellData, GliovascularConnectivity, EndfootSurfaceMeshes
     from archngv.building.exporters.edge_populations import add_properties_to_edge_population
+    from archngv.building.endfeet_reconstruction.gliovascular_properties import endfeet_mesh_properties
     from archngv.app.utils import apply_parallel_function
 
     gv_connectivity = GliovascularConnectivity(input_file)
 
-    properties = _endfeet_properties(
+    # retrieve mesh related endfeet properties to attach to the gliovascular edge population
+    properties = endfeet_mesh_properties(
         seed=seed,
         astrocytes=CellData(astrocytes),
-        gv_connectivity=gv_connectivity,
+        gliovascular_connectivity=gv_connectivity,
         vasculature=PointVasculature.load_sonata(vasculature_sonata),
         endfeet_meshes=EndfootSurfaceMeshes(endfeet_areas),
         morph_dir=morph_dir,
-        map_func=apply_parallel_function if parallel else map
+        map_function=apply_parallel_function if parallel else map
     )
     # copy gv file to the output location
     shutil.copyfile(input_file, output_file)
@@ -483,16 +314,15 @@ def neuroglial_group():
 def build_neuroglial_connectivity(
         neurons, astrocytes, microdomains, neuronal_connectivity, seed, output):
     """ Generate connectivity between neurons (N) and astrocytes (G) """
-    # pylint: disable=redefined-argument-from-local,too-many-locals
+    # pylint: disable=too-many-locals
 
     from archngv.core.datasets import (
         NeuronalConnectivity,
         MicrodomainTesselation
     )
     from archngv.building.connectivity.neuroglial_generation import generate_neuroglial
-    from archngv.building.exporters.edge_populations import neuroglial_connectivity
+    from archngv.building.exporters.edge_populations import write_neuroglial_connectivity
 
-    from archngv.app.logger import LOGGER
     numpy.random.seed(seed)
 
     astrocytes_data = voxcell.CellCollection.load(astrocytes)
@@ -508,7 +338,7 @@ def build_neuroglial_connectivity(
     )
 
     LOGGER.info('Exporting the per astrocyte files...')
-    neuroglial_connectivity(
+    write_neuroglial_connectivity(
         data_iterator,
         neurons=voxcell.CellCollection.load(neurons),
         astrocytes=astrocytes_data,
@@ -688,9 +518,7 @@ def build_glialglial_connectivity(astrocytes, touches_dir, seed, output_connecti
     # pylint: disable=redefined-argument-from-local,too-many-locals
     from archngv.core.datasets import CellData
     from archngv.building.connectivity.glialglial import generate_glialglial
-    from archngv.building.exporters.edge_populations import glialglial_connectivity
-
-    from archngv.app.logger import LOGGER
+    from archngv.building.exporters.edge_populations import write_glialglial_connectivity
 
     LOGGER.info('Seed: %d', seed)
     numpy.random.seed(seed)
@@ -699,18 +527,18 @@ def build_glialglial_connectivity(astrocytes, touches_dir, seed, output_connecti
     glialglial_data = generate_glialglial(touches_dir)
 
     LOGGER.info('Exporting to SONATA file...')
-    glialglial_connectivity(glialglial_data, len(CellData(astrocytes)), output_connectivity)
+    write_glialglial_connectivity(glialglial_data, len(CellData(astrocytes)), output_connectivity)
 
     LOGGER.info("Done!")
 
 
 @click.command(name="endfeet-area")
-@click.option("--config", help="Path to YAML config", required=True)
-@click.option("--vasculature-mesh", help="Path to vasculature mesh", required=True)
-@click.option("--gliovascular-connectivity", help="Path to sonata gliovascular file", required=True)
+@click.option("--config-path", help="Path to YAML config", required=True)
+@click.option("--vasculature-mesh-path", help="Path to vasculature mesh", required=True)
+@click.option("--gliovascular-connectivity-path", help="Path to sonata gliovascular file", required=True)
 @click.option("--seed", help="Pseudo-random generator seed", type=int, default=0, show_default=True)
-@click.option("-o", "--output", help="Path to output file (HDF5)", required=True)
-def build_endfeet_surface_meshes(config, vasculature_mesh, gliovascular_connectivity, seed, output):
+@click.option("-o", "--output-path", help="Path to output file (HDF5)", required=True)
+def build_endfeet_surface_meshes(config_path, vasculature_mesh_path, gliovascular_connectivity_path, seed, output_path):
     """Generate the astrocytic endfeet geometries on the surface of the vasculature mesh.
     """
     import openmesh
@@ -719,18 +547,15 @@ def build_endfeet_surface_meshes(config, vasculature_mesh, gliovascular_connecti
     from archngv.building.endfeet_reconstruction.area_generation import endfeet_area_generation
     from archngv.building.exporters.export_endfeet_areas import export_endfeet_areas
 
-    from archngv.app.logger import LOGGER
-
     numpy.random.seed(seed)
     LOGGER.info('Seed: %d', seed)
 
-    config = load_yaml(config)
+    config = load_yaml(config_path)
 
-    LOGGER.info('Load vasculature mesh at %s', vasculature_mesh)
-    vasculature_mesh = openmesh.read_trimesh(vasculature_mesh)
+    LOGGER.info('Load vasculature mesh at %s', vasculature_mesh_path)
+    vasculature_mesh = openmesh.read_trimesh(vasculature_mesh_path)
 
-    gliovascular_connectivity = GliovascularConnectivity(gliovascular_connectivity)
-    endfeet_points = gliovascular_connectivity.vasculature_surface_targets()
+    endfeet_points = GliovascularConnectivity(gliovascular_connectivity_path).vasculature_surface_targets()
 
     LOGGER.info('Setting up generator...')
     data_generator = endfeet_area_generation(
@@ -740,7 +565,7 @@ def build_endfeet_surface_meshes(config, vasculature_mesh, gliovascular_connecti
     )
 
     LOGGER.info("Export to HDF5...")
-    export_endfeet_areas(output, data_generator, len(endfeet_points))
+    export_endfeet_areas(output_path, data_generator, len(endfeet_points))
 
     LOGGER.info('Done!')
 
@@ -761,33 +586,33 @@ def _synthesize(astrocyte_index, seed, paths, config):
 
 
 @click.command()
-@click.option("--config", help="Path to synthesis YAML config", required=True)
-@click.option("--tns-distributions", help="Path to TNS distributions (JSON)", required=True)
-@click.option("--tns-parameters", help="Path to TNS parameters (JSON)", required=True)
-@click.option("--tns-context", help="Path to TNS context (JSON)", required=True)
-@click.option("--er-data", help="Path to the Endoplasmic Reticulum data (JSON)", required=True)
-@click.option("--astrocytes", help="Path to HDF5 with somata positions and radii", required=True)
-@click.option("--microdomains", help="Path to microdomains structure (HDF5)", required=True)
+@click.option("--config-path", help="Path to synthesis YAML config", required=True)
+@click.option("--tns-distributions-path", help="Path to TNS distributions (JSON)", required=True)
+@click.option("--tns-parameters-path", help="Path to TNS parameters (JSON)", required=True)
+@click.option("--tns-context-path", help="Path to TNS context (JSON)", required=True)
+@click.option("--er-data-path", help="Path to the Endoplasmic Reticulum data (JSON)", required=True)
+@click.option("--astrocytes-path", help="Path to HDF5 with somata positions and radii", required=True)
+@click.option("--microdomains-path", help="Path to microdomains structure (HDF5)", required=True)
 @click.option(
-    "--gliovascular-connectivity", help="Path to gliovascular connectivity sonata", required=True)
+    "--gliovascular-connectivity-path", help="Path to gliovascular connectivity sonata", required=True)
 @click.option(
-    "--neuroglial-connectivity", help="Path to neuroglial connectivity (HDF5)", required=True)
-@click.option("--endfeet-areas", help="Path to HDF5 endfeet areas", required=True)
-@click.option("--neuronal-connectivity", help="Path to HDF5 with synapse positions", required=True)
+    "--neuroglial-connectivity-path", help="Path to neuroglial connectivity (HDF5)", required=True)
+@click.option("--endfeet-areas-path", help="Path to HDF5 endfeet areas", required=True)
+@click.option("--neuronal-connectivity-path", help="Path to HDF5 with synapse positions", required=True)
 @click.option("--out-morph-dir", help="Path to output morphology folder", required=True)
 @click.option("--parallel", help="Use Dask's mpi client", is_flag=True, default=False)
 @click.option("--seed", help="Pseudo-random generator seed", type=int, default=0, show_default=True)
-def synthesis(config,
-        tns_distributions,
-        tns_parameters,
-        tns_context,
-        er_data,
-        astrocytes,
-        microdomains,
-        gliovascular_connectivity,
-        neuroglial_connectivity,
-        endfeet_areas,
-        neuronal_connectivity,
+def synthesis(config_path,
+        tns_distributions_path,
+        tns_parameters_path,
+        tns_context_path,
+        er_data_path,
+        astrocytes_path,
+        microdomains_path,
+        gliovascular_connectivity_path,
+        neuroglial_connectivity_path,
+        endfeet_areas_path,
+        neuronal_connectivity_path,
         out_morph_dir,
         parallel,
         seed):
@@ -808,19 +633,19 @@ def synthesis(config,
         client = Client(processes=False, threads_per_worker=1)
 
     Path(out_morph_dir).mkdir(exist_ok=True, parents=True)
-    config = load_yaml(config)
-    n_astrocytes = len(CellData(astrocytes))
+    config = load_yaml(config_path)
+    n_astrocytes = len(CellData(astrocytes_path))
     paths = SynthesisInputPaths(
-        astrocytes=astrocytes,
-        microdomains=microdomains,
-        neuronal_connectivity=neuronal_connectivity,
-        gliovascular_connectivity=gliovascular_connectivity,
-        neuroglial_connectivity=neuroglial_connectivity,
-        endfeet_areas=endfeet_areas,
-        tns_parameters=tns_parameters,
-        tns_distributions=tns_distributions,
-        tns_context=tns_context,
-        er_data=er_data,
+        astrocytes=astrocytes_path,
+        microdomains=microdomains_path,
+        neuronal_connectivity=neuronal_connectivity_path,
+        gliovascular_connectivity=gliovascular_connectivity_path,
+        neuroglial_connectivity=neuroglial_connectivity_path,
+        endfeet_areas=endfeet_areas_path,
+        tns_parameters=tns_parameters_path,
+        tns_distributions=tns_distributions_path,
+        tns_context=tns_context_path,
+        er_data=er_data_path,
         morphology_directory=out_morph_dir)
 
     synthesize = bag.from_sequence(range(n_astrocytes), partition_size=1) \
