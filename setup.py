@@ -22,7 +22,9 @@ BUILDING = [
     'openmesh>=1.1.2',
     'pyyaml>=5.0',
     'pandas>=1.1.0',
-    'tess>=0.3.1',
+    # tess has been mirrored in bbpgitlab: https://bbpgitlab.epfl.ch/nse/mirrors/tess
+    # and wheels have been released in devpi for >=0.3.2
+    'tess==0.3.2',
     # writes spec format 1.3 for >= 3.3.1: touchdetector throws (NSETM-1759)
     'MorphIO>=3.0.0,<3.3.1',
     'morph-tool>=2.4.0',
@@ -49,7 +51,6 @@ setup(
     description='NGV Architecture Modules',
     author='Eleftherios Zisis',
     author_email='eleftherios.zisis@epfl.ch',
-    setup_requires=['cython'],  # needed to correctly compile tess by generating new c files
     url="https://bbpteam.epfl.ch/documentation/projects/ArchNGV",
     project_urls={
         "Tracker": "",
