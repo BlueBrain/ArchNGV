@@ -59,7 +59,7 @@ def assign_emodels(input, hoc, output):
 @click.option("--config", help="Path to astrocyte placement YAML config", required=True)
 @click.option("--atlas", help="Atlas URL / path", required=True)
 @click.option("--atlas-cache", help="Path to atlas cache folder", default=None, show_default=True)
-@click.option("--vasculature", help="Path to vasculature node population", default=None, required=True)
+@click.option("--vasculature", help="Path to vasculature node population", required=True)
 @click.option("--seed", help="Pseudo-random generator seed", type=int, default=0, show_default=True)
 @click.option("-o", "--output", help="Path to output SONATA nodes file", required=True)
 def cell_placement(config, atlas, atlas_cache, vasculature, seed, output):
@@ -100,7 +100,7 @@ def cell_placement(config, atlas, atlas_cache, vasculature, seed, output):
         assert_bbox_alignment(
             BoundingBox.from_points(vasc.points),
             BoundingBox(voxelized_intensity.bbox[0],
-                        voxelized_intensity.bbox[1])
+                        voxelized_intensity.bbox[1]),
         )
 
         spatial_indexes.append(SphereIndex(vasc.points, 0.5 * vasc.diameters))
@@ -146,7 +146,7 @@ def finalize_astrocytes(somata_file, emodels_file, output):
 def build_microdomains(config, astrocytes, atlas, atlas_cache, seed, output_dir):
     """Generate astrocyte microdomain tesselation as a partition of space into convex polygons.
     """
-    # pylint: disable=missing-docstring,too-many-locals
+    # pylint: disable=too-many-locals
     from scipy import stats
     from voxcell.nexus.voxelbrain import Atlas
 
@@ -253,7 +253,7 @@ def gliovascular_connectivity(config, astrocytes, microdomains, vasculature, see
 @click.option("--vasculature-sonata", help="Path to nodes for vasculature (HDF5)", required=True)
 @click.option("--morph-dir", help="Path to morphology folder", required=True)
 @click.option("--seed", help="Pseudo-random generator seed", type=int, default=0, show_default=True)
-@click.option("--parallel", help="Parallelize with 'multiprocessing'", is_flag=True, default=False)
+@click.option("--parallel", help="Parallelize with 'multiprocessing'", is_flag=True)
 def attach_endfeet_info_to_gliovascular_connectivity(
         input_file, output_file, astrocytes, endfeet_areas, vasculature_sonata, morph_dir, seed, parallel):
     """
@@ -299,20 +299,15 @@ def attach_endfeet_info_to_gliovascular_connectivity(
     add_properties_to_edge_population(output_file, gv_connectivity.name, properties)
 
 
-@click.group()
-def neuroglial_group():
-    """Generate neuroglial (N-G) connectivity"""
-
-
-@neuroglial_group.command(name="connectivity")
-@click.option("--neurons", help="Path to neuron node population (SONATA Nodes)", required=True)
-@click.option("--astrocytes", help="Path to astrocyte node population (SONATA Nodes)", required=True)
-@click.option("--microdomains", help="Path to microdomains structure (HDF5)", required=True)
-@click.option("--neuronal-connectivity", help="Path to neuron-neuron sonata edge file", required=True)
+@click.command()
+@click.option("--neurons-path", help="Path to neuron node population (SONATA Nodes)", required=True)
+@click.option("--astrocytes-path", help="Path to astrocyte node population (SONATA Nodes)", required=True)
+@click.option("--microdomains-path", help="Path to microdomains structure (HDF5)", required=True)
+@click.option("--neuronal-connectivity-path", help="Path to neuron-neuron sonata edge file", required=True)
 @click.option("--seed", help="Pseudo-random generator seed", type=int, default=0, show_default=True)
-@click.option("-o", "--output", help="Path to output file (SONATA Edges HDF5)", required=True)
-def build_neuroglial_connectivity(
-        neurons, astrocytes, microdomains, neuronal_connectivity, seed, output):
+@click.option("-o", "--output-path", help="Path to output file (SONATA Edges HDF5)", required=True)
+def neuroglial_connectivity(
+        neurons_path, astrocytes_path, microdomains_path, neuronal_connectivity_path, seed, output_path):
     """ Generate connectivity between neurons (N) and astrocytes (G) """
     # pylint: disable=too-many-locals
 
@@ -325,153 +320,39 @@ def build_neuroglial_connectivity(
 
     numpy.random.seed(seed)
 
-    astrocytes_data = voxcell.CellCollection.load(astrocytes)
+    astrocytes_data = voxcell.CellCollection.load(astrocytes_path)
 
     LOGGER.info('Generating neuroglial connectivity...')
 
-    microdomains = MicrodomainTesselation(microdomains)
-
     data_iterator = generate_neuroglial(
         astrocytes=astrocytes_data,
-        microdomains=microdomains,
-        neuronal_connectivity=NeuronalConnectivity(neuronal_connectivity)
+        microdomains=MicrodomainTesselation(microdomains_path),
+        neuronal_connectivity=NeuronalConnectivity(neuronal_connectivity_path),
     )
 
     LOGGER.info('Exporting the per astrocyte files...')
     write_neuroglial_connectivity(
         data_iterator,
-        neurons=voxcell.CellCollection.load(neurons),
+        neurons=voxcell.CellCollection.load(neurons_path),
         astrocytes=astrocytes_data,
-        output_path=output
+        output_path=output_path,
     )
 
     LOGGER.info("Done!")
 
 
-def _properties_from_astrocyte(data):
-    """Processes one astrocyte and returns annotation properties
-    Args:
-        data (dict): Dictionary with the following keys
-            - index: astrocyte index
-            - neurogial_connectivity: Path to ng connectivity sonata file
-            - synaptic_data: Path to synaptic data sonata file
-            - morphology_path: Path to morphology h5 file
-            - morphology_position: Coordinates of morphology soma position
-
-    Returns:
-        tuple:
-            connection_ids (np.ndarray): sonata edge ids
-            section_ids (np.ndarray): Morphology section ids
-            segment_ids: Morphology segment ids
-            segment_offsets: Morphology segment offsets
-    """
-    from archngv.building.morphology_synthesis.annotation import annotate_synapse_location
-    from archngv.core.datasets import NeuroglialConnectivity, NeuronalConnectivity
-    from archngv.app.utils import readonly_morphology
-
-    astrocyte_index = data['index']
-
-    ng_connectivity = NeuroglialConnectivity(data['neuroglial_connectivity'])
-    connection_ids = ng_connectivity.astrocyte_neuron_connections(astrocyte_index)
-
-    if connection_ids.size == 0:
-        return None
-
-    synapse_ids = ng_connectivity.neuronal_synapses(connection_ids)
-
-    synaptic_data = NeuronalConnectivity(data['synaptic_data'])
-    synapse_positions = synaptic_data.synapse_positions(synapse_ids)
-
-    morphology = readonly_morphology(data['morphology_path'], data['morphology_position'])
-    locations_dataframe = annotate_synapse_location(morphology, synapse_positions)
-
-    return connection_ids, locations_dataframe
-
-
-class NeuroglialWorker:
-    """Neuroglial properties helper"""
-    def __init__(self, seed):
-        self._seed = seed
-
-    def __call__(self, data):
-
-        seed = hash((self._seed, data['index'])) % (2 ** 32)
-        numpy.random.seed(seed)
-
-        return _properties_from_astrocyte(data)
-
-
-def _dispatch_neuroglial_data(astrocytes, paths):
-
-    for astro_id in range(len(astrocytes)):
-
-        morphology_name = astrocytes.get_property('morphology', ids=astro_id)[0]
-        morphology_path = str(Path(paths['morph_dir'], morphology_name + '.h5'))
-        morphology_pos = astrocytes.positions(index=astro_id)[0]
-
-        data = {
-            'index': astro_id,
-            'morphology_path': morphology_path,
-            'morphology_position': morphology_pos
-        }
-
-        data.update(paths)
-
-        yield data
-
-
-def _neuroglial_properties(seed, astrocytes, n_connections, paths, map_func):
-    """
-    Args:
-        seed (int): Random generator's seed
-        astrocytes (CellData): node population of astrocytes
-        n_connections (int): number of astrocyte-neuron connections
-        paths (dict): dictionary with paths
-        map_func (Callable): parallelization function
-
-    Returns:
-        properties (dict): Dictionary with string keys
-            astrocyte_section_id (np.ndarray): Array of ints corresponding to the
-                astrocyte section id associated with each connected synapse
-            astrocyte_segment_id (np.ndarray): Array of ints corresponding to the
-                astrocyte segment id associated with each connected synapse
-            astrocyte_segment_offset (np.ndarray): Array of floats corresponding
-                to the segment offset associated with each connected synapse
-    """
-
-    properties = {
-        'astrocyte_section_id': numpy.empty(n_connections, dtype=numpy.uint32),
-        'astrocyte_segment_id': numpy.empty(n_connections, dtype=numpy.uint32),
-        'astrocyte_segment_offset': numpy.empty(n_connections, dtype=numpy.float32),
-        'astrocyte_section_pos': numpy.empty(n_connections, dtype=numpy.float32)
-    }
-
-    it_results = filter(
-        lambda result: result is not None,
-        map_func(NeuroglialWorker(seed), _dispatch_neuroglial_data(astrocytes, paths))
-    )
-
-    for ids, df_locations in it_results:
-
-        properties['astrocyte_section_id'][ids] = df_locations.section_id
-        properties['astrocyte_segment_id'][ids] = df_locations.segment_id
-        properties['astrocyte_segment_offset'][ids] = df_locations.segment_offset
-        properties['astrocyte_section_pos'][ids] = df_locations.section_position
-
-    return properties
-
-
-@neuroglial_group.command(name="finalize")
-@click.option("--input-file", help="Path to input file (SONATA Edges HDF5)", required=True)
-@click.option("--output-file", help="Path to output file (SONATA Edges HDF5)", required=True)
-@click.option("--astrocytes", help="Path to astrocyte node population (SONATA Nodes)", required=True)
-@click.option("--microdomains", help="Path to microdomains structure (HDF5)", required=True)
-@click.option("--synaptic-data", help="Path to HDF5 with synapse positions", required=True)
+@click.command()
+@click.option("--input-file-path", help="Path to input file (SONATA Edges HDF5)", required=True)
+@click.option("--output-file-path", help="Path to output file (SONATA Edges HDF5)", required=True)
+@click.option("--astrocytes-path", help="Path to astrocyte node population (SONATA Nodes)", required=True)
+@click.option("--microdomains-path", help="Path to microdomains structure (HDF5)", required=True)
+@click.option("--synaptic-data-path", help="Path to HDF5 with synapse positions", required=True)
 @click.option("--morph-dir", help="Path to morphology folder", required=True)
-@click.option("--parallel", help="Parallelize with 'multiprocessing'", is_flag=True, default=False)
+@click.option("--parallel", help="Parallelize with 'multiprocessing'", is_flag=True)
 @click.option("--seed", help="Pseudo-random generator seed", type=int, default=0, show_default=True)
-def neuroglial_finalize(
-        input_file, output_file, astrocytes, microdomains, synaptic_data, morph_dir, parallel, seed):
+def attach_morphology_info_to_neuroglial_connectivity(
+        input_file_path, output_file_path, astrocytes_path, microdomains_path, synaptic_data_path, morph_dir,
+        parallel, seed):
     """For each astrocyte-neuron connection annotate the closest morphology section, segment, offset
     for each synapse.
 
@@ -482,30 +363,32 @@ def neuroglial_finalize(
     """
     import shutil
     from archngv.core.datasets import CellData, NeuroglialConnectivity
+    from archngv.building.morphology_synthesis.neuroglial_properties import astrocyte_morphology_properties
     from archngv.building.exporters.edge_populations import add_properties_to_edge_population
     from archngv.app.utils import apply_parallel_function
 
     paths = {
-        'microdomains': microdomains,
-        'synaptic_data': synaptic_data,
-        'neuroglial_connectivity': input_file,
+        'microdomains': microdomains_path,
+        'synaptic_data': synaptic_data_path,
+        'neuroglial_connectivity': input_file_path,
         'morph_dir': morph_dir
     }
 
-    ng_connectivity = NeuroglialConnectivity(input_file)
+    ng_connectivity = NeuroglialConnectivity(input_file_path)
 
-    properties = _neuroglial_properties(
+    properties = astrocyte_morphology_properties(
         seed=seed,
-        astrocytes=CellData(astrocytes),
+        astrocytes=CellData(astrocytes_path),
         n_connections=len(ng_connectivity),
         paths=paths,
-        map_func=apply_parallel_function if parallel else map
+        map_function=apply_parallel_function if parallel else map
     )
 
-    shutil.copyfile(input_file, output_file)
+    # make a copy of the original and modify
+    shutil.copyfile(input_file_path, output_file_path)
 
     # add the new properties to the copied out file
-    add_properties_to_edge_population(output_file, ng_connectivity.name, properties)
+    add_properties_to_edge_population(output_file_path, ng_connectivity.name, properties)
 
 
 @click.command(name="glialglial-connectivity")
@@ -600,7 +483,7 @@ def _synthesize(astrocyte_index, seed, paths, config):
 @click.option("--endfeet-areas-path", help="Path to HDF5 endfeet areas", required=True)
 @click.option("--neuronal-connectivity-path", help="Path to HDF5 with synapse positions", required=True)
 @click.option("--out-morph-dir", help="Path to output morphology folder", required=True)
-@click.option("--parallel", help="Use Dask's mpi client", is_flag=True, default=False)
+@click.option("--parallel", help="Use Dask's mpi client", is_flag=True)
 @click.option("--seed", help="Pseudo-random generator seed", type=int, default=0, show_default=True)
 def synthesis(config_path,
         tns_distributions_path,

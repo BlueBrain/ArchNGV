@@ -130,14 +130,14 @@ def test_gliovascular_finalize():
 def test_neuroglial_connectivity():
 
     assert_cli_run(
-        tested.build_neuroglial_connectivity,
+        tested.neuroglial_connectivity,
         [
-            "--neurons", EXTERNAL_DIR / "circuit/nodes.h5",
-            "--astrocytes", FIN_SONATA_DIR / "nodes/glia.h5",
-            "--microdomains", BUILD_DIR / "microdomains/overlapping_microdomains.h5",
-            "--neuronal-connectivity", EXTERNAL_DIR / "circuit/edges.h5",
+            "--neurons-path", EXTERNAL_DIR / "circuit/nodes.h5",
+            "--astrocytes-path", FIN_SONATA_DIR / "nodes/glia.h5",
+            "--microdomains-path", BUILD_DIR / "microdomains/overlapping_microdomains.h5",
+            "--neuronal-connectivity-path", EXTERNAL_DIR / "circuit/edges.h5",
             "--seed", 0,
-            "--output", "neuroglial.connectivity.h5",
+            "--output-path", "neuroglial.connectivity.h5",
         ]
     )
 
@@ -145,13 +145,13 @@ def test_neuroglial_connectivity():
 def test_neuroglial_finalize():
 
     assert_cli_run(
-        tested.neuroglial_finalize,
+        tested.attach_morphology_info_to_neuroglial_connectivity,
         [
-            "--input-file", TMP_SONATA_DIR / "edges/neuroglial.connectivity.h5",
-            "--output-file", "neuroglial.h5",
-            "--astrocytes", FIN_SONATA_DIR / "nodes/glia.h5",
-            "--microdomains", BUILD_DIR / "microdomains/overlapping_microdomains.h5",
-            "--synaptic-data", EXTERNAL_DIR / "circuit/edges.h5",
+            "--input-file-path", TMP_SONATA_DIR / "edges/neuroglial.connectivity.h5",
+            "--output-file-path", "neuroglial.h5",
+            "--astrocytes-path", FIN_SONATA_DIR / "nodes/glia.h5",
+            "--microdomains-path", BUILD_DIR / "microdomains/overlapping_microdomains.h5",
+            "--synaptic-data-path", EXTERNAL_DIR / "circuit/edges.h5",
             "--morph-dir", BUILD_DIR / "morphologies",
             "--seed", 0
         ]

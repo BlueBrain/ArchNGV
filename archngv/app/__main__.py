@@ -51,7 +51,11 @@ app.add_command(
     name="attach-endfeet-info-to-gliovascular-connectivity",
     cmd=ngv.attach_endfeet_info_to_gliovascular_connectivity,
 )
-app.add_command(name="neuroglial", cmd=ngv.neuroglial_group)
+app.add_command(name="neuroglial-connectivity", cmd=ngv.neuroglial_connectivity)
+app.add_command(name="attach-morphology-info-to-neuroglial-connectivity",
+cmd=ngv.attach_morphology_info_to_neuroglial_connectivity)
+
+
 app.add_command(name="synthesis", cmd=ngv.synthesis)
 app.add_command(name="glialglial-connectivity", cmd=ngv.build_glialglial_connectivity)
 app.add_command(name="endfeet-area", cmd=ngv.build_endfeet_surface_meshes)

@@ -302,12 +302,12 @@ rule neuroglial_connectivity:
 
     shell:
         run_cmd([
-            f'ngv {LOG_LEVEL} neuroglial connectivity',
-            f'--neurons {BASE_CIRCUIT_CELLS}',
-            '--astrocytes {input[astrocytes]}',
-            '--microdomains {input[microdomains]}',
-            f'--neuronal-connectivity {BASE_CIRCUIT_CONNECTOME}',
-            '--output {output}',
+            f'ngv {LOG_LEVEL} neuroglial-connectivity',
+            f'--neurons-path {BASE_CIRCUIT_CELLS}',
+            '--astrocytes-path {input[astrocytes]}',
+            '--microdomains-path {input[microdomains]}',
+            f'--neuronal-connectivity-path {BASE_CIRCUIT_CONNECTOME}',
+            '--output-path {output}',
             f'--seed {SEED}'],
             dump_log=True)
 
@@ -467,12 +467,12 @@ rule finalize_neuroglial_connectivity:
 
     shell:
         run_cmd([
-            f'ngv {LOG_LEVEL} neuroglial finalize',
-            '--input-file {input[connectivity]}',
-            '--output-file {output}',
-            '--astrocytes {input[astrocytes]}',
-            '--microdomains {input[microdomains]}',
-            f'--synaptic-data {BASE_CIRCUIT_CONNECTOME}',
+            f'ngv {LOG_LEVEL} attach-morphology-info-to-neuroglial-connectivity',
+            '--input-file-path {input[connectivity]}',
+            '--output-file-path {output}',
+            '--astrocytes-path {input[astrocytes]}',
+            '--microdomains-path {input[microdomains]}',
+            f'--synaptic-data-path {BASE_CIRCUIT_CONNECTOME}',
             f'--morph-dir {MORPH_DIR}',
             ('--parallel' if PARALLEL else ''),
             f'--seed {SEED}'],
