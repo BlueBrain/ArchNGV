@@ -13,8 +13,8 @@ include = '''
 ^/(
       archngv/.*\.py
     | tests/.*\.py
-    | doc/source/conf.py
-    | setup.py
+    | doc/source/conf\.py
+    | setup\.py
 )$
 '''
 
