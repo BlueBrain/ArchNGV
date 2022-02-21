@@ -3,18 +3,16 @@ import logging
 
 import numpy as np
 
-# pylint: disable=no-name-in-module
-from archngv.building.endfeet_reconstruction.fast_marching_method import fast_marching_eikonal_solver
-
 from archngv.building.endfeet_reconstruction.area_mapping import transform_to_target_distribution
 from archngv.building.endfeet_reconstruction.area_shrinking import shrink_surface_mesh
 
-from archngv.building.endfeet_reconstruction.groups import vertex_to_triangle_groups
-from archngv.building.endfeet_reconstruction.groups import group_elements
-
-from archngv.utils.statistics import truncated_normal
+# pylint: disable=no-name-in-module
+from archngv.building.endfeet_reconstruction.fast_marching_method import (
+    fast_marching_eikonal_solver,
+)
+from archngv.building.endfeet_reconstruction.groups import group_elements, vertex_to_triangle_groups
 from archngv.utils.ngons import vectorized_triangle_area
-
+from archngv.utils.statistics import truncated_normal
 
 L = logging.getLogger(__name__)
 
@@ -31,13 +29,13 @@ def _grow_endfeet_areas(vasculature_mesh, endfeet_points, threshold_radius):
             Maximum permitted area for the growht of the endfeet.
     """
     group_indices, travel_times, _ = fast_marching_eikonal_solver(
-        vasculature_mesh, endfeet_points, threshold_radius)
+        vasculature_mesh, endfeet_points, threshold_radius
+    )
     return travel_times, group_indices
 
 
 def _triangle_areas(points, triangles):
-    """ Returns the areas of an array of triangles
-    """
+    """Returns the areas of an array of triangles"""
     p0s, p1s, p2s = points[triangles.T]
     return vectorized_triangle_area(p0s - p1s, p0s - p2s)
 
@@ -77,7 +75,9 @@ def _global_to_local_indices(triangles):
     return local_vertices, raveled_triangles.reshape((-1, 3))
 
 
-def _shrink_endfoot_triangles(triangles, triangle_areas, triangle_travel_times, endfoot_area, target_area):
+def _shrink_endfoot_triangles(
+    triangles, triangle_areas, triangle_travel_times, endfoot_area, target_area
+):
     """
     Shrinks the endfoot surface and convertes its triangles to the local index space
     """
@@ -86,10 +86,16 @@ def _shrink_endfoot_triangles(triangles, triangle_areas, triangle_travel_times, 
     return triangles[idx]
 
 
-def _process_endfeet(points, triangles, grouped_triangles,
-                     triangle_areas, triangle_travel_times,
-                     endfeet_areas, target_areas,
-                     endfeet_thicknesses):
+def _process_endfeet(
+    points,
+    triangles,
+    grouped_triangles,
+    triangle_areas,
+    triangle_travel_times,
+    endfeet_areas,
+    target_areas,
+    endfeet_thicknesses,
+):
     """
     Iterates over the grown endfeet surfaces and shrinks them so that
     they match their respective target areas.
@@ -145,7 +151,9 @@ def _process_endfeet(points, triangles, grouped_triangles,
                 triangles_global,
                 triangle_areas[triangle_ids],
                 triangle_travel_times[triangle_ids],
-                current_area, target_area)
+                current_area,
+                target_area,
+            )
 
         # the unique vertices belonging to group and the triangles refering to that subset
         vertices_global, triangles_local = _global_to_local_indices(triangles_global)
@@ -153,11 +161,13 @@ def _process_endfeet(points, triangles, grouped_triangles,
         points_local = points[vertices_global]
         final_area = _triangle_areas(points_local, triangles_local).sum()
 
-        yield group, points_local, triangles_local, current_area, final_area, endfeet_thicknesses[group]
+        yield group, points_local, triangles_local, current_area, final_area, endfeet_thicknesses[
+            group
+        ]
 
 
 def endfeet_area_generation(vasculature_mesh, parameters, endfeet_points):
-    """ Generate endfeet areas on the surface of the vasculature mesh,
+    """Generate endfeet areas on the surface of the vasculature mesh,
     starting fotm the endfeet_points coordinates
 
     Args:
@@ -175,7 +185,8 @@ def endfeet_area_generation(vasculature_mesh, parameters, endfeet_points):
     n_endfeet = len(endfeet_points)
 
     travel_times, vertex_groups = _grow_endfeet_areas(
-        vasculature_mesh, endfeet_points, parameters['fmm_cutoff_radius'])
+        vasculature_mesh, endfeet_points, parameters["fmm_cutoff_radius"]
+    )
 
     points = vasculature_mesh.points()
     triangles = vasculature_mesh.face_vertex_indices().astype(np.uintp)
@@ -195,15 +206,24 @@ def endfeet_area_generation(vasculature_mesh, parameters, endfeet_points):
     endfeet_areas = _endfeet_areas(grouped_triangles, triangle_areas, n_endfeet)
 
     # input biological distribution of endfeet areas
-    target_distribution = truncated_normal(*parameters['area_distribution'])
+    target_distribution = truncated_normal(*parameters["area_distribution"])
 
     # transformed simulation areas to map the target distribution for areas that have
     # spread more than the biological distribution
     target_areas = transform_to_target_distribution(endfeet_areas, target_distribution)
 
     # the thicknes that will be assigned to each endfoot
-    endfeet_thicknesses = truncated_normal(*parameters['thickness_distribution']).rvs(size=n_endfeet)
+    endfeet_thicknesses = truncated_normal(*parameters["thickness_distribution"]).rvs(
+        size=n_endfeet
+    )
 
-    return _process_endfeet(points, triangles, grouped_triangles,
-                            triangle_areas, triangle_travel_times,
-                            endfeet_areas, target_areas, endfeet_thicknesses)
+    return _process_endfeet(
+        points,
+        triangles,
+        grouped_triangles,
+        triangle_areas,
+        triangle_travel_times,
+        endfeet_areas,
+        target_areas,
+        endfeet_thicknesses,
+    )

@@ -7,33 +7,34 @@ import numpy as np
 
 
 def dot(a, b):
-    """ Dot product between two vectors """
+    """Dot product between two vectors"""
     return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
 
 
 def cross(a, b):
-    """ Cross product between two vectors """
-    return np.array((a[1] * b[2] - a[2] * b[1],
-                     a[2] * b[0] - a[0] * b[2],
-                     a[0] * b[1] - a[1] * b[0]))
+    """Cross product between two vectors"""
+    return np.array(
+        (
+            a[1] * b[2] - a[2] * b[1],
+            a[2] * b[0] - a[0] * b[2],
+            a[0] * b[1] - a[1] * b[0],
+        )
+    )
 
 
 def support(first_shape, second_shape, direction):
-    """ Support function to get the Minkowsky difference
-    """
+    """Support function to get the Minkowsky difference"""
     direction = direction / np.sqrt(direction[0] ** 2 + direction[1] ** 2 + direction[2] ** 2)
     return first_shape.support(direction) - second_shape.support(-direction)
 
 
 def pick_line(shape1, shape2, direction):
-    """ Pick line"""
-    return (support(shape2, shape1, direction),
-            support(shape2, shape1, -direction))
+    """Pick line"""
+    return (support(shape2, shape1, direction), support(shape2, shape1, -direction))
 
 
 def pick_triangle(a, b, shape1, shape2, Niter):
-    """ Pick triangle
-    """
+    """Pick triangle"""
     flag = 0
 
     ab = b - a
@@ -57,13 +58,13 @@ def pick_triangle(a, b, shape1, shape2, Niter):
 
         acp = cross(abc, ac)
 
-        if dot(abp, ao) > 0.:
+        if dot(abp, ao) > 0.0:
 
             c = b
             b = a
             v = abp
 
-        elif dot(acp, ao) > 0.:
+        elif dot(acp, ao) > 0.0:
 
             b = a
             v = acp
@@ -79,8 +80,7 @@ def pick_triangle(a, b, shape1, shape2, Niter):
 
 
 def pick_tetrahedron(a, b, c, shape1, shape2, Niter):
-    """ pick tetrahedron
-    """
+    """pick tetrahedron"""
     flag = 0
 
     ab = b - a
@@ -115,11 +115,11 @@ def pick_tetrahedron(a, b, c, shape1, shape2, Niter):
 
         abc = cross(ab, ac)
 
-        if dot(abc, ao) <= 0.:
+        if dot(abc, ao) <= 0.0:
 
             acd = cross(ac, ad)
 
-            if dot(acd, ao) > 0.:
+            if dot(acd, ao) > 0.0:
 
                 b = c
                 c = d
@@ -131,7 +131,7 @@ def pick_tetrahedron(a, b, c, shape1, shape2, Niter):
 
                 adb = cross(ad, ab)
 
-                if dot(adb, ao) > 0.:
+                if dot(adb, ao) > 0.0:
 
                     c = b
                     b = d
@@ -163,12 +163,11 @@ def pick_tetrahedron(a, b, c, shape1, shape2, Niter):
 
 
 def GJK(shape1, shape2, max_iter):
-    """ GJK algorithm for two shapes
-    """
+    """GJK algorithm for two shapes"""
     initial_direction = shape2.centroid - shape1.centroid
 
-    if initial_direction[0] == initial_direction[1] == initial_direction[2] == 0.:
-        initial_direction = np.array([1., 0., 0.])
+    if initial_direction[0] == initial_direction[1] == initial_direction[2] == 0.0:
+        initial_direction = np.array([1.0, 0.0, 0.0])
 
     a, b = pick_line(shape2, shape1, initial_direction)
 

@@ -5,8 +5,8 @@ import numpy as np
 
 
 class GroupedElements:
-    """ Class for easier access to grouped elements
-    """
+    """Class for easier access to grouped elements"""
+
     def __init__(self, ids, offsets, groups):
         self.ids = ids
         self._offsets = offsets
@@ -31,21 +31,21 @@ class GroupedElements:
                 yield group, ids
 
     def get_group_ids(self, group_index):
-        """ Returns the triangle ids of group_index """
-        return self.ids[self._offsets[group_index]: self._offsets[group_index + 1]]
+        """Returns the triangle ids of group_index"""
+        return self.ids[self._offsets[group_index] : self._offsets[group_index + 1]]
 
 
 def group_elements(v_group_index):
-    '''transform v_group_index (storing vertex -> group information) into inverse
+    """transform v_group_index (storing vertex -> group information) into inverse
 
-                    0 1 2 3 4 5 6  7  8  # (implicit vertex index)
-     v_group_index  3 3 3 2 2 1 0 -1 -1  # group; -1 means not specified
-     ->
-               0  1  2  3  4  5  6  # index
-        idx = [6, 5, 3, 4, 0, 1, 2, ]
-                   0  1  2  3      # implicit group index
-        offsets = [0, 1, 2, 4, 7]  # offsets into above
-    '''
+                   0 1 2 3 4 5 6  7  8  # (implicit vertex index)
+    v_group_index  3 3 3 2 2 1 0 -1 -1  # group; -1 means not specified
+    ->
+              0  1  2  3  4  5  6  # index
+       idx = [6, 5, 3, 4, 0, 1, 2, ]
+                  0  1  2  3      # implicit group index
+       offsets = [0, 1, 2, 4, 7]  # offsets into above
+    """
     # group vertices with same seed, note: casting to uint to have -1 sort at the end
     values = v_group_index
 

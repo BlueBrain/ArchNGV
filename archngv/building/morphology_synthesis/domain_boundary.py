@@ -9,7 +9,7 @@ from archngv.utils.ngons import subdivide_triangles_by_total_area
 
 
 class StopAtConvexBoundary:
-    """ Collision boundary function object class for microdomains.
+    """Collision boundary function object class for microdomains.
 
     It checks if a point lies inside the microdomain boundary. If it does
     it doesn't stop (False). If the point lies outside the microdomain there
@@ -36,6 +36,7 @@ class StopAtConvexBoundary:
         surface area. This seeds are used for the calculation of closest distance
         to the domain. There are generated 100 x domain vertices
     """
+
     def __init__(self, points, triangles, triangle_normals, hazard_rate, rng):
 
         self.face_points = points[triangles[:, 0]]
@@ -44,14 +45,13 @@ class StopAtConvexBoundary:
 
         # TODO: use a grid basis transformed onto triangle faces for a better
         # distribution of points, instead of subdivisions
-        seeds, _ = \
-            subdivide_triangles_by_total_area(points, triangles, len(points) * 100)
+        seeds, _ = subdivide_triangles_by_total_area(points, triangles, len(points) * 100)
 
         self._seed_tree = cKDTree(seeds)
         self._rng = rng
 
     def survival(self, distance):
-        """Exponential survival function S(d) = exp(-l*d) """
+        """Exponential survival function S(d) = exp(-l*d)"""
         return np.exp(-distance * self.hazard_rate)
 
     def acceptance_criterion(self, distance, fraction):
@@ -69,7 +69,7 @@ class StopAtConvexBoundary:
         return not (1.0 - self.survival(distance)) * fraction < self._rng.random()
 
     def closest_point(self, point):
-        """ Closest point on the surface of the convex hull
+        """Closest point on the surface of the convex hull
 
         Args:
             point (np.ndarray): Point to find its distance to the convex hull vertices
@@ -80,7 +80,7 @@ class StopAtConvexBoundary:
         return self._seed_tree.query(point)
 
     def __call__(self, point, step_size):
-        """ If the point lies inside the convex hull then it doesn't collide.
+        """If the point lies inside the convex hull then it doesn't collide.
         If it is outside of it there is an exponential probability of surviving
         that goes down with the distance to the boundary
 

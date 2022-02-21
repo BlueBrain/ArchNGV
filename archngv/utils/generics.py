@@ -11,5 +11,4 @@ def ensure_list(v):
     """Convert iterable / wrap scalar into list (strings are considered scalar)."""
     if is_iterable(v):
         return list(v)
-    else:
-        return [v]
+    return [v]

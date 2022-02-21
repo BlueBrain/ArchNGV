@@ -5,7 +5,7 @@ import itertools
 
 
 def consecutive_pairs(iterable):
-    """ It dispatches an iterable in
+    """It dispatches an iterable in
     consecutive pairs.
 
     Example:

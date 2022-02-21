@@ -1,10 +1,10 @@
-from archngv.building.cell_placement.export import export_cell_placement_data
-
-import os
 import logging
+import os
 import tempfile
 
 import numpy as np
+
+from archngv.building.cell_placement.export import export_cell_placement_data
 
 logging.basicConfig(level=logging.DEBUG)
 

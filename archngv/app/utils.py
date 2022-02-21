@@ -1,18 +1,19 @@
 """ Miscellaneous utilities. """
 
-from pathlib import Path
-import os
 import json
+import os
+from pathlib import Path
 from typing import Union
+
 import click
-import yaml
 import numpy
+import yaml
 
 REQUIRED_PATH = click.Path(exists=True, readable=True, dir_okay=False, resolve_path=True)
 
 
 def load_yaml(filepath):
-    """ Load YAML file. """
+    """Load YAML file."""
     with open(filepath, mode="r", encoding="utf-8") as f:
         # TODO: verify config schema?
         return yaml.safe_load(f)
@@ -25,13 +26,13 @@ def write_json(filepath: Union[str, Path], data: dict):
 
 
 def ensure_dir(dirpath):
-    """ Create folder if it is not there yet. """
+    """Create folder if it is not there yet."""
     if not os.path.exists(dirpath):
         os.makedirs(dirpath)
 
 
 def choose_connectome(circuit):
-    """ Choose connectome from single-population SONATA circuit. """
+    """Choose connectome from single-population SONATA circuit."""
     assert len(circuit.connectome) == 1
     return next(iter(circuit.connectome.values()))
 
@@ -42,8 +43,10 @@ def apply_parallel_function(function, data_generator):
         The results are unordered
     """
     import joblib
+
     return joblib.Parallel(verbose=150, n_jobs=-1)(
-        joblib.delayed(function)(data) for data in data_generator)
+        joblib.delayed(function)(data) for data in data_generator
+    )
 
 
 def readonly_morphology(filepath, position):

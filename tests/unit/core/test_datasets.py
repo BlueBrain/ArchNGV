@@ -1,11 +1,10 @@
-import pytest
-import numpy.testing as npt
 import numpy as np
+import numpy.testing as npt
+import pytest
+from utils import get_data
 
 import archngv.core.datasets as tested
 from archngv.exceptions import NGVError
-
-from utils import get_data
 
 
 class TestCellData:
@@ -13,7 +12,7 @@ class TestCellData:
         self.cells = tested.CellData(get_data("nodes.h5"))
 
     def test_positions(self):
-        expected = np.array([[1., 2., 3.], [1.1, 2.1, 3.1], [1.2, 2.2, 3.2]])
+        expected = np.array([[1.0, 2.0, 3.0], [1.1, 2.1, 3.1], [1.2, 2.2, 3.2]])
         npt.assert_allclose(self.cells.positions(), expected)
 
 
@@ -36,9 +35,13 @@ class TestNeuronalConnectivity:
         self.neuronal = tested.NeuronalConnectivity(get_data("edges.h5"))
 
     def test_synapse_positions(self):
-        expected = np.array([[1110.0, 1111.0, 1112.0, 1113.0],
-                             [1120.0, 1121.0, 1122.0, 1123.0],
-                             [1130.0, 1131.0, 1132.0, 1133.0]])
+        expected = np.array(
+            [
+                [1110.0, 1111.0, 1112.0, 1113.0],
+                [1120.0, 1121.0, 1122.0, 1123.0],
+                [1130.0, 1131.0, 1132.0, 1133.0],
+            ]
+        )
         npt.assert_allclose(self.neuronal.synapse_positions(), expected.T)
 
     def test_target_neurons(self):

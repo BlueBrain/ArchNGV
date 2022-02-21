@@ -9,11 +9,11 @@ def _ssq(j, i, sums, sums_of_squares):
     """
     if j > 0:
         muji = (sums[i] - sums[j - 1]) / (i - j + 1)
-        sji = sums_of_squares[i] - sums_of_squares[j - 1] - (i - j + 1) * muji ** 2
+        sji = sums_of_squares[i] - sums_of_squares[j - 1] - (i - j + 1) * muji**2
     else:
         sji = sums_of_squares[i] - sums[i] ** 2 / (i + 1)
 
-    return 0. if sji < 0. else sji
+    return 0.0 if sji < 0.0 else sji
 
 
 def _fill_row_k(imin, imax, cluster, S, backtracking_matrix, sums, sums_of_squares, n_values):
@@ -100,7 +100,16 @@ def _fill_dp_matrix(data, S, backtracking_matrix, n_clusters, n_values):
 
     for cluster_index in range(1, n_clusters):
         imin = cluster_index if cluster_index < n_clusters - 1 else n_values - 1
-        _fill_row_k(imin, n_values - 1, cluster_index, S, backtracking_matrix, sums, sums_of_squares, n_values)
+        _fill_row_k(
+            imin,
+            n_values - 1,
+            cluster_index,
+            S,
+            backtracking_matrix,
+            sums,
+            sums_of_squares,
+            n_values,
+        )
 
 
 def kmeans_1d(data, n_clusters):

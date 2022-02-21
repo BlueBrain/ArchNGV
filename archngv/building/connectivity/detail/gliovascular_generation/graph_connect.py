@@ -3,23 +3,26 @@
 import logging
 
 import numpy as np
-
 from spatial_index import SphereIndex
-from archngv.spatial import collision
 
+from archngv.spatial import collision
 from archngv.utils.statistics import truncated_normal
 
 L = logging.getLogger(__name__)
 
 
 def _points_inside_domain(domain, bbox_potential_targets):
-    """ Find which targets are inside the convex domain """
-    points = bbox_potential_targets.loc[:, ('x', 'y', 'z')].to_numpy()
-    radii = bbox_potential_targets.loc[:, 'r'].to_numpy()
-    return collision.convex_shape_with_spheres(domain.face_points, domain.face_normals, points, radii)
+    """Find which targets are inside the convex domain"""
+    points = bbox_potential_targets.loc[:, ("x", "y", "z")].to_numpy()
+    radii = bbox_potential_targets.loc[:, "r"].to_numpy()
+    return collision.convex_shape_with_spheres(
+        domain.face_points, domain.face_normals, points, radii
+    )
 
 
-def domains_to_vasculature(cell_ids, reachout_strategy_function, potential_targets, domains, properties):
+def domains_to_vasculature(
+    cell_ids, reachout_strategy_function, potential_targets, domains, properties
+):
     """
     Args:
         cell_ids: array[int, (N,)]
@@ -41,12 +44,12 @@ def domains_to_vasculature(cell_ids, reachout_strategy_function, potential_targe
             Edges for each astrocyte connecting to multiple targets.
                 e.g. [[astro_0, target_2], [atro_0, target_3], [astro_1, target_10] ...]
     """
-    L.info('Endfeet Distribution Paremeters %s', properties['endfeet_distribution'])
+    L.info("Endfeet Distribution Paremeters %s", properties["endfeet_distribution"])
 
     domain_target_edges = []
-    index = SphereIndex(potential_targets.loc[:, ('x', 'y', 'z')].to_numpy(), radii=None)
+    index = SphereIndex(potential_targets.loc[:, ("x", "y", "z")].to_numpy(), radii=None)
 
-    n_distr = truncated_normal(*properties['endfeet_distribution'])
+    n_distr = truncated_normal(*properties["endfeet_distribution"])
     endfeet_per_domain = n_distr.rvs(size=len(cell_ids)).round().astype(np.int)
 
     for domain_index, cell_id in enumerate(cell_ids):
@@ -76,7 +79,9 @@ def domains_to_vasculature(cell_ids, reachout_strategy_function, potential_targe
         if n_endfeet >= len(domain_potential_targets):
             selected = domain_potential_targets.index
         else:
-            selected = reachout_strategy_function(domain.centroid, domain_potential_targets, n_endfeet)
+            selected = reachout_strategy_function(
+                domain.centroid, domain_potential_targets, n_endfeet
+            )
 
         domain_target_edges.extend((domain_index, target_index) for target_index in selected)
 

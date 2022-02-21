@@ -4,14 +4,14 @@
 # pylint: disable = too-many-arguments
 
 import numpy as np
+
 from archngv.utils.linear_algebra import rowwise_dot
 
 from .gjk_algorithm import GJK
 
 
 def convex_shape_with_convex_shape(shape1, shape2):
-    """ Returns true if shape1 and shap2 collide
-    """
+    """Returns true if shape1 and shap2 collide"""
     return GJK(shape1, shape2, 10)
 
 
@@ -22,7 +22,7 @@ def sphere_with_spheres(center, radius, centers, radii):
             True for i-th row if sphere (center, radius) collides with (centers[i], radii[i])
     """
     values = np.linalg.norm(center - centers, axis=1) - (radii + radius)
-    return (values < 0.) | np.isclose(values, 0.)
+    return (values < 0.0) | np.isclose(values, 0.0)
 
 
 def sphere_with_sphere(sphere1_data, sphere2_data):
@@ -38,8 +38,7 @@ def sphere_with_sphere(sphere1_data, sphere2_data):
 
 
 def sphere_with_capsule(center, radius, p_0, p_1, r_0, r_1):
-    """ Returns true if sphere (center, radius) collides with capsule (p0, r0, p1, r1)
-    """
+    """Returns true if sphere (center, radius) collides with capsule (p0, r0, p1, r1)"""
     vec = p_1 - p_0
 
     s_2 = vec[0] ** 2 + vec[1] ** 2 + vec[2] ** 2
@@ -48,7 +47,7 @@ def sphere_with_capsule(center, radius, p_0, p_1, r_0, r_1):
     tau = np.dot(center - p_0, vec) / s_2
 
     # clamp for segment extent
-    tau = np.clip(tau, 0., 1.)
+    tau = np.clip(tau, 0.0, 1.0)
 
     # closest point on capsule axis to point
     p_t = p_0 + tau * vec
@@ -76,7 +75,7 @@ def sphere_with_capsules(center, radius, p0s, p1s, r0s, r1s):
     tau = rowwise_dot(center - p0s, vectors) / s_2
 
     # clamp for segment extent
-    tau = np.clip(tau, 0., 1.)
+    tau = np.clip(tau, 0.0, 1.0)
 
     # closest point on capsule axis to point
     p_t = p0s + tau[:, np.newaxis] * vectors
@@ -93,10 +92,9 @@ def sphere_with_capsules(center, radius, p0s, p1s, r0s, r1s):
 
 
 def convex_shape_with_point(face_points, face_normals, point):
-    """ Assumes that normals point outward
-    """
+    """Assumes that normals point outward"""
     sgn_distx = rowwise_dot(point - face_points, face_normals)
-    return np.all((sgn_distx < 0.) | np.isclose(sgn_distx, 0.))
+    return np.all((sgn_distx < 0.0) | np.isclose(sgn_distx, 0.0))
 
 
 def convex_shape_with_spheres(face_points, face_normals, target_positions, target_radii=None):
@@ -122,7 +120,7 @@ def convex_shape_with_spheres(face_points, face_normals, target_positions, targe
     k_m = target_positions - face_points[:, np.newaxis]
 
     # signed distance from each point to each side of the domain (N, M)
-    signed_dist = np.einsum('ijk, ik -> ji', k_m, face_normals)
+    signed_dist = np.einsum("ijk, ik -> ji", k_m, face_normals)
 
     # if there is at least one signed distance from a point to a triangle side
     # that remains positive after subtracting the radius then that point belongs
@@ -131,6 +129,6 @@ def convex_shape_with_spheres(face_points, face_normals, target_positions, targe
         signed_dist -= target_radii[:, np.newaxis]
 
     # fix accuracy issues
-    signed_dist[np.isclose(signed_dist, 0.)] = 0.
+    signed_dist[np.isclose(signed_dist, 0.0)] = 0.0
 
-    return ~np.any(signed_dist > 0., axis=1)
+    return ~np.any(signed_dist > 0.0, axis=1)

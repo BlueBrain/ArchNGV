@@ -25,7 +25,7 @@ def _sorted_nonzero_areas(areas):
         Sorted indices of areas
         Sorted areas
     """
-    sorted_idx = np.argsort(areas, kind='stable')
+    sorted_idx = np.argsort(areas, kind="stable")
     sorted_areas = areas[sorted_idx]
 
     # don't use zero areas

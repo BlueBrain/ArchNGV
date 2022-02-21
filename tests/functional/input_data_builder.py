@@ -2,37 +2,37 @@
 the ngv functional tests.
 """
 import json
-import math
 import logging
-from pathlib import Path
-from copy import deepcopy
+import math
 from collections import OrderedDict
+from copy import deepcopy
+from pathlib import Path
 
-from tqdm import tqdm
-from cached_property import cached_property
+import numpy as np
 import open3d
 import openmesh
-import voxcell
 import sklearn
 import sklearn.neighbors
-import openmesh
-import numpy as np
+import voxcell
+from brainbuilder.app.atlases import (
+    _build_hyperrectangle_brain_regions,
+    _dump_atlases,
+    _hyperrectangle_hierarchy,
+    _normalize_hierarchy,
+)
+from cached_property import cached_property
 from numpy import testing as npt
-from scipy.spatial import cKDTree
 from priority_collections.priority_heap import MaxHeap
-
-from brainbuilder.app.atlases import _dump_atlases
-from brainbuilder.app.atlases import _build_hyperrectangle_brain_regions
-from brainbuilder.app.atlases import _hyperrectangle_hierarchy, _normalize_hierarchy
-from vasculatureapi.conversion.graph_conversion import point_to_vasculature_data
+from scipy.spatial import cKDTree
+from tqdm import tqdm
 from vasculatureapi import PointVasculature
+from vasculatureapi.conversion.graph_conversion import point_to_vasculature_data
 
+from archngv.building.exporters.edge_populations import _write_edge_population
+from archngv.core.datasets import Vasculature
+from archngv.spatial.bounding_box import BoundingBox
 from archngv.utils.binning import rebin_counts
 from archngv.utils.geometry import unique_points
-from archngv.spatial.bounding_box import BoundingBox
-from archngv.core.datasets import Vasculature
-from archngv.building.exporters.edge_populations import _write_edge_population
-
 
 L = logging.getLogger(__name__)
 
@@ -50,12 +50,12 @@ def _unique_points_edges(points, edges):
     # Finally we remove the duplicate triangles via unique across rows after we make
     # sure that all the triangle ids are sorted
     _, edge_idx = np.unique(
-        np.sort(global_edges, axis=1, kind='mergesort'),
-        axis=0, return_index=True)
+        np.sort(global_edges, axis=1, kind="mergesort"), axis=0, return_index=True
+    )
 
     # keep the initial order of the triangles
     # when selecting unique rows
-    edge_idx.sort(kind='mergesort')
+    edge_idx.sort(kind="mergesort")
     return points[unique_idx], global_edges[edge_idx]
 
 
@@ -86,18 +86,20 @@ def _sample_elimination(points, rmax, fraction):
     Returns:
         ids (np.ndarray): Array of int ids corresponding to the point subset
     """
+
     def _weights_and_neighbors(points, rmax):
 
         # returns a sparse csr_matrix
         graph = sklearn.neighbors.radius_neighbors_graph(
-            points, 2. * rmax, mode='distance', include_self=False)
+            points, 2.0 * rmax, mode="distance", include_self=False
+        )
 
         # sanity check for matrix symmetry
         assert np.allclose(graph.data, graph.T.data)
 
         # update the non zero elements of the sparse matrix with the weight
         # computation specified in the paper
-        graph.data = (1. - np.clip(0.5 * graph.data / rmax, 0., 1.)) ** 8
+        graph.data = (1.0 - np.clip(0.5 * graph.data / rmax, 0.0, 1.0)) ** 8
         graph.data[np.isclose(graph.data, 0.0)] = 0.0
         graph.eliminate_zeros()
 
@@ -114,13 +116,13 @@ def _sample_elimination(points, rmax, fraction):
     for i, weight in enumerate(weights):
         heap.push(i, weight)
 
-    for _ in range(int((1. - fraction) * len(points))):
+    for _ in range(int((1.0 - fraction) * len(points))):
 
         pid, _ = heap.pop()
 
         # neighbors and their respective weights
-        ns = inds[offs[pid]: offs[pid + 1]]
-        ws = graph.data[offs[pid]: offs[pid + 1]]
+        ns = inds[offs[pid] : offs[pid + 1]]
+        ws = graph.data[offs[pid] : offs[pid + 1]]
 
         weights[ns] -= ws
 
@@ -139,6 +141,7 @@ class Grid:
         offset (np.ndarray): float array with the min point of the bbox
         voxel_side (float): the side of the voxel
     """
+
     @classmethod
     def from_cubic_bbox(cls, bbox_side, voxel_side, offset):
         """Creates a Grid from a cubic bbox"""
@@ -218,14 +221,18 @@ class GridLayers:
     """Create layers aligned on the y direction of the input grid. The layers are normalized in [0., 1.]
     and their location depends on the y extent of the grid.
     """
+
     class Layers:
-        """ Helper class for cortical layers the location of which is normalized in [0, 1]
+        """Helper class for cortical layers the location of which is normalized in [0, 1]
         with 0 being L6 and 1 being L1.
         """
+
         def __init__(self, ymin, ymax):
-            normalized_bins = np.array([0., 0.33627366, 0.58857402, 0.67966144, 0.84923722, 0.92074483, 1.])
+            normalized_bins = np.array(
+                [0.0, 0.33627366, 0.58857402, 0.67966144, 0.84923722, 0.92074483, 1.0]
+            )
             self._bins = ymin + (ymax - ymin) * normalized_bins
-            self._labels = ['L6', 'L5', 'L4', 'L3', 'L2', 'L1']
+            self._labels = ["L6", "L5", "L4", "L3", "L2", "L1"]
 
         def __len__(self):
             """Returns number of layers"""
@@ -272,12 +279,12 @@ class GridLayers:
         return OrderedDict(zip(labels[::-1], thicknesses[::-1]))
 
 
-DENSITY_CONVERSION = {'um-3_to_mm-3': 1e9, 'mm-3_to_um-3': 1e-9}
+DENSITY_CONVERSION = {"um-3_to_mm-3": 1e9, "mm-3_to_um-3": 1e-9}
 
 
 class GridBinnedDensity:
-    """Binned density profile across the cortical depth with increasing bins.
-    """
+    """Binned density profile across the cortical depth with increasing bins."""
+
     @classmethod
     def create_from_n_astrocytes(cls, grid, n_astrocytes):
         """Create a density atlas, the density of which multiplied by its volume
@@ -330,10 +337,11 @@ class GridBinnedDensity:
         """Build a density atlas for astrocytes"""
 
         if not (
-            self._grid.n_bin_edges(axis=1) == self.density_bins.size and
-            np.allclose(self._grid.bins(axis=1), self.density_bins)):
+            self._grid.n_bin_edges(axis=1) == self.density_bins.size
+            and np.allclose(self._grid.bins(axis=1), self.density_bins)
+        ):
 
-            L.info('Density bins are not aligned. Aligning to grid bins...')
+            L.info("Density bins are not aligned. Aligning to grid bins...")
             self.align_bins()
             self.match_grid_binning()
 
@@ -343,8 +351,10 @@ class GridBinnedDensity:
             densities[:, i, :] = self.densities[i]
 
         # density units mm-3
-        densities *= DENSITY_CONVERSION['um-3_to_mm-3']
-        self._density = voxcell.VoxelData(densities, self._grid.voxel_dimensions, offset=self._grid.offset)
+        densities *= DENSITY_CONVERSION["um-3_to_mm-3"]
+        self._density = voxcell.VoxelData(
+            densities, self._grid.voxel_dimensions, offset=self._grid.offset
+        )
 
     def write(self, output_file):
         """Build density atlas and write it to file"""
@@ -356,7 +366,9 @@ class GridBinnedDensity:
         the atlas dimensions are checked wrt to delimiting grid.
         """
         density = voxcell.VoxelData.load_nrrd(filepath)
-        n_astrocytes = int(DENSITY_CONVERSION['mm-3_to_um-3'] * np.sum(density.raw * self._grid.voxel_volume))
+        n_astrocytes = int(
+            DENSITY_CONVERSION["mm-3_to_um-3"] * np.sum(density.raw * self._grid.voxel_volume)
+        )
 
         npt.assert_array_equal(density.shape, self._grid.shape)
         npt.assert_allclose(density.offset, self._grid.min_point)
@@ -368,6 +380,7 @@ class GridVasculature:
     """Synthetic space filling vascular tree embedded inside the boundaries
     of a 3D grid.
     """
+
     def __init__(self, grid):
         self._grid = grid
         self._vasculature = None
@@ -390,7 +403,7 @@ class GridVasculature:
                 roots (List[np.ndarray]): Root
                 basis (np.ndarray)
         """
-        vertices  = deepcopy(roots)
+        vertices = deepcopy(roots)
         edges = []
 
         offset = len(vertices)
@@ -422,16 +435,18 @@ class GridVasculature:
                 edges (np.ndarray): (M, 2) int array of tree edges
         """
         # unit cube corners (orthant basis)
-        basis = np.array([
-            [0., 0., 0.],
-            [1., 0., 0.],
-            [1., 1., 0.],
-            [0., 1., 0.],
-            [0., 0., 1.],
-            [1., 0., 1.],
-            [1., 1., 1.],
-            [0., 1., 1.]
-        ])
+        basis = np.array(
+            [
+                [0.0, 0.0, 0.0],
+                [1.0, 0.0, 0.0],
+                [1.0, 1.0, 0.0],
+                [0.0, 1.0, 0.0],
+                [0.0, 0.0, 1.0],
+                [1.0, 0.0, 1.0],
+                [1.0, 1.0, 1.0],
+                [0.0, 1.0, 1.0],
+            ]
+        )
 
         # center the cube at (0,0,0), scale it by 0.5 to reflect the centers
         # of each orthant. Finally, this is scaled by the extent of the bbox
@@ -439,19 +454,16 @@ class GridVasculature:
         basis = 0.5 * (basis - 0.5) * self._grid.extents
 
         # first seed is the center of the bounding box
-        vertices = [np.array([0., 0., 0.])]
+        vertices = [np.array([0.0, 0.0, 0.0])]
 
         # build the self-similar tree by recursively creating the orthant basis
         # using at each next step the vertices generated at the previous one and scaling
         # down the length of the basis by 0.5
         for i in range(depth):
-            vertices, edges = GridVasculature._level_tree(vertices, basis * 0.5 ** i)
+            vertices, edges = GridVasculature._level_tree(vertices, basis * 0.5**i)
 
         # merge duplicated points and edges
-        return _unique_points_edges(
-            self._grid.centroid + np.vstack(vertices),
-            np.vstack(edges)
-        )
+        return _unique_points_edges(self._grid.centroid + np.vstack(vertices), np.vstack(edges))
 
     def _align_and_scale_to_grid(self, points):
         """Align created space filling tree points to reach the bounding box. While
@@ -471,10 +483,12 @@ class GridVasculature:
         # center tree points to grid center and scale so that they fit the grid box
         points = self._align_and_scale_to_grid(points)
 
-        point_data = {'diameter': np.random.uniform(low=5.0, high=8.0, size=len(points))}
-        edge_data = {'type': np.ones(len(edges), dtype=np.int)}
+        point_data = {"diameter": np.random.uniform(low=5.0, high=8.0, size=len(points))}
+        edge_data = {"type": np.ones(len(edges), dtype=np.int)}
 
-        node_properties, edge_properties = point_to_vasculature_data(points, edges, point_data, edge_data)
+        node_properties, edge_properties = point_to_vasculature_data(
+            points, edges, point_data, edge_data
+        )
 
         self._vasculature = PointVasculature(node_properties, edge_properties)
 
@@ -495,13 +509,14 @@ class GridVasculatureMesh:
     on each segment and eliminated to approximate poisson disk sampling. Then a
     mesh is generated using the open3d library
     """
+
     def __init__(self, grid, samples_per_segment=1000):
 
         self._grid = grid
 
         self._n_samples = samples_per_segment
 
-        phi_angles = np.random.uniform(0.0, 2. * np.pi, size=self._n_samples)
+        phi_angles = np.random.uniform(0.0, 2.0 * np.pi, size=self._n_samples)
 
         # caching random values for perf. We don't care about bias
         self._cached_cosphi = np.cos(phi_angles)
@@ -539,13 +554,13 @@ class GridVasculatureMesh:
         points[:n_caps, 1] = r * self._cached_sinphi[:n_caps]
 
         points[:n_half, 2] = 0.0
-        points[n_half: n_caps, 2] = length
+        points[n_half:n_caps, 2] = length
 
         # cap normals pointing up or down
         normals[:n_caps, 0] = 0.0
         normals[:n_caps, 1] = 0.0
         normals[:n_half, 2] = -1.0
-        normals[n_half: n_caps, 2] = 1.0
+        normals[n_half:n_caps, 2] = 1.0
 
         sl_body = slice(n_caps, self._n_samples)
 
@@ -557,7 +572,7 @@ class GridVasculatureMesh:
 
         # uniform sampling of truncated cone height, calculated from the integral of the probability
         # density on the conical surface.
-        h = np.sqrt(self._cached_uniform[sl_body] * (h_max ** 2 - h_min ** 2) + h_min ** 2)
+        h = np.sqrt(self._cached_uniform[sl_body] * (h_max**2 - h_min**2) + h_min**2)
 
         # relationship from proportional right triangles
         r = h * r_max / h_max
@@ -568,7 +583,7 @@ class GridVasculatureMesh:
 
         # normals calculated from the cross product of the partial derivatives
         # of the parametric equation above (rcosphi, rsinphi, r * h_max / r_max)
-        normalization_constant = np.sqrt(h_max ** 2 + r_max **2)
+        normalization_constant = np.sqrt(h_max**2 + r_max**2)
 
         normals[sl_body, 0] = h_max * self._cached_cosphi[sl_body] / normalization_constant
         normals[sl_body, 1] = h_max * self._cached_sinphi[sl_body] / normalization_constant
@@ -596,24 +611,23 @@ class GridVasculatureMesh:
         R = I + K + K**2 (1 / (1 + dot([0, 0, 1], v)))
         """
 
-        a = 1. / (1. + u[2])
+        a = 1.0 / (1.0 + u[2])
 
         R = np.empty((3, 3))
-        R[0, 0] = 1. - u[0] ** 2 * a
+        R[0, 0] = 1.0 - u[0] ** 2 * a
         R[0, 1] = -u[1] * u[0] * a
         R[0, 2] = u[0]
         R[1, 0] = R[0, 1]
-        R[1, 1] = 1. - u[1] ** 2 * a
+        R[1, 1] = 1.0 - u[1] ** 2 * a
         R[1, 2] = u[1]
-        R[2, 0] = - u[0]
-        R[2, 1] = - u[1]
-        R[2, 2] = 1. - (u[0] ** 2 + u[1] ** 2) * a
+        R[2, 0] = -u[0]
+        R[2, 1] = -u[1]
+        R[2, 2] = 1.0 - (u[0] ** 2 + u[1] ** 2) * a
 
         return R
 
     def truncated_cone_sampling(self, p_min, p_max, r_min, r_max):
-        """Uniform point sampling on the surface of the truncated cone.
-        """
+        """Uniform point sampling on the surface of the truncated cone."""
         vector = p_max - p_min
         length = np.linalg.norm(vector)
         u_vector = vector / length
@@ -641,15 +655,17 @@ class GridVasculatureMesh:
         fork_radii = 1.1 * 0.5 * v_diameters[mask]
 
         t = cKDTree(points, copy_data=False)
-        ids_set = set(index for index_list in t.query_ball_point(fork_points, fork_radii, eps=1e-5)
-                            for index in index_list)
+        ids_set = set(
+            index
+            for index_list in t.query_ball_point(fork_points, fork_radii, eps=1e-5)
+            for index in index_list
+        )
         ids = np.fromiter((i for i in range(len(points)) if i not in ids_set), dtype=np.int)
         return ids
 
     def build_point_cloud(self, vasculature):
-        """Create a point cloud distributed on the surface of the vasculature, determined 
-        """
-        L.info('Creating point sampling on vascular segments')
+        """Create a point cloud distributed on the surface of the vasculature, determined"""
+        L.info("Creating point sampling on vascular segments")
 
         mesh_data = np.empty((self._n_samples * vasculature.n_edges, 6), dtype=np.float32)
 
@@ -668,21 +684,25 @@ class GridVasculatureMesh:
                 v1, v2 = v2, v1
                 r1, r2 = r2, r1
 
-            seg_points, seg_normals = self.truncated_cone_sampling(v_points[v1], v_points[v2], r1, r2)
+            seg_points, seg_normals = self.truncated_cone_sampling(
+                v_points[v1], v_points[v2], r1, r2
+            )
 
             ids = _sample_elimination(seg_points, radius, 0.1)
 
             n = ids.size
-            mesh_data[t: t + n, :3] = seg_points[ids]
-            mesh_data[t: t + n, 3:] = seg_normals[ids]
+            mesh_data[t : t + n, :3] = seg_points[ids]
+            mesh_data[t : t + n, 3:] = seg_normals[ids]
 
             t += n
 
         mesh_data = mesh_data[:t]
         points = mesh_data[:, :3]
 
-        L.info('Removing points inside fork geometry...')
-        ids = GridVasculatureMesh._point_ids_outside_forks(v_points, v_diameters, vasculature.degrees, points)
+        L.info("Removing points inside fork geometry...")
+        ids = GridVasculatureMesh._point_ids_outside_forks(
+            v_points, v_diameters, vasculature.degrees, points
+        )
         mesh_data = mesh_data[ids]
 
         pcd = open3d.geometry.PointCloud()
@@ -691,17 +711,17 @@ class GridVasculatureMesh:
         return pcd
 
     def build(self, vasculature):
-        """Build vasculature's surface mesh using poisso point cloud reconstruction
-        """
-        L.info('Building point cloud')
+        """Build vasculature's surface mesh using poisso point cloud reconstruction"""
+        L.info("Building point cloud")
         point_cloud = self.build_point_cloud(vasculature)
         # open3d.visualization.draw_geometries([point_cloud])
 
-        L.info('Creating mesh via poisson point cloud reconstruction')
+        L.info("Creating mesh via poisson point cloud reconstruction")
         mesh = open3d.geometry.TriangleMesh.create_from_point_cloud_poisson(
-            point_cloud, depth=7, scale=1.0, linear_fit=True)[0]
+            point_cloud, depth=7, scale=1.0, linear_fit=True
+        )[0]
 
-        L.info('Merging close vertices')
+        L.info("Merging close vertices")
         mesh = mesh.merge_close_vertices(0.1)
 
         self._vasculature_mesh = mesh
@@ -721,7 +741,6 @@ class GridVasculatureMesh:
         # assert mesh.is_vertex_manifold()
 
 
-
 class GridNeuronalCircuit:
     """Build a neuronal synthetic dataset (nodes, edges, config) embedded and bounded by a grid
 
@@ -731,6 +750,7 @@ class GridNeuronalCircuit:
     Notes:
         A realistic density of synapses 1 / um3 is created.
     """
+
     def __init__(self, grid, n_neurons, n_synapses):
 
         self.grid = grid
@@ -738,15 +758,17 @@ class GridNeuronalCircuit:
         self._n_neurons = n_neurons
         self._n_synapses = n_synapses
 
-        L.info('Number of neurons %d, number of synapses %d', self._n_neurons, self._n_synapses)
+        L.info("Number of neurons %d, number of synapses %d", self._n_neurons, self._n_synapses)
         assert self._n_synapses % self._n_neurons == 0
 
     def build_neurons(self):
         """Build neuronal CellCollection"""
-        cells = voxcell.CellCollection(population_name='All')
-        cells.positions = np.random.uniform(self.grid.min_point, self.grid.max_point, size=(self._n_neurons, 3))
-        cells.properties['morphology'] = [f'neuron_{i}' for i in range(self._n_neurons)]
-        cells.properties['mtype'] = 'mock_mtype'
+        cells = voxcell.CellCollection(population_name="All")
+        cells.positions = np.random.uniform(
+            self.grid.min_point, self.grid.max_point, size=(self._n_neurons, 3)
+        )
+        cells.properties["morphology"] = [f"neuron_{i}" for i in range(self._n_neurons)]
+        cells.properties["mtype"] = "mock_mtype"
         cells.properties["model_type"] = "biophysical"
 
         return cells
@@ -767,25 +789,31 @@ class GridNeuronalCircuit:
         max_point = self.grid.max_point
 
         edge_properties = {
-            'afferent_center_x': np.random.uniform(min_point[0], max_point[0], size=self._n_synapses),
-            'afferent_center_y': np.random.uniform(min_point[1], max_point[1], size=self._n_synapses),
-            'afferent_center_z': np.random.uniform(min_point[2], max_point[2], size=self._n_synapses)
+            "afferent_center_x": np.random.uniform(
+                min_point[0], max_point[0], size=self._n_synapses
+            ),
+            "afferent_center_y": np.random.uniform(
+                min_point[1], max_point[1], size=self._n_synapses
+            ),
+            "afferent_center_z": np.random.uniform(
+                min_point[2], max_point[2], size=self._n_synapses
+            ),
         }
 
-        edge_properties['efferent_center_x'] = edge_properties['afferent_center_x']
-        edge_properties['efferent_center_y'] = edge_properties['afferent_center_y']
-        edge_properties['efferent_center_z'] = edge_properties['afferent_center_z']
+        edge_properties["efferent_center_x"] = edge_properties["afferent_center_x"]
+        edge_properties["efferent_center_y"] = edge_properties["afferent_center_y"]
+        edge_properties["efferent_center_z"] = edge_properties["afferent_center_z"]
 
         _write_edge_population(
             str(output_file),
-            source_population_name='All',
-            target_population_name='All',
+            source_population_name="All",
+            target_population_name="All",
             source_population_size=self._n_neurons,
             target_population_size=self._n_neurons,
             source_node_ids=source_node_ids,
             target_node_ids=target_node_ids,
-            edge_population_name='All',
-            edge_properties=edge_properties
+            edge_population_name="All",
+            edge_properties=edge_properties,
         )
 
     @staticmethod
@@ -793,35 +821,28 @@ class GridNeuronalCircuit:
         """Write neuronal circuit sonata config"""
 
         config = {
-            'manifest': {
-                "$BASE_DIR": "."
-            },
-            'components': {'morphologies_dir': 'NA'},
-            'networks': {
-                'nodes': [
+            "manifest": {"$BASE_DIR": "."},
+            "components": {"morphologies_dir": "NA"},
+            "networks": {
+                "nodes": [
                     {
-                        'nodes_file': f"$BASE_DIR/{str(nodes_file.name)}",
-                        'node_types_file': None,
-                        'node_sets_file': 'NA',
-                        'id_offset': 1
+                        "nodes_file": f"$BASE_DIR/{str(nodes_file.name)}",
+                        "node_types_file": None,
+                        "node_sets_file": "NA",
+                        "id_offset": 1,
                     }
                 ],
-                'edges': [
-                    {
-                        'edges_file': f"$BASE_DIR/{str(edges_file.name)}",
-                        'edge_types_file': None
-                    }
-                ]
-            }
+                "edges": [
+                    {"edges_file": f"$BASE_DIR/{str(edges_file.name)}", "edge_types_file": None}
+                ],
+            },
         }
 
-        with open(config_file, 'w') as ofile:
+        with open(config_file, "w") as ofile:
             json.dump(config, ofile, indent=4)
 
-
     def write(self, nodes_output_file, edges_output_file, config_output_file):
-        """Write neuronal circuit datasets
-        """
+        """Write neuronal circuit datasets"""
         self.write_neurons(nodes_output_file)
         self.write_synaptic_connectivity(edges_output_file)
         GridNeuronalCircuit.write_config(config_output_file, nodes_output_file, edges_output_file)
@@ -831,7 +852,6 @@ class GridNeuronalCircuit:
 
 
 class GridBrainRegions:
-
     def __init__(self, grid):
         self.grid = grid
 
@@ -843,7 +863,9 @@ class GridBrainRegions:
         layers = self.build_layers()
 
         x_length, y_length, z_length = self.grid.extents
-        brain_regions, region_ids = _build_hyperrectangle_brain_regions(x_length, z_length, layers, self.grid.voxel_side)
+        brain_regions, region_ids = _build_hyperrectangle_brain_regions(
+            x_length, z_length, layers, self.grid.voxel_side
+        )
         return brain_regions, _normalize_hierarchy(_hyperrectangle_hierarchy(region_ids)), layers
 
     def write(self, output_dir):
@@ -852,34 +874,35 @@ class GridBrainRegions:
         brain_regions, hierarchy, layers = self.build()
         _dump_atlases(brain_regions, layers, output_dir)
 
-        with open(output_dir / 'hierarchy.json', "w") as f:
+        with open(output_dir / "hierarchy.json", "w") as f:
             json.dump(hierarchy, f, indent=2)
 
 
 class OutputPaths:
     """Output paths and directories"""
+
     def __init__(self, out_dir):
         self.out_dir = Path(out_dir)
-        self.atlas_dir = self.out_dir / 'atlas'
-        self.base_circuit_dir = self.out_dir / 'circuit'
+        self.atlas_dir = self.out_dir / "atlas"
+        self.base_circuit_dir = self.out_dir / "circuit"
 
-        self.base_circuit_config_path = self.base_circuit_dir / 'circuit_config.json'
-        self.base_circuit_nodes_path = self.base_circuit_dir / 'nodes.h5'
-        self.base_circuit_edges_path = self.base_circuit_dir / 'edges.h5'
-        self.density_path = self.atlas_dir / '[density]astrocytes.nrrd'
-        self.vasculature_path = self.atlas_dir / 'vasculature.h5'
-        self.vasculature_mesh_path = self.atlas_dir / 'vasculature.obj'
+        self.base_circuit_config_path = self.base_circuit_dir / "circuit_config.json"
+        self.base_circuit_nodes_path = self.base_circuit_dir / "nodes.h5"
+        self.base_circuit_edges_path = self.base_circuit_dir / "edges.h5"
+        self.density_path = self.atlas_dir / "[density]astrocytes.nrrd"
+        self.vasculature_path = self.atlas_dir / "vasculature.h5"
+        self.vasculature_mesh_path = self.atlas_dir / "vasculature.obj"
 
     def make_folder_hierarchy(self):
         """Create output folder hierarchy if it doesn't already exist"""
         self.out_dir.mkdir(exist_ok=True)
-        L.info('Output directory: %s', self.out_dir)
+        L.info("Output directory: %s", self.out_dir)
 
         self.atlas_dir.mkdir(exist_ok=True)
-        L.info('Atlas directory: %s', self.atlas_dir)
+        L.info("Atlas directory: %s", self.atlas_dir)
 
         self.base_circuit_dir.mkdir(exist_ok=True)
-        L.info('Neuronal circuit directory: %s', self.base_circuit_dir)
+        L.info("Neuronal circuit directory: %s", self.base_circuit_dir)
 
 
 def build_datasets(grid, paths, n_neurons, n_synapses, n_astrocytes):
@@ -894,41 +917,40 @@ def build_datasets(grid, paths, n_neurons, n_synapses, n_astrocytes):
         n_astrocytes (int):
     """
     # atlas density
-    L.info('Building atlas density...')
+    L.info("Building atlas density...")
     g_density = GridBinnedDensity.create_from_n_astrocytes(grid, n_astrocytes)
     g_density.build()
     g_density.write(paths.density_path)
-    L.info('Validating atlas density...')
+    L.info("Validating atlas density...")
     g_density.validate(paths.density_path)
 
     # atlas regions, hierarchy, layers
-    L.info('Building atlas regions, hierarchy and layers...')
+    L.info("Building atlas regions, hierarchy and layers...")
     g_regions = GridBrainRegions(grid)
     g_regions.write(paths.atlas_dir)
 
     # neuronal circuit
-    L.info('Building neuronal circuit...')
-    L.info('Number of neurons: %d', n_neurons)
-    L.info('Neuronal circuit sonata config output path: %s', paths.base_circuit_config_path)
-    L.info('Neuronal circuit sonata nodes output path: %s', paths.base_circuit_nodes_path)
-    L.info('Neuronal circuit sonata edges output path: %s', paths.base_circuit_edges_path)
+    L.info("Building neuronal circuit...")
+    L.info("Number of neurons: %d", n_neurons)
+    L.info("Neuronal circuit sonata config output path: %s", paths.base_circuit_config_path)
+    L.info("Neuronal circuit sonata nodes output path: %s", paths.base_circuit_nodes_path)
+    L.info("Neuronal circuit sonata edges output path: %s", paths.base_circuit_edges_path)
     g_neurons = GridNeuronalCircuit(grid, n_neurons, n_synapses)
     g_neurons.write(
-        paths.base_circuit_nodes_path,
-        paths.base_circuit_edges_path,
-        paths.base_circuit_config_path)
+        paths.base_circuit_nodes_path, paths.base_circuit_edges_path, paths.base_circuit_config_path
+    )
 
     # vasculature skeleton
-    L.info('Building vasculature skeleton...')
-    L.info('Vasculature skeleton output path: %s', paths.vasculature_path)
+    L.info("Building vasculature skeleton...")
+    L.info("Vasculature skeleton output path: %s", paths.vasculature_path)
     g_vasculature = GridVasculature(grid)
     g_vasculature.build(depth=3)
     g_vasculature.write(paths.vasculature_path)
     g_vasculature.validate(paths.vasculature_path)
 
     # vasculature surface mesh
-    L.info('Building vasculature surface mesh...')
-    L.info('Vasculature surface mesh output path: %s', paths.vasculature_mesh_path)
+    L.info("Building vasculature surface mesh...")
+    L.info("Vasculature surface mesh output path: %s", paths.vasculature_mesh_path)
     g_vasculature_mesh = GridVasculatureMesh(grid)
     g_vasculature_mesh.build(g_vasculature.vasculature)
     g_vasculature_mesh.write(str(paths.vasculature_mesh_path))
@@ -937,9 +959,9 @@ def build_datasets(grid, paths, n_neurons, n_synapses, n_astrocytes):
 
 def run(out_dir):
     """Run synthetic input dataset building"""
-    bbox_side = 70.
-    voxel_side = 7.
-    offset = np.array([0., 0., 0.])
+    bbox_side = 70.0
+    voxel_side = 7.0
+    offset = np.array([0.0, 0.0, 0.0])
 
     # output paths
     paths = OutputPaths(out_dir)
@@ -955,16 +977,13 @@ def run(out_dir):
     n_synapses -= n_synapses % n_neurons
 
     build_datasets(
-        grid,
-        paths,
-        n_neurons=n_neurons,
-        n_synapses=n_synapses,
-        n_astrocytes=n_astrocytes
+        grid, paths, n_neurons=n_neurons, n_synapses=n_synapses, n_astrocytes=n_astrocytes
     )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     import sys
+
     np.random.seed(0)
     run(Path(sys.argv[1]))

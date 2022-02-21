@@ -2,15 +2,18 @@
 Functions related to triangles
 """
 import math
+
 import numpy as np
-from archngv.utils.linear_algebra import rowwise_dot
-from archngv.utils.linear_algebra import normalize_vectors
+
+from archngv.utils.linear_algebra import normalize_vectors, rowwise_dot
 
 
 def vectorized_consecutive_triangle_vectors(points, triangles):
-    """ Sequential face vectors """
-    return (points[triangles[:, 1]] - points[triangles[:, 0]],
-            points[triangles[:, 2]] - points[triangles[:, 0]])
+    """Sequential face vectors"""
+    return (
+        points[triangles[:, 1]] - points[triangles[:, 0]],
+        points[triangles[:, 2]] - points[triangles[:, 0]],
+    )
 
 
 def vectorized_triangle_normal(vectors1, vectors2):
@@ -91,11 +94,11 @@ def vectorized_tetrahedron_volume(vectors1, vectors2, vectors3):
         1D array:
             Volumes of the tetrahedrons defined by vectors1, vectors2 and vectors3
     """
-    return (1. / 6.) * vectorized_parallelepiped_volume(vectors1, vectors2, vectors3)
+    return (1.0 / 6.0) * vectorized_parallelepiped_volume(vectors1, vectors2, vectors3)
 
 
 def subdivide_triangles_by_total_area(points, triangles, min_number_of_points):
-    """ Splits each triangle into three triangles with a new point at
+    """Splits each triangle into three triangles with a new point at
     the center of the parent triangle. The total area of all triangles
     is used in order to determine the distribution of the number of
     points depending on the area of each triangle. Big triangles will
@@ -137,7 +140,7 @@ def subdivide_triangles_by_total_area(points, triangles, min_number_of_points):
 
     areas = vectorized_triangle_area(
         points[triangles[:, 1]] - points[triangles[:, 0]],
-        points[triangles[:, 2]] - points[triangles[:, 0]]
+        points[triangles[:, 2]] - points[triangles[:, 0]],
     )
 
     # don't take into account the existing points
@@ -155,31 +158,28 @@ def subdivide_triangles_by_total_area(points, triangles, min_number_of_points):
         n_points = points_per_triangle[i]
 
         try:
-            max_level = \
-                int(np.ceil(math.log(2. * n_points + 1., 3)) - 1.)
+            max_level = int(np.ceil(math.log(2.0 * n_points + 1.0, 3)) - 1.0)
         except ValueError:
             continue
 
         new_points, new_triangles = subdivide_triangles(
-            result_points,
-            [triangle],
-            max_level=max_level,
-            max_points=n_points
+            result_points, [triangle], max_level=max_level, max_points=n_points
         )
 
         result_points.extend(new_points)
         result_triangles.extend(new_triangles)
 
         if len(result_points) >= min_number_of_points:
-            result_triangles.extend(sorted_triangles[i + 1::])
+            result_triangles.extend(sorted_triangles[i + 1 : :])
             break
 
-    return np.asarray(result_points, dtype=points.dtype), \
-           np.asarray(result_triangles, dtype=triangles.dtype)
+    return np.asarray(result_points, dtype=points.dtype), np.asarray(
+        result_triangles, dtype=triangles.dtype
+    )
 
 
 def subdivide_triangles(initial_points, initial_triangles, max_level=0, max_points=np.inf):
-    """ Add face centers of triangles to the available points for the orientations.
+    """Add face centers of triangles to the available points for the orientations.
     At each iteration all current triangles are substituted by their respective
     split triplets.
 
@@ -204,16 +204,16 @@ def subdivide_triangles(initial_points, initial_triangles, max_level=0, max_poin
 
         for i, triangle in enumerate(new_triangles):
 
-            center = (points[triangle[0]] +
-                      points[triangle[1]] +
-                      points[triangle[2]]) / 3.0
+            center = (points[triangle[0]] + points[triangle[1]] + points[triangle[2]]) / 3.0
 
             iteration_points.append(center)
-            iteration_triangles.extend([
-                (triangle[0], offset, triangle[1]),
-                (triangle[1], offset, triangle[2]),
-                (triangle[2], offset, triangle[0])
-            ])
+            iteration_triangles.extend(
+                [
+                    (triangle[0], offset, triangle[1]),
+                    (triangle[1], offset, triangle[2]),
+                    (triangle[2], offset, triangle[0]),
+                ]
+            )
 
             offset += 1
 
@@ -233,7 +233,7 @@ def subdivide_triangles(initial_points, initial_triangles, max_level=0, max_poin
 
 
 def globally_ordered_verts(face_points, face_vertices):
-    """ Given a chain of face_vertices, find how to traverse it
+    """Given a chain of face_vertices, find how to traverse it
     via face_point coordinate ordering in order to achieve the same
     ordering from any overlapping polygon
 
@@ -266,7 +266,7 @@ def globally_ordered_verts(face_points, face_vertices):
 
 
 def polygons_to_triangles(points, face_vertices_collection):
-    """ Triangles from polygons
+    """Triangles from polygons
 
     Args:
         points: array[float, (N, 3)]
@@ -334,7 +334,7 @@ def polygons_to_triangles(points, face_vertices_collection):
 
 
 def local_to_global_triangles(triangles, ps_tris_offsets, local_to_global_vertices):
-    """ Converts and array from the local index space to the global one
+    """Converts and array from the local index space to the global one
 
     Args:
         triangles: array[int, (N, 3)]
@@ -342,27 +342,28 @@ def local_to_global_triangles(triangles, ps_tris_offsets, local_to_global_vertic
         local_to_global_vertices: array[int, (M,)]
     """
     from archngv.utils.functional import consecutive_pairs
+
     global_tris = np.empty_like(triangles)
     total_tris = 0
     for (p_beg, t_beg), (p_end, t_end) in consecutive_pairs(ps_tris_offsets):
 
         # get the local triangles for the i-th astrocyte
-        local_tris = triangles[t_beg: t_end]
+        local_tris = triangles[t_beg:t_end]
         n_tris = len(local_tris)
 
         # get the local_to_global vertex map slice for the i-th asotrycte
-        l2g = local_to_global_vertices[p_beg: p_end]
+        l2g = local_to_global_vertices[p_beg:p_end]
 
         # using the local to global map to transform the local triangle vertices
         # to the global unique ones
-        global_tris[total_tris: total_tris + n_tris] = l2g[local_tris]
+        global_tris[total_tris : total_tris + n_tris] = l2g[local_tris]
         total_tris += n_tris
 
     return global_tris
 
 
 def local_to_global_mapping(points, triangles, ps_tris_offsets, triangle_labels=None, decimals=4):
-    """ Given an array of points return an array of indices that correspond
+    """Given an array of points return an array of indices that correspond
     to all the unique points in the array.
 
     1D Example:
@@ -372,6 +373,7 @@ def local_to_global_mapping(points, triangles, ps_tris_offsets, triangle_labels=
 
     """
     from archngv.utils.geometry import unique_points
+
     unique_idx, ps_to_uverts_map = unique_points(points, decimals=decimals)
     global_tris = local_to_global_triangles(triangles, ps_tris_offsets, ps_to_uverts_map)
 
@@ -379,12 +381,12 @@ def local_to_global_mapping(points, triangles, ps_tris_offsets, triangle_labels=
     # when we remapped the triangles we actually mapped to the unique index space.
     # Finally we remove the duplicate triangles via unique across rows after we make
     # sure that all the triangle ids are sorted
-    sorted_cols_tris = np.sort(global_tris, axis=1, kind='mergesort')
+    sorted_cols_tris = np.sort(global_tris, axis=1, kind="mergesort")
     _, idx = np.unique(sorted_cols_tris, axis=0, return_index=True)
 
     # keep the initial order of the triangles
     # when selecting unique rows
-    idx.sort(kind='mergesort')
+    idx.sort(kind="mergesort")
 
     global_tris = global_tris[idx]
 
@@ -394,7 +396,7 @@ def local_to_global_mapping(points, triangles, ps_tris_offsets, triangle_labels=
 
 
 def local_to_global_polygon_ids(polygon_ids):
-    """ Given an array of increasing polygon_ids stored in the local index space
+    """Given an array of increasing polygon_ids stored in the local index space
     Example:
 
         polygon_ids = [0, 0, 1, 1, 0, 1, 1, 2]
@@ -410,7 +412,7 @@ def local_to_global_polygon_ids(polygon_ids):
 
 
 def triangles_to_polygons(triangles, polygon_ids):
-    """ Converts triangles to a polygon list
+    """Converts triangles to a polygon list
 
     Args:
         triangles: array[int, (N, 3)]
@@ -432,9 +434,10 @@ def triangles_to_polygons(triangles, polygon_ids):
     from itertools import groupby
 
     def create_polygon(tri_generator):
-        """ Recontructs the polygon from the group of triangles """
+        """Recontructs the polygon from the group of triangles"""
         first_triangle = list(next(tri_generator)[1])
         return first_triangle + [tr[2] for _, tr in tri_generator]
+
     # sort function which uses the enumeration index of each triangle
     # to lookup at the polygon id and use it for the grouping.
     group_func = lambda tp: polygon_ids[tp[0]]

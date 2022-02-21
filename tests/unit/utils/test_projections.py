@@ -1,4 +1,5 @@
 import numpy
+
 from archngv.utils import linear_algebra as la
 from archngv.utils import projections as pj
 
@@ -14,7 +15,7 @@ def test_scalar_projection():
 
     result = pj.vectorized_scalar_projection(vecs, vec1)
 
-    assert numpy.allclose(expected_result, result), '\n{}\n{}'.format(expected_result, result)
+    assert numpy.allclose(expected_result, result), "\n{}\n{}".format(expected_result, result)
 
 
 def test_scalar_projections():
@@ -24,8 +25,9 @@ def test_scalar_projections():
 
     uvecs = numpy.linalg.norm(vecs2, axis=1)
 
-    expected_result = \
-        numpy.fromiter((numpy.dot(v1, v2) / u2 for v1, v2, u2 in zip(vecs1, vecs2, uvecs)), dtype=float)
+    expected_result = numpy.fromiter(
+        (numpy.dot(v1, v2) / u2 for v1, v2, u2 in zip(vecs1, vecs2, uvecs)), dtype=float
+    )
 
     result = pj.rowwise_scalar_projections(vecs1, vecs2)
 
@@ -53,7 +55,9 @@ def test_vectors_projections():
 
     uvecs = numpy.linalg.norm(vecs2, axis=1)
 
-    expected_result = numpy.vstack([numpy.dot(v1, v2) * v2 / u2 ** 2 for v1, v2, u2 in zip(vecs1, vecs2, uvecs)])
+    expected_result = numpy.vstack(
+        [numpy.dot(v1, v2) * v2 / u2**2 for v1, v2, u2 in zip(vecs1, vecs2, uvecs)]
+    )
 
     result = pj.rowwise_vector_projections(vecs1, vecs2)
 
@@ -64,7 +68,7 @@ def test_projection_vector_on_plane():
 
     vectors = numpy.random.rand(4, 3)
 
-    normal = numpy.array([1., 0., 0.])
+    normal = numpy.array([1.0, 0.0, 0.0])
 
     expected_result = numpy.vstack([v - numpy.dot(normal, v) * normal for v in vectors])
 

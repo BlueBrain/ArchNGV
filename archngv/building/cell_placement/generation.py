@@ -3,25 +3,23 @@ Generation algorithms for spatial point pattern
 """
 
 import logging
-
 from collections import namedtuple
 
 import numpy as np
 
 from archngv.building.cell_placement.pattern import SpatialSpherePattern
 
-
 L = logging.getLogger(__name__)
 
 
-PlacementParameters = namedtuple('PlacementParameters', ['beta',
-                                                         'number_of_trials',
-                                                         'cutoff_radius',
-                                                         'initial_sample_size'])
+PlacementParameters = namedtuple(
+    "PlacementParameters",
+    ["beta", "number_of_trials", "cutoff_radius", "initial_sample_size"],
+)
 
 
 class PlacementGenerator:
-    """ The workhorse of placement
+    """The workhorse of placement
 
     Args:
         parameters:
@@ -47,8 +45,16 @@ class PlacementGenerator:
             The energy method to be used.
 
     """
-    def __init__(self, parameters, total_spheres, voxel_data,
-                 energy_operator, index_list, soma_radius_distribution):
+
+    def __init__(
+        self,
+        parameters,
+        total_spheres,
+        voxel_data,
+        energy_operator,
+        index_list,
+        soma_radius_distribution,
+    ):
 
         self.vdata = voxel_data
         self.index_list = index_list
@@ -65,7 +71,7 @@ class PlacementGenerator:
         self._total_spheres = total_spheres
 
     def is_colliding(self, trial_position, trial_radius):
-        """ Check if
+        """Check if
         1. position out of bounds
         2. sphere intersects with other_indexes list
         3. sphere intersects with other spheres in the pattern
@@ -88,7 +94,7 @@ class PlacementGenerator:
         return self.pattern.is_intersecting(trial_position, trial_radius)
 
     def first_order(self, voxel_centers):
-        """ Sphere generation in the group of voxels with centers
+        """Sphere generation in the group of voxels with centers
 
         Args:
             voxel_centers: 2D array[float]
@@ -98,8 +104,7 @@ class PlacementGenerator:
             New position and radius that is found by sampling the
             available space.
         """
-        voxel_edge_length = \
-            self.vdata.voxelized_intensity.voxel_dimensions[0]
+        voxel_edge_length = self.vdata.voxelized_intensity.voxel_dimensions[0]
 
         while 1:
 
@@ -110,7 +115,7 @@ class PlacementGenerator:
                 return new_position, new_radius
 
     def second_order(self, voxel_centers):
-        """ Sphere generation in the group with respect to interaction
+        """Sphere generation in the group with respect to interaction
         potentials. Valid is uniformly picked in the same
         intesity group using the first order approach and an extra
         metropolis hastings optimization step is performed in order
@@ -123,14 +128,12 @@ class PlacementGenerator:
 
         current_position, current_radius = self.first_order(voxel_centers)
 
-        pairwise_distance = \
-            self.pattern.distance_to_nearest_neighbor(current_position)
+        pairwise_distance = self.pattern.distance_to_nearest_neighbor(current_position)
 
         if pairwise_distance > self.parameters.cutoff_radius:
             return current_position, current_radius
 
-        current_energy = \
-            self.energy_operator.second_order_potentials(pairwise_distance)
+        current_energy = self.energy_operator.second_order_potentials(pairwise_distance)
 
         best_position = current_position
         best_radius = current_radius
@@ -142,14 +145,12 @@ class PlacementGenerator:
 
             trial_position, trial_radius = self.first_order(voxel_centers)
 
-            pairwise_distance = \
-                self.pattern.distance_to_nearest_neighbor(trial_position)
+            pairwise_distance = self.pattern.distance_to_nearest_neighbor(trial_position)
 
             if pairwise_distance > self.parameters.cutoff_radius:
                 return trial_position, trial_radius
 
-            trial_energy = \
-                self.energy_operator.second_order_potentials(pairwise_distance)
+            trial_energy = self.energy_operator.second_order_potentials(pairwise_distance)
 
             logprob = self.parameters.beta * (current_energy - trial_energy)
 
@@ -168,8 +169,7 @@ class PlacementGenerator:
         return best_position, best_radius
 
     def run(self):
-        """ Create the population of spheres
-        """
+        """Create the population of spheres"""
         groups_generator = nonzero_intensity_groups(self.vdata.voxelized_intensity)
 
         for group_total_counts, voxel_centers in groups_generator:
@@ -183,10 +183,10 @@ class PlacementGenerator:
 
                 # some logging for iteration info
                 if len(self.pattern) % 1000 == 0:
-                    L.info('Current Number: %d', len(self.pattern))
+                    L.info("Current Number: %d", len(self.pattern))
 
-        L.debug('Total spheres: %s', self._total_spheres)
-        L.debug('Created spheres: %s', len(self.pattern))
+        L.debug("Total spheres: %s", self._total_spheres)
+        L.debug("Created spheres: %s", len(self.pattern))
 
 
 def proposal(voxel_centers, voxel_edge_length):
@@ -206,8 +206,11 @@ def proposal(voxel_centers, voxel_edge_length):
     random_index = np.random.randint(0, len(voxel_centers))
     voxel_center = voxel_centers[random_index]
 
-    new_position = np.random.uniform(low=voxel_center - 0.5 * voxel_edge_length,
-                                     high=voxel_center + 0.5 * voxel_edge_length, size=3)
+    new_position = np.random.uniform(
+        low=voxel_center - 0.5 * voxel_edge_length,
+        high=voxel_center + 0.5 * voxel_edge_length,
+        size=3,
+    )
 
     return new_position
 
@@ -225,7 +228,7 @@ def voxel_grid_centers(voxel_grid):
 
 
 def voxels_group_centers(labels, intensity):
-    """ Given the group labels of same intensity
+    """Given the group labels of same intensity
     e.g. [0, 1, 1, 2, 0, 3, 3, 4, 4, 5 , 3, 0]
     return the grouped centers:
     [[c1, c2, c3 .. cn], [cn+1, ... cm], ...]
@@ -246,33 +249,33 @@ def voxels_group_centers(labels, intensity):
     voxel_centers = voxel_grid_centers(intensity)
 
     # return all the grouped voxel centers
-    pairs = zip(group_starts[0: -1], group_starts[1::])
+    pairs = zip(group_starts[0:-1], group_starts[1::])
 
-    groups = [voxel_centers[sorted_labels[i: j]] for i, j in pairs]
-    groups += [voxel_centers[sorted_labels[group_starts[-1]::]]]
+    groups = [voxel_centers[sorted_labels[i:j]] for i, j in pairs]
+    groups += [voxel_centers[sorted_labels[group_starts[-1] : :]]]
 
     return groups
 
 
 def counts_per_group(intensity_per_group, voxels_per_group, voxel_volume):
-    """ Returns the counts per group
-    """
+    """Returns the counts per group"""
     counts = 1e-9 * intensity_per_group * voxels_per_group * voxel_volume
-    L.debug('Counts per group: %s, Total %s', counts, counts.sum())
+    L.debug("Counts per group: %s, Total %s", counts, counts.sum())
     return counts.astype(np.int64)
 
 
 def nonzero_intensity_groups(voxelized_intensity):
-    """ Generator that produces non zero intensity groups
-    """
+    """Generator that produces non zero intensity groups"""
     # group together voxels with identical values
-    intensity_per_group, group_indices, voxels_per_group = \
-        np.unique(voxelized_intensity.raw, return_inverse=True, return_counts=True)
+    intensity_per_group, group_indices, voxels_per_group = np.unique(
+        voxelized_intensity.raw, return_inverse=True, return_counts=True
+    )
 
     vox_centers_per_group = voxels_group_centers(group_indices, voxelized_intensity)
 
-    cnts_per_group = \
-        counts_per_group(intensity_per_group, voxels_per_group, voxelized_intensity.voxel_volume)
+    cnts_per_group = counts_per_group(
+        intensity_per_group, voxels_per_group, voxelized_intensity.voxel_volume
+    )
 
     for i, group_intensity in enumerate(intensity_per_group):
         if not np.isclose(group_intensity, 0.0):

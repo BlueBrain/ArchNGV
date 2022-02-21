@@ -1,16 +1,15 @@
-import pytest
-from archngv.spatial import BoundingBox
-
 import numpy as np
+import pytest
 
 from archngv.building.checks import assert_bbox_alignment
 from archngv.exceptions import NotAlignedError
+from archngv.spatial import BoundingBox
 
 
 def test_assert_bbox_alignment__aligned():
 
-    min_point = np.array([1., 2., 3.])
-    max_point = np.array([8., 9., 10.])
+    min_point = np.array([1.0, 2.0, 3.0])
+    max_point = np.array([8.0, 9.0, 10.0])
 
     bbox1 = BoundingBox(min_point, max_point)
     bbox2 = BoundingBox(min_point, max_point)
@@ -25,14 +24,11 @@ def test_check_alignment__tolerance():
 
     tolerance = 10.0
 
-    bbox1 = BoundingBox(np.array([0., 0., 2.]),
-                        np.array([8., 9., 10.]))
+    bbox1 = BoundingBox(np.array([0.0, 0.0, 2.0]), np.array([8.0, 9.0, 10.0]))
 
-    bbox2 = BoundingBox(np.array([1., 2., 3.]),
-                        np.array([17., 9., 10.]))
+    bbox2 = BoundingBox(np.array([1.0, 2.0, 3.0]), np.array([17.0, 9.0, 10.0]))
 
-    bbox3 = BoundingBox(np.array([0., 8., 2.]),
-                        np.array([8., 9., 10.]))
+    bbox3 = BoundingBox(np.array([0.0, 8.0, 2.0]), np.array([8.0, 9.0, 10.0]))
 
     assert_bbox_alignment(bbox1, bbox3, tolerance)
     assert_bbox_alignment(bbox1, bbox2, tolerance)
@@ -50,8 +46,8 @@ def test_check_alignment__tolerance():
 
 def test_check_alignment__not_aligned():
 
-    min_point = np.array([1., 2., 3.])
-    max_point = np.array([8., 9., 10.])
+    min_point = np.array([1.0, 2.0, 3.0])
+    max_point = np.array([8.0, 9.0, 10.0])
 
     bbox1 = BoundingBox(min_point, max_point)
     bbox2 = BoundingBox(min_point, max_point - 13.0)
@@ -60,8 +56,7 @@ def test_check_alignment__not_aligned():
     assert_bbox_alignment(bbox1, bbox3)
 
     with pytest.raises(NotAlignedError):
-        assert_bbox_alignment(bbox1, bbox2, 10.)
+        assert_bbox_alignment(bbox1, bbox2, 10.0)
 
     with pytest.raises(NotAlignedError):
-        assert_bbox_alignment(bbox2, bbox3, 10.)
-
+        assert_bbox_alignment(bbox2, bbox3, 10.0)

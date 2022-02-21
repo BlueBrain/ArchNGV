@@ -1,13 +1,13 @@
 """Binning utils"""
 import math
+
 import numpy as np
 
 
 def rebin_counts(ref_counts, ref_bin_edges, bin_edges):
-    """Redistributes the ref_counts from the ref_bin_edges to bin_edges
-    """
+    """Redistributes the ref_counts from the ref_bin_edges to bin_edges"""
     if len(ref_bin_edges) < 2 or len(bin_edges) < 2:
-        raise ValueError('At least two bins required.')
+        raise ValueError("At least two bins required.")
 
     le = lambda v1, v2: v1 < v2 or np.isclose(v1, v2, rtol=1e-6)
     ge = lambda v1, v2: v1 > v2 or np.isclose(v1, v2, rtol=1e-6)
@@ -61,7 +61,7 @@ def rebin_counts(ref_counts, ref_bin_edges, bin_edges):
             total += counts * (j_right - i_left) / (j_right - j_left)
             j += 1
         else:
-            raise ValueError(f'{i_left},  {i_right}, {j_left}, {j_right}')
+            raise ValueError(f"{i_left},  {i_right}, {j_left}, {j_right}")
 
         if i == n_bins - 1:
             new_counts[i] = total

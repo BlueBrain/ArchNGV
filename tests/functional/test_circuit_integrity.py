@@ -3,15 +3,13 @@
 import numpy as np
 import numpy.testing as npt
 import pandas.testing as pdt
-
 import voxcell
-
-from archngv import NGVCircuit
-from morphio import Morphology
-import archngv.core.circuit as api
-from archngv.core.datasets import MicrodomainTesselation, EndfootSurfaceMeshes
-
 from bluepysnap.utils import IDS_DTYPE
+from morphio import Morphology
+
+import archngv.core.circuit as api
+from archngv import NGVCircuit
+from archngv.core.datasets import EndfootSurfaceMeshes, MicrodomainTesselation
 
 
 def test_circuit():
@@ -48,17 +46,20 @@ def test_neuroglial_connectome__property_dtypes():
     ng_conn = circuit.neuroglial_connectome
 
     prop_dtypes = {
-        '@source_node': IDS_DTYPE,
-        '@target_node': IDS_DTYPE,
-        'synapse_id': np.uint64,
-        'astrocyte_section_id': np.uint32,
-        'astrocyte_segment_id': np.uint32,
-        'astrocyte_segment_offset': np.float32,
-        'astrocyte_section_pos': np.float32
+        "@source_node": IDS_DTYPE,
+        "@target_node": IDS_DTYPE,
+        "synapse_id": np.uint64,
+        "astrocyte_section_id": np.uint32,
+        "astrocyte_segment_id": np.uint32,
+        "astrocyte_segment_offset": np.float32,
+        "astrocyte_section_pos": np.float32,
     }
 
     expected_properties = set(prop_dtypes.keys())
-    assert ng_conn.property_names == expected_properties, (ng_conn.property_names, expected_properties)
+    assert ng_conn.property_names == expected_properties, (
+        ng_conn.property_names,
+        expected_properties,
+    )
 
     for property_name, expected_dtype in prop_dtypes.items():
 
@@ -67,17 +68,34 @@ def test_neuroglial_connectome__property_dtypes():
 
 
 def test_neuroglial_connectome__annotation_equivalency():
-    """Check that the section_id, segment_id, segment_offset annotation is equivalent to section_id, section_pos
-    """
+    """Check that the section_id, segment_id, segment_offset annotation is equivalent to section_id, section_pos"""
     circuit = NGVCircuit("build/ngv_config.json")
     ng_conn = circuit.neuroglial_connectome
 
-    data = ng_conn.get(edge_ids=None, properties=['@source_node', 'astrocyte_section_id', 'astrocyte_segment_id', 'astrocyte_segment_offset', 'astrocyte_section_pos'])
+    data = ng_conn.get(
+        edge_ids=None,
+        properties=[
+            "@source_node",
+            "astrocyte_section_id",
+            "astrocyte_segment_id",
+            "astrocyte_segment_offset",
+            "astrocyte_section_pos",
+        ],
+    )
 
-    astro_ids = np.unique(data.loc[:, '@source_node'].to_numpy())
-    astro_morphs = {int(i): Morphology(circuit.astrocytes.morph.get_filepath(int(i))) for i in astro_ids}
+    astro_ids = np.unique(data.loc[:, "@source_node"].to_numpy())
+    astro_morphs = {
+        int(i): Morphology(circuit.astrocytes.morph.get_filepath(int(i))) for i in astro_ids
+    }
 
-    for _, astrocyte_id, section_id, segment_id, segment_offset, expected_section_pos in data.itertuples():
+    for (
+        _,
+        astrocyte_id,
+        section_id,
+        segment_id,
+        segment_offset,
+        expected_section_pos,
+    ) in data.itertuples():
 
         points = astro_morphs[astrocyte_id].sections[section_id].points
         segment_lengths = np.linalg.norm(points[1:] - points[:-1], axis=1)
@@ -104,28 +122,32 @@ def test_gliovascular_connectome__property_dtypes():
     assert isinstance(gv_conn.surface_meshes, EndfootSurfaceMeshes)
 
     prop_dtypes = {
-        '@source_node' : IDS_DTYPE,
-        '@target_node': IDS_DTYPE,
-        'endfoot_id': np.uint64,
-        'endfoot_surface_x': np.float32,
-        'endfoot_surface_y': np.float32,
-        'endfoot_surface_z': np.float32,
-        'endfoot_compartment_length': np.float32,
-        'endfoot_compartment_diameter': np.float32,
-        'endfoot_compartment_perimeter': np.float32,
-        'astrocyte_section_id': np.uint32,
-        'vasculature_section_id': np.uint32,
-        'vasculature_segment_id': np.uint32
+        "@source_node": IDS_DTYPE,
+        "@target_node": IDS_DTYPE,
+        "endfoot_id": np.uint64,
+        "endfoot_surface_x": np.float32,
+        "endfoot_surface_y": np.float32,
+        "endfoot_surface_z": np.float32,
+        "endfoot_compartment_length": np.float32,
+        "endfoot_compartment_diameter": np.float32,
+        "endfoot_compartment_perimeter": np.float32,
+        "astrocyte_section_id": np.uint32,
+        "vasculature_section_id": np.uint32,
+        "vasculature_segment_id": np.uint32,
     }
 
     expected_properties = set(prop_dtypes.keys())
-    assert gv_conn.property_names == expected_properties, (gv_conn.property_names, expected_properties)
+    assert gv_conn.property_names == expected_properties, (
+        gv_conn.property_names,
+        expected_properties,
+    )
 
     circuit_dtypes = gv_conn.property_dtypes
 
     for property_name, expected_dtype in prop_dtypes.items():
-        npt.assert_equal(circuit_dtypes[property_name], expected_dtype, err_msg=f'Property: {property_name}')
-
+        npt.assert_equal(
+            circuit_dtypes[property_name], expected_dtype, err_msg=f"Property: {property_name}"
+        )
 
 
 def test_vasculature_representations_consistency():
@@ -142,8 +164,8 @@ def test_vasculature_representations_consistency():
 
     c_vasc = circuit.vasculature
 
-    morphio_vasculature = mVasculature(c_vasc.config['vasculature_file'])
-    sonata_vasculature = sVasculature.load_sonata('build/sonata/nodes/vasculature.h5')
+    morphio_vasculature = mVasculature(c_vasc.config["vasculature_file"])
+    sonata_vasculature = sVasculature.load_sonata("build/sonata/nodes/vasculature.h5")
 
     morphio_sections = morphio_vasculature.sections
 
@@ -158,7 +180,7 @@ def test_vasculature_representations_consistency():
         for edge_id, sec_id, seg_id in data:
 
             sonata_segment = sonata_points[sonata_edges[edge_id]]
-            morphio_segment = morphio_sections[sec_id].points[seg_id: seg_id + 2]
+            morphio_segment = morphio_sections[sec_id].points[seg_id : seg_id + 2]
 
             npt.assert_allclose(sonata_segment, morphio_segment)
 

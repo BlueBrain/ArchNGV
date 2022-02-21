@@ -3,7 +3,7 @@
 
 
 def hdf5_exporter(filepath, astrocyte_ids, somata_positions, somata_radii):
-    """ Exporter using the hdf5 library.
+    """Exporter using the hdf5 library.
 
     Args:
         filepath: string
@@ -14,14 +14,14 @@ def hdf5_exporter(filepath, astrocyte_ids, somata_positions, somata_radii):
     """
     import h5py
 
-    with h5py.File(filepath, 'w') as fd:
-        fd.create_dataset('cell_ids', data=astrocyte_ids)
-        fd.create_dataset('positions', data=somata_positions)
-        fd.create_dataset('radii', data=somata_radii)
+    with h5py.File(filepath, "w") as fd:
+        fd.create_dataset("cell_ids", data=astrocyte_ids)
+        fd.create_dataset("positions", data=somata_positions)
+        fd.create_dataset("radii", data=somata_radii)
 
 
 def basalt_exporter(filepath, astrocyte_ids, somata_positions, somata_radii):
-    """ Exporter using the basalt framework.
+    """Exporter using the basalt framework.
 
     Args:
         filepath:
@@ -40,9 +40,9 @@ def basalt_exporter(filepath, astrocyte_ids, somata_positions, somata_radii):
         astrocyte = astrocytes[astrocyte_id]
         payload = astrocyte.data
 
-        payload.soma_center = Point(somata_positions[i, 0],
-                                    somata_positions[i, 1],
-                                    somata_positions[i, 2])
+        payload.soma_center = Point(
+            somata_positions[i, 0], somata_positions[i, 1], somata_positions[i, 2]
+        )
         payload.soma_radius = somata_radii[i]
 
         ngv_graph.vertices.add((astrocyte.type.value, astrocyte.id), payload.serialize())
@@ -50,8 +50,9 @@ def basalt_exporter(filepath, astrocyte_ids, somata_positions, somata_radii):
     ngv_graph.commit()
 
 
-def export_cell_placement_data(filepath, astrocyte_ids,
-                               somata_positions, somata_radii, method='hdf5'):
+def export_cell_placement_data(
+    filepath, astrocyte_ids, somata_positions, somata_radii, method="hdf5"
+):
     """
     Args:
         filepath: string
@@ -63,14 +64,11 @@ def export_cell_placement_data(filepath, astrocyte_ids,
         method: string
             Export method. 'hdf5' or 'basalt'
     """
-    writers = {
-                'hdf5': hdf5_exporter,
-                'basalt': basalt_exporter
-    }
+    writers = {"hdf5": hdf5_exporter, "basalt": basalt_exporter}
     try:
         writer_func = writers[method]
     except KeyError as e:
-        msg = f'Export method {method} is not valid. Choose from {writers.keys()}'
+        msg = f"Export method {method} is not valid. Choose from {writers.keys()}"
         raise KeyError(msg) from e
     else:
         writer_func(filepath, astrocyte_ids, somata_positions, somata_radii)

@@ -3,13 +3,11 @@ Functions related to projections
 """
 import numpy as np
 
-from archngv.utils.linear_algebra import rowwise_dot
-from archngv.utils.linear_algebra import normalize_vectors
+from archngv.utils.linear_algebra import normalize_vectors, rowwise_dot
 
 
 def vectorized_scalar_projection(vectors, vector):
-    """ Projects and array of vectors onto another vector
-    """
+    """Projects and array of vectors onto another vector"""
     return np.inner(vectors, vector) / np.linalg.norm(vector)
 
 

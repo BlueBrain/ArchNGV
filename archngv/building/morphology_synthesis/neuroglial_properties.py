@@ -6,16 +6,15 @@ from typing import TYPE_CHECKING, Any, Dict, Iterator, Optional, Tuple
 
 import numpy as np
 
-from archngv.building.morphology_synthesis.annotation import annotate_synapse_location
-from archngv.core.datasets import NeuronalConnectivity
-from archngv.core.datasets import NeuroglialConnectivity
 from archngv.app.utils import readonly_morphology
-
+from archngv.building.morphology_synthesis.annotation import annotate_synapse_location
+from archngv.core.datasets import NeuroglialConnectivity, NeuronalConnectivity
 
 if TYPE_CHECKING:
 
-    from archngv.core.datastructures import CellData
     from pandas import DataFrame
+
+    from archngv.core.datastructures import CellData
 
 
 def astrocyte_morphology_properties(
@@ -51,9 +50,7 @@ def astrocyte_morphology_properties(
 
     it_results = filter(
         lambda result: result is not None,
-        map_function(
-            NeuroglialWorker(seed), _dispatch_neuroglial_data(astrocytes, paths)
-        ),
+        map_function(NeuroglialWorker(seed), _dispatch_neuroglial_data(astrocytes, paths)),
     )
 
     for ids, df_locations in it_results:
@@ -139,9 +136,7 @@ def _properties_from_astrocyte(data: dict) -> Optional[Tuple[np.ndarray, "DataFr
     synaptic_data = NeuronalConnectivity(data["synaptic_data"])
     synapse_positions = synaptic_data.synapse_positions(synapse_ids)
 
-    morphology = readonly_morphology(
-        data["morphology_path"], data["morphology_position"]
-    )
+    morphology = readonly_morphology(data["morphology_path"], data["morphology_position"])
     locations_dataframe = annotate_synapse_location(morphology, synapse_positions)
 
     return connection_ids, locations_dataframe

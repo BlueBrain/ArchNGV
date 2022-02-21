@@ -1,13 +1,11 @@
 import libsonata
-
+import numpy.testing as npt
 import pytest
 from mock import patch
-import numpy.testing as npt
+from utils import get_data
 
 import archngv.core.sonata_readers as tested
 from archngv.exceptions import NGVError
-
-from utils import get_data
 
 
 @patch("libsonata.NodeStorage.population_names", return_value=["A", "B"])
@@ -24,8 +22,16 @@ class TestNodesReader:
         assert self.nodes.name == "default"
 
     def test_property_names(self):
-        assert self.nodes.property_names == {'z', 'mtype', 'y', 'model_type', 'x', 'morphology',
-                                             'layer', 'model_template'}
+        assert self.nodes.property_names == {
+            "z",
+            "mtype",
+            "y",
+            "model_type",
+            "x",
+            "morphology",
+            "layer",
+            "model_template",
+        }
 
     def test_get_properties(self):
 
@@ -35,10 +41,14 @@ class TestNodesReader:
         npt.assert_equal(self.nodes.get_properties("layer", ids=[0]), [[1]])
         npt.assert_equal(self.nodes.get_properties("layer", ids=libsonata.Selection([0])), [[1]])
 
-        npt.assert_equal(self.nodes.get_properties(["model_template", "morphology"]),
-                         [['hoc:small_bio', 'morph-A'],
-                          ['hoc:small_bio', 'morph-B'],
-                          ['hoc:small_bio', 'morph-C']])
+        npt.assert_equal(
+            self.nodes.get_properties(["model_template", "morphology"]),
+            [
+                ["hoc:small_bio", "morph-A"],
+                ["hoc:small_bio", "morph-B"],
+                ["hoc:small_bio", "morph-C"],
+            ],
+        )
 
         with pytest.raises(NGVError):
             self.nodes.get_properties(["unknown"])
@@ -65,23 +75,31 @@ class TestEdgesReader:
         assert self.edges.name == "default"
 
     def test_property_names(self):
-        assert self.edges.property_names == {'afferent_center_x',
-                                             'afferent_center_y',
-                                             'afferent_center_z',
-                                             'efferent_section_pos',
-                                             'syn_weight'}
+        assert self.edges.property_names == {
+            "afferent_center_x",
+            "afferent_center_y",
+            "afferent_center_z",
+            "efferent_section_pos",
+            "syn_weight",
+        }
 
     def test_get_properties(self):
-        npt.assert_equal(self.edges.get_properties("syn_weight"), [[1.], [1.], [1.], [1.]])
-        npt.assert_equal(self.edges.get_properties(["syn_weight"]), [[1.], [1.], [1.], [1.]])
-        npt.assert_equal(self.edges.get_properties("syn_weight", ids=0), [[1.]])
-        npt.assert_equal(self.edges.get_properties("syn_weight", ids=[0]), [[1.]])
-        npt.assert_equal(self.edges.get_properties("syn_weight", ids=libsonata.Selection([0])), [[1.]])
+        npt.assert_equal(self.edges.get_properties("syn_weight"), [[1.0], [1.0], [1.0], [1.0]])
+        npt.assert_equal(self.edges.get_properties(["syn_weight"]), [[1.0], [1.0], [1.0], [1.0]])
+        npt.assert_equal(self.edges.get_properties("syn_weight", ids=0), [[1.0]])
+        npt.assert_equal(self.edges.get_properties("syn_weight", ids=[0]), [[1.0]])
+        npt.assert_equal(
+            self.edges.get_properties("syn_weight", ids=libsonata.Selection([0])), [[1.0]]
+        )
 
-        npt.assert_equal(self.edges.get_properties(["syn_weight", "efferent_section_pos"]),
-                         [[1., 0.], [1., 0.], [1., 0.], [1., 0.]])
-        npt.assert_equal(self.edges.get_properties(["efferent_section_pos", "syn_weight"]),
-                         [[0., 1.], [0., 1.], [0., 1.], [0., 1.]])
+        npt.assert_equal(
+            self.edges.get_properties(["syn_weight", "efferent_section_pos"]),
+            [[1.0, 0.0], [1.0, 0.0], [1.0, 0.0], [1.0, 0.0]],
+        )
+        npt.assert_equal(
+            self.edges.get_properties(["efferent_section_pos", "syn_weight"]),
+            [[0.0, 1.0], [0.0, 1.0], [0.0, 1.0], [0.0, 1.0]],
+        )
 
         with pytest.raises(NGVError):
             self.edges.get_properties(["unknown"])

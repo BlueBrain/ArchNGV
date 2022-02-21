@@ -2,10 +2,10 @@
 Endfoot equivalent compartment for NEURON
 """
 import logging
+
 import numpy as np
 
 from archngv.utils.projections import vectorized_scalar_projection
-
 
 L = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ def _extent_across_vasculature_segment_medial_axis(points, ref_point, segment):
 
 
 def _endfoot_compartment_features(endfoot_length, endfoot_mesh_area, endfoot_mesh_thickness):
-    """ Given the mesh information of the endfoot, it generates the length,
+    """Given the mesh information of the endfoot, it generates the length,
     diameter and perimeter of an equivalent cylinder that will encode this info.
 
     From the length and the diameter the volume of the endfoot can be calculated.
@@ -58,7 +58,7 @@ def _endfoot_compartment_features(endfoot_length, endfoot_mesh_area, endfoot_mes
 
 
 def create_endfeet_compartment_data(vasculature_segments, targets, area_meshes):
-    """ Creates the data that is required to construct endfeet compartments in NEURON, using
+    """Creates the data that is required to construct endfeet compartments in NEURON, using
     the area mesh and target of the endfoot. The compartment length is calculed by the extent
     of the endfoot across the medial axis of its respective segment. The diameters and perimeters
     correspond to the volumes and area of the endfeet respectively.
@@ -95,16 +95,17 @@ def create_endfeet_compartment_data(vasculature_segments, targets, area_meshes):
     for i, (segment, target, mesh) in enumerate(zip(vasculature_segments, targets, area_meshes)):
 
         if len(mesh.triangles) == 0:
-            L.info('Endfoot %d has no triangles. Mesh has not been grown.', mesh.index)
+            L.info("Endfoot %d has no triangles. Mesh has not been grown.", mesh.index)
             continue
 
         lengths[i] = _extent_across_vasculature_segment_medial_axis(mesh.points, target, segment)
 
         if np.isclose(lengths[i], 0.0):
-            L.info('Endfoot %d length is zero.', mesh.index)
+            L.info("Endfoot %d length is zero.", mesh.index)
             continue
 
         diameters[i], perimeters[i] = _endfoot_compartment_features(
-            lengths[i], mesh.area, mesh.thickness)
+            lengths[i], mesh.area, mesh.thickness
+        )
 
     return lengths, diameters, perimeters

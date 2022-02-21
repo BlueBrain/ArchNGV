@@ -26,7 +26,7 @@ def vectorized_dot_product(vectors, vector):
     Returns:
         Dot products of vector with each row of vectors
     """
-    return np.einsum('i,ji->j', vector, vectors)
+    return np.einsum("i,ji->j", vector, vectors)
 
 
 def rowwise_dot(vectors1, vectors2):
@@ -53,7 +53,7 @@ def skew_symmetric_matrix(vec):
         2D array:
             A 3x3 skew-symmetric matrix from vector v
     """
-    return np.array(((0., - vec[2], vec[1]), (vec[2], 0., -vec[0]), (- vec[1], vec[0], 0.)))
+    return np.array(((0.0, -vec[2], vec[1]), (vec[2], 0.0, -vec[0]), (-vec[1], vec[0], 0.0)))
 
 
 def angle_between_vectors(vector_1, vector_2):
@@ -107,18 +107,15 @@ def are_in_the_same_side(vectors1, vectors2):
             at the same halfspace as the corresponding vector
             in vectors2.
     """
-    return rowwise_dot(vectors1, vectors2) > 0.
+    return rowwise_dot(vectors1, vectors2) > 0.0
 
 
 def angle_matrix(vectors1, vectors2):
-    """ Calculate all the pairwise angles between vectors1 and vectors2
+    """Calculate all the pairwise angles between vectors1 and vectors2
     Args:
         vectors1: float[array, (N, 3)]
         vectors2: float[array, (M, 3)]
     Returns: array[float, (N, M)]
     """
-    dot_matrix = np.inner(
-        normalize_vectors(vectors1),
-        normalize_vectors(vectors2)
-    )
+    dot_matrix = np.inner(normalize_vectors(vectors1), normalize_vectors(vectors2))
     return np.arccos(np.clip(dot_matrix, -1.0, 1.0))

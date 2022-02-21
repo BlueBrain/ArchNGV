@@ -1,6 +1,7 @@
 """ Functions related to geometry
 """
 import numpy as np
+
 from archngv.utils.linear_algebra import skew_symmetric_matrix
 
 
@@ -17,7 +18,7 @@ def apply_rotation_to_points(points, rotation_matrix):
             Rotated points using the rotation_matrix. The
             points are not centered to the origin.
     """
-    return np.einsum('ij,kj->ik', points, rotation_matrix)
+    return np.einsum("ij,kj->ik", points, rotation_matrix)
 
 
 def uniform_spherical_angles(number_of_angles=1):
@@ -29,8 +30,8 @@ def uniform_spherical_angles(number_of_angles=1):
         1D array, 1D array:
             Arrays of size number_of_angles storing the angles phi and theta.
     """
-    phi = np.random.uniform(0., 2. * np.pi, number_of_angles)
-    theta = np.arccos(np.random.uniform(-1., 1., number_of_angles))
+    phi = np.random.uniform(0.0, 2.0 * np.pi, number_of_angles)
+    theta = np.arccos(np.random.uniform(-1.0, 1.0, number_of_angles))
     return phi, theta
 
 
@@ -82,9 +83,7 @@ def rand_rotation_matrix(deflection=1.0, randnums=None):
     sine_value = np.sin(theta)
     cosine_value = np.cos(theta)
 
-    r_m = np.array(((cosine_value, sine_value, 0),
-                    (-sine_value, cosine_value, 0),
-                    (0, 0, 1)))
+    r_m = np.array(((cosine_value, sine_value, 0), (-sine_value, cosine_value, 0), (0, 0, 1)))
 
     # Construct the rotation matrix  ( V Transpose(V) - I ) R.
     return np.dot(np.outer(v_vec, v_vec) - np.eye(3), r_m)
@@ -102,11 +101,11 @@ def rotate_from_unit_vector_to_another(u_a, u_b):
     """
     v_x = skew_symmetric_matrix(np.cross(u_a, u_b))
 
-    return np.identity(3) + v_x + np.linalg.matrix_power(v_x, 2) * (1. / (1. + np.dot(u_a, u_b)))
+    return np.identity(3) + v_x + np.linalg.matrix_power(v_x, 2) * (1.0 / (1.0 + np.dot(u_a, u_b)))
 
 
 def rodrigues_rotation_matrix(axis, angle):
-    '''
+    """
     Generates transformation matrix from unit vector
     and rotation angle. The rotation is applied in the direction
     of the axis which is a unit vector following the right hand rule.
@@ -114,17 +113,18 @@ def rodrigues_rotation_matrix(axis, angle):
         axis : unit vector of the direction of the rotation
         angle : angle of rotation in rads
     Returns : 3x3 Rotation matrix
-    '''
+    """
+
     def _sin(value):
-        '''sine with case for pi multiples'''
-        return 0. if np.isclose(np.mod(value, np.pi), 0.) else np.sin(value)
+        """sine with case for pi multiples"""
+        return 0.0 if np.isclose(np.mod(value, np.pi), 0.0) else np.sin(value)
 
     sin_val = _sin(angle)
     cos_val = np.cos(angle)
 
     ss_m = skew_symmetric_matrix(axis / np.linalg.norm(axis))
 
-    return np.identity(3) + sin_val * ss_m + (1. - cos_val) * np.linalg.matrix_power(ss_m, 2)
+    return np.identity(3) + sin_val * ss_m + (1.0 - cos_val) * np.linalg.matrix_power(ss_m, 2)
 
 
 def sort_points(points):

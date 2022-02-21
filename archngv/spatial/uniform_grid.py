@@ -9,8 +9,7 @@ import numpy as np
 
 
 def cartesian(arr1, arr2, arr3):
-    """ Returns the unique combinations of the three arrays
-    """
+    """Returns the unique combinations of the three arrays"""
     i_x = np.indices((arr1.size, arr2.size, arr3.size), dtype=np.intp)
     i_x = i_x.reshape(3, -1).T
 
@@ -22,12 +21,12 @@ def cartesian(arr1, arr2, arr3):
 
 
 class UniformGrid(object):
-    """ Uniform grid data structure
-    """
+    """Uniform grid data structure"""
+
     def __init__(self, x_range, y_range, z_range, cell_size):
 
         self.cell_size = cell_size
-        self.inv_cell_size = 1. / self.cell_size
+        self.inv_cell_size = 1.0 / self.cell_size
 
         self.xmin, self.xmax = x_range
         self.ymin, self.ymax = y_range
@@ -39,9 +38,9 @@ class UniformGrid(object):
         self.e_y = np.diff(y_range)[0]
         self.e_z = np.diff(z_range)[0]
 
-        self.inv_dx = 1. / self.cell_size[0]
-        self.inv_dy = 1. / self.cell_size[1]
-        self.inv_dz = 1. / self.cell_size[2]
+        self.inv_dx = 1.0 / self.cell_size[0]
+        self.inv_dy = 1.0 / self.cell_size[1]
+        self.inv_dz = 1.0 / self.cell_size[2]
 
         # number of grid cells per dimension
         self.s_x = np.ceil(self.e_x * self.inv_dx).astype(np.uintp)
@@ -49,21 +48,24 @@ class UniformGrid(object):
         self.s_z = np.ceil(self.e_z * self.inv_dz).astype(np.uintp)
 
     def voxel_centers(self):
-        """ Returns centers of voxels
-        """
+        """Returns centers of voxels"""
         # the start point of the voxel cells for a grid at origin
-        starts = cartesian(np.arange(self.s_x) * self.cell_size[0],
-                           np.arange(self.s_y) * self.cell_size[1],
-                           np.arange(self.s_z) * self.cell_size[2]).astype(np.float)
+        starts = cartesian(
+            np.arange(self.s_x) * self.cell_size[0],
+            np.arange(self.s_y) * self.cell_size[1],
+            np.arange(self.s_z) * self.cell_size[2],
+        ).astype(np.float)
 
         # add the mid point and translate to xmin, ymin, zmin
         return (starts + 0.5 * self.cell_size) + np.array((self.xmin, self.ymin, self.zmin))
 
 
 class LaminarCounterGrid(UniformGrid):
-    """ Counter grid on xz slices
-    """
-    def __init__(self, laminar_densities, x_range, y_range, z_range, cell_size):  # pylint: disable = too-many-arguments
+    """Counter grid on xz slices"""
+
+    def __init__(
+        self, laminar_densities, x_range, y_range, z_range, cell_size
+    ):  # pylint: disable = too-many-arguments
         super().__init__(x_range, y_range, z_range, cell_size)
 
         # N_cells need to be indexed as i + sx * k + sx * sz * j
@@ -81,15 +83,14 @@ class LaminarCounterGrid(UniformGrid):
             next_n = int(current_n + self.s_x * self.s_z)
 
             # print rho_y, voxel_volume, rho_y * voxel_volume
-            index[current_n: next_n] = np.ceil(1e-9 * rho_y * voxel_volume).astype(np.uintp)
+            index[current_n:next_n] = np.ceil(1e-9 * rho_y * voxel_volume).astype(np.uintp)
 
             current_n = next_n
 
         self.index = index
 
     def flat_index(self, point):
-        ''' Convert 3d point to 1D index
-        '''
+        """Convert 3d point to 1D index"""
         i = int((point[0] - self.xmin) * self.inv_dx)
         j = int((point[1] - self.ymin) * self.inv_dy)
         k = int((point[2] - self.zmin) * self.inv_dz)
@@ -97,14 +98,13 @@ class LaminarCounterGrid(UniformGrid):
         return int(i + self.s_x * k + self.s_x * self.s_z * j)
 
     def counts_per_laminar_slab(self):
-        ''' Return the number of cells for each laminar depth y set of bins
-        '''
+        """Return the number of cells for each laminar depth y set of bins"""
         current_n = 0
 
         while current_n < self.s_x * self.s_y * self.s_z:
 
             next_n = int(current_n + self.s_x * self.s_z)
 
-            yield self.index[current_n: next_n]
+            yield self.index[current_n:next_n]
 
             current_n = next_n

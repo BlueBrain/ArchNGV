@@ -1,7 +1,8 @@
 """ Perimeter distribution on morphologies """
 from collections import deque
-import numpy as np
+
 import morphio
+import numpy as np
 
 
 class LinearRegressionNoiseModel:
@@ -18,13 +19,14 @@ class LinearRegressionNoiseModel:
         rng {None, int, RandomState, Generator}: Determines
             object used for drawing random numbers
     """
+
     def __init__(self, parameter_dict, rng):
 
-        self.coefficients = np.array([float(parameter_dict['slope'])])
-        self.intercept = float(parameter_dict['intercept'])
+        self.coefficients = np.array([float(parameter_dict["slope"])])
+        self.intercept = float(parameter_dict["intercept"])
 
         self._loc = 0.0
-        self._scale = parameter_dict['standard_deviation']
+        self._scale = parameter_dict["standard_deviation"]
         self._rng = rng
 
     def _sample(self, size=None):
@@ -32,11 +34,11 @@ class LinearRegressionNoiseModel:
         return self._rng.normal(loc=self._loc, scale=self._scale, size=size)
 
     def _linear_function(self, values):
-        """ Returns the linear prediction of the values """
+        """Returns the linear prediction of the values"""
         return np.dot(values, self.coefficients) + self.intercept
 
     def predict(self, input_values):
-        """ Similar function signature with sklearn """
+        """Similar function signature with sklearn"""
 
         n_values = len(input_values)
         noise_values = self._sample(size=n_values)
@@ -58,7 +60,7 @@ class LinearRegressionNoiseModel:
 
 
 def _perimeters_upstream(section):
-    """ Returns the perimeters upstream without taking into
+    """Returns the perimeters upstream without taking into
     account the current section and accounting the duplicate
     points once.
     """
@@ -72,9 +74,9 @@ def _perimeters_upstream(section):
 
 
 def _longest_downstream_leaf(section):
-    """ Returns the leaf of the longest path downstream
+    """Returns the leaf of the longest path downstream
     from the current section. The length of a section is determined
-    by the size of its nodes (perimeters) """
+    by the size of its nodes (perimeters)"""
     upstream_lengths = {section.id: 0}
 
     iter_sections = section.iter()
@@ -96,7 +98,7 @@ def _longest_downstream_leaf(section):
 
 
 def _longest_downstream_path(section):
-    """ The sections ids downstream without including
+    """The sections ids downstream without including
     the current section along the longest path"""
     leaf = _longest_downstream_leaf(section)
 
@@ -110,8 +112,8 @@ def _longest_downstream_path(section):
 
 
 def _perimeters_downstream(section):
-    """ Perimeters along the longest path downstream
-    accounting the duplicate points once """
+    """Perimeters along the longest path downstream
+    accounting the duplicate points once"""
     for s in _longest_downstream_path(section):
         for perimeter in s.perimeters[1:]:
             yield perimeter
@@ -152,7 +154,7 @@ def _reflect_perimeters(section, expansion_length):
 
 
 def _expand_start(section, expansion_length):
-    """ Find the expansion for the section periemeters from the left by acessing sections
+    """Find the expansion for the section periemeters from the left by acessing sections
     upsream. If the root is reached then the first value is copied until the expansion_length
     is reached. If the section is root, the perimeters will be reflected at the first point of
     the array.
@@ -163,7 +165,7 @@ def _expand_start(section, expansion_length):
 
 
 def _expand_end(section, expansion_length):
-    """ Expands the end of the section perimeters by expansion_length. If the section has
+    """Expands the end of the section perimeters by expansion_length. If the section has
     children then it expands towards the longest perimeters path downstream. If a termination
     is reached the last value will be copied until the expansion_length is reached.
     """
@@ -211,7 +213,7 @@ def _smooth_perimeters(section, smoothing_window):
     beg_expansion = _expand_start(section, expansion_length)
 
     expanded_values = np.hstack((beg_expansion, section.perimeters, end_expansion))
-    return np.convolve(smoothing_window, expanded_values, mode='valid')
+    return np.convolve(smoothing_window, expanded_values, mode="valid")
 
 
 def _smooth_morphology_perimeters(morphology, smoothing_window):
@@ -258,14 +260,14 @@ def add_perimeters_to_morphology(morphology, parameters, rng):
         rng {None, int, RandomState, Generator}: Determines
             object used for drawing random numbers
     """
-    model = LinearRegressionNoiseModel(parameters['statistical_model'], rng)
+    model = LinearRegressionNoiseModel(parameters["statistical_model"], rng)
 
     # first pass predict perimeters from diameters
     for section in morphology.iter():
         section.perimeters = _predict_perimeters(section, model)
 
     # normalized smoothing window from parameter json
-    smoothing_window = np.asarray(parameters['smoothing']['window'], dtype=np.float32)
+    smoothing_window = np.asarray(parameters["smoothing"]["window"], dtype=np.float32)
     smoothing_window /= smoothing_window.sum()
 
     # second pass smooth perimeters for continuity

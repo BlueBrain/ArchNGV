@@ -1,26 +1,24 @@
 """ Annotations for synapses and endfeet surface targets
 """
+import morphio
 import numpy as np
 import pandas as pd
 from scipy.spatial import cKDTree
 
-import morphio
-
 from archngv.building.types import ASTROCYTE_TO_NEURON
 from archngv.exceptions import NGVError
 
-
 MORPHIO_MAP = {
-    'soma': morphio.SectionType.soma,
-    'axon': morphio.SectionType.axon,
-    'basal': morphio.SectionType.basal_dendrite,
-    'apical': morphio.SectionType.apical_dendrite
+    "soma": morphio.SectionType.soma,
+    "axon": morphio.SectionType.axon,
+    "basal": morphio.SectionType.basal_dendrite,
+    "apical": morphio.SectionType.apical_dendrite,
 }
 
 
 def _normalized_midpoint_path_distances(segment_begs, segment_ends, segment_offsets):
-    """Returns the path distances from the start of the section to each segment midpoint
-    normalized by length in the [0, 1]
+    """Returns the path distances from the start of the section to each segment
+    midpoint normalized by length in the [0, 1]
 
     Args:
         segment_begs (np.ndarray): Starting points of segments
@@ -43,7 +41,7 @@ def _normalized_midpoint_path_distances(segment_begs, segment_ends, segment_offs
 
 
 def _morphology_unwrapped(morphology):
-    """ Unwrap a MorphIO morphology into points and their
+    """Unwrap a MorphIO morphology into points and their
     respective section id they belong too.
 
     Args:
@@ -65,28 +63,33 @@ def _morphology_unwrapped(morphology):
 
         normalized_path_distances = _normalized_midpoint_path_distances(p0s, p1s, offsets)
 
-        for segment_id, (midpoint, offset, pdist) in enumerate(zip(midpoints, offsets, normalized_path_distances)):
+        for segment_id, (midpoint, offset, pdist) in enumerate(
+            zip(midpoints, offsets, normalized_path_distances)
+        ):
             points.append(midpoint)
             locations.append((section.id, segment_id, offset, pdist))
 
     if not points:
         raise NGVError("Morphology failed to be unwrapped. There are no points.")
 
-    df_locations = pd.DataFrame(locations, columns=['section_id', 'segment_id', 'segment_offset', 'section_position'])
+    df_locations = pd.DataFrame(
+        locations,
+        columns=["section_id", "segment_id", "segment_offset", "section_position"],
+    )
     return np.asarray(points), df_locations
 
 
 def _endfoot_termination_filter(sections):
-    """ Checks if a sction has the endfoot type and is a termination section,
-        which means it has no children
+    """Checks if a sction has the endfoot type and is a termination section,
+    which means it has no children
     """
-    endfoot_t = MORPHIO_MAP[ASTROCYTE_TO_NEURON['endfoot']]
+    endfoot_t = MORPHIO_MAP[ASTROCYTE_TO_NEURON["endfoot"]]
     filter_func = lambda section: section.type == endfoot_t and not section.children
     return filter(filter_func, sections)
 
 
 def annotate_endfoot_location(morphology, endfoot_points):
-    """ Load a morphology in MorphIO and find the closest point, section
+    """Load a morphology in MorphIO and find the closest point, section
     to each endfoot point.
 
     Args:
@@ -109,7 +112,7 @@ def annotate_endfoot_location(morphology, endfoot_points):
 
 
 def annotate_synapse_location(morphology, synapse_points):
-    """ Load a morphology in MorphIO and find the closest point, section
+    """Load a morphology in MorphIO and find the closest point, section
     to each synapse point.
 
     Args:
@@ -119,7 +122,8 @@ def annotate_synapse_location(morphology, synapse_points):
             Coordinates of the synapses
 
     Returns:
-        Pandas DataFrame with section ID / segment ID / segment offset of closest astrocyte segment midpoint
+        Pandas DataFrame with section ID / segment ID / segment offset of closest
+        astrocyte segment midpoint.
     """
     points, locations = _morphology_unwrapped(morphology)
     _, idx = cKDTree(points, copy_data=False).query(synapse_points)  # pylint: disable=not-callable

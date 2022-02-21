@@ -1,18 +1,17 @@
 """h5 readers are simple standalone sonata readers using libsonata that prevents in memory
 loading of data and does not need circuit vision/config files."""
+import libsonata
 import numpy as np
 from cached_property import cached_property
-import libsonata
 
 from archngv.exceptions import NGVError
 from archngv.utils.generics import ensure_list
 
 
 def _open_population(h5_filepath, pop_type):
-    storage = {
-        'nodes': libsonata.NodeStorage,
-        'edges': libsonata.EdgeStorage
-    }[pop_type](h5_filepath)
+    storage = {"nodes": libsonata.NodeStorage, "edges": libsonata.EdgeStorage}[pop_type](
+        h5_filepath
+    )
 
     populations = storage.population_names
     if len(populations) != 1:
@@ -60,7 +59,7 @@ class LibSonataReader:
         try:
             return self._impl.get_attribute(property_name, selection)
         except libsonata.SonataError as e:
-            raise NGVError(f'Unknown property name {property_name}') from e
+            raise NGVError(f"Unknown property name {property_name}") from e
 
     def get_properties(self, property_names, ids=None):
         """Returns a numpy array containing the values corresponding to property_names"""
@@ -69,17 +68,21 @@ class LibSonataReader:
         properties = [self.get_property(p, ids=ids) for p in props]
         if all(prop.dtype == properties[0].dtype for prop in properties):
             return np.column_stack([self.get_property(p, ids=ids) for p in props])
-        raise NGVError("Can't stack properties with different types {}".format(
-            [prop.dtype for prop in properties]))
+        raise NGVError(
+            "Can't stack properties with different types {}".format(
+                [prop.dtype for prop in properties]
+            )
+        )
 
     def __len__(self):
         return self._impl.size
 
 
 class EdgesReader(LibSonataReader):
-    """ Context manager for accessing SONATA Edges """
+    """Context manager for accessing SONATA Edges"""
+
     def __init__(self, filepath):
-        super().__init__(filepath, 'edges')
+        super().__init__(filepath, "edges")
 
     def afferent_edges(self, node_ids):
         """Returns the edge ids heading to node_ids"""
@@ -123,6 +126,7 @@ class EdgesReader(LibSonataReader):
 
 
 class NodesReader(LibSonataReader):
-    """ Context manager for accessing SONATA Nodes """
+    """Context manager for accessing SONATA Nodes"""
+
     def __init__(self, filepath):
-        super().__init__(filepath, 'nodes')
+        super().__init__(filepath, "nodes")

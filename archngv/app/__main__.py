@@ -9,28 +9,25 @@ Collection of tools for NGV building
 \____|__  /__|    \___  >___|  /\____|__  /\______  /  \___/
         \/            \/     \/         \/        \/
 """
-import os
-import sys
-import stat
 import logging
+import os
+import stat
 import subprocess
-from pathlib import Path
+import sys
 from datetime import datetime
-import pkg_resources
+from pathlib import Path
 
 import click
-from archngv.version import VERSION
-
+import pkg_resources
 
 from archngv.app import ngv
 from archngv.app.logger import setup_logging
+from archngv.version import VERSION
 
 
 @click.group("ngv", help=__doc__.format(esc="\b"))
 @click.version_option(version=VERSION)
-@click.option(
-    "-v", "--verbose", count=True, default=0, help="-v for INFO, -vv for DEBUG"
-)
+@click.option("-v", "--verbose", count=True, default=0, help="-v for INFO, -vv for DEBUG")
 def app(verbose):
     # pylint: disable=missing-docstring
     setup_logging(
@@ -52,8 +49,10 @@ app.add_command(
     cmd=ngv.attach_endfeet_info_to_gliovascular_connectivity,
 )
 app.add_command(name="neuroglial-connectivity", cmd=ngv.neuroglial_connectivity)
-app.add_command(name="attach-morphology-info-to-neuroglial-connectivity",
-cmd=ngv.attach_morphology_info_to_neuroglial_connectivity)
+app.add_command(
+    name="attach-morphology-info-to-neuroglial-connectivity",
+    cmd=ngv.attach_morphology_info_to_neuroglial_connectivity,
+)
 
 
 app.add_command(name="synthesis", cmd=ngv.synthesis)
@@ -87,9 +86,7 @@ def create_exemplar(project_dir):
 
     # make run script executable
     st = os.stat(project_dir / "run.sh")
-    os.chmod(
-        project_dir / "run.sh", st.st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
-    )
+    os.chmod(project_dir / "run.sh", st.st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
 
 
 @app.command(name="snakefile-path")
@@ -101,9 +98,7 @@ def snakefile_path():
 def _index(args, *opts):
     """Finds index position of `opts` in `args`"""
     indices = [i for i, arg in enumerate(args) if arg in opts]
-    assert (
-        len(indices) < 2
-    ), f"{opts} options can't be used together, use only one of them"
+    assert len(indices) < 2, f"{opts} options can't be used together, use only one of them"
     if len(indices) == 0:
         return None
     return indices[0]
@@ -168,9 +163,7 @@ def run(
     if snakefile is None:
         snakefile = pkg_resources.resource_filename(__name__, "snakemake/Snakefile")
     assert Path(snakefile).is_file(), f'Snakefile "{snakefile}" does not exist!'
-    assert (
-        _index(args, "--config", "-C") is None
-    ), "snakemake `--config` option is not allowed"
+    assert _index(args, "--config", "-C") is None, "snakemake `--config` option is not allowed"
 
     timestamp = f"{datetime.now():%Y%m%dT%H%M%S}"
     args = _build_args(args, bioname, timestamp)

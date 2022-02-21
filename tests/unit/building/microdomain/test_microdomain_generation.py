@@ -1,8 +1,8 @@
 import mock
 import numpy as np
-from archngv.utils.ngons import polygons_to_triangles
-from archngv.building.microdomain.generation import _microdomain_from_tess_cell
 
+from archngv.building.microdomain.generation import _microdomain_from_tess_cell
+from archngv.utils.ngons import polygons_to_triangles
 
 
 def test_microdomain_from_tess_cell():
@@ -19,7 +19,9 @@ def test_microdomain_from_tess_cell():
 
     microdomain = _microdomain_from_tess_cell(tess_domain)
 
-    triangles, triangles_to_polygon_map  = polygons_to_triangles(np.asarray(points), np.asarray(face_vertices))
+    triangles, triangles_to_polygon_map = polygons_to_triangles(
+        np.asarray(points), np.asarray(face_vertices)
+    )
 
     np.testing.assert_allclose(microdomain.points, points)
     np.testing.assert_allclose(microdomain._triangles, triangles)

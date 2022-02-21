@@ -1,15 +1,15 @@
 from collections import namedtuple
+
 import numpy as np
-from numpy import testing as npt
 import pytest
+from numpy import testing as npt
+
 from archngv.building.morphology_synthesis import annotation as tested
 
-
-MockSection = namedtuple('MockSection', ['points', 'id'])
+MockSection = namedtuple("MockSection", ["points", "id"])
 
 
 class MockCell:
-
     def __init__(self, sections):
         self.sections = sections
 
@@ -21,21 +21,20 @@ class MockCell:
 def cell():
 
     sections = [
-
-        MockSection(np.array([
-            [0., 0.0, 0.],
-            [0., 0.2, 0.],
-            [0., 0.3, 0.],
-            [0., 0.4, 0.],
-        ]), 0),
-
-        MockSection(np.array([
-            [1.0, 0., 0.],
-            [1.2, 0., 0.],
-            [1.4, 0., 0.],
-            [1.5, 0., 0.]
-        ]), 1)
-
+        MockSection(
+            np.array(
+                [
+                    [0.0, 0.0, 0.0],
+                    [0.0, 0.2, 0.0],
+                    [0.0, 0.3, 0.0],
+                    [0.0, 0.4, 0.0],
+                ]
+            ),
+            0,
+        ),
+        MockSection(
+            np.array([[1.0, 0.0, 0.0], [1.2, 0.0, 0.0], [1.4, 0.0, 0.0], [1.5, 0.0, 0.0]]), 1
+        ),
     ]
 
     return MockCell(sections)
@@ -48,13 +47,14 @@ def test_morphology_unwrapped(cell):
     npt.assert_allclose(
         points,
         [
-            [0.0, 0.10, 0.],
-            [0.0, 0.25, 0.],
-            [0.0, 0.35, 0.],
-            [1.1, 0.  , 0.],
-            [1.3, 0.  , 0.],
-            [1.45, 0.  , 0.]
-        ])
+            [0.0, 0.10, 0.0],
+            [0.0, 0.25, 0.0],
+            [0.0, 0.35, 0.0],
+            [1.1, 0.0, 0.0],
+            [1.3, 0.0, 0.0],
+            [1.45, 0.0, 0.0],
+        ],
+    )
 
     npt.assert_array_equal([0, 0, 0, 1, 1, 1], df_locations.section_id)
     npt.assert_array_equal([0, 1, 2, 0, 1, 2], df_locations.segment_id)

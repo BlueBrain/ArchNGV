@@ -6,7 +6,7 @@ import numpy as np
 
 
 def lenard_jones(dist, d_m, epsilon):
-    """ Lenard Jones potential to approximate attraction
+    """Lenard Jones potential to approximate attraction
     repulsion
 
     Args:
@@ -16,22 +16,19 @@ def lenard_jones(dist, d_m, epsilon):
             The depth of the potential well.
     """
     ratio = d_m / dist
-    return epsilon * (np.power(ratio, 12) - 2. * np.power(ratio, 6))
+    return epsilon * (np.power(ratio, 12) - 2.0 * np.power(ratio, 6))
 
 
 def coulomb(dist, d_m):
-    """ Classical Coulomb potential
-    """
-    return d_m / dist ** 2
+    """Classical Coulomb potential"""
+    return d_m / dist**2
 
 
 def inverse_distance(dist, d_m):
-    """ One over r repulsion potential
-    """
+    """One over r repulsion potential"""
     return d_m / dist
 
 
 def spring(dist, d_m, spring_constant):
-    """ Spring potential
-    """
+    """Spring potential"""
     return spring_constant * (dist - d_m) ** 2

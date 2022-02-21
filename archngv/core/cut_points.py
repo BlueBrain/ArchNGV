@@ -2,44 +2,44 @@
 """
 
 import json
+
 import numpy
 
 
 class CutPointData:
-    """ Cut plane data for cut astrocytes
-    """
+    """Cut plane data for cut astrocytes"""
+
     @classmethod
     def load_file(cls, file_path):
-        """ Load cut plane data file
-        """
-        with open(file_path, 'r') as fp:
+        """Load cut plane data file"""
+        with open(file_path, "r") as fp:
             cp_dict = json.load(fp)
 
         morph_name = list(cp_dict.keys())[0]
 
         cp_dict = cp_dict[morph_name]
 
-        cut_leaves = numpy.asarray(cp_dict['cut_leaves'], dtype=numpy.float)
+        cut_leaves = numpy.asarray(cp_dict["cut_leaves"], dtype=numpy.float)
 
-        orientation, offset = cp_dict['cut_plane']
+        orientation, offset = cp_dict["cut_plane"]
 
-        if orientation == 'X':
+        if orientation == "X":
 
-            cut_plane = numpy.array([offset, 0., 0.])
+            cut_plane = numpy.array([offset, 0.0, 0.0])
 
-        elif orientation == 'Y':
+        elif orientation == "Y":
 
-            cut_plane = numpy.array([0., offset, 0.])
+            cut_plane = numpy.array([0.0, offset, 0.0])
 
-        elif orientation == 'Z':
+        elif orientation == "Z":
 
-            cut_plane = numpy.array([0., 0., offset])
+            cut_plane = numpy.array([0.0, 0.0, offset])
 
         else:
 
-            raise TypeError('Unknown Orientation Axis {}'.format(orientation))
+            raise TypeError("Unknown Orientation Axis {}".format(orientation))
 
-        details = cp_dict['details']
+        details = cp_dict["details"]
 
         return cls(cut_leaves, cut_plane, details)
 

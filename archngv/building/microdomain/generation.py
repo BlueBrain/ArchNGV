@@ -7,9 +7,8 @@ from copy import deepcopy
 import numpy as np
 import tess
 
-from archngv.core.datasets import Microdomain
 from archngv.building.microdomain.overlap import convex_polygon_with_overlap
-
+from archngv.core.datasets import Microdomain
 from archngv.spatial.bounding_box import BoundingBox
 from archngv.utils.ngons import polygons_to_triangles
 
@@ -17,8 +16,7 @@ L = logging.getLogger(__name__)
 
 
 def _microdomain_from_tess_cell(cell):
-    """ Converts a tess cell into a Microdomain object
-    """
+    """Converts a tess cell into a Microdomain object"""
     points = np.asarray(cell.vertices(), dtype=np.float32)
 
     # polygon face neighbors
@@ -31,7 +29,7 @@ def _microdomain_from_tess_cell(cell):
 
 
 def generate_microdomain_tesselation(generator_points, generator_radii, bounding_box):
-    """ Creates a Laguerre Tesselation out of generator spheres taking into account
+    """Creates a Laguerre Tesselation out of generator spheres taking into account
     intersections with the bounding box
     """
     limits = (bounding_box.min_point, bounding_box.max_point)
@@ -43,7 +41,7 @@ def generate_microdomain_tesselation(generator_points, generator_radii, bounding
         # a value error is thrown when the bounding box is smaller or overlapping with a
         # generator point. In that case relax a bit the bounding box taking into account
         # the spherical extent of the somata
-        L.warning('Bounding box smaller or overlapping with a generator point.')
+        L.warning("Bounding box smaller or overlapping with a generator point.")
         bounding_box = BoundingBox.from_spheres(generator_points, generator_radii) + bounding_box
         limits = (bounding_box.min_point, bounding_box.max_point)
         tess_cells = tess.Container(generator_points, limits=limits, radii=generator_radii)
@@ -53,7 +51,7 @@ def generate_microdomain_tesselation(generator_points, generator_radii, bounding
 
 
 def convert_to_overlappping_tesselation(microdomains, overlap_distribution):
-    """ Given an existing tesselation uniformly exapnd each convex region in order to
+    """Given an existing tesselation uniformly exapnd each convex region in order to
     achieve an overlap with the neighbors given by the overlap distribution. Overlap is
     a percentage determined by overlap = (V_new - V_old) / V_old
 

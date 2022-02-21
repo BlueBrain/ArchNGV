@@ -5,7 +5,7 @@ import numpy
 
 
 def export_structure(filename, domains):
-    """ Export microdomain tesselation structure
+    """Export microdomain tesselation structure
 
     Args:
         domains: list[Microdomain]
@@ -30,9 +30,9 @@ def export_structure(filename, domains):
                     neighbors[offsets[i, 2]: offsets[i + 1, 2]]
     """
     n_domains = len(domains)
-    with h5py.File(filename, 'w') as fd:
+    with h5py.File(filename, "w") as fd:
 
-        data_group = fd.create_group('data')
+        data_group = fd.create_group("data")
         points, triangle_data, neighbors = [], [], []
 
         # offsets are of size n_domains + 1 because it is convenient
@@ -49,12 +49,11 @@ def export_structure(filename, domains):
             triangle_data.extend(tri_data)
             neighbors.extend(neighs)
 
-        data_group.create_dataset('points', data=points, dtype=numpy.float32)
-        data_group.create_dataset('triangle_data', data=triangle_data, dtype=numpy.uint64)
-        data_group.create_dataset('neighbors', data=neighbors, dtype=numpy.int64)
+        data_group.create_dataset("points", data=points, dtype=numpy.float32)
+        data_group.create_dataset("triangle_data", data=triangle_data, dtype=numpy.uint64)
+        data_group.create_dataset("neighbors", data=neighbors, dtype=numpy.int64)
 
-        offsets_dset = fd.create_dataset('offsets', data=offsets, dtype=numpy.uint64)
+        offsets_dset = fd.create_dataset("offsets", data=offsets, dtype=numpy.uint64)
         offsets_dset.attrs["column_names"] = numpy.array(
-            ['points', 'triangle_data', 'neighbors'],
-            dtype=h5py.special_dtype(vlen=str)
+            ["points", "triangle_data", "neighbors"], dtype=h5py.special_dtype(vlen=str)
         )

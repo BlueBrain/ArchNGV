@@ -44,9 +44,7 @@ def add_properties_to_edge_population(
                 raise NGVError(f"'{name}' property already exists.")
 
             if values.size != length:
-                raise NGVError(
-                    f"Incompatible length. Expected: {length}. Given: {values.size}"
-                )
+                raise NGVError(f"Incompatible length. Expected: {length}. Given: {values.size}")
 
             group.create_dataset(name, data=values)
             L.info("Added edge Property: %s", name)
@@ -121,9 +119,7 @@ def write_neuroglial_connectivity(
 
         output_path: path to output HDF5 file.
     """
-    edge_properties = {
-        "synapse_id": astrocyte_data["synapse_id"].to_numpy(dtype=np.uint64)
-    }
+    edge_properties = {"synapse_id": astrocyte_data["synapse_id"].to_numpy(dtype=np.uint64)}
 
     _write_edge_population(
         output_path=output_path,
@@ -161,9 +157,7 @@ def write_gliovascular_connectivity(
 
     # datasets should always be the same size
     assert (
-        len(endfeet_to_astrocyte)
-        == len(endfeet_to_vasculature)
-        == len(endfoot_surface_positions)
+        len(endfeet_to_astrocyte) == len(endfeet_to_vasculature) == len(endfoot_surface_positions)
     )
 
     # endfoot ids are the positional indices from these datasets
@@ -173,9 +167,7 @@ def write_gliovascular_connectivity(
     # get the section/segment ids and use them to get the vasculature node ids
     vasculature_properties = vasculature.properties.loc[:, ["section_id", "segment_id"]]
     vasculature_properties["index"] = vasculature_properties.index
-    vasculature_properties = vasculature_properties.set_index(
-        ["section_id", "segment_id"]
-    )
+    vasculature_properties = vasculature_properties.set_index(["section_id", "segment_id"])
 
     indices = pd.MultiIndex.from_arrays(endfeet_to_vasculature.T)
     vasculature_ids = vasculature_properties.loc[indices, "index"].to_numpy()

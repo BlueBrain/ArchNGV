@@ -1,6 +1,6 @@
 """Endfeet properties to be added to the gliovascular edge population file"""
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Tuple, Iterator
+from typing import TYPE_CHECKING, Any, Callable, Iterator, Tuple
 
 import numpy as np
 import pandas as pd
@@ -11,11 +11,7 @@ if TYPE_CHECKING:
 
     from vasculatureapi import PointVasculature
 
-    from archngv.core.datastructure import (
-        CellData,
-        EndfeetMeshes,
-        GliovascularConnectivity,
-    )
+    from archngv.core.datastructure import CellData, EndfeetMeshes, GliovascularConnectivity
 
 
 def endfeet_mesh_properties(
@@ -53,9 +49,7 @@ def endfeet_mesh_properties(
     n_endfeet = len(endfeet_ids)
 
     if not np.array_equal(endfeet_ids, np.arange(n_endfeet)):
-        raise NGVError(
-            "endfeet_ids should be a contiguous array from 0 to number of endfeet"
-        )
+        raise NGVError("endfeet_ids should be a contiguous array from 0 to number of endfeet")
 
     properties = {
         "astrocyte_section_id": np.empty(n_endfeet, dtype=np.uint32),
@@ -147,14 +141,10 @@ def _dispatch_endfeet_data(
         morphology_path = str(Path(morph_dir, morphology_name + ".h5"))
         morphology_pos = astrocytes.positions(index=astro_id)[0]
 
-        vasc_segment_ids = gv_connectivity.vasculature_sections_segments(endfeet_ids)[
-            :, 0
-        ]
+        vasc_segment_ids = gv_connectivity.vasculature_sections_segments(endfeet_ids)[:, 0]
         vasc_segments = vasculature_points[vasculature_edges[vasc_segment_ids]]
 
-        endfeet_surface_targets = gv_connectivity.vasculature_surface_targets(
-            endfeet_ids
-        )
+        endfeet_surface_targets = gv_connectivity.vasculature_surface_targets(endfeet_ids)
 
         yield {
             "index": astro_id,
@@ -180,19 +170,13 @@ def _endfeet_properties_from_astrocyte(data: dict) -> Tuple[np.ndarray, ...]:
             perimeters: (N,) float array of endfeet compartment perimeters
     """
     from archngv.app.utils import readonly_morphology
-    from archngv.building.morphology_synthesis.annotation import (
-        annotate_endfoot_location,
-    )
+    from archngv.building.morphology_synthesis.annotation import annotate_endfoot_location
     from archngv.building.morphology_synthesis.endfoot_compartment import (
         create_endfeet_compartment_data,
     )
 
-    morphology = readonly_morphology(
-        data["morphology_path"], data["morphology_position"]
-    )
-    astrocyte_section_ids = annotate_endfoot_location(
-        morphology, data["endfeet_surface_targets"]
-    )
+    morphology = readonly_morphology(data["morphology_path"], data["morphology_position"])
+    astrocyte_section_ids = annotate_endfoot_location(morphology, data["endfeet_surface_targets"])
 
     lengths, diameters, perimeters = create_endfeet_compartment_data(
         data["vasculature_segments"],

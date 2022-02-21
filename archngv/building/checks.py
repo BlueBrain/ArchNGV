@@ -1,15 +1,16 @@
 """ Check functions for cell placement
 """
 import logging
-import numpy as np
-from archngv.exceptions import NotAlignedError
 
+import numpy as np
+
+from archngv.exceptions import NotAlignedError
 
 L = logging.getLogger(__name__)
 
 
 def assert_bbox_alignment(bbox1, bbox2, tolerance=10.0):
-    """ Checks if bounding boxes are aligned
+    """Checks if bounding boxes are aligned
 
     Arguments:
         bbox1: BoundingBox
@@ -20,12 +21,15 @@ def assert_bbox_alignment(bbox1, bbox2, tolerance=10.0):
     Raises:
         NotAllignedError if bounding boxes are not aligned
     """
+
     def message(bbox1, bbox2):
-        return ('\n' +
-               'Min points: [{:.2f} {:.2f} {:.2f}]\t'.format(*bbox1.min_point) +
-               '[{:.2f} {:.2f} {:.2f}]\n'.format(*bbox2.min_point) +
-               'Max Points: [{:.2f} {:.2f} {:.2f}]\t'.format(*bbox1.max_point) +
-               '[{:.2f} {:.2f} {:.2f}]\n'.format(*bbox2.max_point))
+        return (
+            "\n"
+            + "Min points: [{:.2f} {:.2f} {:.2f}]\t".format(*bbox1.min_point)
+            + "[{:.2f} {:.2f} {:.2f}]\n".format(*bbox2.min_point)
+            + "Max Points: [{:.2f} {:.2f} {:.2f}]\t".format(*bbox1.max_point)
+            + "[{:.2f} {:.2f} {:.2f}]\n".format(*bbox2.max_point)
+        )
 
     if not bbox1 == bbox2:
 
@@ -35,6 +39,6 @@ def assert_bbox_alignment(bbox1, bbox2, tolerance=10.0):
         msg = message(bbox1, bbox2)
 
         if max_aligned and min_aligned:
-            L.warning('Datasets aligned within tolerance %f um\n%s', tolerance, msg)
+            L.warning("Datasets aligned within tolerance %f um\n%s", tolerance, msg)
         else:
             raise NotAlignedError(msg)

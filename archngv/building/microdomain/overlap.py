@@ -1,14 +1,14 @@
 """ Overalap for microdomain geometry """
 
 import logging
+
 import numpy as np
 
-
-L = logging.getLogger('__name__')
+L = logging.getLogger("__name__")
 
 
 def convex_polygon_with_overlap(centroid, points, overlap_factor):
-    """ Given the centroid of a convex polygon and its points,
+    """Given the centroid of a convex polygon and its points,
     uniformly dilate in order to expand by the overlap factor. However
     the neighbors inflate as well. Thus, the result overlap between the cell
     and the union of neighbors will be:
@@ -24,24 +24,26 @@ def convex_polygon_with_overlap(centroid, points, overlap_factor):
 
     Which has three roots, one real and two complex.
     """
-    p = [2. - overlap_factor, - 6., 12., -8.]
+    p = [2.0 - overlap_factor, -6.0, 12.0, -8.0]
 
     r = np.roots(p)
 
     scaling_factor = np.real(r[~np.iscomplex(r)])[0]
 
-    predicted = (scaling_factor ** 3 - (2. - scaling_factor) ** 3) / scaling_factor ** 3
+    predicted = (scaling_factor**3 - (2.0 - scaling_factor) ** 3) / scaling_factor**3
 
     L.debug(
-        'Overlap Factor: %.3f, Scaling Factor: %.3f, Predicted Overlap: %.3f',
-        overlap_factor, scaling_factor, predicted
+        "Overlap Factor: %.3f, Scaling Factor: %.3f, Predicted Overlap: %.3f",
+        overlap_factor,
+        scaling_factor,
+        predicted,
     )
 
     return scaling_factor * (points - centroid) + centroid
 
 
 def convex_polygon_with_overlap2(centroid, points, overlap_factor):
-    """ Given the centroid of a convex polygon and its points,
+    """Given the centroid of a convex polygon and its points,
     uniformly dilate in order to expand by the overlap factor
     overlap_factor = (Vnew - Vold) / Vold
 
@@ -59,5 +61,5 @@ def convex_polygon_with_overlap2(centroid, points, overlap_factor):
 
     Returns the new point array with the scaled points.
     """
-    scaling_factor = (overlap_factor + 1.) ** (1. / 3.)
+    scaling_factor = (overlap_factor + 1.0) ** (1.0 / 3.0)
     return scaling_factor * (points - centroid) + centroid

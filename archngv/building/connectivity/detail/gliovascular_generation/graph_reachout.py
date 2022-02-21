@@ -2,11 +2,11 @@
 determine the sites of contact with the vasculature
 """
 import logging
+
 import numpy as np
 
 from archngv.exceptions import NGVError
 from archngv.utils.linear_algebra import rowwise_dot
-
 
 L = logging.getLogger(__name__)
 
@@ -33,7 +33,7 @@ def _argsort_components(source, components):
 
     for i, comp in enumerate(components):
 
-        points = comp.loc[:, ('x', 'y', 'z')]
+        points = comp.loc[:, ("x", "y", "z")]
 
         distances = np.linalg.norm(source - points, axis=1)
         closest_pos = np.argmin(distances)
@@ -55,9 +55,8 @@ def _distribute_elements_in_buckets(n_elements, bucket_capacities):
     in step 1 will overflow. Find these buckets and remove the extra elements from
     them and add them to the remainder.
 
-    Step 3: Starting from the left to the right iterate over the buckets and redistribute
-    the remainder to the rest of the buckets that are not full, filling each bucket in
-    sequence.
+    Step 3: Iterate from left to right over the buckets and redistribute the remainder
+    to the rest of the buckets that are not full, filling each bucket in sequence.
 
     Args:
         n_elements int:
@@ -87,7 +86,9 @@ def _distribute_elements_in_buckets(n_elements, bucket_capacities):
     are_overflowing_mask = elements_per_bucket > bucket_capacities
 
     # count the extra elements
-    remainder += np.sum(elements_per_bucket[are_overflowing_mask] - bucket_capacities[are_overflowing_mask])
+    remainder += np.sum(
+        elements_per_bucket[are_overflowing_mask] - bucket_capacities[are_overflowing_mask]
+    )
 
     # set the size of the buchets to their maximum capacity
     elements_per_bucket[are_overflowing_mask] = bucket_capacities[are_overflowing_mask]
@@ -131,7 +132,7 @@ def _select_component_targets(source, comp, n_elements):
         First point is always the closest. Every next point maximizes
         the minimun distance to the previously selected points in the loop.
     """
-    points = comp.loc[:, ('x', 'y', 'z')].to_numpy(copy=False)
+    points = comp.loc[:, ("x", "y", "z")].to_numpy(copy=False)
 
     first_pos = np.argmin(np.linalg.norm(source - points, axis=1))
 
@@ -166,7 +167,7 @@ def _maximum_reachout(source, targets, n_classes):
         source ndarray: float[(3,)]
             Coordinates represeting the astrocyte's soma position.
         targets pandas.DataFrame:
-            A dataframe with the coordinates of the potential targets we want to choose from.
+            A dataframe with the coordinates of the potential targets.
         n_classes int:
             Number of classes to return
 
@@ -174,24 +175,27 @@ def _maximum_reachout(source, targets, n_classes):
         selected_indices: array[int, (n_classes,)]
 
     Notes:
-    Given an array of available targets select a subset of the of size n_classes, according
-    to the following algorithm:
+    Given an array of available targets select a subset of the of size n_classes,
+    according to the following algorithm:
 
-    1. Create groups (sections, components) of the points based on their assigned section id.
+    1. Create groups (sections, components) of the points based on their assigned
+       section id.
 
-    2. Sort the groups with respect to the closest point inside each component to the source.
+    2. Sort the groups with respect to the closest point inside each component to the
+       source.
 
     3. If the classes are fewer than the components, return the closest ones.
 
-    4. Otherwise, distribute the number of classes to each component taking into account how
-       many points it has available. Components on the left have high priority of being assigned
-       more points if their capacity allows it. If all components are big enough then they share
-       an equal amount classes.
+    4. Otherwise, distribute the number of classes to each component taking into
+       account how many points it has available. Components on the left have high
+       priority of being assigned more points if their capacity allows it. If all
+       components are big enough then they share an equal amount classes.
 
-    5. The first point within each component is always the closest one. Every other point is selected
-       so as to maximize its distance with all other selected points so far in the iteration.
+    5. The first point within each component is always the closest one. Every other
+       point is selected so as to maximize its distance with all other selected points
+       so far in the iteration.
     """
-    components = [df for _, df in targets.groupby('vasculature_section_id')]
+    components = [df for _, df in targets.groupby("vasculature_section_id")]
     sorted_indices, closest_vertices = _argsort_components(source, components)
 
     # assign the closest components if we have less classes than comps
@@ -202,8 +206,8 @@ def _maximum_reachout(source, targets, n_classes):
     sorted_components = [components[sorted_index] for sorted_index in sorted_indices]
     component_sizes = np.fromiter(map(len, sorted_components), np.int64)
 
-    # find how many targets we will have in each component given the number their available
-    # points
+    # find how many targets we will have in each component given the number their
+    # available points
     n_elements_per_component = _distribute_elements_in_buckets(n_classes, component_sizes)
 
     selected = np.empty(n_classes, dtype=np.int64)
@@ -211,14 +215,14 @@ def _maximum_reachout(source, targets, n_classes):
     n = 0
     for comp, n_elements in zip(sorted_components, n_elements_per_component):
 
-        selected[n: n + n_elements] = _select_component_targets(source, comp, n_elements)
+        selected[n : n + n_elements] = _select_component_targets(source, comp, n_elements)
         n += n_elements
 
     return selected
 
 
 def _random_selection(_, targets, n_classes):
-    """ Returns a random subsample on n_classes elements from
+    """Returns a random subsample on n_classes elements from
     the distance array
     """
     n_classes = min(n_classes, len(targets))
@@ -226,21 +230,24 @@ def _random_selection(_, targets, n_classes):
     return targets.index[idx]
 
 
-REACHOUT_STRATEGIES = {'maximum_reachout': _maximum_reachout,
-                       'random_selection': _random_selection}
+REACHOUT_STRATEGIES = {
+    "maximum_reachout": _maximum_reachout,
+    "random_selection": _random_selection,
+}
 
 
 def strategy(input_strategy):
-    """ Deploys a strategy function while checking its existence from
+    """Deploys a strategy function while checking its existence from
     the dict of available strategies.
     """
     if input_strategy not in REACHOUT_STRATEGIES:
         msg = (
-            'Strategy {} is not available.'.format(input_strategy) + '\n' +
-            'Available strategies: {}'.format(REACHOUT_STRATEGIES)
+            "Strategy {} is not available.".format(input_strategy)
+            + "\n"
+            + "Available strategies: {}".format(REACHOUT_STRATEGIES)
         )
         raise NGVError(msg)
 
     selected_strategy = REACHOUT_STRATEGIES[input_strategy]
-    L.info('Strategy %s is selected', input_strategy)
+    L.info("Strategy %s is selected", input_strategy)
     return selected_strategy

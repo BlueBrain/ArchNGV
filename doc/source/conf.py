@@ -19,10 +19,10 @@ from pkg_resources import get_distribution
 
 # -- Project information -----------------------------------------------------
 
-project = 'ArchNGV'
+project = "ArchNGV"
 
 # The short X.Y version
-version = get_distribution('archngv').version
+version = get_distribution("archngv").version
 
 # The full version, including alpha/beta/rc tags
 release = version
@@ -49,7 +49,7 @@ exclude_patterns = []
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx-bluebrain-theme'
+html_theme = "sphinx-bluebrain-theme"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -57,11 +57,10 @@ html_theme = 'sphinx-bluebrain-theme'
 # html_static_path = ['_static']
 
 html_theme_options = {
-    'metadata_distribution': 'archngv',
+    "metadata_distribution": "archngv",
 }
 
-html_title = u'ngv building framework'
+html_title = "ngv building framework"
 
 # If true, links to the reST sources are added to the pages.
 html_show_sourcelink = False
-

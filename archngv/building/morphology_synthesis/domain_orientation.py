@@ -2,21 +2,18 @@
 from the geometry of the microdomain
 """
 import logging
+
 import numpy as np
 
-from archngv.utils.linear_algebra import angle_matrix
-from archngv.utils.linear_algebra import normalize_vectors
+from archngv.utils.linear_algebra import angle_matrix, normalize_vectors
 from archngv.utils.ngons import subdivide_triangles_by_total_area
-
 
 L = logging.getLogger(__name__)
 
 
-def orientations_from_domain(soma_center,
-                             domain_points,
-                             domain_triangles,
-                             n_trunks,
-                             fixed_targets=None):
+def orientations_from_domain(
+    soma_center, domain_points, domain_triangles, n_trunks, fixed_targets=None
+):
     """
     Given the triangular mesh of a convex domain, select up to n_trunks orientations.
     The triangles are subdivided in to smaller, nested ones that provide a better sampling
@@ -45,11 +42,7 @@ def orientations_from_domain(soma_center,
     Returns: array[float, (n_trunks, 3)], array[float, (n_trunks,)]
        The selected orientations and their respective vector norms
     """
-    points, _ = subdivide_triangles_by_total_area(
-                                                    domain_points,
-                                                    domain_triangles,
-                                                    10 * n_trunks
-    )
+    points, _ = subdivide_triangles_by_total_area(domain_points, domain_triangles, 10 * n_trunks)
 
     if fixed_targets is not None:
         points = remove_overlapping_orientations(soma_center, points, fixed_targets)
@@ -61,12 +54,12 @@ def orientations_from_domain(soma_center,
     objective_function = Objective(soma_center, points, fixed_targets)
     chosen_idx = choose_ids(n_trunks, points, objective_function)
 
-    L.debug('Number of idx calculated: %d', len(chosen_idx))
+    L.debug("Number of idx calculated: %d", len(chosen_idx))
     return orientations[chosen_idx], lengths[chosen_idx]
 
 
 def remove_overlapping_orientations(ref_point, points, to_remove_points):
-    """ Return the points, the orientations of which do not overlap with
+    """Return the points, the orientations of which do not overlap with
     the orientations of to_remove_points. Usualy, the number of orientations
     is small, so we do it the simple/expensive way, by combinatorial comparison.
 
@@ -97,8 +90,8 @@ def remove_overlapping_orientations(ref_point, points, to_remove_points):
 
 
 def quadratic_angles(vectors1, vectors2):
-    """ Quadratic angles """
-    return (angle_matrix(vectors1, vectors2) - np.pi) ** 2 / np.pi ** 2
+    """Quadratic angles"""
+    return (angle_matrix(vectors1, vectors2) - np.pi) ** 2 / np.pi**2
 
 
 class Objective:
@@ -117,6 +110,7 @@ class Objective:
         n_fixed_points: int
             Number of fixed points. Zero if None.
     """
+
     def __init__(self, center, points, fixed_points=None):
 
         vectors = points - center
@@ -134,7 +128,7 @@ class Objective:
             self.n_fixed_points = 0
 
     def __call__(self, index, selected_ids):
-        """ Score of the angles from index orientation and the occupied selected ids,
+        """Score of the angles from index orientation and the occupied selected ids,
         plus the angles to the fixed orientations, plus the normalized length weight.
 
         A 95% priority is given to the angle cost contribution, and a 5% to the vector
@@ -158,7 +152,7 @@ class Objective:
 
 
 def choose_ids(total_number, points, objective):
-    """ Choose the domain orientations that maximize the objective function
+    """Choose the domain orientations that maximize the objective function
     Args:
         total_number: int
             Total number of ids to choose. If total_number >= available_ids

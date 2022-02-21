@@ -1,10 +1,14 @@
 from random import shuffle
+
 import numpy as np
 import pandas as pd
-from archngv.building.connectivity.detail.gliovascular_generation.graph_reachout import _maximum_reachout
-from archngv.building.connectivity.detail.gliovascular_generation.graph_reachout import _argsort_components
-from archngv.building.connectivity.detail.gliovascular_generation.graph_reachout import _select_component_targets
-from archngv.building.connectivity.detail.gliovascular_generation.graph_reachout import _distribute_elements_in_buckets
+
+from archngv.building.connectivity.detail.gliovascular_generation.graph_reachout import (
+    _argsort_components,
+    _distribute_elements_in_buckets,
+    _maximum_reachout,
+    _select_component_targets,
+)
 
 
 def test__distribute_elements_in_buckets():
@@ -64,18 +68,21 @@ def test__distribute_elements_in_buckets():
 
 def test_select_component_targets__point_line():
 
-    points = np.array([
-        [0., 0., 0.],
-        [1.01, 0., 0.],
-        [2.01, 0., 0.],
-        [3., 0., 0.],
-        [4.5, 0., 0.],
-        [5.5, 0., 0.],
-        [6.5, 0., 0.]])
+    points = np.array(
+        [
+            [0.0, 0.0, 0.0],
+            [1.01, 0.0, 0.0],
+            [2.01, 0.0, 0.0],
+            [3.0, 0.0, 0.0],
+            [4.5, 0.0, 0.0],
+            [5.5, 0.0, 0.0],
+            [6.5, 0.0, 0.0],
+        ]
+    )
 
-    source = np.array([3., -1., 0.])
+    source = np.array([3.0, -1.0, 0.0])
 
-    component = pd.DataFrame({'x': points[:, 0], 'y': points[:, 1], 'z': points[:, 2]})
+    component = pd.DataFrame({"x": points[:, 0], "y": points[:, 1], "z": points[:, 2]})
 
     ids = _select_component_targets(source, component, 1)
 
@@ -104,14 +111,14 @@ def test_select_component_targets__point_line():
 
 def test_argsort_components():
 
-    source = np.array([0., -1., 2.])
+    source = np.array([0.0, -1.0, 2.0])
 
     comps = []
 
     for i in range(5):
 
-        points = np.column_stack((np.ones(10) * 2. + i, np.arange(-5., 5.), np.zeros(10)))
-        component = pd.DataFrame({'x': points[:, 0], 'y': points[:, 1], 'z': points[:, 2]})
+        points = np.column_stack((np.ones(10) * 2.0 + i, np.arange(-5.0, 5.0), np.zeros(10)))
+        component = pd.DataFrame({"x": points[:, 0], "y": points[:, 1], "z": points[:, 2]})
 
         comps.append(component)
 

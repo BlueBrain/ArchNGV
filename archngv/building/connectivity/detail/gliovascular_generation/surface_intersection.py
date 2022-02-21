@@ -2,15 +2,15 @@
 and the somata positions.
 """
 import math
+
 import numpy as np
 from ngv_ctools.endfeet_reconstruction.local_solvers import second_order_solutions
-
 
 EPS = 1e-6
 
 
 def truncated_length(r, R, L):
-    """ Returns the length from the tip of the cone to the small truncated side
+    """Returns the length from the tip of the cone to the small truncated side
 
     Args:
         r: float
@@ -30,7 +30,7 @@ def truncated_length(r, R, L):
 
 
 def opening_angle(r, R, L):
-    """ Returns the opening angle of the truncated cone.
+    """Returns the opening angle of the truncated cone.
 
     Args:
         r: float
@@ -89,7 +89,7 @@ def cone_intersections(D, V, T, TC, open_angle):
     VT = T - V
 
     c0 = np.dot(np.dot(VT, M), VT)
-    c1 = 2. * np.dot(np.dot(TC, M), VT)
+    c1 = 2.0 * np.dot(np.dot(TC, M), VT)
     c2 = np.dot(np.dot(TC, M), TC)
 
     return second_order_solutions(c2, c1, c0)
@@ -167,22 +167,21 @@ def cylinder_intersections(V, S, T, TC, R2):
     B = ST - V * np.dot(ST, V)
 
     c0 = np.dot(B, B) - R2
-    c1 = 2. * np.dot(A, B)
+    c1 = 2.0 * np.dot(A, B)
     c2 = np.dot(A, A)
 
     return second_order_solutions(c2, c1, c0)
 
 
 def _resolve_segment_direction(start_pos, end_pos, start_rad, end_rad):
-    """ Swaps the start and end of a truncated cone so that the small side comes always first.
-    """
+    """Swaps the start and end of a truncated cone so that the small side comes always first."""
     if start_rad - end_rad > EPS:
         return end_pos, start_pos, end_rad, start_rad
     return start_pos, end_pos, start_rad, end_rad
 
 
 def surface_intersect(astrocyte_positions, potential_targets, astrocyte_target_edges, vasculature):
-    """ From the line segments starting from target points on the skeleton of the vasculature
+    """From the line segments starting from target points on the skeleton of the vasculature
     graph and ending to the astrocytic somata the intersection with the surface of teh cones or
     cyliners is calculated.
 
@@ -219,8 +218,8 @@ def surface_intersect(astrocyte_positions, potential_targets, astrocyte_target_e
     somata_idx, target_idx = astrocyte_target_edges.T.astype(np.int64)
 
     # get target properties
-    target_edge_indices = potential_targets.loc[target_idx, 'edge_index'].to_numpy(dtype=np.int64)
-    target_positions = potential_targets.loc[target_idx, ['x', 'y', 'z']].to_numpy(dtype=np.float32)
+    target_edge_indices = potential_targets.loc[target_idx, "edge_index"].to_numpy(dtype=np.int64)
+    target_positions = potential_targets.loc[target_idx, ["x", "y", "z"]].to_numpy(dtype=np.float32)
 
     n_connections = len(astrocyte_target_edges)
     surface_target_positions = np.empty((n_connections, 3), dtype=np.float32)
@@ -251,17 +250,27 @@ def surface_intersect(astrocyte_positions, potential_targets, astrocyte_target_e
                 # unit length direction of the cone
                 cone_direction = (segment_end_point - segment_beg_point) / segment_length
                 roots = cylinder_intersections(
-                    cone_direction, segment_beg_point, target_point, target_to_soma_vec, segment_end_radius ** 2)
+                    cone_direction,
+                    segment_beg_point,
+                    target_point,
+                    target_to_soma_vec,
+                    segment_end_radius**2,
+                )
 
             else:  # truncated cone
 
                 # make sure that the vector is always from the small radius to the big one
                 (
-                    segment_beg_point, segment_end_point,
-                    segment_beg_radius, segment_end_radius
+                    segment_beg_point,
+                    segment_end_point,
+                    segment_beg_radius,
+                    segment_end_radius,
                 ) = _resolve_segment_direction(
-                    segment_beg_point, segment_end_point,
-                    segment_beg_radius, segment_end_radius)
+                    segment_beg_point,
+                    segment_end_point,
+                    segment_beg_radius,
+                    segment_end_radius,
+                )
 
                 # unit length direction of the cone
                 cone_direction = (segment_end_point - segment_beg_point) / segment_length
@@ -270,18 +279,26 @@ def surface_intersect(astrocyte_positions, potential_targets, astrocyte_target_e
                 cone_angle = opening_angle(segment_beg_radius, segment_end_radius, segment_length)
 
                 # coordinates of the tip of the truncated cone
-                cone_tip = segment_beg_point - truncated_length(
-                    segment_beg_radius, segment_end_radius, segment_length) * cone_direction
+                cone_tip = (
+                    segment_beg_point
+                    - truncated_length(segment_beg_radius, segment_end_radius, segment_length)
+                    * cone_direction
+                )
 
                 # target - astro segment angle with the line of the segment
                 # min and max angles determined from the size of the caps
                 roots = cone_intersections(
-                    cone_direction, cone_tip, target_point, target_to_soma_vec, cone_angle)
+                    cone_direction,
+                    cone_tip,
+                    target_point,
+                    target_to_soma_vec,
+                    cone_angle,
+                )
 
             # segment extent validity
-            if -T_EPS < roots[0] < 1. + T_EPS:
+            if -T_EPS < roots[0] < 1.0 + T_EPS:
                 fraction = roots[0]
-            elif -T_EPS < roots[1] < 1. + T_EPS:
+            elif -T_EPS < roots[1] < 1.0 + T_EPS:
                 fraction = roots[1]
             else:
                 # if the roots are not in [0, 1] then they aren't valid to proceed
@@ -293,14 +310,14 @@ def surface_intersect(astrocyte_positions, potential_targets, astrocyte_target_e
 
             # after determining the point on the surface
             # validate its inclusion in the finite geometry
-            if left > 0. > right:
+            if left > 0.0 > right:
                 surface_astros_idx[n_established] = astro_id
                 vasculature_edge_idx[n_established] = edge_id
                 surface_target_positions[n_established] = surface_point
                 n_established += 1
                 break
 
-            if left < 0. and right < 0.:  # check previous segment
+            if left < 0.0 and right < 0.0:  # check previous segment
 
                 cid = edges[edge_id][0]
                 # the int casting is a fix because np.uin64 is converted
@@ -312,7 +329,7 @@ def surface_intersect(astrocyte_positions, potential_targets, astrocyte_target_e
                 else:  # if there is no parent
                     break
 
-            elif left > 0. and right > 0.:  # check next segment
+            elif left > 0.0 and right > 0.0:  # check next segment
 
                 pid = edges[edge_id][1]
                 children = graph.successors(pid)
@@ -323,6 +340,8 @@ def surface_intersect(astrocyte_positions, potential_targets, astrocyte_target_e
             else:
                 break
 
-    return (surface_target_positions[:n_established],
-            surface_astros_idx[:n_established],
-            vasculature_edge_idx[:n_established])
+    return (
+        surface_target_positions[:n_established],
+        surface_astros_idx[:n_established],
+        vasculature_edge_idx[:n_established],
+    )

@@ -1,9 +1,9 @@
 """NGV constant container for the different ngv objects"""
 
-from bluepysnap.sonata_constants import ConstContainer
 # redirection of useful snap containers for neuronal circuits. This allows
 # from archngv.ngv_constants import Cell, Synapse
 from bluepysnap.bbp import Cell, Synapse  # pylint: disable=unused-import
+from bluepysnap.sonata_constants import ConstContainer
 
 
 class Astrocyte(ConstContainer):

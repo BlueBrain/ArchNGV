@@ -3,18 +3,17 @@
 It uses bluepysnap.circuit.Circuit as main backend.
 """
 from pathlib import Path
-from cached_property import cached_property
 
 import numpy as np
-
 from bluepysnap import Circuit
-from bluepysnap.sonata_constants import Edge
-from bluepysnap.nodes import NodeStorage, NodePopulation
-from bluepysnap.edges import EdgeStorage, EdgePopulation
+from bluepysnap.edges import EdgePopulation, EdgeStorage
 from bluepysnap.morph import MorphHelper
+from bluepysnap.nodes import NodePopulation, NodeStorage
+from bluepysnap.sonata_constants import Edge
+from cached_property import cached_property
 
-from archngv.core.structures import Atlas, Microdomains
 from archngv.core.constants import Population
+from archngv.core.structures import Atlas, Microdomains
 from archngv.exceptions import NGVError
 
 
@@ -27,9 +26,9 @@ def _find_config_location(path):
     path = Path(path).resolve()
 
     if not path.exists():
-        raise NGVError(f'Config path does not exist: {path}')
+        raise NGVError(f"Config path does not exist: {path}")
 
-    return path if path.is_file() else path / 'build/ngv_config.json'
+    return path if path.is_file() else path / "build/ngv_config.json"
 
 
 def _dispatch_nodes(population_type):
@@ -41,10 +40,11 @@ def _dispatch_nodes(population_type):
     Returns:
         NGVNodes: a subclass of NGVNodes constructor.
     """
-    mapping = {"protoplasmic_astrocytes": Astrocytes,
-               Population.NEURONS: Neurons,
-               Population.VASCULATURE: Vasculature,
-               }
+    mapping = {
+        "protoplasmic_astrocytes": Astrocytes,
+        Population.NEURONS: Neurons,
+        Population.VASCULATURE: Vasculature,
+    }
     return mapping.get(population_type, NGVNodes)
 
 
@@ -57,11 +57,12 @@ def _dispatch_edges(population_type):
     Returns:
         NGVEdges: a subclass of NGVEdges constructor.
     """
-    mapping = {Population.NEURONAL: Neuronal,
-               Population.GLIOVASCULAR: GlioVascular,
-               Population.NEUROGLIAL: NeuroGlial,
-               Population.GLIALGLIAL: GlialGlial
-               }
+    mapping = {
+        Population.NEURONAL: Neuronal,
+        Population.GLIOVASCULAR: GlioVascular,
+        Population.NEUROGLIAL: NeuroGlial,
+        Population.GLIALGLIAL: GlialGlial,
+    }
     return mapping.get(population_type, NGVEdges)
 
 
@@ -100,8 +101,7 @@ def _collect_ngv_populations(partial_config, cls):
                 raise NGVError("Duplicated population: '%s'" % population)
             pop_type = file_config["populations"][population].get("type", "biophysical")
             result[population] = _dispatch(pop_type, storage)(
-                storage, population,
-                file_config["populations"][population]
+                storage, population, file_config["populations"][population]
             )
     return result
 
@@ -113,7 +113,8 @@ class AstrocytesMorphHelper(MorphHelper):
     the missing astrocytes radius. This class aims at allowing the use of h5 morphology files for
     the astrocytes and returning the correct morphology path.
     """
-    def get_filepath(self, node_id, extension='h5'):
+
+    def get_filepath(self, node_id, extension="h5"):
         """Return path to h5 morphology file corresponding to `node_id`."""
         return str(super().get_filepath(node_id, extension=extension))
 
@@ -144,8 +145,10 @@ class Astrocytes(NGVNodes):
     @cached_property
     def microdomains(self):
         """Access to the microdomain object for this astrocyte population."""
-        return Microdomains(self.config["microdomains_file"],
-                            self.config["microdomains_overlapping_file"])
+        return Microdomains(
+            self.config["microdomains_file"],
+            self.config["microdomains_overlapping_file"],
+        )
 
     @cached_property
     def morph(self):
@@ -157,9 +160,11 @@ class Astrocytes(NGVNodes):
             Moreover the astrocytes morphologies are stored as h5 file and not swc (see :
             AstrocytesMorphHelper class).
         """
-        return AstrocytesMorphHelper(self.config.get("morphologies_dir"),
-                           self,
-                           self.config.get("alternate_morphologies"))
+        return AstrocytesMorphHelper(
+            self.config.get("morphologies_dir"),
+            self,
+            self.config.get("alternate_morphologies"),
+        )
 
 
 class Vasculature(NGVNodes):
@@ -183,6 +188,7 @@ class Vasculature(NGVNodes):
             The morphologies of the vasculature is handled by the VasculatureAPI package.
         """
         from vasculatureapi import SectionVasculature
+
         return SectionVasculature.load(self.config["vasculature_file"])
 
     @cached_property
@@ -193,12 +199,14 @@ class Vasculature(NGVNodes):
             vasculatureapi.PointVasculature
         """
         from vasculatureapi import PointVasculature
+
         return PointVasculature.load_sonata(self._node_storage.h5_filepath)
 
     @cached_property
     def surface_mesh(self):
         """Returns vasculature surface mesh object."""
         import trimesh
+
         return trimesh.load(self.config["vasculature_mesh_file"])
 
 
@@ -239,7 +247,8 @@ class GlioVascular(NGVEdges):
     def surface_meshes(self):
         """Access the endfeet surface meshes for the gliovascular connection."""
         from archngv.core.datasets import EndfootSurfaceMeshes
-        return EndfootSurfaceMeshes(self.config['endfeet_areas'])
+
+        return EndfootSurfaceMeshes(self.config["endfeet_areas"])
 
     def astrocyte_endfeet(self, astrocyte):
         """Returns the endfeet ids connected to an astrocyte."""
@@ -264,20 +273,26 @@ class GlioVascular(NGVEdges):
     def vasculature_surface_targets(self, endfoot_ids):
         """Returns the Endfeet surface targets on vasculature."""
 
-        return self.get(endfoot_ids, properties=['endfoot_surface_x',
-                                                        'endfoot_surface_y',
-                                                        'endfoot_surface_z'])
+        return self.get(
+            endfoot_ids,
+            properties=["endfoot_surface_x", "endfoot_surface_y", "endfoot_surface_z"],
+        )
 
     def vasculature_sections_segments(self, endfoot_ids):
         """Returns:
-            edge_id: The sonata Vasculature node id that corresponds to the
-                edge id in core.Vasculature and VasculatureAPI.PointVasculature
-            vasculature_section_id: The section id of the vasculature morphology
-            vasculature_segment_id: The segment id of the vaculature morphology
+        edge_id: The sonata Vasculature node id that corresponds to the
+            edge id in core.Vasculature and VasculatureAPI.PointVasculature
+        vasculature_section_id: The section id of the vasculature morphology
+        vasculature_segment_id: The segment id of the vaculature morphology
         """
-        return self.get(endfoot_ids, properties=[Edge.SOURCE_NODE_ID,
-                                                        'vasculature_section_id',
-                                                        'vasculature_segment_id'])
+        return self.get(
+            endfoot_ids,
+            properties=[
+                Edge.SOURCE_NODE_ID,
+                "vasculature_section_id",
+                "vasculature_segment_id",
+            ],
+        )
 
 
 class Neuronal(NGVEdges):
@@ -311,8 +326,12 @@ class GlialGlial(NGVEdges):
             np.unique(b))). The last one being less memory consuming I kept this one.
             TODO : Need to test on a real circuit with touches.
         """
-        return np.unique(np.append(self.efferent_nodes(astrocyte_id, unique=True),
-                                   self.afferent_nodes(astrocyte_id, unique=True)))
+        return np.unique(
+            np.append(
+                self.efferent_nodes(astrocyte_id, unique=True),
+                self.afferent_nodes(astrocyte_id, unique=True),
+            )
+        )
 
 
 class NeuroGlial(NGVEdges):
@@ -349,8 +368,9 @@ class NeuroGlial(NGVEdges):
     def astrocyte_synapses_properties(self, astrocyte_id, properties=None):
         """Returns the synapse properties and ids connected to a given `astrocyte_id`."""
         synapse_ids = self.astrocyte_synapses(astrocyte_id)
-        return self._edge_storage.circuit.neuronal_connectome.get(synapse_ids,
-                                                                  properties=properties)
+        return self._edge_storage.circuit.neuronal_connectome.get(
+            synapse_ids, properties=properties
+        )
 
     def connected_neurons(self, astrocyte_group=None):
         """Returns all the neuron ids connected to the astrocytes."""
@@ -384,16 +404,16 @@ class NGVCircuit(Circuit):
     @cached_property
     def nodes(self):
         """Access to node population(s)."""
-        return _collect_ngv_populations(self._config['networks']['nodes'],
-                                        lambda cfg: NodeStorage(cfg, self)
-                                        )
+        return _collect_ngv_populations(
+            self._config["networks"]["nodes"], lambda cfg: NodeStorage(cfg, self)
+        )
 
     @cached_property
     def edges(self):
         """Access to edges population(s)."""
-        return _collect_ngv_populations(self._config['networks']['edges'],
-                                        lambda cfg: EdgeStorage(cfg, self)
-                                        )
+        return _collect_ngv_populations(
+            self._config["networks"]["edges"], lambda cfg: EdgeStorage(cfg, self)
+        )
 
     def _get_population(self, node_class):
         for pop in list(self.nodes.values()) + list(self.edges.values()):
@@ -401,7 +421,8 @@ class NGVCircuit(Circuit):
                 return pop
         raise NGVError(
             f"Cannot import the '{node_class}' object. Please verify the config and if"
-            " you have added the correct files in the network.")
+            " you have added the correct files in the network."
+        )
 
     @cached_property
     def neurons(self):

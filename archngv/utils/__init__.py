@@ -1,5 +1,3 @@
 """ Imports
 """
-from . import geometry
-from . import linear_algebra
-from . import combinatronics
+from . import combinatronics, geometry, linear_algebra
