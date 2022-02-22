@@ -12,14 +12,20 @@ import yaml
 REQUIRED_PATH = click.Path(exists=True, readable=True, dir_okay=False, resolve_path=True)
 
 
-def load_yaml(filepath):
+def load_yaml(filepath: Union[str, Path]) -> dict:
     """Load YAML file."""
     with open(filepath, mode="r", encoding="utf-8") as f:
         # TODO: verify config schema?
         return yaml.safe_load(f)
 
 
-def write_json(filepath: Union[str, Path], data: dict):
+def load_json(filepath: Union[str, Path]) -> dict:
+    """Load json file"""
+    with open(filepath, mode="r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def write_json(filepath: Union[str, Path], data: dict) -> None:
     """Write data to json file"""
     with open(filepath, mode="w", encoding="utf-8") as out_file:
         json.dump(data, out_file, indent=2)

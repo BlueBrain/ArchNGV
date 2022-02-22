@@ -31,7 +31,6 @@ def build_ngv_config(root_dir: Path, manifest: dict) -> dict:
             "$COMPONENT_DIR": "$BUILD_DIR",
             "$NETWORK_DIR": "$BUILD_DIR",
         },
-        "circuit_dir": "$CIRCUIT_DIR",
         "components": {},
         "networks": {"nodes": [], "edges": []},
     }
@@ -50,16 +49,6 @@ def build_ngv_config(root_dir: Path, manifest: dict) -> dict:
             root_dir, common["atlas"], f"{manifest['cell_placement']['density']}.nrrd"
         ),
         "brain_regions": _make_abs(root_dir, common["atlas"], "brain_regions.nrrd"),
-    }
-
-    # add the parameters used for this build
-    # TODO: Remove parameters from sonata configs
-    config["parameters"] = {
-        "cell_placement": manifest["cell_placement"],
-        "microdomain_tesselation": manifest["microdomains"],
-        "gliovascular_connectivity": manifest["gliovascular_connectivity"],
-        "neuroglial_connectivity": {},
-        "synthesis": manifest["synthesis"],
     }
 
     return config
@@ -119,7 +108,6 @@ def _add_neuronal_circuit(config, circuit_path, neuron_config_filename):
             [
                 {
                     "nodes_file": _check_sonata_file(blue_config.Run.CircuitPath, "nodes"),
-                    "node_types_file": None,
                 }
             ]
         )
@@ -128,7 +116,6 @@ def _add_neuronal_circuit(config, circuit_path, neuron_config_filename):
             [
                 {
                     "edges_file": _check_sonata_file(blue_config.Run.nrnPath, "edges"),
-                    "edge_types_file": None,
                 }
             ]
         )
@@ -201,7 +188,6 @@ def _add_ngv_sonata_nodes_edges(config: dict, root_dir: Path, manifest: dict) ->
         [
             {
                 "nodes_file": "$NETWORK_DIR/sonata/nodes/vasculature.h5",
-                "node_types_file": None,
                 "populations": {
                     Population.VASCULATURE: {
                         "type": "vasculature",
@@ -212,7 +198,6 @@ def _add_ngv_sonata_nodes_edges(config: dict, root_dir: Path, manifest: dict) ->
             },
             {
                 "nodes_file": "$NETWORK_DIR/sonata/nodes/glia.h5",
-                "node_types_file": None,
                 "populations": {
                     Population.ASTROCYTES: {
                         "type": "protoplasmic_astrocytes",
@@ -231,17 +216,14 @@ def _add_ngv_sonata_nodes_edges(config: dict, root_dir: Path, manifest: dict) ->
         [
             {
                 "edges_file": f"$NETWORK_DIR/sonata/edges/{Population.NEUROGLIAL}.h5",
-                "edge_types_file": None,
                 "populations": {Population.NEUROGLIAL: {"type": Population.NEUROGLIAL}},
             },
             {
                 "edges_file": f"$NETWORK_DIR/sonata/edges/{Population.GLIALGLIAL}.h5",
-                "edge_types_file": None,
                 "populations": {Population.GLIALGLIAL: {"type": Population.GLIALGLIAL}},
             },
             {
                 "edges_file": f"$NETWORK_DIR/sonata/edges/{Population.GLIOVASCULAR}.h5",
-                "edge_types_file": None,
                 "populations": {
                     Population.GLIOVASCULAR: {
                         "type": Population.GLIOVASCULAR,

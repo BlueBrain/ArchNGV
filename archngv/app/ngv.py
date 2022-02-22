@@ -29,7 +29,6 @@ def ngv_config(bioname, output):
         if isinstance(value, str) and not Path(value).is_absolute():
             manifest["common"][key] = str(Path(bioname, value).resolve())
 
-    # TODO: parameters should not be part of the sonata config, remove in the future
     for rule in [
         "cell_placement",
         "microdomains",
