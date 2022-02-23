@@ -1,6 +1,6 @@
 __default__:
   jobname: default_ngv
-  account: 'proj62'
+  account: '${{SALLOC_ACCOUNT}}'
   nodes: 1
   tasks: 5
   partition: 'prod_small'
