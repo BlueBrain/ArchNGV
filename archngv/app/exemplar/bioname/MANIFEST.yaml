@@ -1,14 +1,79 @@
 common:
-  log_level: 'WARNING'
+  log_level: WARNING
   seed: 0
-  atlas: '/gpfs/bbp.cscs.ch/project/proj62/NGV/atlases/O1-230/20190517'
-  vasculature: '/gpfs/bbp.cscs.ch/project/proj62/NGV/ARCHNGV/Data/vasculature_datasets/raw_pruned_cap_circuit_coo_inscribed_spec_atlas_translated_new_spec.h5'
-  vasculature_mesh: '/gpfs/bbp.cscs.ch/project/proj62/NGV/ARCHNGV/Data/vasculature_datasets/raw_pruned_cap_circuit_coo_inscribed_spec_atlas_translated_triangulated_zup_fixed.obj'
-  base_circuit: '/gpfs/bbp.cscs.ch/project/proj62/Circuits/O1/20190912_spines/CircuitConfig'
-  base_circuit_sonata: '/gpfs/bbp.cscs.ch/project/proj62/Circuits/O1/20190912_spines/sonata/circuit_config.json'
-  base_circuit_cells: '/gpfs/bbp.cscs.ch/project/proj62/Circuits/O1/20190912_spines/sonata/networks/nodes/All/nodes.h5'
-  base_circuit_connectome: '/gpfs/bbp.cscs.ch/project/proj62/Circuits/O1/20190912_spines/sonata/networks/edges/functional/All/edges.h5'
+  atlas: /gpfs/bbp.cscs.ch/project/proj62/NGV/atlases/O1-230/20190517
+  vasculature: /gpfs/bbp.cscs.ch/project/proj62/NGV/ARCHNGV/Data/vasculature_datasets/raw_pruned_cap_circuit_coo_inscribed_spec_atlas_translated_new_spec.h5
+  vasculature_mesh: /gpfs/bbp.cscs.ch/project/proj62/NGV/ARCHNGV/Data/vasculature_datasets/raw_pruned_cap_circuit_coo_inscribed_spec_atlas_translated_triangulated_zup_fixed.obj
+  base_circuit: /gpfs/bbp.cscs.ch/project/proj62/Circuits/O1/20190912_spines/CircuitConfig
+  base_circuit_sonata: /gpfs/bbp.cscs.ch/project/proj62/Circuits/O1/20190912_spines/sonata/circuit_config.json
+  base_circuit_cells: /gpfs/bbp.cscs.ch/project/proj62/Circuits/O1/20190912_spines/sonata/networks/nodes/All/nodes.h5
+  base_circuit_connectome: /gpfs/bbp.cscs.ch/project/proj62/Circuits/O1/20190912_spines/sonata/networks/edges/functional/All/edges.h5
 
 assign_emodels:
-  templates_dir: '/gpfs/bbp.cscs.ch/project/proj62/NGV/emodels'
-  hoc_template: 'astrocyte'
+  templates_dir: /gpfs/bbp.cscs.ch/project/proj62/NGV/emodels
+  hoc_template: astrocyte
+
+cell_placement:
+  density: '[density]astrocytes'
+  soma_radius:
+  - 5.6
+  - 0.74
+  - 0.1
+  - 20
+  Energy:
+    potentials:
+      spring:
+      - 32.0
+      - 1.0
+  MetropolisHastings:
+    n_initial: 10
+    beta: 0.01
+    ntrials: 3
+    cutoff_radius: 60.0
+
+microdomains:
+  overlap_distribution:
+    type: normal
+    values:
+    - 0.1
+    - 1.0e-07
+
+gliovascular_connectivity:
+  graph_targeting:
+    linear_density: 0.17
+  connection:
+    reachout_strategy: maximum_reachout
+    endfeet_distribution:
+    - 2
+    - 2
+    - 1
+    - 5
+  surface_targeting: {}
+
+endfeet_surface_meshes:
+  fmm_cutoff_radius: 1000.0
+  area_distribution:
+  - 192.0
+  - 160.0
+  - 0.0
+  - 1000.0
+  thickness_distribution:
+  - 0.97
+  - 0.1
+  - 0.01
+  - 2.0
+
+synthesis:
+  perimeter_distribution:
+    enabled: true
+    statistical_model:
+      slope: 2.060005867796768
+      intercept: 1.0219733661696733
+      standard_deviation: 1.1161359624857308
+    smoothing:
+      window:
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0

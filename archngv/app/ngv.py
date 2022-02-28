@@ -29,18 +29,6 @@ def ngv_config(bioname, output):
         if isinstance(value, str) and not Path(value).is_absolute():
             manifest["common"][key] = str(Path(bioname, value).resolve())
 
-    for rule in [
-        "cell_placement",
-        "microdomains",
-        "gliovascular_connectivity",
-        "synthesis",
-    ]:
-        manifest[rule] = load_yaml(Path(bioname, f"{rule}.yaml"))
-
-    manifest["synthesis"]["endfeet_area_reconstruction"] = load_yaml(
-        Path(bioname, "endfeet_area.yaml")
-    )
-
     write_json(filepath=output, data=build_ngv_config(root_dir=bioname, manifest=manifest))
 
 
@@ -93,7 +81,7 @@ def cell_placement(config, atlas, atlas_cache, vasculature, seed, output):
     numpy.random.seed(seed)
     LOGGER.info("Seed: %d", seed)
 
-    config = load_yaml(config)
+    config = load_yaml(config)["cell_placement"]
 
     atlas = Atlas.open(atlas, cache_dir=atlas_cache)
     voxelized_intensity = atlas.load_data(config["density"])
@@ -185,7 +173,7 @@ def build_microdomains(config, astrocytes, atlas, atlas_cache, seed, output_dir)
     LOGGER.info("Seed: %d", seed)
     numpy.random.seed(seed)
 
-    config = load_yaml(config)
+    config = load_yaml(config)["microdomains"]
 
     atlas = Atlas.open(atlas, cache_dir=atlas_cache)
     bbox = atlas.load_data("brain_regions").bbox
@@ -261,7 +249,7 @@ def gliovascular_connectivity(config, astrocytes, microdomains, vasculature, see
         astrocytic_positions=astrocytes.positions,
         astrocytic_domains=MicrodomainTesselation(microdomains),
         vasculature=PointVasculature.load_sonata(vasculature),
-        params=load_yaml(config),
+        params=load_yaml(config)["gliovascular_connectivity"],
     )
 
     LOGGER.info("Exporting sonata edges...")
@@ -549,7 +537,7 @@ def build_endfeet_surface_meshes(
     numpy.random.seed(seed)
     LOGGER.info("Seed: %d", seed)
 
-    config = load_yaml(config_path)
+    config = load_yaml(config_path)["endfeet_surface_meshes"]
 
     LOGGER.info("Load vasculature mesh at %s", vasculature_mesh_path)
     vasculature_mesh = openmesh.read_trimesh(vasculature_mesh_path)
@@ -661,7 +649,7 @@ def synthesis(
         client = Client(processes=False, threads_per_worker=1)
 
     Path(out_morph_dir).mkdir(exist_ok=True, parents=True)
-    config = load_yaml(config_path)
+    config = load_yaml(config_path)["synthesis"]
     n_astrocytes = len(CellData(astrocytes_path))
     paths = SynthesisInputPaths(
         astrocytes=astrocytes_path,

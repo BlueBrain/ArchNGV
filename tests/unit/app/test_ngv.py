@@ -64,7 +64,7 @@ def test_cell_placement():
         tested.cell_placement,
         [
             "--config",
-            BIONAME_DIR / "cell_placement.yaml",
+            BIONAME_DIR / "MANIFEST.yaml",
             "--atlas",
             EXTERNAL_DIR / "atlas",
             "--atlas-cache",
@@ -100,7 +100,7 @@ def test_microdomains():
         tested.build_microdomains,
         [
             "--config",
-            BIONAME_DIR / "microdomains.yaml",
+            BIONAME_DIR / "MANIFEST.yaml",
             "--astrocytes",
             FIN_SONATA_DIR / "nodes/glia.h5",
             "--atlas",
@@ -121,7 +121,7 @@ def test_gliovascular_connectivity():
         tested.gliovascular_connectivity,
         [
             "--config",
-            BIONAME_DIR / "gliovascular_connectivity.yaml",
+            BIONAME_DIR / "MANIFEST.yaml",
             "--astrocytes",
             FIN_SONATA_DIR / "nodes/glia.h5",
             "--microdomains",
@@ -224,7 +224,7 @@ def test_endfeet_areas():
         tested.build_endfeet_surface_meshes,
         [
             "--config-path",
-            BIONAME_DIR / "endfeet_area.yaml",
+            BIONAME_DIR / "MANIFEST.yaml",
             "--vasculature-mesh-path",
             EXTERNAL_DIR / "atlas/vasculature.obj",
             "--gliovascular-connectivity-path",
@@ -243,7 +243,7 @@ def test_synthesis():
         tested.synthesis,
         [
             "--config-path",
-            BIONAME_DIR / "synthesis.yaml",
+            BIONAME_DIR / "MANIFEST.yaml",
             "--tns-distributions-path",
             BIONAME_DIR / "tns_distributions.json",
             "--tns-parameters-path",

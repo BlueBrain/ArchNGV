@@ -197,7 +197,7 @@ rule cell_placement:
     shell:
         run_cmd([
             f'ngv {LOG_LEVEL} cell-placement',
-            f'--config {bioname_path("cell_placement.yaml")}',
+            f'--config {bioname_path("MANIFEST.yaml")}',
             f'--atlas {ATLAS}',
             f'--atlas-cache {ATLAS_CACHE_DIR}',
             f'--vasculature {input}',
@@ -256,7 +256,7 @@ rule microdomains:
     shell:
         run_cmd([
             f'ngv {LOG_LEVEL} microdomains',
-            f'--config {bioname_path("microdomains.yaml")}',
+            f'--config {bioname_path("MANIFEST.yaml")}',
             '--astrocytes {input}',
             f'--atlas {ATLAS}',
             f'--atlas-cache {ATLAS_CACHE_DIR}',
@@ -280,7 +280,7 @@ rule gliovascular_connectivity:
     shell:
         run_cmd([
             f'ngv {LOG_LEVEL} gliovascular-connectivity',
-            f'--config {bioname_path("gliovascular_connectivity.yaml")}',
+            f'--config {bioname_path("MANIFEST.yaml")}',
             '--astrocytes {input[astrocytes]}',
             '--microdomains {input[microdomains]}',
             '--vasculature {input[vasculature]}',
@@ -379,7 +379,7 @@ rule endfeet_area:
     shell:
         run_cmd([
             f'ngv {LOG_LEVEL} endfeet-area',
-            f'--config-path {bioname_path("endfeet_area.yaml")}',
+            f'--config-path {bioname_path("MANIFEST.yaml")}',
             f'--vasculature-mesh-path {config["common"]["vasculature_mesh"]}',
             '--gliovascular-connectivity-path {input[gliovascular_connectivity]}',
             '--output-path {output}',
@@ -405,7 +405,7 @@ rule synthesis:
         run_cmd([
             'srun' if PARALLEL else '',
             f'ngv {LOG_LEVEL} synthesis',
-            f'--config-path {bioname_path("synthesis.yaml")}',
+            f'--config-path {bioname_path("MANIFEST.yaml")}',
             f'--tns-distributions-path {bioname_path("tns_distributions.json")}',
             f'--tns-parameters-path {bioname_path("tns_parameters.json")}',
             f'--tns-context-path {bioname_path("tns_context.json")}',

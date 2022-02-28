@@ -1,0 +1,14 @@
+common:
+  log_level: 'WARNING'
+  seed: 0
+  atlas: 'atlas-path'
+  vasculature: 'vasculature-path'
+  vasculature_mesh: 'vasculature-mesh-path'
+  base_circuit: 'base-circuit-path'
+  base_circuit_sonata: 'base-sonata-path'
+  base_circuit_cells: 'base-circuit-nodes'
+  base_circuit_connectome: 'base-circuit-edges'
+
+assign_emodels:
+  templates_dir: 'emodels-path'
+  hoc_template: 'astrocyte'

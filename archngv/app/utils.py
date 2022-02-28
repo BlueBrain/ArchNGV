@@ -19,6 +19,22 @@ def load_yaml(filepath: Union[str, Path]) -> dict:
         return yaml.safe_load(f)
 
 
+def write_yaml(filepath: Union[str, Path], data: dict) -> None:
+    """Writes dict data to yaml"""
+
+    class Dumper(yaml.SafeDumper):
+        """Custom dumper that adds an empty line between root level entries"""
+
+        def write_line_break(self, data=None):
+            super().write_line_break(data)
+
+            if len(self.indents) == 1:
+                super().write_line_break()
+
+    with open(filepath, mode="w", encoding="utf-8") as out_file:
+        yaml.dump(data, out_file, Dumper=Dumper, sort_keys=False, default_flow_style=False)
+
+
 def load_json(filepath: Union[str, Path]) -> dict:
     """Load json file"""
     with open(filepath, mode="r", encoding="utf-8") as f:

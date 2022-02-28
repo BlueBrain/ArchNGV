@@ -1,3 +1,0 @@
-overlap_distribution:
-  type: normal
-  values: [0.1, 0.0000001]

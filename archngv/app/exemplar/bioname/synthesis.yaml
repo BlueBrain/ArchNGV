@@ -1,8 +1,0 @@
-perimeter_distribution:
-    enabled: true
-    statistical_model:
-        slope: 2.060005867796768
-        intercept: 1.0219733661696733
-        standard_deviation: 1.1161359624857308
-    smoothing:
-        window: [1.0, 1.0, 1.0, 1.0, 1.0]
