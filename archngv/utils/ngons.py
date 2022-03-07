@@ -2,6 +2,7 @@
 Functions related to triangles
 """
 import math
+from typing import List
 
 import numpy as np
 
@@ -411,16 +412,16 @@ def local_to_global_polygon_ids(polygon_ids):
     return np.cumsum(is_different)
 
 
-def triangles_to_polygons(triangles, polygon_ids):
+def triangles_to_polygons(triangles: np.ndarray, polygon_ids: np.ndarray) -> List[List[int]]:
     """Converts triangles to a polygon list
 
     Args:
-        triangles: array[int, (N, 3)]
-            Array of triangles in specific order to reconstruct polygons
-        polygon_ids: array[int, N]
-            The polygon id that each triangle belongs to.
+        triangles:
+            Integer array of triangles (N, 3) in specific order to reconstruct polygons
+        polygon_ids:
+            Integer array of the polygon id (N,) that each triangle belongs to.
     Returns:
-        polygons: list[list[int]]
+        List of polygons, where each polygon is a list of unique vertices.
 
     Notes:
         Triangles have to be ordered in the following way:
@@ -440,6 +441,7 @@ def triangles_to_polygons(triangles, polygon_ids):
 
     # sort function which uses the enumeration index of each triangle
     # to lookup at the polygon id and use it for the grouping.
+    # groupby keys must be sorted to work
     group_func = lambda tp: polygon_ids[tp[0]]
     grouped_by_polygon_id = groupby(enumerate(triangles), key=group_func)
 

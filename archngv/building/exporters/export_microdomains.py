@@ -1,10 +1,17 @@
 """ Microdomain expoerters functions """
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, Dict, List
 
-import h5py
-import numpy
+import numpy as np
+
+from archngv.building.exporters.grouped_properties import export_grouped_properties
+
+if TYPE_CHECKING:
+
+    from archngv.core.datasets import Microdomain
 
 
-def export_structure(filename, domains):
+def export_structure(filename: Path, domains: List["Microdomain"]) -> None:
     """Export microdomain tesselation structure
 
     Args:
@@ -15,45 +22,55 @@ def export_structure(filename, domains):
             data:
                 points: array[float32, (N, 3)]
                     xyz coordinates of microdomain points
-                triangle_data   array[uint64, (M, 4)]
+                triangle_data: array[int64, (M, 4)]
                     [polygon_id, v0, v1, v2]
                     The polygon the triangle belongs to and its vertices
-                neighbors
+                neighbors: array[int64, (K, 1)]
                     The neighbors to each triangle. Negative numbers signify a
                     bounding box wall.
 
-            offsets: array[uint64, (N + 1, 3)]
-                [points, triangle_data, neighbors]
-                The data for the i-th domain:
-                    points[offsets[i, 0]: offsets[i + 1, 0]]
-                    triangle_data[offsets[i, 1]: offsets[i + 1, 1]]
-                    neighbors[offsets[i, 2]: offsets[i + 1, 2]]
+            offsets:
+                Assuming there are G groups to be stored.
+                points: array[int64, (G + 1,)]
+                triangle_data: array[int64, (G + 1,)]
+                neighbors: array[int64, (G + 1,)]
+
+        The data of the i-th group in X dataset corresponds to:
+            data[X][offsets[X][i]: offsets[X][i+1]]
     """
     n_domains = len(domains)
-    with h5py.File(filename, "w") as fd:
 
-        data_group = fd.create_group("data")
-        points, triangle_data, neighbors = [], [], []
+    properties_to_attributes = {
+        "points": "points",
+        "triangle_data": "triangle_data",
+        "neighbors": "neighbor_ids",
+    }
 
-        # offsets are of size n_domains + 1 because it is convenient
-        # to query the offset of the i-th domain as (offsets[i], offsets[i + 1])
-        offsets = numpy.zeros((n_domains + 1, 3), dtype=numpy.uint64)
+    property_dtypes = {"points": np.float32, "triangle_data": np.int64, "neighbors": np.int64}
 
-        for index, dom in enumerate(domains):
+    properties: Dict[str, Dict[str, Any]] = {
+        name: {
+            "values": [],
+            "offsets": np.zeros((n_domains + 1), dtype=np.int64),
+        }
+        for name in properties_to_attributes
+    }
 
-            ps, tri_data, neighs = dom.points, dom.triangle_data, dom.neighbor_ids
+    for index, dom in enumerate(domains):
+        for property_name, attribute_name in properties_to_attributes.items():
+            values = getattr(dom, attribute_name)
+            attr = properties[property_name]
+            attr["values"].append(values)
+            attr["offsets"][index + 1] = attr["offsets"][index] + len(values)
 
-            offsets[index + 1] = offsets[index] + (len(ps), len(tri_data), len(neighs))
+    properties["points"]["values"] = np.vstack(properties["points"]["values"]).astype(
+        property_dtypes["points"]
+    )
+    properties["triangle_data"]["values"] = np.vstack(properties["triangle_data"]["values"]).astype(
+        property_dtypes["triangle_data"]
+    )
+    properties["neighbors"]["values"] = np.hstack(properties["neighbors"]["values"]).astype(
+        property_dtypes["neighbors"]
+    )
 
-            points.extend(ps)
-            triangle_data.extend(tri_data)
-            neighbors.extend(neighs)
-
-        data_group.create_dataset("points", data=points, dtype=numpy.float32)
-        data_group.create_dataset("triangle_data", data=triangle_data, dtype=numpy.uint64)
-        data_group.create_dataset("neighbors", data=neighbors, dtype=numpy.int64)
-
-        offsets_dset = fd.create_dataset("offsets", data=offsets, dtype=numpy.uint64)
-        offsets_dset.attrs["column_names"] = numpy.array(
-            ["points", "triangle_data", "neighbors"], dtype=h5py.special_dtype(vlen=str)
-        )
+    export_grouped_properties(filename, properties)

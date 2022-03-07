@@ -1,6 +1,7 @@
 import os
 
 import numpy as np
+from numpy import testing as npt
 import pytest
 
 from archngv.building.exporters.export_microdomains import export_structure
@@ -34,7 +35,7 @@ class MockMicrodomainTesselation(object):
         return np.column_stack((np.cos(thetas), np.sin(thetas), zs))
 
     def domain_triangles(self, _):
-        return np.asarray([(0, 1, 2), (2, 3, 4), (4, 5, 6), (6, 7, 8), (9, 0, 1)], dtype=np.uintp)
+        return np.asarray([(0, 1, 2), (1, 2, 3), (2, 3, 4), (3, 4, 5), (1, 3, 5)], dtype=np.uintp)
 
     def domain_triangle_data(self, _):
         polygon_ids = np.array([0, 0, 1, 1, 0], dtype=np.uintp)
@@ -77,20 +78,20 @@ def test_len(microdomains, mockdomains):
 def test_iter(microdomains, mockdomains):
 
     for mdom, fdom in zip(microdomains, mockdomains):
-        assert np.allclose(mdom.points, fdom.points)
-        assert np.allclose(mdom.triangles, fdom.triangles)
+        npt.assert_allclose(mdom.points, fdom.points)
+        npt.assert_allclose(mdom.triangles, fdom.triangles)
 
 
 def test_domain_points(microdomains, mockdomains):
     for astrocyte_index in range(N_CELLS):
-        assert np.allclose(
+        npt.assert_allclose(
             microdomains.domain_points(astrocyte_index), mockdomains.domain_points(astrocyte_index)
         )
 
 
 def test_domain_triangles(microdomains, mockdomains):
     for astrocyte_index in range(N_CELLS):
-        assert np.allclose(
+        npt.assert_allclose(
             microdomains.domain_triangles(astrocyte_index),
             mockdomains.domain_triangles(astrocyte_index),
         )
@@ -98,18 +99,33 @@ def test_domain_triangles(microdomains, mockdomains):
 
 def test_domain_neighbors(microdomains, mockdomains):
     for astrocyte_index in range(N_CELLS):
-        assert np.all(
-            microdomains.domain_neighbors(astrocyte_index)
-            == mockdomains.domain_neighbors(astrocyte_index)
+        npt.assert_array_equal(
+            microdomains.domain_neighbors(astrocyte_index),
+            mockdomains.domain_neighbors(astrocyte_index),
         )
 
 
-def test_domain_points_object_points(microdomains):
-    for i, obj in enumerate(microdomains):
-        np.testing.assert_allclose(obj.points, microdomains.domain_points(i))
-        np.testing.assert_allclose(obj.triangle_data, microdomains.domain_triangle_data(i))
-        np.testing.assert_allclose(
-            obj.neighbor_ids, microdomains.domain_neighbors(i, omit_walls=False)
+def test_domain_objects(microdomains):
+
+    scaling_factors = np.linspace(0.1, 100.0, len(microdomains))
+
+    for domain_index, domain in enumerate(microdomains):
+
+        npt.assert_allclose(domain.points, microdomains.domain_points(domain_index))
+        npt.assert_allclose(
+            domain.triangle_data,
+            microdomains.domain_triangle_data(domain_index),
+        )
+        npt.assert_allclose(
+            domain.neighbor_ids, microdomains.domain_neighbors(domain_index, omit_walls=False)
+        )
+
+        scale_factor = scaling_factors[domain_index]
+        new_domain = domain.scale(scale_factor)
+
+        npt.assert_allclose(
+            new_domain.points,
+            scale_factor * (domain.points - domain.centroid) + domain.centroid,
         )
 
 
@@ -119,7 +135,7 @@ def test_connectivity(microdomains):
         [[0, 1], [0, 2], [0, 3], [0, 4], [1, 2], [1, 3], [1, 4], [2, 3], [2, 4]], dtype=np.int32
     )
 
-    np.testing.assert_allclose(expected, microdomains.connectivity)
+    npt.assert_allclose(expected, microdomains.connectivity)
 
 
 def test_export_mesh(microdomains, directory_path):

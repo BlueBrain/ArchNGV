@@ -1,5 +1,10 @@
 import tempfile
 from pathlib import Path
+
+import h5py
+import numpy as np
+from numpy import testing as npt
+
 from archngv.app.utils import load_yaml
 from archngv.building import legacy as tested
 
@@ -67,3 +72,37 @@ def test_merge_configuration_files():
 
         actual_manifest = load_yaml(out_merged_filepath)
         assert expected_manifest == actual_manifest, (actual_manifest, expected_manifest)
+
+
+def test_convert_microdomains_to_generic_format():
+
+    old_file_path = DATA_DIR / "legacy/convert_microdomains_to_generic_format/microdomains.h5"
+
+    with tempfile.NamedTemporaryFile(suffix=".h5") as tfile:
+
+        new_file_path = tfile.name
+        tested.convert_microdomains_to_generic_format(
+            old_file_path=old_file_path, new_file_path=new_file_path
+        )
+
+        with h5py.File(old_file_path, "r") as old_file:
+            with h5py.File(new_file_path, "r") as new_file:
+
+                npt.assert_allclose(old_file["data"]["points"][:], new_file["data"]["points"][:])
+                npt.assert_allclose(
+                    old_file["data"]["triangle_data"][:], new_file["data"]["triangle_data"][:]
+                )
+                npt.assert_allclose(
+                    old_file["data"]["neighbors"][:], new_file["data"]["neighbors"][:]
+                )
+
+                npt.assert_allclose(
+                    old_file["offsets"][:],
+                    np.column_stack(
+                        (
+                            new_file["offsets"]["points"],
+                            new_file["offsets"]["triangle_data"],
+                            new_file["offsets"]["neighbors"],
+                        )
+                    ),
+                )

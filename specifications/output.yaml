@@ -16,6 +16,16 @@ custom:
         object_type: group
         contents:
 
+          points:
+
+            description: >
+              3D points  of microdomain's triangulated faces.
+              Columns [x, y, z]
+            object_type: dataset
+            number_of_columns: 3
+            dtype: float32
+
+
           neighbors:
 
             description: >
@@ -25,15 +35,6 @@ custom:
             object_type: dataset
             number_of_columns: 1
             dtype: int64
-
-          points:
-
-            description: >
-              3D points  of microdomain's triangulated faces.
-              Columns [x, y, z]
-            object_type: dataset
-            number_of_columns: 3
-            dtype: float32
 
           triangle_data:
 
@@ -45,17 +46,32 @@ custom:
               Columns [polygon_id, point_index_i, point_index_j, point_index_k]
             object_type: dataset
             number_of_columns: 4
-            dtype: uint64
+            dtype: int64
 
-    offsets:
+      offsets:
+        object_type: group
+        contents:
 
-      description: >
-        Offsets specify the ranges in the datasets above. For microdomain i, its respective
-        points will be points[offsets[i, 0]: offsets[i+1, 0]].
-        Columns [points_offsets, triangle_data_offsets, neighbors_offsets]
-      object_type: dataset
-      number_of_columns: 3
-      dtype: uint64
+          points:
+
+            description: Offsets specify the ranges in the points dataset.
+            object_type: dataset
+            number_of_columns: 1
+            dtype: int64
+
+          neighbors:
+
+            description: Offsets specify the ranges in the neighbors dataset.
+            object_type: dataset
+            number_of_columns: 1
+            dtype: int64
+
+          triangle_data:
+
+            description: Offsets specify the ranges in the triangle_data dataset.
+            object_type: dataset
+            number_of_columns: 1
+            dtype: int64
 
 sonata:
 

@@ -1,6 +1,7 @@
 """Archngv dataset classes."""
-
 from collections import namedtuple
+from pathlib import Path
+from typing import Dict, Iterator, List, Tuple, Union
 
 import h5py
 import numpy as np
@@ -10,16 +11,7 @@ from archngv.core.sonata_readers import EdgesReader, NodesReader
 from archngv.exceptions import NGVError
 from archngv.spatial import ConvexPolygon
 
-DOMAIN_TRIANGLE_TYPE = {"polygon_id": 0, "vertices": slice(1, 4)}
-
-
-DOMAIN_OFFSET_TYPE = {
-    "points": 0,
-    "triangle_data": 1,
-    "neighbors": 2,
-    "all": None,
-    "domain_data": slice(0, 2),
-}
+DOMAIN_TRIANGLE_TYPE: Dict[str, Union[int, slice]] = {"polygon_id": 0, "vertices": slice(1, 4)}
 
 
 class CellData(NodesReader):
@@ -117,27 +109,27 @@ class GlialglialConnectivity(EdgesReader):
 class Microdomain(ConvexPolygon):
     """Extends Convex Polygon shape into an astrocytic microdomain with extra properties"""
 
-    def __init__(self, points, triangle_data, neighbor_ids):
+    def __init__(self, points: np.ndarray, triangle_data: np.ndarray, neighbors: np.ndarray):
         self._polygon_ids = triangle_data[:, DOMAIN_TRIANGLE_TYPE["polygon_id"]]
         triangles = triangle_data[:, DOMAIN_TRIANGLE_TYPE["vertices"]]
         super().__init__(points, triangles)
-        self.neighbor_ids = neighbor_ids
+        self.neighbor_ids = neighbors
 
     @property
-    def polygons(self):
+    def polygons(self) -> List[List[int]]:
         """Returns the polygons of the domain"""
         from archngv.utils.ngons import triangles_to_polygons
 
         return triangles_to_polygons(self._triangles, self._polygon_ids)
 
     @property
-    def triangle_data(self):
+    def triangle_data(self) -> np.ndarray:
         """Returns the triangle data of the microdomains
         [polygon_id, v0, v1, v2]
         """
         return np.column_stack((self._polygon_ids, self._triangles))
 
-    def scale(self, scale_factor):
+    def scale(self, scale_factor: float) -> "Microdomain":
         """Uniformly scales the polygon by a scale_factor, assuming its centroid
         sits on the origin.
         """
@@ -168,101 +160,130 @@ class H5ContextManager:
         self.close()
 
 
-class MicrodomainTesselation(H5ContextManager):
+class GroupedProperties(H5ContextManager):
+    """Access grouped properties in an hdf5 file
+
+    Properties are stored at the root level and they are accompanied by an offset dataset with the
+    same name as the property. (e.g. /points and /offsets/points)
+
+    Example:
+
+    /property1
+    /property2
+    /offsets/property1
+    /offsets/property2
+
+    The values that correspond in each group can be accessed via the respective offsets. The values
+    in the i-th group correspond to values[offsets[i]: offsets[i + 1]].
+    """
+
+    @property
+    def _offsets(self) -> h5py.Group:
+        """Returns the offsets group"""
+        return self._fd["offsets"]
+
+    @property
+    def _data(self) -> h5py.Group:
+        """Returns the data group"""
+        return self._fd["data"]
+
+    def _offset_slice(self, property_name, group_index) -> Tuple[int, int]:
+        """Returns the slice of offset_type indices (beg, end) for astrocyte_index"""
+        return (
+            self._offsets[property_name][group_index],
+            self._offsets[property_name][group_index + 1],
+        )
+
+    def __len__(self) -> int:
+        """Returns the number of properties"""
+        return len(self._offsets[self.property_names[0]]) - 1
+
+    @property
+    def property_names(self) -> List[str]:
+        """Returns all available properties in the dataset"""
+        return list(self._data)
+
+    def get_property(self, property_name: str, group_index: int = None) -> np.ndarray:
+        """
+        Args:
+            property_name: The name of the property to retrieve.
+            group_index: The index of the group of values to retrieve, if any. Default is None,
+                in which case all values are returned.
+
+        Returns:
+            A numpy array of the queried values, which can be multi-dimensional
+        """
+        dset_property = self._data[property_name]
+
+        if group_index is None:
+            return dset_property[:]
+
+        beg, end = self._offset_slice(property_name, group_index)
+
+        return dset_property[beg:end]
+
+
+class MicrodomainTesselation(GroupedProperties):
     """Data structure for storing the information concerning the microdomains."""
 
-    def __init__(self, filepath):
-        super().__init__(filepath)
-        self._offsets = self._fd["/offsets"]
-        self._dset_points = self._fd["/data/points"]
-        self._dset_neighbors = self._fd["/data/neighbors"]
-        self._dset_triangle_data = self._fd["/data/triangle_data"]
-
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Microdomain]:
         """Microdomain object iterator."""
         for i in range(self.n_microdomains):
             yield self.domain_object(i)
 
-    def __len__(self):
-        """Number of Microdomains."""
-        return len(self._offsets) - 1
-
-    def __getitem__(self, key):
+    def __getitem__(self, key) -> Union[List[Microdomain], Microdomain]:
         """List getter."""
         if isinstance(key, slice):
             return [self.domain_object(i) for i in range(key.start, key.stop, key.step)]
 
-        if isinstance(key, (np.integer, int)):
+        if np.issubdtype(type(key), np.integer):  # covers both python int and numpy integer types
             return self.domain_object(key)
 
         raise TypeError("Invalid argument type: ({}, {})".format(type(key), key))
 
-    def _offset_slice(self, astrocyte_index, offset_type):
-        """Returns the slice of offset_type indices (beg, end) for astrocyte_index"""
-        return (
-            self._offsets[astrocyte_index, offset_type],
-            self._offsets[astrocyte_index + 1, offset_type],
-        )
-
     @property
-    def _points(self):
-        return self._dset_points[:]
-
-    @property
-    def _triangles(self):
-        return self._dset_triangle_data[:, DOMAIN_TRIANGLE_TYPE["vertices"]]
-
-    @property
-    def _polygon_ids(self):
-        return self._dset_triangle_data[:, DOMAIN_TRIANGLE_TYPE["polygon_id"]]
-
-    @property
-    def n_microdomains(self):
+    def n_microdomains(self) -> int:
         """Total number of Microdomains."""
         return self.__len__()
 
-    def n_neighbors(self, astrocyte_index, omit_walls=True):
+    def n_neighbors(self, astrocyte_index: int, omit_walls: bool = True) -> int:
         """Number of neighboring microdomains around microdomains using astrocyte_index."""
         return len(self.domain_neighbors(astrocyte_index, omit_walls=omit_walls))
 
-    def domain_neighbors(self, astrocyte_index, omit_walls=True):
+    def domain_neighbors(self, astrocyte_index: int, omit_walls: bool = True) -> np.ndarray:
         """For every triangle in the microdomain return its respective neighbor.
 
         Multiple triangles can have the same neighbor if the are part of a triangulated
         polygon face. A microdomain can also have a bounding box wall as a neighbor
         which is signified with a negative number.
         """
-        beg, end = self._offset_slice(astrocyte_index, DOMAIN_OFFSET_TYPE["neighbors"])
-        neighbors = self._dset_neighbors[beg:end]
+        neighbors = self.get_property("neighbors", astrocyte_index)
         if omit_walls:
             return neighbors[neighbors >= 0]
         return neighbors
 
-    def domain_is_boundary(self, astrocyte_index):
+    def domain_is_boundary(self, astrocyte_index: int) -> np.bool_:
         """Returns true if the domain is adjacent to a wall."""
-        beg, end = self._offset_slice(astrocyte_index, DOMAIN_OFFSET_TYPE["neighbors"])
-        return np.any(self._dset_neighbors[beg:end] < 0)
+        return np.any(self.get_property("neighbors", astrocyte_index))
 
-    def domain_points(self, astrocyte_index):
+    def domain_points(self, astrocyte_index: int) -> np.ndarray:
         """The coordinates of the vertices of the microdomain."""
-        beg, end = self._offset_slice(astrocyte_index, DOMAIN_OFFSET_TYPE["points"])
-        return self._dset_points[beg:end]
+        return self.get_property("points", astrocyte_index)
 
-    def domain_triangles(self, astrocyte_index):
-        """Returns the triangles connectivity of the domain_points from an astrocyte."""
-        beg, end = self._offset_slice(astrocyte_index, DOMAIN_OFFSET_TYPE["triangle_data"])
-        return self._dset_triangle_data[beg:end, DOMAIN_TRIANGLE_TYPE["vertices"]]
-
-    def domain_triangle_data(self, astrocyte_index):
+    def domain_triangle_data(self, astrocyte_index: int) -> np.ndarray:
         """Returns the triangle data of the tesselation.
 
         Returns:
             numpy.ndarray: [polygon_id, v0, v1, v2]
         """
-        beg, end = self._offset_slice(astrocyte_index, DOMAIN_OFFSET_TYPE["triangle_data"])
-        return self._dset_triangle_data[beg:end]
+        return self.get_property("triangle_data", astrocyte_index)
 
-    def domain_object(self, astrocyte_index):
+    def domain_triangles(self, astrocyte_index: int) -> np.ndarray:
+        """Returns the triangles connectivity of the domain_points from an astrocyte."""
+        triangle_data = self.domain_triangle_data(astrocyte_index)
+        return triangle_data[:, DOMAIN_TRIANGLE_TYPE["vertices"]]
+
+    def domain_object(self, astrocyte_index: int) -> Microdomain:
         """Returns a archngv.core.dataset Microdomain object."""
         return Microdomain(
             self.domain_points(astrocyte_index),
@@ -271,7 +292,7 @@ class MicrodomainTesselation(H5ContextManager):
         )
 
     @cached_property
-    def connectivity(self):
+    def connectivity(self) -> np.ndarray:
         """Returns the connectivity of the microdomains."""
         edges = [
             (cid, nid)
@@ -283,7 +304,7 @@ class MicrodomainTesselation(H5ContextManager):
         # take the unique rows
         return np.unique(sorted_by_column, axis=0)
 
-    def global_triangles(self):
+    def global_triangles(self) -> np.ndarray:
         """Converts microdomain tesselation to a joined mesh.
 
         Converts the per object tesselation to a joined mesh with unique points and triangles
@@ -292,14 +313,21 @@ class MicrodomainTesselation(H5ContextManager):
         Returns:
             points: array[float, (N, 3)]
             triangles: array[int, (M, 3)]
-            neighbor_ids: array[int, (M, 3)]
+            neighbors: array[int, (M, 3)]
         """
         from archngv.utils.ngons import local_to_global_mapping
 
-        ps_tris_offsets = self._offsets[:, DOMAIN_OFFSET_TYPE["domain_data"]]
-        return local_to_global_mapping(self._points, self._triangles, ps_tris_offsets)
+        ps_tris_offsets = np.column_stack(
+            (self._offsets["points"][:], self._offsets["triangle_data"][:])
+        )
 
-    def global_polygons(self):
+        return local_to_global_mapping(
+            self.get_property("points"),
+            self.get_property("triangle_data")[:, DOMAIN_TRIANGLE_TYPE["vertices"]],
+            ps_tris_offsets,
+        )
+
+    def global_polygons(self) -> Tuple[np.ndarray, List[List[int]]]:
         """Returns unique points and polygons in the global index space."""
         from archngv.utils.ngons import (
             local_to_global_mapping,
@@ -307,18 +335,27 @@ class MicrodomainTesselation(H5ContextManager):
             triangles_to_polygons,
         )
 
-        g_poly_ids = local_to_global_polygon_ids(self._polygon_ids)
+        triangle_data = self.get_property("triangle_data")
 
-        ps_tris_offsets = self._offsets[:, DOMAIN_OFFSET_TYPE["domain_data"]]
+        g_poly_ids = local_to_global_polygon_ids(
+            triangle_data[:, DOMAIN_TRIANGLE_TYPE["polygon_id"]]
+        )
+
+        ps_tris_offsets = np.column_stack(
+            (self._offsets["points"][:], self._offsets["triangle_data"][:])
+        )
 
         # local to global triangles
         ps, tris, polys = local_to_global_mapping(
-            self._points, self._triangles, ps_tris_offsets, triangle_labels=g_poly_ids
+            self.get_property("points"),
+            triangle_data[:, DOMAIN_TRIANGLE_TYPE["vertices"]],
+            ps_tris_offsets,
+            triangle_labels=g_poly_ids,
         )
 
         return ps, triangles_to_polygons(tris, polys)
 
-    def export_mesh(self, filename):
+    def export_mesh(self, filename: Path) -> None:
         """Write the tesselation to file as a mesh."""
         import stl.mesh
 

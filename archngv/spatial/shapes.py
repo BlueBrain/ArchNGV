@@ -1,7 +1,6 @@
 """ Shapes Data Structures
 """
-# pylint: disable = useless-object-inheritance
-
+from typing import Set, Tuple
 
 import numpy
 from cached_property import cached_property
@@ -44,31 +43,31 @@ class ConvexPolygon:
     """Convex polygon data structure"""
 
     @classmethod
-    def from_point_cloud(cls, points):
+    def from_point_cloud(cls, points: numpy.ndarray) -> "ConvexPolygon":
         """Constructor from point cloud"""
         return cls(points, ConvexHull(points).simplices)
 
     @classmethod
-    def from_convex_hull(cls, convex_hull):
+    def from_convex_hull(cls, convex_hull: ConvexHull) -> "ConvexPolygon":
         """Constructor from scipy convex_hull"""
         return cls(convex_hull.points, convex_hull.simplices)
 
-    def __init__(self, points, triangles):
+    def __init__(self, points: numpy.ndarray, triangles: numpy.ndarray):
         self._points = points
         self._triangles = triangles
 
     @property
-    def points(self):
+    def points(self) -> numpy.ndarray:
         """Returns convex polygon points"""
         return self._points
 
     @points.setter
-    def points(self, new_points):
+    def points(self, new_points: numpy.ndarray):
         """Update polygon points"""
         self._points = new_points
 
     @cached_property
-    def triangles(self):
+    def triangles(self) -> numpy.ndarray:
         """Returns convex polygon triangles. Flips the sequence of the triangles
         if the normal is inwards ensure that everytime normals are calculated,
         the normals are outward
@@ -76,38 +75,38 @@ class ConvexPolygon:
         return _ut.make_normals_outward(self.centroid, self.points, self._triangles)
 
     @property
-    def face_vectors(self):
+    def face_vectors(self) -> numpy.ndarray:
         """Sequential face vectors"""
         ps, tris = self.points, self.triangles
         return ngons.vectorized_consecutive_triangle_vectors(ps, tris)
 
     @property
-    def face_points(self):
+    def face_points(self) -> numpy.ndarray:
         """Returns one point for each face."""
         return self.points[self.triangles[:, 0]]
 
     @property
-    def face_areas(self):
+    def face_areas(self) -> numpy.ndarray:
         """Returns areas of faces"""
         return ngons.vectorized_triangle_area(*self.face_vectors)
 
     @property
-    def face_normals(self):
+    def face_normals(self) -> numpy.ndarray:
         """Returns normals of faces"""
         return ngons.vectorized_triangle_normal(*self.face_vectors)
 
     @property
-    def face_centers(self):
+    def face_centers(self) -> numpy.ndarray:
         """Returns centers of faces"""
         return self.points[self.triangles].mean(axis=1)
 
     @cached_property
-    def centroid(self):
+    def centroid(self) -> numpy.ndarray:
         """Arithmetic mean of the vertices"""
         return numpy.mean(self.points, axis=0)
 
     @property
-    def volume(self):
+    def volume(self) -> float:
         """Volume of the convex polygon"""
         vecs = self.points[self.triangles] - self.centroid
         return ngons.vectorized_tetrahedron_volume(
@@ -115,18 +114,18 @@ class ConvexPolygon:
         ).sum()
 
     @property
-    def bounding_box(self):
+    def bounding_box(self) -> Tuple[float, ...]:
         """Axis aligned bounding box of convex polygon"""
         return _bbox.aabb_point_cloud(self.points)
 
-    def support(self, unit_direction):
+    def support(self, unit_direction) -> numpy.ndarray:
         """Support of convex polygon along unit direction"""
         return _sup.convex_polytope(self.points, self.adjacency, unit_direction)
 
     @property
-    def adjacency(self):
+    def adjacency(self) -> Tuple[Set[int], ...]:
         """Adjacency matrix of its vertices"""
-        adjacency = tuple(set() for _ in range(len(self.points)))
+        adjacency: Tuple[Set[int], ...] = tuple(set() for _ in range(len(self.points)))
         for vertices in self.triangles:
             for i, vertex in enumerate(vertices):
                 try:
@@ -138,7 +137,7 @@ class ConvexPolygon:
         return adjacency
 
     @property
-    def inscribed_sphere(self):
+    def inscribed_sphere(self) -> Tuple[numpy.ndarray, float]:
         """Returns centroid and radius of a sphere that is inscribed
         inside the convex polygon
         """
@@ -177,7 +176,7 @@ class TaperedCapsule:
         raise NotImplementedError
 
 
-class Cylinder(object):
+class Cylinder:
     """Cylinder data structure"""
 
     __slots__ = ["cap1_center", "cap2_center", "radius"]

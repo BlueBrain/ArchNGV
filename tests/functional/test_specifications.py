@@ -258,6 +258,15 @@ def _check_dataset(filepath, dataset, layout):
 
 def _check_hierarchy(filepath, h5file, hierarchy):
 
+    group_keys = set(h5file)
+    expected_group_keys = set(hierarchy)
+
+    assert group_keys == expected_group_keys, (
+        f"Mismmatch in {h5file.name} level:\n"
+        f"Actual keys  : {group_keys}\n"
+        f"Expected keys: {expected_group_keys}\n"
+    )
+
     for name, sub_hierarchy in hierarchy.items():
 
         hdf5_object = h5file[name]
