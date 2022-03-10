@@ -182,12 +182,12 @@ class Vasculature(NGVNodes):
         """Access to the Vasculature morphology.
 
         Returns:
-            vasculatureapi.SectionVasculature: A wrapper of the more low level VasculatureApi.
+            vascpy.SectionVasculature: A wrapper of the more low level VasculatureApi.
 
         Notes:
             The morphologies of the vasculature is handled by the VasculatureAPI package.
         """
-        from vasculatureapi import SectionVasculature
+        from vascpy import SectionVasculature
 
         return SectionVasculature.load(self.config["vasculature_file"])
 
@@ -196,9 +196,9 @@ class Vasculature(NGVNodes):
         """Access to the Vasculature point-edges representation
 
         Returns:
-            vasculatureapi.PointVasculature
+            vascpy.PointVasculature
         """
-        from vasculatureapi import PointVasculature
+        from vascpy import PointVasculature
 
         return PointVasculature.load_sonata(self._node_storage.h5_filepath)
 

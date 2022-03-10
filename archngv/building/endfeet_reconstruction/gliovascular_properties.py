@@ -9,7 +9,7 @@ from archngv.exceptions import NGVError
 
 if TYPE_CHECKING:
 
-    from vasculatureapi import PointVasculature
+    from vascpy import PointVasculature
 
     from archngv.core.datastructure import CellData, EndfeetMeshes, GliovascularConnectivity
 

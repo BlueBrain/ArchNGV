@@ -5,7 +5,7 @@ import h5py
 import pytest
 from numpy import testing as npt
 from pandas import testing as pdt
-from vasculatureapi import SectionVasculature
+from vascpy import SectionVasculature
 
 from archngv.exceptions import NGVError
 

@@ -157,7 +157,7 @@ def test_vasculature_representations_consistency():
     circuit = NGVCircuit("build/ngv_config.json")
 
     from morphio.vasculature import Vasculature as mVasculature
-    from vasculatureapi.point_vasculature import PointVasculature as sVasculature
+    from vascpy.point_vasculature import PointVasculature as sVasculature
 
     astrocytes = circuit.astrocytes
     gv_connectivity = circuit.gliovascular_connectome

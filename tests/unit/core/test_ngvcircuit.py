@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 import trimesh
-import vasculatureapi
+import vascpy
 from bluepysnap.nodes import NodeStorage
 from mock import PropertyMock, patch
 from numpy import testing as npt
@@ -117,7 +117,7 @@ class TestCircuit:
     def test_vasculature_morphology(self):
         vasculature = self.circuit.vasculature
         assert vasculature.morphology is vasculature.morph
-        assert isinstance(vasculature.morphology, vasculatureapi.SectionVasculature)
+        assert isinstance(vasculature.morphology, vascpy.SectionVasculature)
 
         npt.assert_allclose(vasculature.morphology.points, vasculature.morph.points)
         npt.assert_allclose(

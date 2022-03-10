@@ -62,19 +62,12 @@ def test_component(plane_mesh, endfeet_points, parameters):
         meshes = EndfootSurfaceMeshes(filepath)
 
         # without reduction
-        expected_areas_initial = [
-            0.6419756,
-            0.9135803,
-            0.39506137,
-            0.5432098,
-            0.91358054,
-            0.49382684,
-        ]
+        expected_areas_initial = [0.592593, 0.962963, 0.395061, 0.54321, 1.012346, 0.395061]
 
-        expected_areas = [0.51851882, 0.59259297, 0.39506137, 0.49382717, 0.91358051, 0.44444422]
+        expected_areas = [0.518519, 0.592593, 0.395061, 0.493827, 0.987655, 0.395061]
 
-        npt.assert_allclose(meshes.get("unreduced_surface_area"), expected_areas_initial)
-        npt.assert_allclose(meshes.get("surface_area"), expected_areas)
+        npt.assert_allclose(meshes.get("unreduced_surface_area"), expected_areas_initial, atol=1e-5)
+        npt.assert_allclose(meshes.get("surface_area"), expected_areas, atol=1e-5)
 
         for i, mesh in enumerate(meshes):
             assert i == mesh.index

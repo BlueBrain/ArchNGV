@@ -25,8 +25,8 @@ from numpy import testing as npt
 from priority_collections.priority_heap import MaxHeap
 from scipy.spatial import cKDTree
 from tqdm import tqdm
-from vasculatureapi import PointVasculature
-from vasculatureapi.conversion.graph_conversion import point_to_vasculature_data
+from vascpy import PointVasculature
+from vascpy.conversion.graph_conversion import point_to_vasculature_data
 
 from archngv.building.exporters.edge_populations import _write_edge_population
 from archngv.core.datasets import Vasculature

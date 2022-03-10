@@ -15,7 +15,7 @@ def load_vasculature_node_population(filepath):
     Returns:
         PointVasculature: The vasculature data structure
     """
-    from vasculatureapi import PointVasculature
+    from vascpy import PointVasculature
 
     cells = CellCollection.load_sonata(filepath)
 

@@ -70,7 +70,7 @@ def cell_placement(config, atlas, atlas_cache, vasculature, seed, output):
     # pylint: disable=too-many-locals
 
     from spatial_index import SphereIndex
-    from vasculatureapi import PointVasculature
+    from vascpy import PointVasculature
     from voxcell.nexus.voxelbrain import Atlas
 
     from archngv.building.cell_placement.positions import create_positions
@@ -228,7 +228,7 @@ def gliovascular_connectivity(config, astrocytes, microdomains, vasculature, see
     Build connectivity between astrocytes and the vasculature graph.
     """
     # pylint: disable=too-many-locals
-    from vasculatureapi import PointVasculature
+    from vascpy import PointVasculature
 
     from archngv.building.connectivity.gliovascular import generate_gliovascular
     from archngv.building.exporters.edge_populations import write_gliovascular_connectivity
@@ -311,7 +311,7 @@ def attach_endfeet_info_to_gliovascular_connectivity(
     """
     import shutil
 
-    from vasculatureapi import PointVasculature
+    from vascpy import PointVasculature
 
     from archngv.app.utils import apply_parallel_function
     from archngv.building.endfeet_reconstruction.gliovascular_properties import (

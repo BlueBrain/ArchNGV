@@ -3,7 +3,7 @@ import logging
 from collections import deque
 
 import numpy as np
-from ngv_ctools.endfeet_reconstruction import fmm_growing
+from ngv_ctools.fast_marching_method import grow_waves_on_triangulated_surface
 from scipy.spatial import cKDTree
 
 from archngv.building.endfeet_reconstruction.groups import GroupedElements, group_elements
@@ -213,7 +213,7 @@ def fast_marching_eikonal_solver(mesh, seed_coordinates, cutoff_distance):
         seed_coordinates, vertex_coordinates, neighbors, nn_offsets
     )
 
-    v_group_indices, v_travel_times, v_status = fmm_growing.solve(
+    v_group_indices, v_travel_times, v_status = grow_waves_on_triangulated_surface(
         neighbors, nn_offsets, vertex_coordinates, seed_vertices, cutoff_distance**2
     )
 

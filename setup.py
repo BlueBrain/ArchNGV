@@ -11,9 +11,7 @@ VERSION = module.VERSION
 
 
 BUILDING = [
-    # py{38,39,310} wheels for >=0.1.6
-    # pinned to 0.1.6 because the next version will be implemented in c++
-    "ngv-ctools==0.1.6",
+    "ngv-ctools>=1.0.0",
     "spatial-index>=0.4.2",
     "bluepy-configfile>=0.1.11",
     "Click>=7.0",
@@ -30,8 +28,12 @@ BUILDING = [
     "pytouchreader>=1.4.7",
     "snakemake>=5.0.0",
     "tmd>=2.0.11",
-    "tns==2.4.3",
-    "diameter-synthesis==0.2.4",
+    # latest version available in spack before OSS to NeuroTS
+    # we cannot yet switch to neurots because there are major breaking changes
+    # that will require rebuilding the distribution inputs to circuit building
+    "tns==2.5.0",
+    # available version in spack, compatible with tns==2.5.0
+    "diameter-synthesis==0.2.5",
     "trimesh>=3.9.9",
     "dask[distributed,bag]>=2.0",
     "distributed>=2.0",
@@ -64,7 +66,7 @@ setup(
         "bluepysnap>=0.13,<1.0",
         "cached-property>=1.5",
         "voxcell>=3.0.0",
-        "vasculatureapi>=0.3.0",
+        "vascpy>=0.1.0",
     ],
     extras_require={"all": BUILDING, "docs": ["sphinx", "sphinx-bluebrain-theme"]},
     packages=find_packages(),

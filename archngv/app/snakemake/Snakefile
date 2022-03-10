@@ -179,7 +179,7 @@ rule sonata_vasculature:
 
     shell:
         run_cmd([
-            f'vasculatureapi morphology-to-sonata',
+            f'vascpy morphology-to-sonata',
             '{input} {output}'],
             dump_log=True)
 
