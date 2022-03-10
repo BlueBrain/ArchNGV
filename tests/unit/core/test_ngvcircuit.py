@@ -128,7 +128,7 @@ class TestCircuit:
     def test_astrocyte_api(self):
         astrocytes = self.circuit.astrocytes
         assert isinstance(astrocytes.microdomains, Microdomains)
-        assert isinstance(astrocytes.microdomains.tesselation, MicrodomainTesselation)
+        assert isinstance(astrocytes.microdomains.tessellation, MicrodomainTesselation)
         assert isinstance(astrocytes.microdomains.overlapping, MicrodomainTesselation)
 
     def test_vasculature_api(self):

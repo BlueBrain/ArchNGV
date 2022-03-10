@@ -30,7 +30,7 @@ def test_circuit():
     assert isinstance(circuit.atlases, dict)
 
     assert isinstance(circuit.astrocytes.microdomains, api.Microdomains)
-    assert isinstance(circuit.astrocytes.microdomains.tesselation, MicrodomainTesselation)
+    assert isinstance(circuit.astrocytes.microdomains.tessellation, MicrodomainTesselation)
     assert isinstance(circuit.astrocytes.microdomains.overlapping, MicrodomainTesselation)
 
     assert isinstance(circuit.atlases["intensity"], api.Atlas)

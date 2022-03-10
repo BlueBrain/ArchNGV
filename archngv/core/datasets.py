@@ -271,7 +271,7 @@ class MicrodomainTesselation(GroupedProperties):
         return self.get_property("points", astrocyte_index)
 
     def domain_triangle_data(self, astrocyte_index: int) -> np.ndarray:
-        """Returns the triangle data of the tesselation.
+        """Returns the triangle data of the tessellation.
 
         Returns:
             numpy.ndarray: [polygon_id, v0, v1, v2]
@@ -305,9 +305,9 @@ class MicrodomainTesselation(GroupedProperties):
         return np.unique(sorted_by_column, axis=0)
 
     def global_triangles(self) -> np.ndarray:
-        """Converts microdomain tesselation to a joined mesh.
+        """Converts microdomain tessellation to a joined mesh.
 
-        Converts the per object tesselation to a joined mesh with unique points and triangles
+        Converts the per object tessellation to a joined mesh with unique points and triangles
         of unique vertices.
 
         Returns:
@@ -356,7 +356,7 @@ class MicrodomainTesselation(GroupedProperties):
         return ps, triangles_to_polygons(tris, polys)
 
     def export_mesh(self, filename: Path) -> None:
-        """Write the tesselation to file as a mesh."""
+        """Write the tessellation to file as a mesh."""
         import stl.mesh
 
         points, triangles = self.global_triangles()

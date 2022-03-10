@@ -454,7 +454,7 @@ def domain_neighbor2():
 
 
 @pytest.fixture
-def neighboring_domains_tesselation(domain_neighbor1, domain_neighbor2):
+def neighboring_domains_tessellation(domain_neighbor1, domain_neighbor2):
     points1, triangles1, polygon_ids1 = domain_neighbor1
     points2, triangles2, polygon_ids2 = domain_neighbor2
 
@@ -651,9 +651,9 @@ def test_triangles_to_polygons__two_neighboring_domains(domains_one_polygon):
 
 
 """
-def test_triangles_to_polygons__two_neighboring_domains(neighboring_domains_tesselation):
+def test_triangles_to_polygons__two_neighboring_domains(neighboring_domains_tessellation):
 
-    ps, tris, poly_ids, ps_tris_offsets = neighboring_domains_tesselation
+    ps, tris, poly_ids, ps_tris_offsets = neighboring_domains_tessellation
 
     g_poly_ids = _impl.local_to_global_polygon_ids(poly_ids)
     ps, tris, polys = _impl.local_to_global_mapping(ps, tris, ps_tris_offsets, triangle_labels=g_poly_ids)

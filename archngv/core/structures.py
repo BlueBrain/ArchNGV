@@ -10,8 +10,8 @@ class Microdomains:
         self._overlaping_path = overlaping_path
 
     @cached_property
-    def tesselation(self):
-        """Access the tesselation of the microdomain."""
+    def tessellation(self):
+        """Access the tessellation of the microdomain."""
         from archngv.core.datasets import MicrodomainTesselation
 
         return MicrodomainTesselation(self._microdomain_path)

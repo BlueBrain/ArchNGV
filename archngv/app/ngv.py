@@ -153,7 +153,7 @@ def finalize_astrocytes(somata_file, emodels_file, output):
 )
 @click.option("-o", "--output-dir", help="Path to output MVD3", required=True)
 def build_microdomains(config, astrocytes, atlas, atlas_cache, seed, output_dir):
-    """Generate astrocyte microdomain tesselation as a partition of space into convex
+    """Generate astrocyte microdomain tessellation as a partition of space into convex
     polygons."""
     # pylint: disable=too-many-locals
     from scipy import stats
@@ -161,9 +161,9 @@ def build_microdomains(config, astrocytes, atlas, atlas_cache, seed, output_dir)
 
     from archngv.app.utils import ensure_dir
     from archngv.building.exporters.export_microdomains import export_structure
-    from archngv.building.microdomain.generation import (
-        convert_to_overlappping_tesselation,
-        generate_microdomain_tesselation,
+    from archngv.building.microdomains import (
+        convert_to_overlappping_tessellation,
+        generate_microdomain_tessellation,
     )
     from archngv.spatial import BoundingBox
 
@@ -186,7 +186,7 @@ def build_microdomains(config, astrocytes, atlas, atlas_cache, seed, output_dir)
     ensure_dir(output_dir)
 
     LOGGER.info("Generating microdomains...")
-    microdomains = generate_microdomain_tesselation(
+    microdomains = generate_microdomain_tessellation(
         astrocyte_positions, astrocyte_radii, bounding_box
     )
 
@@ -196,7 +196,7 @@ def build_microdomains(config, astrocytes, atlas, atlas_cache, seed, output_dir)
     LOGGER.info("Generating overlapping microdomains...")
     overlap_distr = config["overlap_distribution"]["values"]
     overlap_distribution = stats.norm(loc=overlap_distr[0], scale=overlap_distr[1])
-    overlapping_microdomains = convert_to_overlappping_tesselation(
+    overlapping_microdomains = convert_to_overlappping_tessellation(
         microdomains, overlap_distribution
     )
 

@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 
 def export_structure(filename: Path, domains: List["Microdomain"]) -> None:
-    """Export microdomain tesselation structure
+    """Export microdomain tessellation structure
 
     Args:
         domains: list[Microdomain]

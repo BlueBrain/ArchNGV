@@ -102,7 +102,7 @@
         "cutoff_radius": 60.0
       }
     },
-    "microdomain_tesselation": {
+    "microdomain_tessellation": {
       "overlap_distribution": {
         "type": "normal",
         "values": [
