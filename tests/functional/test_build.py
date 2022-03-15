@@ -87,11 +87,6 @@ def test_sonata_files():
     _h5_compare_all(BUILD_DIR / SONATA_DIR / "edges", EXPECTED_DIR / SONATA_DIR / "edges")
 
 
-def test_microdomain_files():
-
-    _h5_compare_all(BUILD_DIR / MICRODOMAINS_DIR, EXPECTED_DIR / MICRODOMAINS_DIR)
-
-
 def test_root_files():
     """Files at the root level of build-expected"""
     _h5_compare_all(BUILD_DIR, EXPECTED_DIR)
@@ -133,8 +128,7 @@ def test_config():
                         "astrocytes": {
                             "type": "protoplasmic_astrocytes",
                             "alternate_morphologies": {"h5v1": "$BUILD_DIR/morphologies"},
-                            "microdomains_file": "$BUILD_DIR/microdomains/microdomains.h5",
-                            "microdomains_overlapping_file": "$BUILD_DIR/microdomains/overlapping_microdomains.h5",
+                            "microdomains_file": "$BUILD_DIR/microdomains.h5",
                         },
                     },
                 },

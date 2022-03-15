@@ -4,14 +4,14 @@ import numpy as np
 from numpy import testing as npt
 import pytest
 
-from archngv.building.exporters.export_microdomains import export_structure
-from archngv.core.datasets import Microdomain, MicrodomainTesselation
+from archngv.building.exporters.export_microdomains import export_microdomains
+from archngv.core.datasets import Microdomain, Microdomains
 
 N_CELLS = 5
 MAX_NEIGHBORS = 3
 
 
-class MockMicrodomainTesselation(object):
+class MockMicrodomains:
 
     connectivity = [[j for j in range(MAX_NEIGHBORS) if i != j] for i in range(N_CELLS)]
 
@@ -27,6 +27,10 @@ class MockMicrodomainTesselation(object):
     @property
     def flat_connectivity(self):
         return [(i, j) for i, neighbors in enumerate(self.connectivity) for j in neighbors]
+
+    @property
+    def scaling_factors(self):
+        return np.array([1.0 + 0.1 * i for i in range(N_CELLS)], dtype=float)
 
     def domain_points(self, index):
         vals = np.arange(10, dtype=np.float32)
@@ -58,17 +62,17 @@ def microdomains_path(directory_path):
 @pytest.fixture(scope="module")
 def mockdomains(microdomains_path):
 
-    mock_tess = MockMicrodomainTesselation()
+    mock_tess = MockMicrodomains()
 
     domains = list(iter(mock_tess))
-    export_structure(microdomains_path, domains)
+    export_microdomains(microdomains_path, domains, mock_tess.scaling_factors)
 
     return mock_tess
 
 
 @pytest.fixture(scope="module")
 def microdomains(microdomains_path, mockdomains):
-    return MicrodomainTesselation(microdomains_path)
+    return Microdomains(microdomains_path)
 
 
 def test_len(microdomains, mockdomains):
@@ -126,6 +130,19 @@ def test_domain_objects(microdomains):
         npt.assert_allclose(
             new_domain.points,
             scale_factor * (domain.points - domain.centroid) + domain.centroid,
+        )
+
+
+def test_scaling_factors(microdomains, mockdomains):
+
+    scaling_factors = microdomains.get_property("scaling_factors")
+    npt.assert_allclose(scaling_factors, mockdomains.scaling_factors)
+
+    for domain_index, domain in enumerate(microdomains):
+
+        npt.assert_equal(
+            scaling_factors[domain_index],
+            microdomains.get_property("scaling_factors", group_index=domain_index),
         )
 
 

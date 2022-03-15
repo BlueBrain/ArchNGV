@@ -91,36 +91,22 @@ def test_microdomain_from_tess_cell():
         assert set(poly) == set(exp_poly)
 
 
-def test_covert_to_overlapping_tessellation():
-
-    distribution_mock = mock.Mock()
-    distribution_mock.rvs.return_value = [1.0, 1.0, 1.0]
-
-    domains = [mock.Mock(scale=lambda v: v) for _ in range(3)]
-
-    overlapping_microdomains = tested.convert_to_overlappping_tessellation(
-        domains, distribution_mock
-    )
-
-    npt.assert_allclose(overlapping_microdomains, 2.0, atol=1e-3)
-
-
 def test_scaling_factor_from_overlap():
 
     npt.assert_almost_equal(
-        tested._scaling_factor_from_overlap(0.0),
+        tested.scaling_factor_from_overlap(0.0),
         1.0,
         decimal=3,
     )
 
     npt.assert_almost_equal(
-        tested._scaling_factor_from_overlap(1.0),
+        tested.scaling_factor_from_overlap(1.0),
         2.0,
         decimal=3,
     )
 
     with pytest.raises(NGVError):
-        tested._scaling_factor_from_overlap(-1.0)
+        tested.scaling_factor_from_overlap(-1.0)
 
     with pytest.raises(NGVError):
-        tested._scaling_factor_from_overlap(2.1)
+        tested.scaling_factor_from_overlap(2.1)

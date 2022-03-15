@@ -106,3 +106,56 @@ def test_convert_microdomains_to_generic_format():
                         )
                     ),
                 )
+
+
+def test_merge_microdomains():
+    def get_slice(h5_domains, dataset_name, i):
+
+        data = h5_domains["data"][dataset_name]
+        offs = h5_domains["offsets"][dataset_name]
+
+        return data[offs[i] : offs[i + 1]]
+
+    microdomains_dir = DATA_DIR / "legacy/merge_microdomain_files"
+
+    path1 = microdomains_dir / "microdomains.h5"
+    path2 = microdomains_dir / "overlapping_microdomains.h5"
+
+    with tempfile.NamedTemporaryFile(suffix=".h5") as tfile:
+
+        output_path = tfile.name
+
+        tested.merge_microdomain_files(microdomains_dir, output_path)
+
+        with h5py.File(output_path, "r") as merged_domains:
+            with h5py.File(path1, "r") as r_domains:
+                with h5py.File(path2, "r") as o_domains:
+
+                    scaling_factors = merged_domains["data"]["scaling_factors"][:]
+
+                    for i, scaling_factor in enumerate(scaling_factors):
+
+                        r_points = get_slice(r_domains, "points", i)
+                        o_points = get_slice(o_domains, "points", i)
+
+                        centroid = np.mean(o_points, axis=0)
+                        reconstructed_points = (o_points - centroid) / scaling_factor + centroid
+
+                        npt.assert_allclose(reconstructed_points, r_points, atol=1e-5)
+
+                        npt.assert_allclose(
+                            get_slice(merged_domains, "triangle_data", i),
+                            get_slice(r_domains, "triangle_data", i),
+                        )
+                        npt.assert_allclose(
+                            get_slice(merged_domains, "triangle_data", i),
+                            get_slice(o_domains, "triangle_data", i),
+                        )
+                        npt.assert_allclose(
+                            get_slice(merged_domains, "neighbors", i),
+                            get_slice(r_domains, "neighbors", i),
+                        )
+                        npt.assert_allclose(
+                            get_slice(merged_domains, "neighbors", i),
+                            get_slice(o_domains, "neighbors", i),
+                        )

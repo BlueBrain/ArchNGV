@@ -2,7 +2,7 @@
 """
 
 import logging
-from typing import List
+from typing import Iterator
 
 import numpy as np
 import tess
@@ -17,7 +17,7 @@ L = logging.getLogger(__name__)
 
 def generate_microdomain_tessellation(
     generator_points: np.ndarray, generator_radii: np.ndarray, bounding_box: BoundingBox
-) -> List[Microdomain]:
+) -> Iterator[Microdomain]:
     """Creates a Laguerre Tesselation out of generator spheres taking into account
     intersections with the bounding box.
 
@@ -46,8 +46,7 @@ def generate_microdomain_tessellation(
         limits = (bounding_box.min_point, bounding_box.max_point)
         tess_cells = tess.Container(generator_points, limits=limits, radii=generator_radii)
 
-    # convert tess cells to archngv.spatial shapes
-    return list(map(_microdomain_from_tess_cell, tess_cells))
+    return map(_microdomain_from_tess_cell, tess_cells)
 
 
 def _microdomain_from_tess_cell(cell: tess.Cell) -> Microdomain:
@@ -63,28 +62,7 @@ def _microdomain_from_tess_cell(cell: tess.Cell) -> Microdomain:
     return Microdomain(points, triangle_data, neighbors[tris_to_polys_map])
 
 
-def convert_to_overlappping_tessellation(
-    microdomains: List[Microdomain], overlap_distribution
-) -> List[Microdomain]:
-    """Given an existing tessellation uniformly expand each convex region in order to
-    achieve an overlap with the neighbors given by the overlap distribution. Overlap is
-    a percentage determined by overlap = (V_new - V_old) / V_old
-
-    Returns a new tessellation with the scaled domains and same connectivity as the input
-    one.
-    """
-    scaling_factors = map(
-        _scaling_factor_from_overlap,
-        overlap_distribution.rvs(size=len(microdomains)),
-    )
-
-    return [
-        domain.scale(scaling_factor)
-        for domain, scaling_factor in zip(microdomains, scaling_factors)
-    ]
-
-
-def _scaling_factor_from_overlap(overlap_factor: float) -> float:
+def scaling_factor_from_overlap(overlap_factor: float) -> float:
     """Given the centroid of a convex polygon and its points,
     uniformly dilate in order to expand by the overlap factor. However
     the neighbors inflate as well. Thus, the result overlap between the cell

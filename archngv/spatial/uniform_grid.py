@@ -2,9 +2,6 @@
 """
 
 
-# pylint: disable = too-many-instance-attributes, useless-object-inheritance, too-few-public-methods
-
-
 import numpy as np
 
 
@@ -20,7 +17,7 @@ def cartesian(arr1, arr2, arr3):
     return i_x
 
 
-class UniformGrid(object):
+class UniformGrid:
     """Uniform grid data structure"""
 
     def __init__(self, x_range, y_range, z_range, cell_size):

@@ -1,6 +1,6 @@
 """ Microdomain expoerters functions """
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import TYPE_CHECKING, Any, Dict, Iterable
 
 import numpy as np
 
@@ -11,11 +11,16 @@ if TYPE_CHECKING:
     from archngv.core.datasets import Microdomain
 
 
-def export_structure(filename: Path, domains: List["Microdomain"]) -> None:
+def export_microdomains(
+    filename: Path, domains: Iterable["Microdomain"], scaling_factors: np.ndarray
+) -> None:
     """Export microdomain tessellation structure
 
     Args:
-        domains: list[Microdomain]
+        filename: Path to output hdf5 file.
+        domains: Microdomain iterable
+        scaling_factors: The scaling factors that were used to scale the domains and make them
+            overlapping.
 
     Notes:
         HDF5 Layout Hierarchy:
@@ -28,6 +33,7 @@ def export_structure(filename: Path, domains: List["Microdomain"]) -> None:
                 neighbors: array[int64, (K, 1)]
                     The neighbors to each triangle. Negative numbers signify a
                     bounding box wall.
+                scaling_factors: array[float64, (G,)]
 
             offsets:
                 Assuming there are G groups to be stored.
@@ -38,7 +44,7 @@ def export_structure(filename: Path, domains: List["Microdomain"]) -> None:
         The data of the i-th group in X dataset corresponds to:
             data[X][offsets[X][i]: offsets[X][i+1]]
     """
-    n_domains = len(domains)
+    n_domains = len(scaling_factors)
 
     properties_to_attributes = {
         "points": "points",
@@ -72,5 +78,7 @@ def export_structure(filename: Path, domains: List["Microdomain"]) -> None:
     properties["neighbors"]["values"] = np.hstack(properties["neighbors"]["values"]).astype(
         property_dtypes["neighbors"]
     )
+
+    properties["scaling_factors"] = {"values": scaling_factors.astype(np.float64), "offsets": None}
 
     export_grouped_properties(filename, properties)

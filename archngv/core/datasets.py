@@ -218,12 +218,16 @@ class GroupedProperties(H5ContextManager):
         if group_index is None:
             return dset_property[:]
 
+        # one value per group, no offsets
+        if property_name not in self._offsets:
+            return dset_property[group_index]
+
         beg, end = self._offset_slice(property_name, group_index)
 
         return dset_property[beg:end]
 
 
-class MicrodomainTesselation(GroupedProperties):
+class Microdomains(GroupedProperties):
     """Data structure for storing the information concerning the microdomains."""
 
     def __iter__(self) -> Iterator[Microdomain]:

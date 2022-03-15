@@ -25,6 +25,10 @@ def test_export_grouped_properties():
             "values": np.array([0, 1, 2, 3, 4, 5, 6], dtype=np.int64),
             "offsets": np.array([0, 1, 2, 3, 4, 5, 6, 7], dtype=np.int64),
         },
+        "property4": {
+            "values": np.array([10.0, 9.0, 8.0, 7.0, 6.0], dtype=float),
+            "offsets": None,
+        },
     }
 
     with tempfile.NamedTemporaryFile(suffix=".h5") as tfile:
@@ -42,10 +46,13 @@ def test_export_grouped_properties():
                     properties[property_name]["values"],
                 )
 
-                npt.assert_allclose(
-                    fp["offsets"][property_name][:],
-                    properties[property_name]["offsets"],
-                )
+                if properties[property_name]["offsets"] is None:
+                    assert property_name not in fp["offsets"]
+                else:
+                    npt.assert_allclose(
+                        fp["offsets"][property_name][:],
+                        properties[property_name]["offsets"],
+                    )
 
         # test the core dataset that reads the grouped properties
         g = GroupedProperties(filepath)
@@ -55,9 +62,13 @@ def test_export_grouped_properties():
             expected_data = dct["values"]
             expected_offsets = dct["offsets"]
 
+            if expected_offsets is None:
+                expected_offsets = np.arange(len(expected_data) + 1, dtype=np.int64)
+
             assert g.get_property(property_name).dtype == expected_data.dtype
 
             n_groups = len(expected_offsets) - 1
+
             for i in range(n_groups):
 
                 npt.assert_allclose(

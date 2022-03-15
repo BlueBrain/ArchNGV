@@ -9,7 +9,7 @@ from morphio import Morphology
 
 import archngv.core.circuit as api
 from archngv import NGVCircuit
-from archngv.core.datasets import EndfootSurfaceMeshes, MicrodomainTesselation
+from archngv.core.datasets import EndfootSurfaceMeshes, Microdomains
 
 
 def test_circuit():
@@ -29,9 +29,7 @@ def test_circuit():
     assert isinstance(circuit.edges["neuroglial"], api.NeuroGlial)
     assert isinstance(circuit.atlases, dict)
 
-    assert isinstance(circuit.astrocytes.microdomains, api.Microdomains)
-    assert isinstance(circuit.astrocytes.microdomains.tessellation, MicrodomainTesselation)
-    assert isinstance(circuit.astrocytes.microdomains.overlapping, MicrodomainTesselation)
+    assert isinstance(circuit.astrocytes.microdomains, Microdomains)
 
     assert isinstance(circuit.atlases["intensity"], api.Atlas)
     assert isinstance(circuit.atlases["intensity"].get_atlas(), voxcell.VoxelData)

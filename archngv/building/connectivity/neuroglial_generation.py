@@ -49,7 +49,7 @@ def generate_neuroglial(astrocytes, microdomains, neuronal_connectivity):
 
     Args:
         astrocytes: voxcell.NodePopulation
-        microdomains: MicrodomainTesselation
+        microdomains: Microdomains
         neuronal_connectivity: NeuronalConnectivity
 
     Returns:

@@ -8,7 +8,7 @@ custom:
       triangles. In addition, each microdomain has access to its adjacent neighbors. Their size
       is n_astrocytes, i.e. one per astrocyte.
 
-    filepath: microdomains/microdomains.h5
+    filepath: microdomains.h5
     file_hierarchy:
 
       data:
@@ -47,6 +47,17 @@ custom:
             object_type: dataset
             number_of_columns: 4
             dtype: int64
+
+          scaling_factors:
+
+            description: >
+              Scaling factors that where used to homogeneously scale the regular tessellation and
+              generate the overlapping geometry that is stored in this file. The scaling factors
+              can be used to shrink the domains into their initial regular tessellation if needed.
+
+            object_type: dataset
+            number_of_columns: 1
+            dtype: float64
 
       offsets:
         object_type: group

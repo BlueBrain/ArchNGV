@@ -67,7 +67,7 @@ def generate_gliovascular(cell_ids, astrocytic_positions, astrocytic_domains, va
     Args:
         cell_ids: array[int, (N,)]
         astrocyte_positions: array[float, (N, 3)]
-        astrocytic_domains: MicrodomainTesselation
+        astrocytic_domains: Microdomains
         vasculature: Vasculature
         params: gliovascular parameters dict
 

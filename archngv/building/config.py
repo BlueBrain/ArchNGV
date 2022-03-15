@@ -202,9 +202,7 @@ def _add_ngv_sonata_nodes_edges(config: dict, root_dir: Path, manifest: dict) ->
                     Population.ASTROCYTES: {
                         "type": "protoplasmic_astrocytes",
                         "alternate_morphologies": {"h5v1": "$BUILD_DIR/morphologies"},
-                        "microdomains_file": "$BUILD_DIR/microdomains/microdomains.h5",
-                        "microdomains_overlapping_file":
-                            "$BUILD_DIR/microdomains/overlapping_microdomains.h5",
+                        "microdomains_file": "$BUILD_DIR/microdomains.h5",
                     }
                 },
             },

@@ -7,7 +7,7 @@ import numpy as np
 
 
 def export_grouped_properties(filepath: Path, properties: Dict[str, Dict[str, np.ndarray]]) -> None:
-    """Writes groupes properties into an hdf5 file.
+    """Writes grouped properties into an hdf5 file.
 
     Args:
         filepath: Path to output file.
@@ -15,10 +15,11 @@ def export_grouped_properties(filepath: Path, properties: Dict[str, Dict[str, np
             A dictionary the keys of which are property names and the values are dictionaries,
             containing two keys:
                 - values: A numpy array with all the property data.
-                - offsets: An integer numpy array with the offsets corresponding to the groups in
-                    the values.
+                - offsets: A numpy array of integers representing the offsets corresponding to the
+                    groups in the values, or None if the dataset is linear without groups. If None,
+                    the `values` will be added in `data` without a respective `offsets` dataset.
 
-    Note:
+    Notes:
         The property values of the i-th group correspond to values[offsets[i]: offsets[i + 1]]
     """
     with h5py.File(filepath, mode="w") as f:
@@ -29,4 +30,6 @@ def export_grouped_properties(filepath: Path, properties: Dict[str, Dict[str, np
         for name, dct in properties.items():
 
             g_data.create_dataset(name, data=dct["values"])
-            g_offsets.create_dataset(name, data=dct["offsets"].astype(np.int64))
+
+            if dct["offsets"] is not None:
+                g_offsets.create_dataset(name, data=dct["offsets"].astype(np.int64))

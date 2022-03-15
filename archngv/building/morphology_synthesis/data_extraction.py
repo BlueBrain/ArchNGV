@@ -18,7 +18,7 @@ from archngv.core.datasets import (
     CellData,
     EndfootSurfaceMeshes,
     GliovascularConnectivity,
-    MicrodomainTesselation,
+    Microdomains,
     NeuroglialConnectivity,
     NeuronalConnectivity,
 )
@@ -73,7 +73,7 @@ def obtain_cell_properties(astrocyte_index, cell_data_filepath, microdomains_fil
     Returns:
         AstrocyteProperties: namedtuple containing cell related data
     """
-    microdomain = MicrodomainTesselation(microdomains_filepath)[astrocyte_index]
+    microdomain = Microdomains(microdomains_filepath)[astrocyte_index]
 
     astrocytes = CellData(cell_data_filepath)
     astrocyte_name = astrocytes.get_properties("morphology", astrocyte_index)[0]
@@ -214,7 +214,7 @@ def _obtain_point_cloud(
     Returns:
         np.ndarray: Array of 3D points
     """
-    with MicrodomainTesselation(microdomains_filepath) as microdomains:
+    with Microdomains(microdomains_filepath) as microdomains:
 
         # scale the domain to avoid boundary effects from the point distribution
         # which influences the growing

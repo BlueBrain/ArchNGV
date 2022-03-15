@@ -1,9 +1,8 @@
 """ Hashmap experimental stuff
 """
-# pylint: disable = useless-object-inheritance, too-many-arguments
 
 
-class HashMapBase(object):
+class HashMapBase:
     """Base of hashmap"""
 
     def __init__(self, voxel_size, offset):

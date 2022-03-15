@@ -1,27 +1,4 @@
 """This module combines all the NGV lazy data structures."""
-from cached_property import cached_property
-
-
-class Microdomains:
-    """Allows lazy evaluation of the Microdomain."""
-
-    def __init__(self, microdomain_path, overlaping_path):
-        self._microdomain_path = microdomain_path
-        self._overlaping_path = overlaping_path
-
-    @cached_property
-    def tessellation(self):
-        """Access the tessellation of the microdomain."""
-        from archngv.core.datasets import MicrodomainTesselation
-
-        return MicrodomainTesselation(self._microdomain_path)
-
-    @cached_property
-    def overlapping(self):
-        """Returns overlapping microdomains."""
-        from archngv.core.datasets import MicrodomainTesselation
-
-        return MicrodomainTesselation(self._overlaping_path)
 
 
 class Atlas:

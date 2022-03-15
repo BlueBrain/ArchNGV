@@ -13,8 +13,8 @@ from utils import get_data
 from voxcell import VoxelData
 
 import archngv.core.circuit as test_module
-from archngv.core.datasets import EndfootSurfaceMeshes, MicrodomainTesselation
-from archngv.core.structures import Atlas, Microdomains
+from archngv.core.datasets import EndfootSurfaceMeshes, Microdomains
+from archngv.core.structures import Atlas
 from archngv.exceptions import NGVError
 
 TEST_DIR = Path(__file__).resolve().parent
@@ -128,8 +128,6 @@ class TestCircuit:
     def test_astrocyte_api(self):
         astrocytes = self.circuit.astrocytes
         assert isinstance(astrocytes.microdomains, Microdomains)
-        assert isinstance(astrocytes.microdomains.tessellation, MicrodomainTesselation)
-        assert isinstance(astrocytes.microdomains.overlapping, MicrodomainTesselation)
 
     def test_vasculature_api(self):
         vasculature = self.circuit.vasculature

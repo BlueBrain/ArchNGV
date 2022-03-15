@@ -151,24 +151,20 @@ def finalize_astrocytes(somata_file, emodels_file, output):
     default=0,
     show_default=True,
 )
-@click.option("-o", "--output-dir", help="Path to output MVD3", required=True)
-def build_microdomains(config, astrocytes, atlas, atlas_cache, seed, output_dir):
+@click.option("-o", "--output-file-path", help="Path to output hdf5 file", required=True)
+def build_microdomains(config, astrocytes, atlas, atlas_cache, seed, output_file_path):
     """Generate astrocyte microdomain tessellation as a partition of space into convex
     polygons."""
     # pylint: disable=too-many-locals
     from scipy import stats
     from voxcell.nexus.voxelbrain import Atlas
 
-    from archngv.app.utils import ensure_dir
-    from archngv.building.exporters.export_microdomains import export_structure
+    from archngv.building.exporters.export_microdomains import export_microdomains
     from archngv.building.microdomains import (
-        convert_to_overlappping_tessellation,
         generate_microdomain_tessellation,
+        scaling_factor_from_overlap,
     )
     from archngv.spatial import BoundingBox
-
-    def _output_path(filename):
-        return str(Path(output_dir, filename))
 
     LOGGER.info("Seed: %d", seed)
     numpy.random.seed(seed)
@@ -176,32 +172,36 @@ def build_microdomains(config, astrocytes, atlas, atlas_cache, seed, output_dir)
     config = load_yaml(config)["microdomains"]
 
     atlas = Atlas.open(atlas, cache_dir=atlas_cache)
-    bbox = atlas.load_data("brain_regions").bbox
-    bounding_box = BoundingBox(bbox[0], bbox[1])
+    bbox_ranges = atlas.load_data("brain_regions").bbox
 
     astrocytes = voxcell.CellCollection.load_sonata(astrocytes)
-    astrocyte_positions = astrocytes.positions
-    astrocyte_radii = astrocytes.properties["radius"].to_numpy()
-
-    ensure_dir(output_dir)
 
     LOGGER.info("Generating microdomains...")
     microdomains = generate_microdomain_tessellation(
-        astrocyte_positions, astrocyte_radii, bounding_box
+        generator_points=astrocytes.positions,
+        generator_radii=astrocytes.properties["radius"].to_numpy(),
+        bounding_box=BoundingBox(bbox_ranges[0], bbox_ranges[1]),
     )
-
-    LOGGER.info("Export microdomains...")
-    export_structure(_output_path("microdomains.h5"), microdomains)
 
     LOGGER.info("Generating overlapping microdomains...")
     overlap_distr = config["overlap_distribution"]["values"]
     overlap_distribution = stats.norm(loc=overlap_distr[0], scale=overlap_distr[1])
-    overlapping_microdomains = convert_to_overlappping_tessellation(
-        microdomains, overlap_distribution
+
+    scaling_factors = numpy.fromiter(
+        map(
+            scaling_factor_from_overlap,
+            overlap_distribution.rvs(size=len(astrocytes)),
+        ),
+        dtype=float,
+        count=len(astrocytes),
+    )
+
+    overlapping_microdomains = (
+        dom.scale(factor) for dom, factor in zip(microdomains, scaling_factors)
     )
 
     LOGGER.info("Export overlapping microdomains...")
-    export_structure(_output_path("overlapping_microdomains.h5"), overlapping_microdomains)
+    export_microdomains(output_file_path, overlapping_microdomains, scaling_factors)
 
     LOGGER.info("Done!")
 
@@ -232,7 +232,7 @@ def gliovascular_connectivity(config, astrocytes, microdomains, vasculature, see
 
     from archngv.building.connectivity.gliovascular import generate_gliovascular
     from archngv.building.exporters.edge_populations import write_gliovascular_connectivity
-    from archngv.core.datasets import MicrodomainTesselation
+    from archngv.core.datasets import Microdomains
 
     LOGGER.info("Seed: %d", seed)
     numpy.random.seed(seed)
@@ -247,7 +247,7 @@ def gliovascular_connectivity(config, astrocytes, microdomains, vasculature, see
     ) = generate_gliovascular(
         cell_ids=numpy.arange(len(astrocytes), dtype=numpy.int64),
         astrocytic_positions=astrocytes.positions,
-        astrocytic_domains=MicrodomainTesselation(microdomains),
+        astrocytic_domains=Microdomains(microdomains),
         vasculature=PointVasculature.load_sonata(vasculature),
         params=load_yaml(config)["gliovascular_connectivity"],
     )
@@ -378,7 +378,7 @@ def neuroglial_connectivity(
 
     from archngv.building.connectivity.neuroglial_generation import generate_neuroglial
     from archngv.building.exporters.edge_populations import write_neuroglial_connectivity
-    from archngv.core.datasets import MicrodomainTesselation, NeuronalConnectivity
+    from archngv.core.datasets import Microdomains, NeuronalConnectivity
 
     numpy.random.seed(seed)
 
@@ -388,7 +388,7 @@ def neuroglial_connectivity(
 
     data_iterator = generate_neuroglial(
         astrocytes=astrocytes_data,
-        microdomains=MicrodomainTesselation(microdomains_path),
+        microdomains=Microdomains(microdomains_path),
         neuronal_connectivity=NeuronalConnectivity(neuronal_connectivity_path),
     )
 

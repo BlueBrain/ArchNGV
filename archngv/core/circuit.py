@@ -5,6 +5,8 @@ It uses bluepysnap.circuit.Circuit as main backend.
 from pathlib import Path
 
 import numpy as np
+import trimesh
+import vascpy
 from bluepysnap import Circuit
 from bluepysnap.edges import EdgePopulation, EdgeStorage
 from bluepysnap.morph import MorphHelper
@@ -13,7 +15,8 @@ from bluepysnap.sonata_constants import Edge
 from cached_property import cached_property
 
 from archngv.core.constants import Population
-from archngv.core.structures import Atlas, Microdomains
+from archngv.core.datasets import Microdomains
+from archngv.core.structures import Atlas
 from archngv.exceptions import NGVError
 
 
@@ -145,10 +148,8 @@ class Astrocytes(NGVNodes):
     @cached_property
     def microdomains(self):
         """Access to the microdomain object for this astrocyte population."""
-        return Microdomains(
-            self.config["microdomains_file"],
-            self.config["microdomains_overlapping_file"],
-        )
+
+        return Microdomains(self.config["microdomains_file"])
 
     @cached_property
     def morph(self):
@@ -187,9 +188,8 @@ class Vasculature(NGVNodes):
         Notes:
             The morphologies of the vasculature is handled by the VasculatureAPI package.
         """
-        from vascpy import SectionVasculature
 
-        return SectionVasculature.load(self.config["vasculature_file"])
+        return vascpy.SectionVasculature.load(self.config["vasculature_file"])
 
     @cached_property
     def point_graph(self):
@@ -198,14 +198,12 @@ class Vasculature(NGVNodes):
         Returns:
             vascpy.PointVasculature
         """
-        from vascpy import PointVasculature
 
-        return PointVasculature.load_sonata(self._node_storage.h5_filepath)
+        return vascpy.PointVasculature.load_sonata(self._node_storage.h5_filepath)
 
     @cached_property
     def surface_mesh(self):
         """Returns vasculature surface mesh object."""
-        import trimesh
 
         return trimesh.load(self.config["vasculature_mesh_file"])
 

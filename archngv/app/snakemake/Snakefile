@@ -137,7 +137,7 @@ propagate_cluster_default_values()  #  cluster info propagation does not work so
 
 rule all:
     input:
-        'microdomains/overlapping_microdomains.h5',
+        'microdomains.h5',
         'endfeet_areas.h5',
         MORPH_DIR + '/_DONE',
         TOUCHES_DIR + '/_SUCCESS',
@@ -247,8 +247,7 @@ rule microdomains:
         'sonata/nodes/glia.h5'
 
     output:
-        'microdomains/microdomains.h5',
-        'microdomains/overlapping_microdomains.h5',
+        'microdomains.h5',
 
     log:
         log_path('microdomains')
@@ -260,7 +259,7 @@ rule microdomains:
             '--astrocytes {input}',
             f'--atlas {ATLAS}',
             f'--atlas-cache {ATLAS_CACHE_DIR}',
-            '--output-dir microdomains',
+            '--output-file-path {output}',
             f'--seed {SEED}'],
             dump_log=True)
 
@@ -268,7 +267,7 @@ rule microdomains:
 rule gliovascular_connectivity:
     input:
         astrocytes = 'sonata/nodes/glia.h5',
-        microdomains = 'microdomains/overlapping_microdomains.h5',
+        microdomains = 'microdomains.h5',
         vasculature = 'sonata/nodes/vasculature.h5'
 
     output:
@@ -292,7 +291,7 @@ rule gliovascular_connectivity:
 rule neuroglial_connectivity:
     input:
         astrocytes = 'sonata/nodes/glia.h5',
-        microdomains = 'microdomains/overlapping_microdomains.h5',
+        microdomains = 'microdomains.h5',
 
     output:
         'sonata.tmp/edges/neuroglial.connectivity.h5',
@@ -390,7 +389,7 @@ rule endfeet_area:
 rule synthesis:
     input:
         astrocytes = 'sonata/nodes/glia.h5',
-        microdomains = 'microdomains/overlapping_microdomains.h5',
+        microdomains = 'microdomains.h5',
         gliovascular_connectivity = 'sonata.tmp/edges/gliovascular.connectivity.h5',
         neuroglial_connectivity = 'sonata.tmp/edges/neuroglial.connectivity.h5',
         endfeet_areas = 'endfeet_areas.h5'
@@ -455,7 +454,7 @@ rule finalize_gliovascular_connectivity:
 rule finalize_neuroglial_connectivity:
     input:
         astrocytes = 'sonata/nodes/glia.h5',
-        microdomains = 'microdomains/overlapping_microdomains.h5',
+        microdomains = 'microdomains.h5',
         connectivity = 'sonata.tmp/edges/neuroglial.connectivity.h5',
         morphologies = MORPH_DIR + '/_DONE',
 
