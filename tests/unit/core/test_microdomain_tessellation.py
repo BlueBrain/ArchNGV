@@ -1,8 +1,8 @@
 import os
 
 import numpy as np
-from numpy import testing as npt
 import pytest
+from numpy import testing as npt
 
 from archngv.building.exporters.export_microdomains import export_microdomains
 from archngv.core.datasets import Microdomain, Microdomains

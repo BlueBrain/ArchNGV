@@ -121,7 +121,7 @@ def test_acceptance_criterion(domain_boundary):
 
     bin_centers = bin_edges[0:-1] + 0.5 * (bin_edges[1] - bin_edges[0])
 
-    # cumulative hist
+    # cumulative histogram
     cum_values = np.cumsum(bin_values * np.diff(bin_edges))
 
     # expected from cumulative - survival function

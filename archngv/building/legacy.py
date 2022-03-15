@@ -58,7 +58,7 @@ def convert_microdomains_to_generic_format(old_file_path: Path, new_file_path: P
 
 def merge_microdomain_files(microdomains_dir: Path, output_file_path: Path):
     """Merges regular and overlapping microdomain files into a single overlapping microdomain file,
-    which also contains the scaling factors to reconstruct the regular tesselation if needed.
+    which also contains the scaling factors to reconstruct the regular tessellation if needed.
 
     Args:
         microdomains_dir: Path to the directory containing the two domain files

@@ -147,7 +147,7 @@ def _convert_morphio_trees(cell, property_builders=None):
             tree_length += n
 
             # keep track of the last node in the section because we need
-            # to establish the correct connectivity when we ommit the first
+            # to establish the correct connectivity when we omit the first
             # point from the children sections
             section_final_nodes[section.id] = tree_length - 1
 
@@ -359,7 +359,7 @@ def _match_barcodes(to_match, available_barcodes):
 
 
 def _match_bars(barcode1, barcode2):
-    """Match bars betwen barcodes by length"""
+    """Match bars between barcodes by length"""
     lengths1 = get_lengths(barcode1)
     lengths2 = get_lengths(barcode2)
 

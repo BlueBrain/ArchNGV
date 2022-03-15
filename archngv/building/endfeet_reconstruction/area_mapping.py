@@ -1,4 +1,4 @@
-""" Functions for transfroming endfeet areas from overshoot
+""" Functions for transforming endfeet areas from overshoot
 distribution down to the biological target
 """
 import numpy as np
@@ -40,13 +40,13 @@ def transform_to_target_distribution(areas, target_distribution):
     """
     Args:
         areas: input array of values to transform
-        biological_areas: target areas to transfrom to
+        biological_areas: target areas to transform to
 
     We want to transform random variable X (areas) to look like
     variable Y (bio areas)
 
     We assume that variable Y is a truncated normal. We need to scale
-    down the areas so the two distributions match. Thefore we need to
+    down the areas so the two distributions match. Therefore we need to
     apply a transformation g: R -> R so that:
 
     Y = g(X) = a * X

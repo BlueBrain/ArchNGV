@@ -281,7 +281,7 @@ def polygons_to_triangles(points, face_vertices_collection):
 
     Notes:
         This algorithm works by splitting a polygon into consecutive
-        triangles, starting from an existing vertex and tranversing
+        triangles, starting from an existing vertex and traversing
         the polygon clockwise or counterclockwise depending on the global
         order determined by the coordinates of the polygon.
 
@@ -435,7 +435,7 @@ def triangles_to_polygons(triangles: np.ndarray, polygon_ids: np.ndarray) -> Lis
     from itertools import groupby
 
     def create_polygon(tri_generator):
-        """Recontructs the polygon from the group of triangles"""
+        """Reconstructs the polygon from the group of triangles"""
         first_triangle = list(next(tri_generator)[1])
         return first_triangle + [tr[2] for _, tr in tri_generator]
 

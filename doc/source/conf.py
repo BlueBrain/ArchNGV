@@ -16,7 +16,6 @@
 
 from pkg_resources import get_distribution
 
-
 # -- Project information -----------------------------------------------------
 
 project = "ArchNGV"

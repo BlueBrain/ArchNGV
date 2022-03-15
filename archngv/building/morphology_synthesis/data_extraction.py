@@ -34,7 +34,7 @@ def obtain_endfeet_data(astrocyte_index, gliovascular_connectivity, endfeet_area
     """Extract the endfeet information from astrocyte_index if any, otherwise return None
 
     Args:
-        astrocyte_index (int): The positional index that represents tha astrocyte entity
+        astrocyte_index (int): The positional index that represents the astrocyte entity
         gliovascular_connectivity (str): Path to the gv data file
         endfeet_areas_path (str): Path to the endfeet areas file
 
@@ -66,7 +66,7 @@ def obtain_cell_properties(astrocyte_index, cell_data_filepath, microdomains_fil
     via the ngv_config and its index.
 
     Args:
-        astrocyte_index (int): The positional index that represents tha astrocyte entity
+        astrocyte_index (int): The positional index that represents the astrocyte entity
         cell_data_filepath (str): Path to cell data file
         microdomains_filepath (str): Path to microdomains file
 
@@ -101,7 +101,7 @@ def obtain_synapse_data(astrocyte_index, synaptic_data_filepath, neuroglial_file
     of astrocyte_index
 
     Args:
-        astrocyte_index (int): The positional index that represents tha astrocyte entity
+        astrocyte_index (int): The positional index that represents the astrocyte entity
         synaptic_data_filepath (str): Path to synaptic data file
         neurogial_conn_filepath (str): Path to neuroglial sonata filepath
 
@@ -205,7 +205,7 @@ def _obtain_point_cloud(
     reached.
 
     Args:
-        astrocyte_index (int): The positional index that represents tha astrocyte entity
+        astrocyte_index (int): The positional index that represents the astrocyte entity
         microdomains_filepath (str): Path to microdomains file
         synaptic_data_filepath (str): Path to synaptic data file
         neuroglial_conn_filepath (str): Path to neuroglial connectivity file

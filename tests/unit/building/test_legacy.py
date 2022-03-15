@@ -8,7 +8,6 @@ from numpy import testing as npt
 from archngv.app.utils import load_yaml
 from archngv.building import legacy as tested
 
-
 DATA_DIR = Path(__file__).parent.resolve() / "data"
 
 

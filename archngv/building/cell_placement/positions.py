@@ -1,5 +1,5 @@
 """
-Entry fucntions to use cell placement
+Entry functions to use cell placement
 """
 
 import logging

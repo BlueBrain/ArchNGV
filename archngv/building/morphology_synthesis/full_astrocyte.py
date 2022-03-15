@@ -78,7 +78,7 @@ def grow_circuit_astrocyte(
             namedtuple that contains data related to endfeet generation
         space_colonization_data (SpaceColonizationData):
             namedtuple that contains data concerning the space colonization
-        random_generator (numpy.random.Generator): Random generator instace to use
+        random_generator (numpy.random.Generator): Random generator instance to use
 
     Returns:
         morphio.mut.Morphology: The generated astrocyte morphology

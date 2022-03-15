@@ -130,7 +130,7 @@ def _select_component_targets(source, comp, n_elements):
 
     Notes:
         First point is always the closest. Every next point maximizes
-        the minimun distance to the previously selected points in the loop.
+        the minimum distance to the previously selected points in the loop.
     """
     points = comp.loc[:, ("x", "y", "z")].to_numpy(copy=False)
 

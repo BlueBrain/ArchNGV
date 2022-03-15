@@ -4,7 +4,7 @@ import numpy as np
 def create_mesh_data(height=10, width=10, world_offset=0):
     """
     Build a triangle strip:
-    Vertices are layed out left to right, bottom to top:
+    Vertices are laid out left to right, bottom to top:
 
     8--9-10-11
     |/ |/ |/ |

@@ -1,4 +1,4 @@
-""" Tesselation generation and overlap
+""" Tessellation generation and overlap
 """
 
 import logging
@@ -18,7 +18,7 @@ L = logging.getLogger(__name__)
 def generate_microdomain_tessellation(
     generator_points: np.ndarray, generator_radii: np.ndarray, bounding_box: BoundingBox
 ) -> Iterator[Microdomain]:
-    """Creates a Laguerre Tesselation out of generator spheres taking into account
+    """Creates a Laguerre Tessellation out of generator spheres taking into account
     intersections with the bounding box.
 
     Args:

@@ -60,7 +60,7 @@ def orientations_from_domain(
 
 def remove_overlapping_orientations(ref_point, points, to_remove_points):
     """Return the points, the orientations of which do not overlap with
-    the orientations of to_remove_points. Usualy, the number of orientations
+    the orientations of to_remove_points. Usually, the number of orientations
     is small, so we do it the simple/expensive way, by combinatorial comparison.
 
     Args:

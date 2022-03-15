@@ -59,7 +59,7 @@ def _endfoot_compartment_features(endfoot_length, endfoot_mesh_area, endfoot_mes
 
 def create_endfeet_compartment_data(vasculature_segments, targets, area_meshes):
     """Creates the data that is required to construct endfeet compartments in NEURON, using
-    the area mesh and target of the endfoot. The compartment length is calculed by the extent
+    the area mesh and target of the endfoot. The compartment length is calculated by the extent
     of the endfoot across the medial axis of its respective segment. The diameters and perimeters
     correspond to the volumes and area of the endfeet respectively.
 

@@ -155,7 +155,7 @@ def _process_endfeet(
                 target_area,
             )
 
-        # the unique vertices belonging to group and the triangles refering to that subset
+        # the unique vertices belonging to group and the triangles referring to that subset
         vertices_global, triangles_local = _global_to_local_indices(triangles_global)
 
         points_local = points[vertices_global]
@@ -212,7 +212,7 @@ def endfeet_area_generation(vasculature_mesh, parameters, endfeet_points):
     # spread more than the biological distribution
     target_areas = transform_to_target_distribution(endfeet_areas, target_distribution)
 
-    # the thicknes that will be assigned to each endfoot
+    # the thickness that will be assigned to each endfoot
     endfeet_thicknesses = truncated_normal(*parameters["thickness_distribution"]).rvs(
         size=n_endfeet
     )

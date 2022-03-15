@@ -69,7 +69,7 @@ class ConvexPolygon:
     @cached_property
     def triangles(self) -> numpy.ndarray:
         """Returns convex polygon triangles. Flips the sequence of the triangles
-        if the normal is inwards ensure that everytime normals are calculated,
+        if the normal is inwards ensure that every time normals are calculated,
         the normals are outward
         """
         return _ut.make_normals_outward(self.centroid, self.points, self._triangles)

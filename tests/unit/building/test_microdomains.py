@@ -1,11 +1,11 @@
 import mock
-import pytest
 import numpy as np
+import pytest
 from numpy import testing as npt
 
+from archngv.building import microdomains as tested
 from archngv.exceptions import NGVError
 from archngv.spatial.bounding_box import BoundingBox
-from archngv.building import microdomains as tested
 from archngv.utils.ngons import polygons_to_triangles
 
 

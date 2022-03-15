@@ -182,7 +182,7 @@ def _resolve_segment_direction(start_pos, end_pos, start_rad, end_rad):
 
 def surface_intersect(astrocyte_positions, potential_targets, astrocyte_target_edges, vasculature):
     """From the line segments starting from target points on the skeleton of the vasculature
-    graph and ending to the astrocytic somata the intersection with the surface of teh cones or
+    graph and ending to the astrocytic somata the intersection with the surface of the cones or
     cyliners is calculated.
 
     Args:

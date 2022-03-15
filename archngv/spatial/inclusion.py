@@ -4,7 +4,7 @@ import numpy as np
 
 
 def spheres_in_sphere(centers, radii, center, radius):
-    """Cheks if spheres are included in sphere"""
+    """Checks if spheres are included in sphere"""
     values = np.linalg.norm(center - centers, axis=1) - (radius - radii)
     return (values < 0.0) | np.isclose(values, 0.0)
 

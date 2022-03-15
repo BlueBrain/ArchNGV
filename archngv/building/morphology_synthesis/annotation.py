@@ -80,7 +80,7 @@ def _morphology_unwrapped(morphology):
 
 
 def _endfoot_termination_filter(sections):
-    """Checks if a sction has the endfoot type and is a termination section,
+    """Checks if a section has the endfoot type and is a termination section,
     which means it has no children
     """
     endfoot_t = MORPHIO_MAP[ASTROCYTE_TO_NEURON["endfoot"]]

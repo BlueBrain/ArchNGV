@@ -80,7 +80,7 @@ class NeuroglialWorker:
 def _dispatch_neuroglial_data(
     astrocytes: "CellData", paths: Dict[str, Path]
 ) -> Iterator[Dict[str, Any]]:
-    """Dispatches data to parallell workers"""
+    """Dispatches data to parallel workers"""
     for astro_id in range(len(astrocytes)):
 
         morphology_name = astrocytes.get_property("morphology", ids=astro_id)[0]

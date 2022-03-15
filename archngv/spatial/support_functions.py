@@ -46,7 +46,7 @@ def convex_polytope2(shape_points, adjacency, direction):
 
 
 def cylinder(centroid, central_axis, radius, height, direction):
-    """Returns the suppport of cylinder along direction"""
+    """Returns the support of cylinder along direction"""
     dot_u_d = numpy.dot(central_axis, direction)
     proj_u_d = dot_u_d * central_axis
     orth_component = direction - proj_u_d

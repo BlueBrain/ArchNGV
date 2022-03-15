@@ -56,7 +56,7 @@ class StopAtConvexBoundary:
 
     def acceptance_criterion(self, distance, fraction):
         """If the distance survives then we don't collide yet.
-        Cummulative F(d) = 1 - S(d) = Pr(D <= d)
+        Cumulative F(d) = 1 - S(d) = Pr(D <= d)
 
         Args:
             distance (float): The survival probability's argument

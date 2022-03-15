@@ -149,8 +149,8 @@ def _find_closest_mesh_nodes(endfeet_points, mesh_points, neighbors, nn_offsets)
 
 
 def _mesh_to_flat_arrays(mesh):
-    """Convert the mesh to three flat arrays which containt neighbors for each
-    vertex, the offsets to access theese neighbors and the coordiantes of the vertices
+    """Convert the mesh to three flat arrays which contain neighbors for each
+    vertex, the offsets to access these neighbors and the coordinates of the vertices
 
     Args:
         mesh: openmesh Trimesh

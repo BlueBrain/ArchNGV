@@ -61,7 +61,7 @@ def _unique_points_edges(points, edges):
 
 def _sample_elimination(points, rmax, fraction):
     """Implementation of the sample elimination algorithm, presented in
-    the folloing paper: https://doi.org/10.1111/cgf.12538
+    the following paper: https://doi.org/10.1111/cgf.12538
 
     A fraction of the initial points are selected so that the final sample approximates
     poisson disk sampling. While in the paper the neighbors are calculated from a ball query of

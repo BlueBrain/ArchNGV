@@ -44,7 +44,7 @@ def domains_to_vasculature(
             Edges for each astrocyte connecting to multiple targets.
                 e.g. [[astro_0, target_2], [atro_0, target_3], [astro_1, target_10] ...]
     """
-    L.info("Endfeet Distribution Paremeters %s", properties["endfeet_distribution"])
+    L.info("Endfeet Distribution Parameters %s", properties["endfeet_distribution"])
 
     domain_target_edges = []
     index = SphereIndex(potential_targets.loc[:, ("x", "y", "z")].to_numpy(), radii=None)

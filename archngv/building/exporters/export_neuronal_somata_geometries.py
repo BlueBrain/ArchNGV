@@ -253,7 +253,7 @@ def sphere_volume(radius):
 
 def filter_distant_neurite_starts(contour_points, trunk_starts):
     """Removes trunk starts the distance of which to the center is bigger that two times
-    the nax radius of the contour
+    the max radius of the contour
     """
     centroid = np.mean(contour_points, axis=0)
     max_radius = np.max(np.linalg.norm(contour_points - centroid, axis=1))

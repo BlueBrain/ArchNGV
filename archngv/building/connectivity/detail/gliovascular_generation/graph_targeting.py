@@ -1,4 +1,4 @@
-"""graph targetting"""
+"""graph targeting"""
 import numpy as np
 
 

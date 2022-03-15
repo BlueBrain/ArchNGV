@@ -117,7 +117,7 @@ class PlacementGenerator:
     def second_order(self, voxel_centers):
         """Sphere generation in the group with respect to interaction
         potentials. Valid is uniformly picked in the same
-        intesity group using the first order approach and an extra
+        intensity group using the first order approach and an extra
         metropolis hastings optimization step is performed in order
         to minimize the energy of the potential locally for each new
         sphere

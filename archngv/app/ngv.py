@@ -297,7 +297,7 @@ def attach_endfeet_info_to_gliovascular_connectivity(
 
         - astrocyte_section_id
             The last section id of the astrocytic morphology that connects to the
-            endfoot locaiton on the vascular surface.
+            endfoot location on the vascular surface.
 
         - endfoot_compartment_length
             The extent of the endfoot across the medial axis of the segment that is
@@ -485,7 +485,7 @@ def attach_morphology_info_to_neuroglial_connectivity(
 )
 @click.option("--output-connectivity", help="Path to output HDF5 (connectivity)", required=True)
 def build_glialglial_connectivity(astrocytes, touches_dir, seed, output_connectivity):
-    """Generate connectivitiy betwen astrocytes (G-G)"""
+    """Generate connectivitiy between astrocytes (G-G)"""
     # pylint: disable=redefined-argument-from-local,too-many-locals
     from archngv.building.connectivity.glialglial import generate_glialglial
     from archngv.building.exporters.edge_populations import write_glialglial_connectivity
@@ -675,5 +675,5 @@ def synthesis(
     progress(synthesize)
     synthesize.compute()
 
-    time.sleep(10)  # this sleep is necessary to let dask syncronize state across the cluster
+    time.sleep(10)  # this sleep is necessary to let dask synchronize state across the cluster
     client.retire_workers()

@@ -128,7 +128,7 @@ class SonataValidator:
         self._collect_error(
             actual=self.h5file.population_names,
             desired=[spec["population_name"]],
-            err_msg=f"Population name missmatch in {self.filepath.name}",
+            err_msg=f"Population name mismatch in {self.filepath.name}",
         )
 
     def check_population_type(self, spec):
@@ -136,7 +136,7 @@ class SonataValidator:
         self._collect_error(
             actual=self.h5file.population_types,
             desired=[spec["population_type"]],
-            err_msg=f"Population type missmatch in {self.filepath.name}",
+            err_msg=f"Population type mismatch in {self.filepath.name}",
         )
 
     def check_attribute_names(self, spec):
@@ -168,13 +168,13 @@ class SonataValidator:
         self._collect_error(
             actual=self.h5file.source_population_names,
             desired=[spec["source_node_population_name"]],
-            err_msg=f"Source node population missmatch in {self.filepath.name}",
+            err_msg=f"Source node population mismatch in {self.filepath.name}",
         )
 
         self._collect_error(
             actual=self.h5file.target_population_names,
             desired=[spec["target_node_population_name"]],
-            err_msg=f"Target node population missmatch in {self.filepath.name}",
+            err_msg=f"Target node population mismatch in {self.filepath.name}",
         )
 
     def run(self):

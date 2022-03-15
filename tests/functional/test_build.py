@@ -2,8 +2,8 @@ import logging
 import os
 from pathlib import Path
 
-import pytest
 import jsondiff
+import pytest
 from numpy import testing as npt
 
 from archngv.app.utils import load_json

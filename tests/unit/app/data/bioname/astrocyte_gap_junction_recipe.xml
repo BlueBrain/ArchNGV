@@ -32,7 +32,7 @@
 <!-- @version: -->
 
 <blueColumn>
-<!-- use following line to modify inter-bouton interval algorithm paramters; defaults are min=3, max=7, gap=5
+<!-- use following line to modify inter-bouton interval algorithm parameters; defaults are min=3, max=7, gap=5
         <InterBoutonInterval minDistance="5.0" maxDistance="9.0" regionGap="5.0"/> 
 -->
     <InterBoutonInterval minDistance="5.0" maxDistance="7.0" regionGap="5.0"/> 

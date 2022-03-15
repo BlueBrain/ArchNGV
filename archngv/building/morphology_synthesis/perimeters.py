@@ -154,8 +154,8 @@ def _reflect_perimeters(section, expansion_length):
 
 
 def _expand_start(section, expansion_length):
-    """Find the expansion for the section periemeters from the left by acessing sections
-    upsream. If the root is reached then the first value is copied until the expansion_length
+    """Find the expansion for the section periemeters from the left by accessing sections
+    upstream. If the root is reached then the first value is copied until the expansion_length
     is reached. If the section is root, the perimeters will be reflected at the first point of
     the array.
     """
