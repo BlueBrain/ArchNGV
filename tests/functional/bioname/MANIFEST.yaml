@@ -77,3 +77,6 @@ synthesis:
       - 1.0
       - 1.0
       - 1.0
+  resampling:
+    enabled: true
+    linear-density: 1.0

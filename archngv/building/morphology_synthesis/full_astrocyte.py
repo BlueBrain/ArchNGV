@@ -4,6 +4,7 @@ import logging
 import morphio
 import numpy as np
 from diameter_synthesis import build_diameters
+from morph_tool.resampling import resample_linear_density
 from morph_tool.transform import translate
 from tns import AstrocyteGrower
 
@@ -35,6 +36,7 @@ def _sanity_checks(morph):
     """Various checks ensuring morphology corectedness
         - existence of duplicate points
         - at least two points in each section
+        - no unifurcations
 
     Args:
         morph (morphio.mut.Morphology): The morphology
@@ -44,22 +46,24 @@ def _sanity_checks(morph):
     """
     for section in morph.iter():
 
-        if section.is_root:
-            continue
-
-        points = section.points
-        parent_points = section.parent.points
-
-        if not np.allclose(points[0], parent_points[-1]):
+        if not (section.is_root or np.allclose(section.points[0], section.parent.points[-1])):
             raise NGVError(
                 f"Morphology {morph} is missing duplicate points.\n"
-                f"\t Section {section.id}, Points: {points}, Parent last point: {parent_points}"
+                f"\t Section {section.id}, "
+                f"Points: {section.points}, "
+                f"Parent last point: {section.parent.points}"
             )
 
-        if not len(points) > 1:
+        if not len(section.points) > 1:
             raise NGVError(
                 f"Morphology {morph} has one point sections.\n"
-                f"\t Section {section.id}, Points: {points}"
+                f"\t Section {section.id}, Points: {section.points}"
+            )
+
+        if len(section.children) == 1:
+            raise NGVError(
+                f"Morphology {morph} has unifurcations.\n"
+                f"\t Section {section.id}, Child: {section.children[0].id}"
             )
 
 
@@ -135,6 +139,15 @@ def synthesize_astrocyte(astrocyte_index, paths, parameters, random_generator):
         random_generator,
     )
 
+    # TODO: Use mut.GlialCell everywhere
+
+    if "resampling" in parameters and parameters["resampling"]["enabled"]:
+        L.info("Resampling morphology...")
+        morphology = resample_linear_density(
+            morphology,
+            parameters["resampling"]["linear-density"],
+        )
+
     if parameters["perimeter_distribution"]["enabled"]:
         L.info("Distributing perimeters...")
         add_perimeters_to_morphology(
@@ -147,4 +160,5 @@ def synthesize_astrocyte(astrocyte_index, paths, parameters, random_generator):
     # TODO: replace this when direct NEURON ordering write is available in MorphIO
     morph = _post_growing(morphology, cell_properties.soma_position)
     _sanity_checks(morph)
+
     return morph

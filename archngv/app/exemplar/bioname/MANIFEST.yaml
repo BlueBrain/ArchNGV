@@ -1,4 +1,5 @@
 common:
+  parallel: true
   log_level: WARNING
   seed: 0
   atlas: /gpfs/bbp.cscs.ch/project/proj62/NGV/atlases/O1-230/20190517
