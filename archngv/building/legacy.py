@@ -5,6 +5,7 @@ import h5py
 import numpy as np
 
 from archngv.app.utils import load_yaml, write_yaml
+from archngv.building.exporters.grouped_properties import export_grouped_properties
 
 
 def merge_configuration_files(bioname_dir: Path, output_manifest_path: Path):
@@ -123,3 +124,53 @@ def merge_microdomain_files(microdomains_dir: Path, output_file_path: Path):
                     )
 
                 g_data.create_dataset("scaling_factors", data=scaling_factors)
+
+
+def convert_endfeet_to_generic_format(old_file_path: Path, new_file_path: Path) -> None:
+    """Convert endfeet surface meshes file to a grouped properties one"""
+    properties = {}
+
+    with h5py.File(old_file_path, "r") as o_endfeet:
+
+        n_endfeet = len(o_endfeet["attributes"]["surface_area"])
+
+        for name in ("surface_area", "surface_thickness", "unreduced_surface_area"):
+
+            dset = o_endfeet["attributes"][name]
+
+            assert (
+                len(dset) == n_endfeet
+            ), f"Mismatching dataset {name} size: Expected {n_endfeet} but got {len(dset)}."
+
+            properties[name] = {
+                "values": dset[:],
+                "offsets": None,
+            }
+
+        for name in ("points", "triangles"):
+
+            properties[name] = {
+                "values": [],
+                "offsets": np.zeros(n_endfeet + 1, dtype=np.int64),
+            }
+
+        for index in range(n_endfeet):
+
+            g = o_endfeet["objects"][f"endfoot_{index}"]
+
+            for name in ("points", "triangles"):
+
+                values = g[name][:]
+                properties[name]["values"].append(values)
+                properties[name]["offsets"][index + 1] = properties[name]["offsets"][index] + len(
+                    values
+                )
+
+        properties["points"]["values"] = np.vstack(properties["points"]["values"]).astype(
+            np.float32
+        )
+        properties["triangles"]["values"] = np.vstack(properties["triangles"]["values"]).astype(
+            np.int64
+        )
+
+        export_grouped_properties(new_file_path, properties)

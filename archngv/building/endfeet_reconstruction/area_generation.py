@@ -11,6 +11,7 @@ from archngv.building.endfeet_reconstruction.fast_marching_method import (
     fast_marching_eikonal_solver,
 )
 from archngv.building.endfeet_reconstruction.groups import group_elements, vertex_to_triangle_groups
+from archngv.core.datasets import EndfootMesh
 from archngv.utils.ngons import vectorized_triangle_area
 from archngv.utils.statistics import truncated_normal
 
@@ -137,6 +138,9 @@ def _process_endfeet(
         The difference between group indices and endfoot indices is that groups
         include also the unassigned -1 group that corresponds to mesh triangles
         that are not occupid by endfeet.
+
+        Only the groups that have grown are yielded. Therefore, gaps are possible
+        but the results are yielded in a sorted incremental manner.
     """
     for group, triangle_ids in grouped_triangles.iter_assigned_groups():
 
@@ -161,9 +165,14 @@ def _process_endfeet(
         points_local = points[vertices_global]
         final_area = _triangle_areas(points_local, triangles_local).sum()
 
-        yield group, points_local, triangles_local, current_area, final_area, endfeet_thicknesses[
-            group
-        ]
+        yield EndfootMesh(
+            index=group,
+            points=points_local,
+            triangles=triangles_local,
+            area=final_area,
+            unreduced_area=current_area,
+            thickness=endfeet_thicknesses[group],
+        )
 
 
 def endfeet_area_generation(vasculature_mesh, parameters, endfeet_points):

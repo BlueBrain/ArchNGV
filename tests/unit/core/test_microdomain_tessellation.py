@@ -135,14 +135,14 @@ def test_domain_objects(microdomains):
 
 def test_scaling_factors(microdomains, mockdomains):
 
-    scaling_factors = microdomains.get_property("scaling_factors")
+    scaling_factors = microdomains.get("scaling_factors")
     npt.assert_allclose(scaling_factors, mockdomains.scaling_factors)
 
     for domain_index, domain in enumerate(microdomains):
 
         npt.assert_equal(
             scaling_factors[domain_index],
-            microdomains.get_property("scaling_factors", group_index=domain_index),
+            microdomains.get("scaling_factors", group_index=domain_index),
         )
 
 

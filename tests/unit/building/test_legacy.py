@@ -158,3 +158,46 @@ def test_merge_microdomains():
                             get_slice(merged_domains, "neighbors", i),
                             get_slice(o_domains, "neighbors", i),
                         )
+
+
+def test_convert_endfeet_to_generic_format():
+
+    endfeet_dir = DATA_DIR / "legacy/convert_endfeet_to_generic_format"
+
+    old_file_path = endfeet_dir / "endfeet_areas.h5"
+
+    with tempfile.NamedTemporaryFile(suffix=".h5") as tfile:
+
+        output_path = tfile.name
+
+        tested.convert_endfeet_to_generic_format(old_file_path, output_path)
+
+        with h5py.File(old_file_path, "r") as old_format:
+            with h5py.File(output_path, "r") as new_format:
+
+                n_endfeet = len(old_format["attributes"]["surface_area"])
+
+                for name in ("surface_area", "surface_thickness", "unreduced_surface_area"):
+
+                    old_dset = old_format["attributes"][name]
+                    new_dset = new_format["data"][name]
+
+                    npt.assert_equal(n_endfeet, len(old_dset))
+                    npt.assert_equal(n_endfeet, len(new_dset))
+
+                    npt.assert_allclose(new_dset, old_dset)
+
+                    assert (
+                        name not in new_format["offsets"]
+                    ), f"Found offsets for linear property '{name}'"
+
+                for index in range(n_endfeet):
+
+                    g = old_format["objects"][f"endfoot_{index}"]
+
+                    for name in ("points", "triangles"):
+
+                        data = new_format["data"][name]
+                        offsets = new_format["offsets"][name]
+
+                        npt.assert_allclose(g[name], data[offsets[index] : offsets[index + 1]])

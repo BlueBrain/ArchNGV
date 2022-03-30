@@ -120,6 +120,7 @@ def test_create_endfeet_compartment_data():
             points=np.array([[0.25, 0.75, 0.0], [0.25, 0.25, 0.0]]),
             triangles=np.array([[0, 1, 0]]),
             area=4.0,
+            unreduced_area=6.0,
             thickness=0.5 * np.pi,
         ),
         EndfootMesh(
@@ -127,6 +128,7 @@ def test_create_endfeet_compartment_data():
             points=np.array([[0.0, 0.25, 0.75], [0.0, 0.25, 0.25]]),
             triangles=np.empty(shape=(0, 3), dtype=np.int32),
             area=4.0,
+            unreduced_area=6.0,
             thickness=0.5 * np.pi,
         ),
         EndfootMesh(
@@ -134,6 +136,7 @@ def test_create_endfeet_compartment_data():
             points=np.array([[0.75, 0.0, 0.25], [0.25, 0.0, 0.25]]),
             triangles=np.array([[0, 1, 0]]),
             area=4.0,
+            unreduced_area=6.0,
             thickness=0.5 * np.pi,
         ),
         EndfootMesh(
@@ -141,6 +144,7 @@ def test_create_endfeet_compartment_data():
             points=np.array([[1.0, 0.0, 0.0], [1.0, 0.0, 0.0]]),
             triangles=np.array([[0, 1, 0]]),
             area=4.0,
+            unreduced_area=6.0,
             thickness=0.5 * np.pi,
         ),
     ]

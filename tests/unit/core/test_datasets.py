@@ -7,6 +7,35 @@ import archngv.core.datasets as tested
 from archngv.exceptions import NGVError
 
 
+@pytest.mark.parametrize(
+    "key, expected_result",
+    [
+        (2, 2),
+        (np.int32(3), 3),
+        (np.int64(4), 4),
+        (np.uint32(5), 5),
+        (np.uint64(6), 6),
+        ([3], [3]),
+        ([np.int32(3)], [3]),
+        ([np.int64(4)], [4]),
+        ([np.uint32(5)], [5]),
+        ([np.uint64(6)], [6]),
+        ([np.int32(2), np.int64(3), np.uint32(4), np.uint64(5), 6], [2, 3, 4, 5, 6]),
+    ],
+)
+def test_apply_callable(key, expected_result):
+
+    callable_function = lambda index: index
+
+    npt.assert_equal(
+        tested._apply_callable(callable_function, key),
+        expected_result,
+    )
+
+    with pytest.raises(TypeError):
+        tested._apply_callable(callable_function, None)
+
+
 class TestCellData:
     def setup(self):
         self.cells = tested.CellData(get_data("nodes.h5"))

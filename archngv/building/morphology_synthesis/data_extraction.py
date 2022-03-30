@@ -58,6 +58,7 @@ def obtain_endfeet_data(astrocyte_index, gliovascular_connectivity, endfeet_area
     L.debug("Endfeet Area Meshes: %s", endfeet_areas)
 
     assert targets.ndim == 2
+    assert len(endfeet_indices) == len(targets) == len(endfeet_areas)
     return EndfeetData(ids=endfeet_indices, targets=targets, area_meshes=endfeet_areas)
 
 

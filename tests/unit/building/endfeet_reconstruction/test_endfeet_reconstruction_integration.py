@@ -7,7 +7,7 @@ import pytest
 from numpy import testing as npt
 
 from archngv.building.endfeet_reconstruction.area_generation import endfeet_area_generation
-from archngv.building.exporters.export_endfeet_areas import export_endfeet_areas
+from archngv.building.exporters.export_endfeet_areas import export_endfeet_meshes
 from archngv.core.datasets import EndfootSurfaceMeshes
 
 _PATH = pathlib.Path(__file__).parent.resolve()
@@ -57,7 +57,7 @@ def test_component(plane_mesh, endfeet_points, parameters):
     with tempfile.NamedTemporaryFile(suffix=".h5") as fd:
 
         filepath = fd.name
-        export_endfeet_areas(filepath, data_generator, len(endfeet_points))
+        export_endfeet_meshes(filepath, data_generator, len(endfeet_points))
 
         meshes = EndfootSurfaceMeshes(filepath)
 

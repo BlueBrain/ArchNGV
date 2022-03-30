@@ -1,74 +1,80 @@
 """ Endfeetome exporters """
 import logging
+from pathlib import Path
+from typing import Any, Dict, Iterator
 
-import h5py
 import numpy as np
 
+from archngv.building.exporters.grouped_properties import export_grouped_properties
+from archngv.core.datasets import EndfootMesh
 from archngv.exceptions import NGVError
 
 L = logging.getLogger(__name__)
 
 
-def _write_endfoot_layout(root, index, points, triangles):
+def export_endfeet_meshes(filename: Path, endfeet: Iterator[EndfootMesh], n_endfeet: int) -> None:
+    """Export endfeet meshes as grouped properties
 
-    mesh_group = root.create_group("endfoot_{}".format(index))
-    mesh_group.create_dataset("points", data=points, dtype=np.float32)
-    mesh_group.create_dataset("triangles", data=triangles, dtype=np.uint64)
+    Args:
+        filename: Output file path.
+        endfeet: Iterable of EndfootMesh instances.
+        n_endfeet: The size of the endfeet iterable.
+    """
 
+    property_dtypes = {
+        "points": np.float32,
+        "triangles": np.int64,
+        "surface_area": np.float32,
+        "unreduced_surface_area": np.float32,
+        "surface_thickness": np.float32,
+    }
 
-def export_endfeet_areas(filepath, data_generator, n_endfeet):
-    """Endfeetome"""
-    with h5py.File(filepath, "w") as fd:
+    properties: Dict[str, Dict[str, Any]] = {
+        "points": {
+            "values": [[] for _ in range(n_endfeet)],
+            "offsets": np.zeros(n_endfeet + 1, dtype=np.int64),
+        },
+        "triangles": {
+            "values": [[] for _ in range(n_endfeet)],
+            "offsets": np.zeros(n_endfeet + 1, dtype=np.int64),
+        },
+        "surface_area": {
+            "values": np.zeros(n_endfeet, dtype=property_dtypes["surface_area"]),
+            "offsets": None,
+        },
+        "unreduced_surface_area": {
+            "values": np.zeros(n_endfeet, dtype=property_dtypes["unreduced_surface_area"]),
+            "offsets": None,
+        },
+        "surface_thickness": {
+            "values": np.zeros(n_endfeet, dtype=property_dtypes["surface_thickness"]),
+            "offsets": None,
+        },
+    }
 
-        metadata = fd.create_group("metadata")
-        metadata.attrs["object_type"] = "endfoot_mesh"
+    # it is not guaranteed that endfoot index in consecutive
+    for endfoot in endfeet:
 
-        meshes = fd.create_group("objects")
-        attributes = fd.create_group("attributes")
+        endfoot_index = endfoot.index
 
-        is_empty = np.ones(n_endfeet, dtype=bool)
+        properties["points"]["values"][endfoot_index] = endfoot.points
+        properties["triangles"]["values"][endfoot_index] = endfoot.triangles
 
-        # datasets with 1D properties
-        endfeet_areas = np.zeros(n_endfeet, dtype=np.float32)
-        endfeet_areas_initial = np.zeros(n_endfeet, dtype=np.float32)
-        endfeet_thicknesses = np.zeros(n_endfeet, dtype=np.float32)
+        properties["unreduced_surface_area"]["values"][endfoot_index] = endfoot.unreduced_area
+        properties["surface_area"]["values"][endfoot_index] = endfoot.area
+        properties["surface_thickness"]["values"][endfoot_index] = endfoot.thickness
 
-        for (
-            endfoot_index,
-            points,
-            triangles,
-            initial_area,
-            final_area,
-            thickness,
-        ) in data_generator:
+    for name in ("points", "triangles"):
 
-            _write_endfoot_layout(
-                root=meshes, index=endfoot_index, points=points, triangles=triangles
-            )
+        properties[name]["offsets"][1:] = np.cumsum(
+            [len(points) for points in properties[name]["values"]]
+        )
 
-            endfeet_areas[endfoot_index] = final_area
-            endfeet_areas_initial[endfoot_index] = initial_area
-            endfeet_thicknesses[endfoot_index] = thickness
+        properties[name]["values"] = np.vstack(
+            [points for points in properties[name]["values"] if len(points) > 0]
+        ).astype(property_dtypes[name])
 
-            is_empty[endfoot_index] = False
-
-        # empty placeholders
-        empty_endfeet = np.where(is_empty)[0]
-        for endfoot_index in empty_endfeet:
-
-            _write_endfoot_layout(
-                root=meshes,
-                index=endfoot_index,
-                points=np.empty([0, 3]),
-                triangles=np.empty([0, 3]),
-            )
-
-            L.info("Endfoot %d is empty", endfoot_index)
-
-        # write 1D datasets
-        attributes.create_dataset("surface_area", data=endfeet_areas)
-        attributes.create_dataset("unreduced_surface_area", data=endfeet_areas_initial)
-        attributes.create_dataset("surface_thickness", data=endfeet_thicknesses)
+    export_grouped_properties(filename, properties)
 
 
 def export_endfoot_mesh(endfoot_coordinates, endfoot_triangles, filepath):

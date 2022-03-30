@@ -86,7 +86,11 @@ def create_endfeet_compartment_data(vasculature_segments, targets, area_meshes):
         If there are no triangle in and endfoot mesh, it returns [0., 0.,0.]
         If a calculated length is zero, it returns [0., 0., 0.].
     """
-    assert len(vasculature_segments) == len(targets) == len(area_meshes)
+    assert len(vasculature_segments) == len(targets) == len(area_meshes), (
+        f"Vasculature Segments: {vasculature_segments}\n"
+        f"Endfeet targets     : {targets}\n"
+        f"Area meshes         : {area_meshes}"
+    )
 
     lengths = np.zeros(len(targets), dtype=np.float32)
     diameters = np.zeros(len(targets), dtype=np.float32)

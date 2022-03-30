@@ -4,8 +4,8 @@ import numpy as np
 import pytest
 from numpy import testing as npt
 
-from archngv.building.exporters.export_endfeet_areas import export_endfeet_areas
-from archngv.core.datasets import EndfootSurfaceMeshes
+from archngv.building.exporters.export_endfeet_areas import export_endfeet_meshes
+from archngv.core.datasets import EndfootMesh, EndfootSurfaceMeshes
 
 # In total there are 6 endfeet but we have data for 4
 N_ENDFEET = 6
@@ -13,7 +13,7 @@ N_ENDFEET = 6
 
 @pytest.fixture(scope="module")
 def indices_per_entry():
-    return [5, 2, 0, 1]
+    return [0, 1, 2, 3]
 
 
 @pytest.fixture(scope="module")
@@ -60,16 +60,24 @@ def endfeet_data(
     initial_areas_per_entry,
     thicknesses_per_entry,
 ):
-    return list(
-        zip(
+    return [
+        EndfootMesh(
+            index=index,
+            points=points,
+            triangles=triangles,
+            area=area,
+            unreduced_area=unreduced_area,
+            thickness=thickness,
+        )
+        for index, points, triangles, area, unreduced_area, thickness in zip(
             indices_per_entry,
             points_per_entry,
             triangles_per_entry,
-            initial_areas_per_entry,
             areas_per_entry,
+            initial_areas_per_entry,
             thicknesses_per_entry,
         )
-    )
+    ]
 
 
 @pytest.fixture(scope="module")
@@ -78,7 +86,7 @@ def endfeet_surface_meshes(tmpdir_factory, endfeet_data):
     path = os.path.join(tmpdir_factory.getbasetemp(), "enfeet_areas.h5")
 
     # write it to file
-    export_endfeet_areas(path, endfeet_data, N_ENDFEET)
+    export_endfeet_meshes(path, endfeet_data, N_ENDFEET)
 
     # and load it via the api
     return EndfootSurfaceMeshes(path)
@@ -149,8 +157,12 @@ def test_bulk_attributes(
 
     ids = indices_per_entry
 
-    npt.assert_allclose(endfeet_surface_meshes.get("surface_area", ids), areas_per_entry)
-    npt.assert_allclose(
-        endfeet_surface_meshes.get("unreduced_surface_area", ids), initial_areas_per_entry
-    )
-    npt.assert_allclose(endfeet_surface_meshes.get("surface_thickness", ids), thicknesses_per_entry)
+    surface_areas = [endfeet_surface_meshes.get("surface_area", index) for index in ids]
+    unreduced_surface_areas = [
+        endfeet_surface_meshes.get("unreduced_surface_area", index) for index in ids
+    ]
+    thicknesses = [endfeet_surface_meshes.get("surface_thickness", index) for index in ids]
+
+    npt.assert_allclose(surface_areas, areas_per_entry)
+    npt.assert_allclose(unreduced_surface_areas, initial_areas_per_entry)
+    npt.assert_allclose(thicknesses, thicknesses_per_entry)

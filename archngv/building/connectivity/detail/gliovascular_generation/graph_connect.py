@@ -50,7 +50,7 @@ def domains_to_vasculature(
     index = SphereIndex(potential_targets.loc[:, ("x", "y", "z")].to_numpy(), radii=None)
 
     n_distr = truncated_normal(*properties["endfeet_distribution"])
-    endfeet_per_domain = n_distr.rvs(size=len(cell_ids)).round().astype(np.int)
+    endfeet_per_domain = n_distr.rvs(size=len(cell_ids)).round().astype(np.int32)
 
     for domain_index, cell_id in enumerate(cell_ids):
 

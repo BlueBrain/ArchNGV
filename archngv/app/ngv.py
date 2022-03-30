@@ -531,7 +531,7 @@ def build_endfeet_surface_meshes(
     import openmesh
 
     from archngv.building.endfeet_reconstruction.area_generation import endfeet_area_generation
-    from archngv.building.exporters.export_endfeet_areas import export_endfeet_areas
+    from archngv.building.exporters.export_endfeet_areas import export_endfeet_meshes
     from archngv.core.datasets import GliovascularConnectivity
 
     numpy.random.seed(seed)
@@ -554,7 +554,7 @@ def build_endfeet_surface_meshes(
     )
 
     LOGGER.info("Export to HDF5...")
-    export_endfeet_areas(output_path, data_generator, len(endfeet_points))
+    export_endfeet_meshes(output_path, data_generator, len(endfeet_points))
 
     LOGGER.info("Done!")
 

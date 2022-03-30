@@ -17,6 +17,9 @@ export DASK_DISTRIBUTED__WORKER__MEMORY__TERMINATE=0.95  # restart the worker at
 export DASK_DISTRIBUTED__WORKER__PROFILE__INTERVAL=10000ms  # Time between statistical profiling queries
 export DASK_DISTRIBUTED__WORKER__PROFILE__CYCLE=1000000ms  # Time between starting new profile
 
+# The time allowed before triggering a warning
+export DASK_DISTRIBUTED__ADMIN__TICK__LIMIT=1h
+
 mkdir -p build && pushd build
 
 unset $(env | grep SLURM | cut -d= -f1 | xargs)

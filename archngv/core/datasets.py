@@ -1,7 +1,8 @@
 """Archngv dataset classes."""
-from collections import namedtuple
+import collections.abc
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Iterator, List, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, Iterator, List, Optional, Tuple, TypeVar, Union
 
 import h5py
 import numpy as np
@@ -189,42 +190,87 @@ class GroupedProperties(H5ContextManager):
 
     def _offset_slice(self, property_name, group_index) -> Tuple[int, int]:
         """Returns the slice of offset_type indices (beg, end) for astrocyte_index"""
-        return (
-            self._offsets[property_name][group_index],
-            self._offsets[property_name][group_index + 1],
-        )
+        return self._offsets[property_name][group_index : group_index + 2]
 
     def __len__(self) -> int:
-        """Returns the number of properties"""
-        return len(self._offsets[self.property_names[0]]) - 1
+        """Returns the number of properties by checking the size of the first dataset in offsets."""
+        first_offset_name = next(iter(self._offsets.keys()))
+        return len(self._offsets[first_offset_name]) - 1
 
     @property
     def property_names(self) -> List[str]:
         """Returns all available properties in the dataset"""
         return list(self._data)
 
-    def get_property(self, property_name: str, group_index: int = None) -> np.ndarray:
+    def _get_data_slice(self, property_name: str, group_index: int) -> np.ndarray:
+        """Returns the data slice corresponding to the group index"""
+        beg, end = self._offset_slice(property_name, group_index)
+
+        return self._data[property_name][beg:end]
+
+    def get(self, property_name: str, group_index: Optional[int] = None) -> Any:
         """
+        Returns the values of property with `property_name` at `group_index` if not None, else
+            all the available values.
+
         Args:
             property_name: The name of the property to retrieve.
             group_index: The index of the group of values to retrieve, if any. Default is None,
                 in which case all values are returned.
 
         Returns:
-            A numpy array of the queried values, which can be multi-dimensional
+            A single value (group_index not None) or a numpy array of the queried values, which
+                can be multi-dimensional.
+
+        Note:
+            The group_index is cast into a python int, to avoid numpy's uint64 + int -> float64
+            type conversion.
         """
-        dset_property = self._data[property_name]
-
         if group_index is None:
-            return dset_property[:]
+            return self._data[property_name][:]
 
-        # one value per group, no offsets
+        group_index = int(group_index)
+
+        # no offsets -> one property per group
         if property_name not in self._offsets:
-            return dset_property[group_index]
+            return self._data[property_name][group_index]
 
-        beg, end = self._offset_slice(property_name, group_index)
+        return self._get_data_slice(property_name, group_index)
 
-        return dset_property[beg:end]
+
+TObject = TypeVar("TObject")
+
+OneOrList = Union[TObject, List[TObject]]
+OneOrIterable = Union[TObject, Iterable[TObject]]
+
+
+def _apply_callable(
+    func: Callable[[int], TObject], key: OneOrIterable[np.integer]
+) -> OneOrList[TObject]:
+    """
+    Resolves the key to either apply the callable function at a single index or an iterable of
+        indices.
+
+    Args:
+        func: A function that take an integer and returns an object.
+        key: An integer-like or iterable of integer-like numbers.
+
+    Returns:
+        Either a single object corresponding to the integer key or a list of objects corresponding
+        to the iterable of integers.
+
+    Note: The key is casted to int, to avoid the unint64 + int -> float64 error
+    """
+    if isinstance(key, collections.abc.Iterable):
+        return [func(int(i)) for i in iter(key)]
+
+    # covers both python int and numpy integer types
+    if np.issubdtype(type(key), np.integer):
+        return func(int(key))
+
+    raise TypeError(
+        f"Incompatible key type. Expected integer-like or iterable of integer-likes, got {key}"
+    )
 
 
 class Microdomains(GroupedProperties):
@@ -235,15 +281,9 @@ class Microdomains(GroupedProperties):
         for i in range(self.n_microdomains):
             yield self.domain_object(i)
 
-    def __getitem__(self, key) -> Union[List[Microdomain], Microdomain]:
+    def __getitem__(self, key: OneOrIterable[np.integer]) -> OneOrList[Microdomain]:
         """List getter."""
-        if isinstance(key, slice):
-            return [self.domain_object(i) for i in range(key.start, key.stop, key.step)]
-
-        if np.issubdtype(type(key), np.integer):  # covers both python int and numpy integer types
-            return self.domain_object(key)
-
-        raise TypeError("Invalid argument type: ({}, {})".format(type(key), key))
+        return _apply_callable(self.domain_object, key)
 
     @property
     def n_microdomains(self) -> int:
@@ -261,18 +301,18 @@ class Microdomains(GroupedProperties):
         polygon face. A microdomain can also have a bounding box wall as a neighbor
         which is signified with a negative number.
         """
-        neighbors = self.get_property("neighbors", astrocyte_index)
+        neighbors = self.get("neighbors", astrocyte_index)
         if omit_walls:
             return neighbors[neighbors >= 0]
         return neighbors
 
     def domain_is_boundary(self, astrocyte_index: int) -> np.bool_:
         """Returns true if the domain is adjacent to a wall."""
-        return np.any(self.get_property("neighbors", astrocyte_index))
+        return np.any(self.get("neighbors", astrocyte_index))
 
     def domain_points(self, astrocyte_index: int) -> np.ndarray:
         """The coordinates of the vertices of the microdomain."""
-        return self.get_property("points", astrocyte_index)
+        return self.get("points", astrocyte_index)
 
     def domain_triangle_data(self, astrocyte_index: int) -> np.ndarray:
         """Returns the triangle data of the tessellation.
@@ -280,7 +320,7 @@ class Microdomains(GroupedProperties):
         Returns:
             numpy.ndarray: [polygon_id, v0, v1, v2]
         """
-        return self.get_property("triangle_data", astrocyte_index)
+        return self.get("triangle_data", astrocyte_index)
 
     def domain_triangles(self, astrocyte_index: int) -> np.ndarray:
         """Returns the triangles connectivity of the domain_points from an astrocyte."""
@@ -326,8 +366,8 @@ class Microdomains(GroupedProperties):
         )
 
         return local_to_global_mapping(
-            self.get_property("points"),
-            self.get_property("triangle_data")[:, DOMAIN_TRIANGLE_TYPE["vertices"]],
+            self.get("points"),
+            self.get("triangle_data")[:, DOMAIN_TRIANGLE_TYPE["vertices"]],
             ps_tris_offsets,
         )
 
@@ -339,7 +379,7 @@ class Microdomains(GroupedProperties):
             triangles_to_polygons,
         )
 
-        triangle_data = self.get_property("triangle_data")
+        triangle_data = self.get("triangle_data")
 
         g_poly_ids = local_to_global_polygon_ids(
             triangle_data[:, DOMAIN_TRIANGLE_TYPE["polygon_id"]]
@@ -351,7 +391,7 @@ class Microdomains(GroupedProperties):
 
         # local to global triangles
         ps, tris, polys = local_to_global_mapping(
-            self.get_property("points"),
+            self.get("points"),
             triangle_data[:, DOMAIN_TRIANGLE_TYPE["vertices"]],
             ps_tris_offsets,
             triangle_labels=g_poly_ids,
@@ -369,80 +409,44 @@ class Microdomains(GroupedProperties):
         cell_mesh.save(filename)
 
 
-EndfootMesh = namedtuple("EndfootMesh", ["index", "points", "triangles", "area", "thickness"])
+@dataclass
+class EndfootMesh:
+    """Endfoot mesh data class"""
+
+    index: int
+    points: np.ndarray
+    triangles: np.ndarray
+    area: np.float32
+    unreduced_area: np.float32
+    thickness: np.float32
 
 
-class EndfootSurfaceMeshes(H5ContextManager):
+class EndfootSurfaceMeshes(GroupedProperties):
     """Access to the endfeet meshes."""
 
-    @staticmethod
-    def _index_to_key(endfoot_index):
-        """Convert the endfoot index to the group key in h5."""
-        return "endfoot_" + str(endfoot_index)
+    def _object(self, index: int) -> EndfootMesh:
+        return EndfootMesh(
+            index=index,
+            points=self.mesh_points(index),
+            triangles=self.mesh_triangles(index),
+            area=self.get("surface_area", index),
+            unreduced_area=self.get("unreduced_surface_area", index),
+            thickness=self.get("surface_thickness", index),
+        )
 
-    @staticmethod
-    def _key_to_index(key):
-        return int(key.split("_")[-1])
+    def __getitem__(self, key: OneOrIterable[np.integer]) -> OneOrList[EndfootMesh]:
+        """Endfoot mesh object getter."""
+        return _apply_callable(self._object, key)
 
-    @property
-    def _groups(self):
-        """Groups storing endfoot information."""
-        return self._fd["objects"]
-
-    @property
-    def _attributes(self):
-        """Group storing properties datasets."""
-        return self._fd["attributes"]
-
-    def __len__(self):
-        """Number of endfeet."""
-        return len(self._groups)
-
-    def _entry(self, endfoot_key):
-        """Return the group entry given the key."""
-        return self._groups[endfoot_key]
-
-    def _get_mesh_surface_area(self, index):
-        return self._attributes["surface_area"][index]
-
-    def _get_mesh_surface_thickness(self, index):
-        return self._attributes["surface_thickness"][index]
-
-    def _object(self, endfoot_index):
-        """Returns endfoot object from its index."""
-        entry = self._entry(self._index_to_key(endfoot_index))
-        points = entry["points"][:]
-        triangles = entry["triangles"][:]
-        surface_area = self._get_mesh_surface_area(endfoot_index)
-        surface_thickness = self._get_mesh_surface_thickness(endfoot_index)
-        return EndfootMesh(endfoot_index, points, triangles, surface_area, surface_thickness)
-
-    def __iter__(self):
+    def __iter__(self) -> Iterator[EndfootMesh]:
         """Endfoot iterator."""
         for index in range(self.__len__()):
             yield self._object(index)
 
-    def __getitem__(self, index):
-        """Endfoot mesh object getter."""
-        if isinstance(index, (np.integer, int)):
-            return self._object(index)
-        if isinstance(index, slice):
-            return [self._object(i) for i in range(*index.indices(len(self)))]
-        if isinstance(index, np.ndarray):
-            return [self._object(i) for i in index]
-        raise TypeError("Invalid argument type: ({}, {})".format(type(index), index))
-
-    def mesh_points(self, endfoot_index):
+    def mesh_points(self, endfoot_index: Optional[int] = None) -> np.ndarray:
         """Return the points of the endfoot mesh."""
-        return self._entry(self._index_to_key(endfoot_index))["points"][:]
+        return self.get("points", group_index=endfoot_index)
 
-    def mesh_triangles(self, endfoot_index):
+    def mesh_triangles(self, endfoot_index: Optional[int] = None) -> np.ndarray:
         """Return the triangles of the endfoot mesh."""
-        return self._entry(self._index_to_key(endfoot_index))["triangles"][:]
-
-    def get(self, attribute_name, ids=None):
-        """Get the respective attribute array."""
-        dset = self._attributes[attribute_name][:]
-        if ids is not None:
-            return dset[ids]
-        return dset
+        return self.get("triangles", group_index=endfoot_index)
