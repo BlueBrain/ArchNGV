@@ -21,7 +21,7 @@ import click
 import pkg_resources
 
 from archngv.app import ngv
-from archngv.app.logger import setup_logging
+from archngv.app.logger import LOGGER, setup_logging
 from archngv.version import VERSION
 
 
@@ -116,7 +116,6 @@ def _build_args(args, bioname, timestamp):
 
 def _run_snakemake_process(cmd, errorcode=1):
     """Run the main snakemake process."""
-    from archngv.app.logger import LOGGER
 
     result = subprocess.run(cmd, check=False)
     if result.returncode != 0:
@@ -184,6 +183,107 @@ def run(
     #   2: summary process failed
     #   4: report process failed
     sys.exit(exit_code)
+
+
+@app.command(name="convert-to-circuit-v2")
+@click.argument("circuit-dir", required=True, type=Path)
+def convert_to_circuit_v2(circuit_dir):
+    """Convert circuit so that it is compatible with the v2 api and file layouts."""
+    import shutil
+
+    from archngv.app.utils import load_yaml, write_json
+    from archngv.building import legacy
+    from archngv.building.config import build_ngv_config
+    from archngv.testing import assert_circuit_integrity
+
+    circuit_dir = Path(circuit_dir)
+
+    bioname_dir = Path(circuit_dir, "bioname").resolve()
+    LOGGER.info("Bioname Dir: %s", bioname_dir)
+
+    build_dir = circuit_dir / "build"
+    LOGGER.info("Build Dir: %s", build_dir)
+
+    LOGGER.info("Merging configuration files...")
+    legacy.merge_configuration_files(bioname_dir, bioname_dir / "MANIFEST.yaml")
+
+    # remove the old configuration files
+    for filename in (
+        "cell_placement.yaml",
+        "microdomains.yaml",
+        "synthesis.yaml",
+        "endfeet_area.yaml",
+        "gliovascular_connectivity.yaml",
+    ):
+        os.remove(bioname_dir / filename)
+
+    LOGGER.info("Rebuilding ngv config...")
+    write_json(
+        filepath=build_dir / "ngv_config.json",
+        data=build_ngv_config(
+            root_dir=bioname_dir, manifest=load_yaml(bioname_dir / "MANIFEST.yaml")
+        ),
+    )
+
+    microdomains_dir = build_dir / "microdomains"
+    microdomains_generic_format_dir = build_dir / "microdomains-generic"
+    microdomains_generic_format_dir.mkdir(exist_ok=True)
+
+    LOGGER.info("Converting microdomains to new format...")
+    legacy.convert_microdomains_to_generic_format(
+        microdomains_dir / "microdomains.h5",
+        microdomains_generic_format_dir / "microdomains.h5",
+    )
+
+    LOGGER.info("Converting overlapping microdomains to new format...")
+    legacy.convert_microdomains_to_generic_format(
+        microdomains_dir / "overlapping_microdomains.h5",
+        microdomains_generic_format_dir / "overlapping_microdomains.h5",
+    )
+
+    LOGGER.info("Merging microdomains into a single dataset...")
+    legacy.merge_microdomain_files(
+        microdomains_generic_format_dir,
+        build_dir / "microdomains.h5",
+    )
+
+    shutil.rmtree(microdomains_dir)
+    shutil.rmtree(microdomains_generic_format_dir)
+
+    LOGGER.info("Converting endfeet to the grouped properties format...")
+    legacy.convert_endfeet_to_generic_format(
+        build_dir / "endfeet_areas.h5",
+        build_dir / "endfeet_meshes.h5",
+    )
+
+    os.remove(build_dir / "endfeet_areas.h5")
+
+    LOGGER.info("Adding neuroglial property astrocyte_center_[x|y|z]...")
+
+    old_neuroglial_path = build_dir / "sonata/edges/neuroglial.h5"
+    new_neuroglial_path = build_dir / "sonata/edges/neuroglial-updated.h5"
+
+    legacy.add_astrocyte_segment_center_property(
+        astrocytes_file_path=build_dir / "sonata/nodes/glia.h5",
+        neuroglial_file_path=old_neuroglial_path,
+        morphologies_dir=build_dir / "morphologies",
+        output_file_path=new_neuroglial_path,
+    )
+
+    # replace the old with the new one
+    shutil.move(new_neuroglial_path, old_neuroglial_path)
+
+    LOGGER.info("Checking converted circuit's integrity...")
+    assert_circuit_integrity(circuit_dir)
+
+
+@app.command(name="verify-circuit-integrity")
+@click.argument("circuit-dir", type=Path)
+def verify_circuit_integrity(circuit_dir):
+    """Check circuit integrity"""
+    from archngv.testing import assert_circuit_integrity
+
+    assert_circuit_integrity(circuit_dir)
 
 
 if __name__ == "__main__":

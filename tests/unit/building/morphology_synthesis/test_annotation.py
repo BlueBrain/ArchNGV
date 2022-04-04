@@ -42,21 +42,12 @@ def cell():
 
 def test_morphology_unwrapped(cell):
 
-    points, df_locations = tested._morphology_unwrapped(cell)
+    df = tested._morphology_unwrapped(cell)
 
-    npt.assert_allclose(
-        points,
-        [
-            [0.0, 0.10, 0.0],
-            [0.0, 0.25, 0.0],
-            [0.0, 0.35, 0.0],
-            [1.1, 0.0, 0.0],
-            [1.3, 0.0, 0.0],
-            [1.45, 0.0, 0.0],
-        ],
-    )
-
-    npt.assert_array_equal([0, 0, 0, 1, 1, 1], df_locations.section_id)
-    npt.assert_array_equal([0, 1, 2, 0, 1, 2], df_locations.segment_id)
-    npt.assert_allclose([0.1, 0.05, 0.05, 0.1, 0.1, 0.05], df_locations.segment_offset)
-    npt.assert_allclose([0.25, 0.625, 0.875, 0.2, 0.6, 0.9], df_locations.section_position)
+    npt.assert_allclose(df.x, [0.0, 0.0, 0.0, 1.1, 1.3, 1.45])
+    npt.assert_allclose(df.y, [0.1, 0.25, 0.35, 0.0, 0.0, 0.0])
+    npt.assert_allclose(df.z, [0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+    npt.assert_array_equal([0, 0, 0, 1, 1, 1], df.section_id)
+    npt.assert_array_equal([0, 1, 2, 0, 1, 2], df.segment_id)
+    npt.assert_allclose([0.1, 0.05, 0.05, 0.1, 0.1, 0.05], df.segment_offset)
+    npt.assert_allclose([0.25, 0.625, 0.875, 0.2, 0.6, 0.9], df.section_position)

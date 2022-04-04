@@ -8,33 +8,19 @@ from bluepysnap.utils import IDS_DTYPE
 from morphio import Morphology
 
 import archngv.core.circuit as api
-from archngv import NGVCircuit
+from archngv import NGVCircuit, testing
 from archngv.core.datasets import EndfootSurfaceMeshes, Microdomains
 
 
 def test_circuit():
+
     circuit = NGVCircuit("build/ngv_config.json")
 
     # if a file is missing this will raise
     circuit.nodes
     circuit.edges
 
-    # check accesses and simple values
-    assert isinstance(circuit.nodes["All"], api.NGVNodes)
-    assert isinstance(circuit.nodes["astrocytes"], api.Astrocytes)
-    assert isinstance(circuit.nodes["vasculature"], api.Vasculature)
-    assert isinstance(circuit.edges["All"], api.NGVEdges)
-    assert isinstance(circuit.edges["glialglial"], api.GlialGlial)
-    assert isinstance(circuit.edges["gliovascular"], api.GlioVascular)
-    assert isinstance(circuit.edges["neuroglial"], api.NeuroGlial)
-    assert isinstance(circuit.atlases, dict)
-
-    assert isinstance(circuit.astrocytes.microdomains, Microdomains)
-
-    assert isinstance(circuit.atlases["intensity"], api.Atlas)
-    assert isinstance(circuit.atlases["intensity"].get_atlas(), voxcell.VoxelData)
-    assert isinstance(circuit.atlases["brain_regions"], api.Atlas)
-    assert isinstance(circuit.atlases["brain_regions"].get_atlas(), voxcell.VoxelData)
+    testing.assert_circuit_integrity(circuit)
 
 
 def test_neuroglial_connectome__property_dtypes():
@@ -51,6 +37,9 @@ def test_neuroglial_connectome__property_dtypes():
         "astrocyte_segment_id": np.uint32,
         "astrocyte_segment_offset": np.float32,
         "astrocyte_section_pos": np.float32,
+        "astrocyte_center_x": np.float32,
+        "astrocyte_center_y": np.float32,
+        "astrocyte_center_z": np.float32,
     }
 
     expected_properties = set(prop_dtypes.keys())

@@ -8,6 +8,7 @@ import pandas as pd
 import pytest
 import voxcell
 
+from archngv.app import __main__ as main
 from archngv.app import ngv as tested
 
 DATA_DIR = Path(__file__).resolve().parent / "data"
@@ -147,8 +148,8 @@ def test_gliovascular_finalize():
             "gliovascular.h5",
             "--astrocytes",
             FIN_SONATA_DIR / "nodes/glia.h5",
-            "--endfeet-areas",
-            BUILD_DIR / "endfeet_areas.h5",
+            "--endfeet-meshes-path",
+            BUILD_DIR / "endfeet_meshes.h5",
             "--vasculature-sonata",
             FIN_SONATA_DIR / "nodes/vasculature.h5",
             "--morph-dir",
@@ -218,7 +219,7 @@ def test_glialglial_connectivity():
     )
 
 
-def test_endfeet_areas():
+def test_endfeet_meshes():
 
     assert_cli_run(
         tested.build_endfeet_surface_meshes,
@@ -232,7 +233,7 @@ def test_endfeet_areas():
             "--seed",
             0,
             "--output-path",
-            "endfeet_areas.h5",
+            "endfeet_meshes.h5",
         ],
     )
 
@@ -260,13 +261,23 @@ def test_synthesis():
             FIN_SONATA_DIR / "edges/gliovascular.h5",
             "--neuroglial-connectivity-path",
             FIN_SONATA_DIR / "edges/neuroglial.h5",
-            "--endfeet-areas-path",
-            BUILD_DIR / "endfeet_areas.h5",
+            "--endfeet-meshes-path",
+            BUILD_DIR / "endfeet_meshes.h5",
             "--neuronal-connectivity-path",
             EXTERNAL_DIR / "circuit/edges.h5",
             "--out-morph-dir",
             "morphologies",
             "--seed",
             0,
+        ],
+    )
+
+
+def test_verify_circuit_integrity():
+
+    assert_cli_run(
+        main.verify_circuit_integrity,
+        [
+            BUILD_DIR / "ngv_config.json",
         ],
     )

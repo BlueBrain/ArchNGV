@@ -46,6 +46,9 @@ def astrocyte_morphology_properties(
         "astrocyte_segment_id": np.empty(n_connections, dtype=np.uint32),
         "astrocyte_segment_offset": np.empty(n_connections, dtype=np.float32),
         "astrocyte_section_pos": np.empty(n_connections, dtype=np.float32),
+        "astrocyte_center_x": np.empty(n_connections, dtype=np.float32),
+        "astrocyte_center_y": np.empty(n_connections, dtype=np.float32),
+        "astrocyte_center_z": np.empty(n_connections, dtype=np.float32),
     }
 
     it_results = filter(
@@ -59,6 +62,9 @@ def astrocyte_morphology_properties(
         properties["astrocyte_segment_id"][ids] = df_locations.segment_id
         properties["astrocyte_segment_offset"][ids] = df_locations.segment_offset
         properties["astrocyte_section_pos"][ids] = df_locations.section_position
+        properties["astrocyte_center_x"][ids] = df_locations.x
+        properties["astrocyte_center_y"][ids] = df_locations.y
+        properties["astrocyte_center_z"][ids] = df_locations.z
 
     return properties
 

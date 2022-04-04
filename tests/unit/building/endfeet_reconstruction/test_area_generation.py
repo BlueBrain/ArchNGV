@@ -5,7 +5,7 @@ from archngv.building.endfeet_reconstruction import area_generation as _a
 from archngv.building.endfeet_reconstruction.groups import GroupedElements
 
 
-def test_endfeet_areas():
+def test_endfeet_meshes():
 
     triangle_areas = np.random.random(20)
 

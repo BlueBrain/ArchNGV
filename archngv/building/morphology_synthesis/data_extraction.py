@@ -30,13 +30,13 @@ L = logging.getLogger(__name__)
 TARGET_DENSITY = 1.1
 
 
-def obtain_endfeet_data(astrocyte_index, gliovascular_connectivity, endfeet_areas_path):
+def obtain_endfeet_data(astrocyte_index, gliovascular_connectivity, endfeet_meshes_path):
     """Extract the endfeet information from astrocyte_index if any, otherwise return None
 
     Args:
         astrocyte_index (int): The positional index that represents the astrocyte entity
         gliovascular_connectivity (str): Path to the gv data file
-        endfeet_areas_path (str): Path to the endfeet areas file
+        endfeet_meshes_path (str): Path to the endfeet meshes file
 
     Returns:
         EndfeetData: namedtuple containing endfeet related data
@@ -51,15 +51,15 @@ def obtain_endfeet_data(astrocyte_index, gliovascular_connectivity, endfeet_area
         ["endfoot_surface_x", "endfoot_surface_y", "endfoot_surface_z"], endfeet_indices
     )
 
-    endfeet_areas = EndfootSurfaceMeshes(endfeet_areas_path)[endfeet_indices]
+    endfeet_meshes = EndfootSurfaceMeshes(endfeet_meshes_path)[endfeet_indices]
 
     L.debug("Found endfeet %s for astrocyte index %d", endfeet_indices, astrocyte_index)
     L.debug("Endfeet Coordinates: %s", targets)
-    L.debug("Endfeet Area Meshes: %s", endfeet_areas)
+    L.debug("Endfeet Area Meshes: %s", endfeet_meshes)
 
     assert targets.ndim == 2
-    assert len(endfeet_indices) == len(targets) == len(endfeet_areas)
-    return EndfeetData(ids=endfeet_indices, targets=targets, area_meshes=endfeet_areas)
+    assert len(endfeet_indices) == len(targets) == len(endfeet_meshes)
+    return EndfeetData(ids=endfeet_indices, targets=targets, area_meshes=endfeet_meshes)
 
 
 def obtain_cell_properties(astrocyte_index, cell_data_filepath, microdomains_filepath):
@@ -81,7 +81,7 @@ def obtain_cell_properties(astrocyte_index, cell_data_filepath, microdomains_fil
     soma_position = astrocytes.positions(astrocyte_index)[0]
     soma_radius = astrocytes.get_properties("radius", astrocyte_index)[0]
 
-    L.info(
+    L.debug(
         "Index: %d, Name: %s, Pos: %s, Rad: %s",
         astrocyte_index,
         astrocyte_name,
@@ -301,7 +301,7 @@ def astrocyte_circuit_data(astrocyte_index, paths, rng):
         space_colonization_data = SpaceColonizationData(point_cloud=point_cloud)
 
     endfeet_data = obtain_endfeet_data(
-        astrocyte_index, paths.gliovascular_connectivity, paths.endfeet_areas
+        astrocyte_index, paths.gliovascular_connectivity, paths.endfeet_meshes
     )
 
     if endfeet_data is None:

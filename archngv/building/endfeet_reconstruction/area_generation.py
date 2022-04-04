@@ -18,7 +18,7 @@ from archngv.utils.statistics import truncated_normal
 L = logging.getLogger(__name__)
 
 
-def _grow_endfeet_areas(vasculature_mesh, endfeet_points, threshold_radius):
+def _grow_endfeet_meshes(vasculature_mesh, endfeet_points, threshold_radius):
     """
     Args:
         mesh: TriMesh
@@ -52,7 +52,7 @@ def _endfeet_areas(grouped_triangles, triangle_areas, n_endfeet):
             Total number of endfeet
 
     Returns:
-        The endfeet areas of the endeet
+        The areas of the endfeet.
 
     Note:
         The difference between groups and endfeet indices is that the -1 group can
@@ -63,6 +63,7 @@ def _endfeet_areas(grouped_triangles, triangle_areas, n_endfeet):
 
     for group, ids in grouped_triangles.iter_assigned_groups():
         endfeet_areas[group] = triangle_areas[ids].sum()
+
     return endfeet_areas
 
 
@@ -127,12 +128,7 @@ def _process_endfeet(
             The thickness of the endfoot surface mesh
 
     Yields:
-        - endfoot group id
-        - points of endfoot surface mesh
-        - triangles of endfoot surface mesh in the local index space
-        - area before reduction
-        - area after reduction
-        - thickness of endfoot surface
+        EndfootMesh data object.
 
     Note:
         The difference between group indices and endfoot indices is that groups
@@ -193,7 +189,7 @@ def endfeet_area_generation(vasculature_mesh, parameters, endfeet_points):
     """
     n_endfeet = len(endfeet_points)
 
-    travel_times, vertex_groups = _grow_endfeet_areas(
+    travel_times, vertex_groups = _grow_endfeet_meshes(
         vasculature_mesh, endfeet_points, parameters["fmm_cutoff_radius"]
     )
 

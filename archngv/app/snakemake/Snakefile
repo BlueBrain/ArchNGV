@@ -63,9 +63,9 @@ SPACK_MODULEPATH = "/gpfs/bbp.cscs.ch/ssd/apps/bsd/modules/_meta"
 
 MODULES = {
     'glial_gap_junctions':
-        (SPACK_MODULEPATH, ['archive/2021-10', 'touchdetector/5.6.1']),
+        (SPACK_MODULEPATH, ['archive/2022-02', 'touchdetector/5.6.1']),
     'synthesis':
-        (SPACK_MODULEPATH, ['archive/2022-01', 'py-mpi4py/3.1.2']),
+        (SPACK_MODULEPATH, ['archive/2022-02', 'py-mpi4py/3.1.2']),
 }
 
 
@@ -138,7 +138,7 @@ propagate_cluster_default_values()  #  cluster info propagation does not work so
 rule all:
     input:
         'microdomains.h5',
-        'endfeet_areas.h5',
+        'endfeet_meshes.h5',
         MORPH_DIR + '/_DONE',
         TOUCHES_DIR + '/_SUCCESS',
         'ngv_config.json',
@@ -370,7 +370,7 @@ rule endfeet_area:
         gliovascular_connectivity = 'sonata.tmp/edges/gliovascular.connectivity.h5',
 
     output:
-        'endfeet_areas.h5'
+        'endfeet_meshes.h5'
 
     log:
         log_path('endfeet_area')
@@ -392,7 +392,7 @@ rule synthesis:
         microdomains = 'microdomains.h5',
         gliovascular_connectivity = 'sonata.tmp/edges/gliovascular.connectivity.h5',
         neuroglial_connectivity = 'sonata.tmp/edges/neuroglial.connectivity.h5',
-        endfeet_areas = 'endfeet_areas.h5'
+        endfeet_meshes = 'endfeet_meshes.h5'
 
     output:
         touch(MORPH_DIR + '/_DONE'),
@@ -413,7 +413,7 @@ rule synthesis:
             '--microdomains-path {input[microdomains]}',
             '--gliovascular-connectivity-path {input[gliovascular_connectivity]}',
             '--neuroglial-connectivity-path {input[neuroglial_connectivity]}',
-            '--endfeet-areas-path {input[endfeet_areas]}',
+            '--endfeet-meshes-path {input[endfeet_meshes]}',
             f'--neuronal-connectivity-path {BASE_CIRCUIT_CONNECTOME}',
             f'--out-morph-dir {MORPH_DIR}',
             ('--parallel' if PARALLEL else ''),
@@ -428,7 +428,7 @@ rule finalize_gliovascular_connectivity:
     input:
         astrocytes = 'sonata/nodes/glia.h5',
         connectivity = 'sonata.tmp/edges/gliovascular.connectivity.h5',
-        endfeet_areas = 'endfeet_areas.h5',
+        endfeet_meshes = 'endfeet_meshes.h5',
         morphologies = MORPH_DIR + '/_DONE',
         vasculature_sonata = 'sonata/nodes/vasculature.h5'
 
@@ -442,7 +442,7 @@ rule finalize_gliovascular_connectivity:
             '--input-file {input[connectivity]}',
             '--output-file {output}',
             '--astrocytes {input[astrocytes]}',
-            '--endfeet-areas {input[endfeet_areas]}',
+            '--endfeet-meshes-path {input[endfeet_meshes]}',
             '--vasculature-sonata {input[vasculature_sonata]}',
             f'--morph-dir {MORPH_DIR}',
             ('--parallel' if PARALLEL else ''),

@@ -38,7 +38,11 @@ def build_ngv_config(root_dir: Path, manifest: dict) -> dict:
     common = manifest["common"]
 
     # add neuronal nodes and edges from existing circuit
-    _add_neuronal_circuit(config, common["base_circuit"], common["base_circuit_sonata"])
+    _add_neuronal_circuit(
+        config=config,
+        circuit_path=_make_abs(root_dir, common["base_circuit"]),
+        neuron_config_filename=common["base_circuit_sonata"],
+    )
 
     # the ngv specific nodes and edges of the current build
     _add_ngv_sonata_nodes_edges(config, root_dir, common)
@@ -225,7 +229,7 @@ def _add_ngv_sonata_nodes_edges(config: dict, root_dir: Path, manifest: dict) ->
                 "populations": {
                     Population.GLIOVASCULAR: {
                         "type": Population.GLIOVASCULAR,
-                        "endfeet_areas": "$BUILD_DIR/endfeet_areas.h5",
+                        "endfeet_meshes": "$BUILD_DIR/endfeet_meshes.h5",
                     }
                 },
             },

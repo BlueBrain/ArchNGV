@@ -1,11 +1,15 @@
 """Functions for conversion from old formats"""
+import shutil
 from pathlib import Path
 
 import h5py
+import morphio
 import numpy as np
 
 from archngv.app.utils import load_yaml, write_yaml
+from archngv.building.exporters.edge_populations import add_properties_to_edge_population
 from archngv.building.exporters.grouped_properties import export_grouped_properties
+from archngv.core import datasets
 
 
 def merge_configuration_files(bioname_dir: Path, output_manifest_path: Path):
@@ -119,8 +123,20 @@ def merge_microdomain_files(microdomains_dir: Path, output_file_path: Path):
 
                     centroid = np.mean(r_points, axis=0)
 
+                    o_points_origin = o_points - centroid
+                    r_points_origin = r_points - centroid
+
+                    not_zero = ~np.isclose(r_points_origin, 0.0) | ~np.isclose(o_points_origin, 0.0)
+
+                    assert not_zero.any(), (
+                        f"Regular points    : {r_points_origin}\n"
+                        f"Overlapping points: {o_points_origin}\n"
+                        f"Regular centroid  : {np.mean(r_points, axis=0)}\n"
+                        f"Overlap centroid  : {np.mean(o_points, axis=0)}\n"
+                    )
+
                     scaling_factors[domain_index] = np.mean(
-                        (o_points - centroid) / (r_points - centroid)
+                        o_points_origin[not_zero] / r_points_origin[not_zero]
                     )
 
                 g_data.create_dataset("scaling_factors", data=scaling_factors)
@@ -174,3 +190,71 @@ def convert_endfeet_to_generic_format(old_file_path: Path, new_file_path: Path) 
         )
 
         export_grouped_properties(new_file_path, properties)
+
+
+def add_astrocyte_segment_center_property(
+    astrocytes_file_path: Path,
+    neuroglial_file_path: Path,
+    morphologies_dir: Path,
+    output_file_path: Path,
+) -> None:
+    """Adds the properties astrocyte_center_[x|y|z] into the neuroglial edge population.
+
+    Args:
+        astrocytes_file_path: Path to astrocytes SONATA node population.
+        neuroglial_file_path: Path to neuroglial SONATA edge population.
+        morphologies_dir: Path to morphologies directory.
+        output_file_path: Path to output file.
+    """
+    astrocytes = datasets.CellData(astrocytes_file_path)
+    neuroglial = datasets.NeuroglialConnectivity(neuroglial_file_path)
+
+    astrocyte_positions = astrocytes.positions()
+    astrocyte_names = astrocytes.get_property("morphology")
+    astrocyte_section_ids = neuroglial.get_property("astrocyte_section_id")
+    astrocyte_segment_ids = neuroglial.get_property("astrocyte_segment_id")
+    astrocyte_segment_offsets = neuroglial.get_property("astrocyte_segment_offset")
+
+    astrocyte_segment_center_points = np.zeros((len(neuroglial), 3), dtype=np.float32)
+
+    for astrocyte_id in range(len(astrocytes)):
+
+        edge_ids = neuroglial.efferent_edges(astrocyte_id)
+
+        if len(edge_ids) == 0:
+            continue
+
+        morph = morphio.Morphology(Path(morphologies_dir, astrocyte_names[astrocyte_id] + ".h5"))
+
+        points = morph.points
+
+        section_offsets = morph.section_offsets
+
+        section_ids = astrocyte_section_ids[edge_ids]
+        section_begs = section_offsets[section_ids]
+
+        segment_ids = astrocyte_segment_ids[edge_ids]
+        segment_beg_points = points[section_begs + segment_ids]
+        segment_end_points = points[section_begs + segment_ids + 1]
+
+        axes = segment_end_points - segment_beg_points
+        axes /= np.linalg.norm(axes, axis=1)[:, np.newaxis]
+
+        # expand one dimension to broadcast with the N x 3 point arrays
+        segment_offsets = astrocyte_segment_offsets[edge_ids, np.newaxis]
+
+        astrocyte_segment_center_points[edge_ids] = (
+            segment_beg_points + segment_offsets * axes + astrocyte_positions[astrocyte_id]
+        )
+
+    shutil.copyfile(neuroglial_file_path, output_file_path)
+
+    add_properties_to_edge_population(
+        output_file_path,
+        neuroglial.name,
+        {
+            "astrocyte_center_x": astrocyte_segment_center_points[:, 0],
+            "astrocyte_center_y": astrocyte_segment_center_points[:, 1],
+            "astrocyte_center_z": astrocyte_segment_center_points[:, 2],
+        },
+    )

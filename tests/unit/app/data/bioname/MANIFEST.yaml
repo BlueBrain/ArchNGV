@@ -4,10 +4,11 @@ common:
   atlas: ../data/atlas/
   vasculature: ../data/atlas/vasculature.h5
   vasculature_mesh: ../data/atlas/vasculature.obj
-  base_circuit: ''
-  base_circuit_sonata: ../external/circuit/circuit_config.json
-  base_circuit_cells: ../external/circuit/nodes.h5
-  base_circuit_connectome: ../external/circuit/edges.h5
+  base_circuit: ../external/circuit
+  # relative to base_circuit
+  base_circuit_sonata: ./circuit_config.json
+  base_circuit_cells: ./nodes.h5
+  base_circuit_connectome: ./edges.h5
 
 assign_emodels:
   templates_dir: ../data/emodels/

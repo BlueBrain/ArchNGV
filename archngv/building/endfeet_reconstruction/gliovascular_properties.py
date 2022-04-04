@@ -23,8 +23,8 @@ def endfeet_mesh_properties(
     morph_dir: Path,
     map_function: Callable[[Any, Any], Any],
 ) -> pd.DataFrame:
-    """Generates the endfeet properties that required the astrocyte morphologies and
-    endfeet areas. These properties will then be added to the GliovascularConnectivity edges
+    """Generates the endfeet properties that required for the astrocyte morphologies and
+    endfeet meshes. These properties will then be added to the GliovascularConnectivity edges
     as properties along with the previous ones, calculated at the first stages of the framework
 
     Args:

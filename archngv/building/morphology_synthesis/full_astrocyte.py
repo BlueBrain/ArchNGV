@@ -142,19 +142,19 @@ def synthesize_astrocyte(astrocyte_index, paths, parameters, random_generator):
     # TODO: Use mut.GlialCell everywhere
 
     if "resampling" in parameters and parameters["resampling"]["enabled"]:
-        L.info("Resampling morphology...")
+        L.debug("Resampling morphology...")
         morphology = resample_linear_density(
             morphology,
             parameters["resampling"]["linear-density"],
         )
 
     if parameters["perimeter_distribution"]["enabled"]:
-        L.info("Distributing perimeters...")
+        L.debug("Distributing perimeters...")
         add_perimeters_to_morphology(
             morphology, parameters["perimeter_distribution"], random_generator
         )
 
-    L.info("Adding endoplasmic reticulum")
+    L.debug("Adding endoplasmic reticulum")
     add_endoplasmic_reticulum_to_morphology(morphology, paths.er_data)
 
     # TODO: replace this when direct NEURON ordering write is available in MorphIO

@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from numpy import testing as npt
 
-from archngv.building.exporters.export_endfeet_areas import export_endfeet_meshes
+from archngv.building.exporters.export_endfeet_meshes import export_endfeet_meshes
 from archngv.core.datasets import EndfootMesh, EndfootSurfaceMeshes
 
 # In total there are 6 endfeet but we have data for 4

@@ -246,7 +246,7 @@ class GlioVascular(NGVEdges):
         """Access the endfeet surface meshes for the gliovascular connection."""
         from archngv.core.datasets import EndfootSurfaceMeshes
 
-        return EndfootSurfaceMeshes(self.config["endfeet_areas"])
+        return EndfootSurfaceMeshes(self.config["endfeet_meshes"])
 
     def astrocyte_endfeet(self, astrocyte):
         """Returns the endfeet ids connected to an astrocyte."""

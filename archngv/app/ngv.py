@@ -17,19 +17,13 @@ def ngv_config(bioname, output):
     """Build NGV SONATA config"""
     from archngv.building.config import build_ngv_config
 
-    bioname = Path(bioname).resolve()
-    manifest = load_yaml(Path(bioname, "MANIFEST.yaml"))
-
-    # resolving relative paths is needed for the cases where the executor is not
-    # at the same place as the data. For example, pytest creates an isolated filesystem
-    # and changes the current directory to that. Relative paths without resolution
-    # would be resolved with respect to that isolated filesystem, producing invalid
-    # paths.
-    for key, value in manifest["common"].items():
-        if isinstance(value, str) and not Path(value).is_absolute():
-            manifest["common"][key] = str(Path(bioname, value).resolve())
-
-    write_json(filepath=output, data=build_ngv_config(root_dir=bioname, manifest=manifest))
+    write_json(
+        filepath=output,
+        data=build_ngv_config(
+            root_dir=Path(bioname).resolve(),
+            manifest=load_yaml(Path(bioname, "MANIFEST.yaml")),
+        ),
+    )
 
 
 # pylint: disable=redefined-builtin
@@ -269,7 +263,7 @@ def gliovascular_connectivity(config, astrocytes, microdomains, vasculature, see
 @click.option("--input-file", help="Path to sonata edges file (HDF5)", required=True)
 @click.option("--output-file", help="Path to sonata edges file (HDF5)", required=True)
 @click.option("--astrocytes", help="Path to HDF5 with somata positions and radii", required=True)
-@click.option("--endfeet-areas", help="Path to HDF5 endfeet areas", required=True)
+@click.option("--endfeet-meshes-path", help="Path to HDF5 endfeet meshes", required=True)
 @click.option("--vasculature-sonata", help="Path to nodes for vasculature (HDF5)", required=True)
 @click.option("--morph-dir", help="Path to morphology folder", required=True)
 @click.option(
@@ -284,7 +278,7 @@ def attach_endfeet_info_to_gliovascular_connectivity(
     input_file,
     output_file,
     astrocytes,
-    endfeet_areas,
+    endfeet_meshes_path,
     vasculature_sonata,
     morph_dir,
     seed,
@@ -329,7 +323,7 @@ def attach_endfeet_info_to_gliovascular_connectivity(
         astrocytes=CellData(astrocytes),
         gliovascular_connectivity=gv_connectivity,
         vasculature=PointVasculature.load_sonata(vasculature_sonata),
-        endfeet_meshes=EndfootSurfaceMeshes(endfeet_areas),
+        endfeet_meshes=EndfootSurfaceMeshes(endfeet_meshes_path),
         morph_dir=morph_dir,
         map_function=apply_parallel_function if parallel else map,
     )
@@ -531,7 +525,7 @@ def build_endfeet_surface_meshes(
     import openmesh
 
     from archngv.building.endfeet_reconstruction.area_generation import endfeet_area_generation
-    from archngv.building.exporters.export_endfeet_areas import export_endfeet_meshes
+    from archngv.building.exporters.export_endfeet_meshes import export_endfeet_meshes
     from archngv.core.datasets import GliovascularConnectivity
 
     numpy.random.seed(seed)
@@ -600,7 +594,7 @@ def _synthesize(astrocyte_index, seed, paths, config):
     help="Path to neuroglial connectivity (HDF5)",
     required=True,
 )
-@click.option("--endfeet-areas-path", help="Path to HDF5 endfeet areas", required=True)
+@click.option("--endfeet-meshes-path", help="Path to HDF5 endfeet meshes", required=True)
 @click.option(
     "--neuronal-connectivity-path",
     help="Path to HDF5 with synapse positions",
@@ -625,7 +619,7 @@ def synthesis(
     microdomains_path,
     gliovascular_connectivity_path,
     neuroglial_connectivity_path,
-    endfeet_areas_path,
+    endfeet_meshes_path,
     neuronal_connectivity_path,
     out_morph_dir,
     parallel,
@@ -657,7 +651,7 @@ def synthesis(
         neuronal_connectivity=neuronal_connectivity_path,
         gliovascular_connectivity=gliovascular_connectivity_path,
         neuroglial_connectivity=neuroglial_connectivity_path,
-        endfeet_areas=endfeet_areas_path,
+        endfeet_meshes=endfeet_meshes_path,
         tns_parameters=tns_parameters_path,
         tns_distributions=tns_distributions_path,
         tns_context=tns_context_path,

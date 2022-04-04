@@ -7,7 +7,7 @@ import pytest
 from numpy import testing as npt
 
 from archngv.building.endfeet_reconstruction.area_generation import endfeet_area_generation
-from archngv.building.exporters.export_endfeet_areas import export_endfeet_meshes
+from archngv.building.exporters.export_endfeet_meshes import export_endfeet_meshes
 from archngv.core.datasets import EndfootSurfaceMeshes
 
 _PATH = pathlib.Path(__file__).parent.resolve()

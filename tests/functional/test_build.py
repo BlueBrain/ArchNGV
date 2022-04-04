@@ -153,7 +153,7 @@ def test_config():
                     "populations": {
                         "gliovascular": {
                             "type": "gliovascular",
-                            "endfeet_areas": "$BUILD_DIR/endfeet_areas.h5",
+                            "endfeet_meshes": "$BUILD_DIR/endfeet_meshes.h5",
                         }
                     },
                 },

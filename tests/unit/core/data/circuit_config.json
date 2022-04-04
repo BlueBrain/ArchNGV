@@ -78,7 +78,7 @@
         "populations": {
           "gliovascular": {
             "type": "gliovascular",
-            "endfeet_areas": "$NETWORK_DIR/endfeet_areas.h5"
+            "endfeet_meshes": "$NETWORK_DIR/endfeet_meshes.h5"
           }
         }
       }

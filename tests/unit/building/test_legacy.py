@@ -7,6 +7,7 @@ from numpy import testing as npt
 
 from archngv.app.utils import load_yaml
 from archngv.building import legacy as tested
+from archngv.core import datasets
 
 DATA_DIR = Path(__file__).parent.resolve() / "data"
 
@@ -201,3 +202,33 @@ def test_convert_endfeet_to_generic_format():
                         offsets = new_format["offsets"][name]
 
                         npt.assert_allclose(g[name], data[offsets[index] : offsets[index + 1]])
+
+
+def test_add_astrocyte_segment_center_property():
+
+    data_dir = DATA_DIR / "legacy/add_astrocyte_segment_center_property"
+
+    astrocytes_file_path = data_dir / "glia.h5"
+    neuroglial_file_path = data_dir / "neuroglial.h5"
+    morphologies_dir = data_dir / "morphologies"
+
+    expected_astrocyte_centers = np.load(data_dir / "expected_astrocyte_centers.npy")
+
+    with tempfile.NamedTemporaryFile(suffix=".h5") as tfile:
+
+        output_path = tfile.name
+
+        tested.add_astrocyte_segment_center_property(
+            astrocytes_file_path=astrocytes_file_path,
+            neuroglial_file_path=neuroglial_file_path,
+            morphologies_dir=morphologies_dir,
+            output_file_path=output_path,
+        )
+
+        ng = datasets.NeuroglialConnectivity(output_path)
+
+        npt.assert_allclose(
+            ng.get_properties(["astrocyte_center_x", "astrocyte_center_y", "astrocyte_center_z"]),
+            expected_astrocyte_centers,
+            atol=1e-5,
+        )

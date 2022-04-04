@@ -52,7 +52,7 @@ def _morphology_unwrapped(morphology):
             - N x 3 NumPy array with segment midpoints
             - N-row Pandas DataFrame with section ID / segment ID / segment midpoint offset
     """
-    points, locations = [], []
+    data = []
 
     for section in morphology.iter():
 
@@ -66,17 +66,17 @@ def _morphology_unwrapped(morphology):
         for segment_id, (midpoint, offset, pdist) in enumerate(
             zip(midpoints, offsets, normalized_path_distances)
         ):
-            points.append(midpoint)
-            locations.append((section.id, segment_id, offset, pdist))
+            data.append(
+                (midpoint[0], midpoint[1], midpoint[2], section.id, segment_id, offset, pdist)
+            )
 
-    if not points:
+    if not data:
         raise NGVError("Morphology failed to be unwrapped. There are no points.")
 
-    df_locations = pd.DataFrame(
-        locations,
-        columns=["section_id", "segment_id", "segment_offset", "section_position"],
+    return pd.DataFrame(
+        data,
+        columns=["x", "y", "z", "section_id", "segment_id", "segment_offset", "section_position"],
     )
-    return np.asarray(points), df_locations
 
 
 def _endfoot_termination_filter(sections):
@@ -125,6 +125,9 @@ def annotate_synapse_location(morphology, synapse_points):
         Pandas DataFrame with section ID / segment ID / segment offset of closest
         astrocyte segment midpoint.
     """
-    points, locations = _morphology_unwrapped(morphology)
+    data = _morphology_unwrapped(morphology)
+
+    points = data[["x", "y", "z"]].to_numpy()
+
     _, idx = cKDTree(points, copy_data=False).query(synapse_points)  # pylint: disable=not-callable
-    return locations.iloc[idx]
+    return data.iloc[idx]

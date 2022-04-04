@@ -214,6 +214,24 @@ sonata:
     target_node_population_name: All
     attributes:
 
+      astrocyte_center_x:
+        description: >
+            The x coordinate of the closest astrocyte's morphology segment to the connected neuron-neuron
+            synapse.
+        dtype: float32
+
+      astrocyte_center_y:
+        description: >
+            The y coordinate of the closest astrocyte's morphology segment to the connected neuron-neuron
+            synapse.
+        dtype: float32
+
+      astrocyte_center_z:
+        description: >
+            The z coordinate of the closest astrocyte's morphology segment to the connected neuron-neuron
+            synapse.
+        dtype: float32
+
       astrocyte_section_id:
         description: >
             The id of the closest astrocyte's morphology section to the connected neuron-neuron

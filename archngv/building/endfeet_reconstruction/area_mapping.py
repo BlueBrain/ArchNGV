@@ -1,5 +1,5 @@
-""" Functions for transforming endfeet areas from overshoot
-distribution down to the biological target
+""" Functions for transforming endfeet meshes from overshoot
+distribution down to the biological target mesh area
 """
 import numpy as np
 
@@ -51,7 +51,7 @@ def transform_to_target_distribution(areas, target_distribution):
 
     Y = g(X) = a * X
 
-    Because endfeet areas can only be reduced, we take into account only
+    Because endfeet meshes can only be reduced, we take into account only
     the areas that area bigger than the target distribution. Therefore,
     the empirical cumulative function of areas will give us the probability
     that X will take value less than or equal to x, and it is this probablity
