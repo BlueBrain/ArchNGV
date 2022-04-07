@@ -22,8 +22,7 @@ BUILDING = [
     # tess has been mirrored in bbpgitlab: https://bbpgitlab.epfl.ch/nse/mirrors/tess
     # and wheels have been released in devpi for >=0.3.2
     "tess==0.3.2",
-    # writes spec format 1.3 for >= 3.3.1: touchdetector throws (NSETM-1759)
-    "MorphIO>=3.0.0,<3.3.1",
+    "MorphIO>=3.2.0",
     "morph-tool>=2.4.0",
     "pytouchreader>=1.4.7",
     "snakemake>=5.0.0",
@@ -34,7 +33,9 @@ BUILDING = [
     "tns==2.5.0",
     # available version in spack, compatible with tns==2.5.0
     "diameter-synthesis==0.2.5",
-    "trimesh>=3.9.9",
+    # 2.38.10 is available in spack.
+    # Update to a higher version in spack after checking that py-atlas-building-tools is ok with it
+    "trimesh>=2.38.10",
     "dask[distributed,bag]>=2.0",
     "distributed>=2.0",
     "dask_mpi>=2.0",
