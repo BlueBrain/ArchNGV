@@ -3,7 +3,7 @@
 import json
 import os
 from pathlib import Path
-from typing import Union
+from typing import Any, Dict, Union
 
 import click
 import numpy
@@ -11,8 +11,29 @@ import yaml
 
 REQUIRED_PATH = click.Path(exists=True, readable=True, dir_okay=False, resolve_path=True)
 
+PathLike = Union[str, Path]
 
-def load_yaml(filepath: Union[str, Path]) -> dict:
+
+def load_ngv_manifest(filepath: PathLike) -> Dict[str, Any]:
+    """Loads a manifest configuration file.
+
+    Args:
+        filepath: The path to the manifest file
+
+    Notes:
+
+        There are two types of layouts that are supported for the ngv manifest:
+
+        1. The standalone ngv circuit in which the config consists only of the ngv specific
+            configuration.
+        2. The combination of a regular circuit and an ngv circuit manifests. In this case, the
+            entire ngv configuration is under the key 'ngv'.
+    """
+    manifest = load_yaml(filepath)
+    return manifest["ngv"] if "ngv" in manifest else manifest
+
+
+def load_yaml(filepath: PathLike) -> dict:
     """Load YAML file."""
     with open(filepath, mode="r", encoding="utf-8") as f:
         # TODO: verify config schema?

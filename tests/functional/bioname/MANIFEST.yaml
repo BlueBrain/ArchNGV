@@ -1,82 +1,83 @@
-common:
-  parallel: true
-  seed: 0
-  atlas: ../data/atlas/
-  vasculature: ../data/atlas/vasculature.h5
-  vasculature_mesh: ../data/atlas/vasculature.obj
-  base_circuit: ''
-  base_circuit_sonata: ../data/circuit/circuit_config.json
-  base_circuit_cells: ../data/circuit/nodes.h5
-  base_circuit_connectome: ../data/circuit/edges.h5
+ngv:
+  common:
+    parallel: true
+    seed: 0
+    atlas: ../data/atlas/
+    vasculature: ../data/atlas/vasculature.h5
+    vasculature_mesh: ../data/atlas/vasculature.obj
+    base_circuit: ''
+    base_circuit_sonata: ../data/circuit/circuit_config.json
+    base_circuit_cells: ../data/circuit/nodes.h5
+    base_circuit_connectome: ../data/circuit/edges.h5
 
-assign_emodels:
-  templates_dir: ../data/emodels/
-  hoc_template: astrocyte.hoc
+  assign_emodels:
+    templates_dir: ../data/emodels/
+    hoc_template: astrocyte.hoc
 
-cell_placement:
-  density: '[density]astrocytes'
-  soma_radius:
-  - 5.6
-  - 0.74
-  - 0.1
-  - 20
-  Energy:
-    potentials:
-      spring:
-      - 32.0
-      - 1.0
-  MetropolisHastings:
-    n_initial: 10
-    beta: 0.01
-    ntrials: 3
-    cutoff_radius: 60.0
-
-microdomains:
-  overlap_distribution:
-    type: normal
-    values:
+  cell_placement:
+    density: '[density]astrocytes'
+    soma_radius:
+    - 5.6
+    - 0.74
     - 0.1
-    - 1.0e-07
+    - 20
+    Energy:
+      potentials:
+        spring:
+        - 32.0
+        - 1.0
+    MetropolisHastings:
+      n_initial: 10
+      beta: 0.01
+      ntrials: 3
+      cutoff_radius: 60.0
 
-gliovascular_connectivity:
-  graph_targeting:
-    linear_density: 0.17
-  connection:
-    reachout_strategy: maximum_reachout
-    endfeet_distribution:
-    - 2
-    - 2
-    - 0
-    - 15
-  surface_targeting: {}
+  microdomains:
+    overlap_distribution:
+      type: normal
+      values:
+      - 0.1
+      - 1.0e-07
 
-endfeet_surface_meshes:
-  fmm_cutoff_radius: 1000.0
-  area_distribution:
-  - 200.0
-  - 10.0
-  - 0.0
-  - 1000.0
-  thickness_distribution:
-  - 1.0
-  - 0.1
-  - 0.01
-  - 2.0
+  gliovascular_connectivity:
+    graph_targeting:
+      linear_density: 0.17
+    connection:
+      reachout_strategy: maximum_reachout
+      endfeet_distribution:
+      - 2
+      - 2
+      - 0
+      - 15
+    surface_targeting: {}
 
-synthesis:
-  perimeter_distribution:
-    enabled: true
-    statistical_model:
-      slope: 2.060005867796768
-      intercept: 1.0219733661696733
-      standard_deviation: 1.1161359624857308
-    smoothing:
-      window:
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-  resampling:
-    enabled: true
-    linear-density: 1.0
+  endfeet_surface_meshes:
+    fmm_cutoff_radius: 1000.0
+    area_distribution:
+    - 200.0
+    - 10.0
+    - 0.0
+    - 1000.0
+    thickness_distribution:
+    - 1.0
+    - 0.1
+    - 0.01
+    - 2.0
+
+  synthesis:
+    perimeter_distribution:
+      enabled: true
+      statistical_model:
+        slope: 2.060005867796768
+        intercept: 1.0219733661696733
+        standard_deviation: 1.1161359624857308
+      smoothing:
+        window:
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+    resampling:
+      enabled: true
+      linear-density: 1.0

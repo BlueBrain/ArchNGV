@@ -2,6 +2,7 @@ import os
 import yaml
 import datetime
 import logging
+from archngv.app.utils import load_ngv_manifest
 
 LOGS_DIR = 'logs'
 MORPH_DIR = 'morphologies'
@@ -11,9 +12,7 @@ BIONAME = os.path.realpath(config.get('bioname', 'bioname'))
 def _get_seed(manifest_path):
     """Get the seed from the manifest"""
     try:
-        with open(manifest_path, 'r') as stream:
-            manifest = yaml.safe_load(stream)
-            return str(manifest['common']['seed'])
+        return load_ngv_manifest(manifest_path)["common"]["seed"]
     except KeyError:
         return "0"
 
@@ -21,8 +20,8 @@ def _get_seed(manifest_path):
 def bioname_path(filename):
     return os.path.join(BIONAME, filename)
 
-MANIFEST = bioname_path('MANIFEST.yaml')
-SEED = _get_seed(MANIFEST)
+MANIFEST_PATH = bioname_path('MANIFEST.yaml')
+SEED = _get_seed(MANIFEST_PATH)
 
 def log_path(name):
     timestamp = datetime.datetime.now().strftime("%Y%m%dT%H%M%S")
@@ -44,19 +43,18 @@ def get_log_level_for_cli(level):
     return ''
 
 
-# Load MANIFEST.yaml into workflow config
-workflow.configfile(MANIFEST)
+MANIFEST = load_ngv_manifest(MANIFEST_PATH)
+COMMON = MANIFEST["common"]
 
-
-ATLAS = config['common']['atlas']
+ATLAS = COMMON['atlas']
 ATLAS_CACHE_DIR = ".atlas"
-VASCULATURE_MORPHOLOGY = config['common']['vasculature']
-PARALLEL = config['common'].get('parallel', True)
-LOG_LEVEL = get_log_level_for_cli(config['common'].get('log_level', 'WARNING'))
+VASCULATURE_MORPHOLOGY = COMMON['vasculature']
+PARALLEL = COMMON.get('parallel', True)
+LOG_LEVEL = get_log_level_for_cli(COMMON.get('log_level', 'WARNING'))
 
-BASE_CIRCUIT_SONATA = config['common']['base_circuit_sonata']
-BASE_CIRCUIT_CELLS = config['common']['base_circuit_cells']
-BASE_CIRCUIT_CONNECTOME = config['common']['base_circuit_connectome']
+BASE_CIRCUIT_SONATA = COMMON['base_circuit_sonata']
+BASE_CIRCUIT_CELLS = COMMON['base_circuit_cells']
+BASE_CIRCUIT_CONNECTOME = COMMON['base_circuit_connectome']
 BUILDER_RECIPE = bioname_path('astrocyte_gap_junction_recipe.xml')
 
 SPACK_MODULEPATH = "/gpfs/bbp.cscs.ch/ssd/apps/bsd/modules/_meta"
@@ -218,7 +216,7 @@ rule assign_emodels:
             f'ngv {LOG_LEVEL} assign-emodels',
             '--input {input}',
             '--output {output}',
-            f'--hoc {config["assign_emodels"]["hoc_template"]}',
+            f'--hoc {MANIFEST["assign_emodels"]["hoc_template"]}',
         ])
 
 
@@ -379,7 +377,7 @@ rule endfeet_area:
         run_cmd([
             f'ngv {LOG_LEVEL} endfeet-area',
             f'--config-path {bioname_path("MANIFEST.yaml")}',
-            f'--vasculature-mesh-path {config["common"]["vasculature_mesh"]}',
+            f'--vasculature-mesh-path {COMMON["vasculature_mesh"]}',
             '--gliovascular-connectivity-path {input[gliovascular_connectivity]}',
             '--output-path {output}',
             f'--seed {SEED}'],

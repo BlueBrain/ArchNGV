@@ -1,6 +1,15 @@
 Changelog
 =========
 
+Version 2.0.1
+-------------
+
+New Features
+~~~~~~~~~~~~
+
+- NGV building supports circuit-build manifests, where the ngv specific configuration has to be
+  under a root entry 'ngv', [`NSETM-1872`_]
+
 Version 2.0.0
 -------------
 
@@ -27,6 +36,7 @@ Removed
 - The deprecated `extras` subpackage has been removed.
 
 
+.. _`NSETM-1872`: https://bbpteam.epfl.ch/project/issues/browse/NSETM-1872
 .. _`NSETM-1830`: https://bbpteam.epfl.ch/project/issues/browse/NSETM-1830
 .. _`NSETM-1778`: https://bbpteam.epfl.ch/project/issues/browse/NSETM-1778
 .. _`NSETM-1807`: https://bbpteam.epfl.ch/project/issues/browse/NSETM-1807
