@@ -33,11 +33,9 @@ BUILDING = [
     "tns==2.5.0",
     # available version in spack, compatible with tns==2.5.0
     "diameter-synthesis==0.2.5",
-    # 2.38.10 is available in spack.
-    # Update to a higher version in spack after checking that py-atlas-building-tools is ok with it
-    "trimesh>=2.38.10",
     "dask[distributed,bag]>=2.0",
-    "distributed>=2.0",
+    # 2022.4.1 crashes dask parallel
+    "distributed!=2022.4.1",
     "dask_mpi>=2.0",
 ]
 
@@ -68,6 +66,9 @@ setup(
         "cached-property>=1.5",
         "voxcell>=3.0.0",
         "vascpy>=0.1.0",
+        # 2.38.10 is available in spack.
+        # Update to a higher version in spack after checking that py-atlas-building-tools works
+        "trimesh>=2.38.10",
     ],
     extras_require={"all": BUILDING, "docs": ["sphinx", "sphinx-bluebrain-theme"]},
     packages=find_packages(),
