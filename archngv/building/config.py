@@ -229,7 +229,7 @@ def _add_ngv_sonata_nodes_edges(config: dict, root_dir: Path, manifest: dict) ->
                 "populations": {
                     Population.GLIOVASCULAR: {
                         "type": Population.GLIOVASCULAR,
-                        "endfeet_meshes": "$BUILD_DIR/endfeet_meshes.h5",
+                        "endfeet_meshes_file": "$BUILD_DIR/endfeet_meshes.h5",
                     }
                 },
             },

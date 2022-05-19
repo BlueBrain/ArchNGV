@@ -33,9 +33,9 @@ BUILDING = [
     "tns==2.5.0",
     # available version in spack, compatible with tns==2.5.0
     "diameter-synthesis==0.2.5",
-    "dask[distributed,bag]>=2.0",
-    # 2022.4.1 crashes dask parallel
-    "distributed!=2022.4.1",
+    # >= 2022.04.1 breaks the workflow
+    # see: https://bbpteam.epfl.ch/project/issues/browse/NSETM-1921
+    "dask[distributed,bag]<2022.04.1",
     "dask_mpi>=2.0",
 ]
 

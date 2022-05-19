@@ -153,7 +153,7 @@ def test_config():
                     "populations": {
                         "gliovascular": {
                             "type": "gliovascular",
-                            "endfeet_meshes": "$BUILD_DIR/endfeet_meshes.h5",
+                            "endfeet_meshes_file": "$BUILD_DIR/endfeet_meshes.h5",
                         }
                     },
                 },
@@ -166,4 +166,5 @@ def test_config():
     }
 
     build_sonata_config = load_json(BUILD_DIR / "ngv_config.json")
+    assert build_sonata_config == expected_sonata_config
     assert not jsondiff.diff(build_sonata_config, expected_sonata_config)

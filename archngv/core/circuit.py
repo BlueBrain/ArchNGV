@@ -2,6 +2,7 @@
 
 It uses bluepysnap.circuit.Circuit as main backend.
 """
+import warnings
 from pathlib import Path
 
 import numpy as np
@@ -246,7 +247,14 @@ class GlioVascular(NGVEdges):
         """Access the endfeet surface meshes for the gliovascular connection."""
         from archngv.core.datasets import EndfootSurfaceMeshes
 
-        return EndfootSurfaceMeshes(self.config["endfeet_meshes"])
+        if "endfeet_meshes" in self.config:
+            warnings.warn(
+                "Deprecated key 'endfeet_meshes' instead of 'endfeet_meshes_file' was encountered.",
+                DeprecationWarning,
+            )
+            return EndfootSurfaceMeshes(self.config["endfeet_meshes"])
+
+        return EndfootSurfaceMeshes(self.config["endfeet_meshes_file"])
 
     def astrocyte_endfeet(self, astrocyte):
         """Returns the endfeet ids connected to an astrocyte."""
