@@ -79,14 +79,16 @@ def save_vasculature_node_population(vasculature, filepath):
     cells.save_sonata(filepath)
 
 
-def export_astrocyte_population(filepath, cell_names, somata_positions, somata_radii, mtype):
+def export_astrocyte_population(
+    filepath, population_name, cell_names, somata_positions, somata_radii, mtype
+):
     """Export cell data"""
     cell_names = np.asarray(cell_names, dtype=bytes)
 
-    cells = CellCollection(population_name=Population.ASTROCYTES)
+    cells = CellCollection(population_name=population_name)
     cells.positions = somata_positions
     cells.properties["radius"] = somata_radii
     cells.properties["morphology"] = np.asarray(cell_names, dtype=str)
     cells.properties["mtype"] = mtype
-    cells.properties["model_type"] = "biophysical"
+    cells.properties["model_type"] = Population.ASTROCYTES
     cells.save_sonata(filepath)

@@ -45,7 +45,8 @@ def _dispatch_nodes(population_type):
         NGVNodes: a subclass of NGVNodes constructor.
     """
     mapping = {
-        "protoplasmic_astrocytes": Astrocytes,
+        "protoplasmic_astrocytes": Astrocytes,  # for backward compatibility
+        Population.ASTROCYTES: Astrocytes,
         Population.NEURONS: Neurons,
         Population.VASCULATURE: Vasculature,
     }
@@ -62,6 +63,9 @@ def _dispatch_edges(population_type):
         NGVEdges: a subclass of NGVEdges constructor.
     """
     mapping = {
+        "neuronal": Neuronal,  # for backward compatibility
+        "gliovascular": GlioVascular,  # for backward compatibility
+        "neuroglial": NeuroGlial,  # for backward compatibility
         Population.NEURONAL: Neuronal,
         Population.GLIOVASCULAR: GlioVascular,
         Population.NEUROGLIAL: NeuroGlial,
@@ -205,7 +209,6 @@ class Vasculature(NGVNodes):
     @cached_property
     def surface_mesh(self):
         """Returns vasculature surface mesh object."""
-
         return trimesh.load(self.config["vasculature_mesh_file"])
 
 

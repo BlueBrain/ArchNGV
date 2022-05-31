@@ -14,7 +14,6 @@ DATA_DIR = Path(__file__).parent.resolve() / "data"
 BUILD_DIR = Path(__file__).parent.resolve() / "build"
 EXPECTED_DIR = Path(__file__).parent.resolve() / "expected"
 
-SONATA_DIR = "./sonata"
 MORPHOLOGIES_DIR = "./morphologies"
 MICRODOMAINS_DIR = "./microdomains"
 
@@ -82,9 +81,17 @@ def _h5_compare_all(actual_dir, expected_dir):
 
 def test_sonata_files():
 
-    _h5_compare_all(BUILD_DIR / SONATA_DIR / "nodes", EXPECTED_DIR / SONATA_DIR / "nodes")
+    actual_files = sorted(Path(BUILD_DIR / "sonata/networks").rglob("*.h5"))
+    expected_files = sorted(Path(EXPECTED_DIR / "sonata/networks").rglob("*.h5"))
 
-    _h5_compare_all(BUILD_DIR / SONATA_DIR / "edges", EXPECTED_DIR / SONATA_DIR / "edges")
+    assert len(actual_files) > 0
+    assert len(expected_files) > 0
+
+    assert [p.relative_to(BUILD_DIR) for p in actual_files] == [
+        p.relative_to(EXPECTED_DIR) for p in expected_files
+    ]
+    for actual, expected in zip(actual_files, expected_files):
+        _h5_compare(actual, expected)
 
 
 def test_root_files():
@@ -97,9 +104,7 @@ def test_config():
     expected_sonata_config = {
         "manifest": {
             "$CIRCUIT_DIR": "../",
-            "$BUILD_DIR": "$CIRCUIT_DIR/build",
-            "$COMPONENT_DIR": "$BUILD_DIR",
-            "$NETWORK_DIR": "$BUILD_DIR",
+            "$BASE_DIR": "$CIRCUIT_DIR/build",
         },
         "networks": {
             "nodes": [
@@ -113,7 +118,7 @@ def test_config():
                     },
                 },
                 {
-                    "nodes_file": "$NETWORK_DIR/sonata/nodes/vasculature.h5",
+                    "nodes_file": "$BASE_DIR/sonata/networks/nodes/vasculature/nodes.h5",
                     "populations": {
                         "vasculature": {
                             "type": "vasculature",
@@ -123,12 +128,12 @@ def test_config():
                     },
                 },
                 {
-                    "nodes_file": "$NETWORK_DIR/sonata/nodes/glia.h5",
+                    "nodes_file": "$BASE_DIR/sonata/networks/nodes/astrocytes/nodes.h5",
                     "populations": {
                         "astrocytes": {
-                            "type": "protoplasmic_astrocytes",
-                            "alternate_morphologies": {"h5v1": "$BUILD_DIR/morphologies"},
-                            "microdomains_file": "$BUILD_DIR/microdomains.h5",
+                            "type": "astrocyte",
+                            "alternate_morphologies": {"h5v1": "$BASE_DIR/morphologies"},
+                            "microdomains_file": "$BASE_DIR/microdomains.h5",
                         },
                     },
                 },
@@ -137,23 +142,23 @@ def test_config():
                 {
                     "edges_file": f"{DATA_DIR}/circuit/edges.h5",
                     "populations": {
-                        "All": {"type": "neuronal"},
+                        "All": {"type": "chemical"},
                     },
                 },
                 {
-                    "edges_file": "$NETWORK_DIR/sonata/edges/neuroglial.h5",
-                    "populations": {"neuroglial": {"type": "neuroglial"}},
+                    "edges_file": "$BASE_DIR/sonata/networks/edges/neuroglial/edges.h5",
+                    "populations": {"neuroglial": {"type": "synapse_astrocyte"}},
                 },
                 {
-                    "edges_file": "$NETWORK_DIR/sonata/edges/glialglial.h5",
+                    "edges_file": "$BASE_DIR/sonata/networks/edges/glialglial/edges.h5",
                     "populations": {"glialglial": {"type": "glialglial"}},
                 },
                 {
-                    "edges_file": "$NETWORK_DIR/sonata/edges/gliovascular.h5",
+                    "edges_file": "$BASE_DIR/sonata/networks/edges/gliovascular/edges.h5",
                     "populations": {
                         "gliovascular": {
-                            "type": "gliovascular",
-                            "endfeet_meshes_file": "$BUILD_DIR/endfeet_meshes.h5",
+                            "type": "endfoot",
+                            "endfeet_meshes_file": "$BASE_DIR/endfeet_meshes.h5",
                         }
                     },
                 },

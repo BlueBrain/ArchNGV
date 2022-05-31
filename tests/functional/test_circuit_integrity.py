@@ -150,9 +150,10 @@ def test_vasculature_representations_consistency():
     gv_connectivity = circuit.gliovascular_connectome
 
     c_vasc = circuit.vasculature
-
     morphio_vasculature = mVasculature(c_vasc.config["vasculature_file"])
-    sonata_vasculature = sVasculature.load_sonata("build/sonata/nodes/vasculature.h5")
+
+    nodes_path = c_vasc._node_storage._h5_filepath
+    sonata_vasculature = sVasculature.load_sonata(nodes_path)
 
     morphio_sections = morphio_vasculature.sections
 

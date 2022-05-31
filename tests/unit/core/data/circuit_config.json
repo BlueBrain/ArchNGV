@@ -23,7 +23,7 @@
         "node_types_file": null,
         "populations": {
           "astrocytes": {
-            "type": "protoplasmic_astrocytes",
+            "type": "astrocyte",
             "alternate_morphologies": {
               "h5v1": "$NETWORK_DIR/morphologies-astro"
             },
@@ -50,7 +50,7 @@
         "edge_types_file": null,
         "populations": {
           "default": {
-            "type": "neuronal"
+            "type": "chemical"
           }
         }
       },
@@ -68,7 +68,7 @@
         "edge_types_file": null,
         "populations": {
           "neuroglial": {
-            "type": "neuroglial"
+            "type": "synapse_astrocyte"
           }
         }
       },
@@ -77,7 +77,7 @@
         "edge_types_file": null,
         "populations": {
           "gliovascular": {
-            "type": "gliovascular",
+            "type": "endfoot",
             "endfeet_meshes": "$NETWORK_DIR/endfeet_meshes.h5"
           }
         }

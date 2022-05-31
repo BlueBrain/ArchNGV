@@ -49,7 +49,7 @@ class TestCircuit:
             "node_types_file": None,
             "populations": {
                 "astrocytes": {
-                    "type": "protoplasmic_astrocytes",
+                    "type": "astrocyte",
                     "alternate_morphologies": {"h5v1": f"{TEST_DATA_DIR}/morphologies-astro"},
                     "microdomains_file": f"{TEST_DATA_DIR}/microdomains.h5",
                     "microdomains_overlapping_file": f"{TEST_DATA_DIR}/overlapping_microdomains.h5",

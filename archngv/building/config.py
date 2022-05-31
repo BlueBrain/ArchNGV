@@ -27,9 +27,7 @@ def build_ngv_config(root_dir: Path, manifest: dict) -> dict:
     config = {
         "manifest": {
             "$CIRCUIT_DIR": "../",
-            "$BUILD_DIR": "$CIRCUIT_DIR/build",
-            "$COMPONENT_DIR": "$BUILD_DIR",
-            "$NETWORK_DIR": "$BUILD_DIR",
+            "$BASE_DIR": "$CIRCUIT_DIR/build",
         },
         "components": {},
         "networks": {"nodes": [], "edges": []},
@@ -191,22 +189,22 @@ def _add_ngv_sonata_nodes_edges(config: dict, root_dir: Path, manifest: dict) ->
     config["networks"]["nodes"].extend(
         [
             {
-                "nodes_file": "$NETWORK_DIR/sonata/nodes/vasculature.h5",
+                "nodes_file": "$BASE_DIR/sonata/networks/nodes/vasculature/nodes.h5",
                 "populations": {
-                    Population.VASCULATURE: {
-                        "type": "vasculature",
+                    "vasculature": {
+                        "type": Population.VASCULATURE,
                         "vasculature_file": _make_abs(root_dir, manifest["vasculature"]),
                         "vasculature_mesh": _make_abs(root_dir, manifest["vasculature_mesh"]),
                     }
                 },
             },
             {
-                "nodes_file": "$NETWORK_DIR/sonata/nodes/glia.h5",
+                "nodes_file": "$BASE_DIR/sonata/networks/nodes/astrocytes/nodes.h5",
                 "populations": {
-                    Population.ASTROCYTES: {
-                        "type": "protoplasmic_astrocytes",
-                        "alternate_morphologies": {"h5v1": "$BUILD_DIR/morphologies"},
-                        "microdomains_file": "$BUILD_DIR/microdomains.h5",
+                    "astrocytes": {
+                        "type": Population.ASTROCYTES,
+                        "alternate_morphologies": {"h5v1": "$BASE_DIR/morphologies"},
+                        "microdomains_file": "$BASE_DIR/microdomains.h5",
                     }
                 },
             },
@@ -217,19 +215,19 @@ def _add_ngv_sonata_nodes_edges(config: dict, root_dir: Path, manifest: dict) ->
     config["networks"]["edges"].extend(
         [
             {
-                "edges_file": f"$NETWORK_DIR/sonata/edges/{Population.NEUROGLIAL}.h5",
-                "populations": {Population.NEUROGLIAL: {"type": Population.NEUROGLIAL}},
+                "edges_file": "$BASE_DIR/sonata/networks/edges/neuroglial/edges.h5",
+                "populations": {"neuroglial": {"type": Population.NEUROGLIAL}},
             },
             {
-                "edges_file": f"$NETWORK_DIR/sonata/edges/{Population.GLIALGLIAL}.h5",
-                "populations": {Population.GLIALGLIAL: {"type": Population.GLIALGLIAL}},
+                "edges_file": "$BASE_DIR/sonata/networks/edges/glialglial/edges.h5",
+                "populations": {"glialglial": {"type": Population.GLIALGLIAL}},
             },
             {
-                "edges_file": f"$NETWORK_DIR/sonata/edges/{Population.GLIOVASCULAR}.h5",
+                "edges_file": "$BASE_DIR/sonata/networks/edges/gliovascular/edges.h5",
                 "populations": {
-                    Population.GLIOVASCULAR: {
+                    "gliovascular": {
                         "type": Population.GLIOVASCULAR,
-                        "endfeet_meshes_file": "$BUILD_DIR/endfeet_meshes.h5",
+                        "endfeet_meshes_file": "$BASE_DIR/endfeet_meshes.h5",
                     }
                 },
             },

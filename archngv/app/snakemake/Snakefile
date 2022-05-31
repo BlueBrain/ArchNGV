@@ -52,6 +52,30 @@ VASCULATURE_MORPHOLOGY = COMMON['vasculature']
 PARALLEL = COMMON.get('parallel', True)
 LOG_LEVEL = get_log_level_for_cli(COMMON.get('log_level', 'WARNING'))
 
+
+def get_node_population_name(population_type, default=None):
+
+    if 'node_population_name' in COMMON:
+        return COMMON['node_population_name'].get(population_type, default=default)
+
+    return default
+
+
+NODES_ASTROCYTE_NAME = get_node_population_name("astrocyte", default="astrocytes")
+NODES_VASCULATURE_NAME = get_node_population_name("vasculature", default="vasculature")
+
+
+def get_edge_population_name(population_type, default=None):
+
+    if 'edge_population_name' in COMMON:
+        return COMMON['edge_population_name'].get(population_type, default=default)
+
+    return default
+
+EDGES_SYNAPSE_ASTROCYTE_NAME = get_edge_population_name("synapse_astrocyte", default="neuroglial")
+EDGES_ENDFOOT_NAME = get_edge_population_name("endfoot", default="gliovascular")
+EDGES_GLIALGLIAL_NAME = get_edge_population_name("glialglial", default="glialglial")
+
 BASE_CIRCUIT_SONATA = COMMON['base_circuit_sonata']
 BASE_CIRCUIT_CELLS = COMMON['base_circuit_cells']
 BASE_CIRCUIT_CONNECTOME = COMMON['base_circuit_connectome']
@@ -140,17 +164,11 @@ rule all:
         MORPH_DIR + '/_DONE',
         TOUCHES_DIR + '/_SUCCESS',
         'ngv_config.json',
-        'sonata/nodes/glia.h5',
-        'sonata/nodes/vasculature.h5',
-        'sonata/edges/neuroglial.h5',
-        'sonata/edges/glialglial.h5',
-        'sonata/edges/gliovascular.h5',
-
-
-rule sonata:
-    input:
-        'sonata/nodes/glia.h5',
-        'sonata/edges/neuroglial.h5',
+        f'sonata/networks/nodes/{NODES_ASTROCYTE_NAME}/nodes.h5',
+        f'sonata/networks/nodes/{NODES_VASCULATURE_NAME}/nodes.h5',
+        f'sonata/networks/edges/{EDGES_SYNAPSE_ASTROCYTE_NAME}/edges.h5',
+        f'sonata/networks/edges/{EDGES_GLIALGLIAL_NAME}/edges.h5',
+        f'sonata/networks/edges/{EDGES_ENDFOOT_NAME}/edges.h5',
 
 
 rule ngv_config:
@@ -170,7 +188,7 @@ rule sonata_vasculature:
         VASCULATURE_MORPHOLOGY
 
     output:
-        'sonata/nodes/vasculature.h5'
+        f'sonata/networks/nodes/{NODES_VASCULATURE_NAME}/nodes.h5'
 
     log:
         log_path('sonata_vasculature')
@@ -184,7 +202,7 @@ rule sonata_vasculature:
 
 rule cell_placement:
     input:
-        'sonata/nodes/vasculature.h5'
+        f'sonata/networks/nodes/{NODES_VASCULATURE_NAME}/nodes.h5'
 
     output:
         'sonata.tmp/nodes/glia.somata.h5'
@@ -199,6 +217,7 @@ rule cell_placement:
             f'--atlas {ATLAS}',
             f'--atlas-cache {ATLAS_CACHE_DIR}',
             f'--vasculature {input}',
+            f'--population-name {NODES_ASTROCYTE_NAME}',
             '--output {output}',
             f'--seed {SEED}'],
             dump_log=True)
@@ -226,7 +245,7 @@ rule finalize_astrocytes:
         emodels = 'sonata.tmp/nodes/glia.emodels.h5'
 
     output:
-        'sonata/nodes/glia.h5'
+        f'sonata/networks/nodes/{NODES_ASTROCYTE_NAME}/nodes.h5'
 
     log:
         log_path('finalize_astrocytes')
@@ -242,7 +261,7 @@ rule finalize_astrocytes:
 
 rule microdomains:
     input:
-        'sonata/nodes/glia.h5'
+        f'sonata/networks/nodes/{NODES_ASTROCYTE_NAME}/nodes.h5'
 
     output:
         'microdomains.h5',
@@ -264,9 +283,9 @@ rule microdomains:
 
 rule gliovascular_connectivity:
     input:
-        astrocytes = 'sonata/nodes/glia.h5',
+        astrocytes = f'sonata/networks/nodes/{NODES_ASTROCYTE_NAME}/nodes.h5',
         microdomains = 'microdomains.h5',
-        vasculature = 'sonata/nodes/vasculature.h5'
+        vasculature = f'sonata/networks/nodes/{NODES_VASCULATURE_NAME}/nodes.h5'
 
     output:
         'sonata.tmp/edges/gliovascular.connectivity.h5',
@@ -282,13 +301,14 @@ rule gliovascular_connectivity:
             '--microdomains {input[microdomains]}',
             '--vasculature {input[vasculature]}',
             f'--seed {SEED}',
+            f'--population-name {EDGES_ENDFOOT_NAME}',
             '--output {output}'],
             dump_log=True)
 
 
 rule neuroglial_connectivity:
     input:
-        astrocytes = 'sonata/nodes/glia.h5',
+        astrocytes = f'sonata/networks/nodes/{NODES_ASTROCYTE_NAME}/nodes.h5',
         microdomains = 'microdomains.h5',
 
     output:
@@ -305,6 +325,7 @@ rule neuroglial_connectivity:
             '--microdomains-path {input[microdomains]}',
             f'--neuronal-connectivity-path {BASE_CIRCUIT_CONNECTOME}',
             '--output-path {output}',
+            f'--population-name {EDGES_SYNAPSE_ASTROCYTE_NAME}',
             f'--seed {SEED}'],
             dump_log=True)
 
@@ -313,7 +334,7 @@ rule glial_gap_junctions:
         "Detect touches between astrocytes"
 
     input:
-        astrocytes = 'sonata/nodes/glia.h5',
+        astrocytes = f'sonata/networks/nodes/{NODES_ASTROCYTE_NAME}/nodes.h5',
         morphologies = MORPH_DIR + '/_DONE'
 
     output:
@@ -328,8 +349,8 @@ rule glial_gap_junctions:
             ' '.join(['touchdetector',
             f'--output {TOUCHES_DIR}',
             '--save-state',
-            '--from {input[astrocytes]} astrocytes',
-            '--to {input[astrocytes]} astrocytes',
+            f'--from {{input[astrocytes]}} {NODES_ASTROCYTE_NAME}',
+            f'--to {{input[astrocytes]}} {NODES_ASTROCYTE_NAME}',
             BUILDER_RECIPE,
             MORPH_DIR]) + '"'],
             dump_log=True,
@@ -343,11 +364,11 @@ rule glialglial_connectivity:
         " Extract glial glial connectivity from touches"
 
     input:
-        astrocytes = 'sonata/nodes/glia.h5',
+        astrocytes = f'sonata/networks/nodes/{NODES_ASTROCYTE_NAME}/nodes.h5',
         touches = TOUCHES_DIR + '/_SUCCESS'
 
     output:
-        glialglial_connectivity = 'sonata/edges/glialglial.h5'
+        glialglial_connectivity = f'sonata/networks/edges/{EDGES_GLIALGLIAL_NAME}/edges.h5'
 
     log:
         log_path('glialglial_connectivity')
@@ -357,6 +378,7 @@ rule glialglial_connectivity:
             f'ngv {LOG_LEVEL} glialglial-connectivity',
             '--astrocytes {input[astrocytes]}',
             f'--touches-dir {TOUCHES_DIR}',
+            f'--population-name {EDGES_GLIALGLIAL_NAME}',
             '--output-connectivity {output[glialglial_connectivity]}',
             f'--seed {SEED}'],
             dump_log=True,
@@ -386,7 +408,7 @@ rule endfeet_area:
 
 rule synthesis:
     input:
-        astrocytes = 'sonata/nodes/glia.h5',
+        astrocytes = f'sonata/networks/nodes/{NODES_ASTROCYTE_NAME}/nodes.h5',
         microdomains = 'microdomains.h5',
         gliovascular_connectivity = 'sonata.tmp/edges/gliovascular.connectivity.h5',
         neuroglial_connectivity = 'sonata.tmp/edges/neuroglial.connectivity.h5',
@@ -424,14 +446,14 @@ rule synthesis:
 
 rule finalize_gliovascular_connectivity:
     input:
-        astrocytes = 'sonata/nodes/glia.h5',
+        astrocytes = f'sonata/networks/nodes/{NODES_ASTROCYTE_NAME}/nodes.h5',
         connectivity = 'sonata.tmp/edges/gliovascular.connectivity.h5',
         endfeet_meshes = 'endfeet_meshes.h5',
         morphologies = MORPH_DIR + '/_DONE',
-        vasculature_sonata = 'sonata/nodes/vasculature.h5'
+        vasculature_sonata = f'sonata/networks/nodes/{NODES_VASCULATURE_NAME}/nodes.h5',
 
     output:
-        'sonata/edges/gliovascular.h5'
+        f'sonata/networks/edges/{EDGES_ENDFOOT_NAME}/edges.h5'
     log:
         log_path('finalize_gliovascular_connectivity')
     shell:
@@ -451,13 +473,13 @@ rule finalize_gliovascular_connectivity:
 
 rule finalize_neuroglial_connectivity:
     input:
-        astrocytes = 'sonata/nodes/glia.h5',
+        astrocytes = f'sonata/networks/nodes/{NODES_ASTROCYTE_NAME}/nodes.h5',
         microdomains = 'microdomains.h5',
         connectivity = 'sonata.tmp/edges/neuroglial.connectivity.h5',
         morphologies = MORPH_DIR + '/_DONE',
 
     output:
-        'sonata/edges/neuroglial.h5'
+        f'sonata/networks/edges/{EDGES_SYNAPSE_ASTROCYTE_NAME}/edges.h5'
 
     log:
         log_path('finalize_neuroglial_connectivity')

@@ -1,26 +1,21 @@
 """ Neuroglial connectivity exporter functions """
 import logging
-from typing import TYPE_CHECKING, Dict
+from pathlib import Path
+from typing import Dict
 
 import h5py
 import libsonata
 import numpy as np
 import pandas as pd
+import voxcell
 
-from archngv.core.constants import Population
 from archngv.exceptions import NGVError
 
 L = logging.getLogger(__name__)
 
 
-if TYPE_CHECKING:
-    import pathlib
-
-    import voxcell
-
-
 def add_properties_to_edge_population(
-    filepath: "pathlib.Path", population_name: str, properties: Dict[str, np.ndarray]
+    filepath: Path, population_name: str, properties: Dict[str, np.ndarray]
 ) -> None:
     """Add properties that are not already existing to an edge population.
 
@@ -51,7 +46,7 @@ def add_properties_to_edge_population(
 
 
 def _write_edge_population(
-    output_path: "pathlib.Path",
+    output_path: Path,
     source_population_name: str,
     target_population_name: str,
     source_population_size: int,
@@ -100,24 +95,26 @@ def _write_edge_population(
 
 
 def write_neuroglial_connectivity(
+    output_path: Path,
+    population_name: str,
+    neurons: voxcell.CellCollection,
+    astrocytes: voxcell.CellCollection,
     astrocyte_data: pd.DataFrame,
-    neurons: "voxcell.CellCollection",
-    astrocytes: "voxcell.CellCollection",
-    output_path: "pathlib.Path",
 ) -> None:
     """
     Export the connectivity between neurons and astrocytes to SONATA Edges HDF5.
 
     Args:
-        astrocyte_data: DataFrame, with the columns:
-        - 'synapse_id' (as seen in the `synaptic_data`)
-        - 'neuron_id' (postsynaptic neuron GID)
-        - 'astrocyte_id': ie: pre-side
-        sorted by ['neuron_id', 'astrocyte_id', 'synapse_id']
+        output_path: Path to output HDF5 file.
+        population_name: Name of the node population that will be written to the hdf5 file.
         neurons: The neuronal SONATA nodes, opened with voxcell.CellCollection
         astrocytes: The astrocytic SONATA nodes, opened with voxcell.CellCollection
+        astrocyte_data: DataFrame, with the columns:
+            - 'synapse_id' (as seen in the `synaptic_data`)
+            - 'neuron_id' (postsynaptic neuron GID)
+            - 'astrocyte_id': ie: pre-side
+            sorted by ['neuron_id', 'astrocyte_id', 'synapse_id']
 
-        output_path: path to output HDF5 file.
     """
     edge_properties = {"synapse_id": astrocyte_data["synapse_id"].to_numpy(dtype=np.uint64)}
 
@@ -129,15 +126,16 @@ def write_neuroglial_connectivity(
         target_population_size=len(neurons.properties),
         source_node_ids=astrocyte_data["astrocyte_id"],
         target_node_ids=astrocyte_data["neuron_id"],
-        edge_population_name=Population.NEUROGLIAL,
+        edge_population_name=population_name,
         edge_properties=edge_properties,
     )
 
 
 def write_gliovascular_connectivity(
-    output_path: "pathlib.Path",
-    astrocytes: "voxcell.CellCollection",
-    vasculature: "voxcell.CellCollection",
+    output_path: Path,
+    population_name: str,
+    astrocytes: voxcell.CellCollection,
+    vasculature: voxcell.CellCollection,
     endfeet_to_astrocyte: np.ndarray,
     endfeet_to_vasculature,
     endfoot_surface_positions: np.ndarray,
@@ -146,8 +144,9 @@ def write_gliovascular_connectivity(
 
     Args:
         output_path: SONATA EdgePopulation output filepath.
+        population_name: Name of the node population that will be written to the hdf5 file.
         astrocytes: Astrocytes node population, loaded as a CellCollection.
-        vasculature: Vasculature node population, load as a CellCollection.
+        vasculature: Vasculature node population, loaded as a CellCollection.
         endfeet_to_astrocyte: A (N,) array mapping each endfoot to its respective astrocyte.
         endfeet_to_vasculature: A (N, 2) array mapping each endfoot to its respective vascular
             section and segment ids.
@@ -183,39 +182,41 @@ def write_gliovascular_connectivity(
 
     _write_edge_population(
         output_path=output_path,
-        source_population_name=Population.VASCULATURE,
-        target_population_name=Population.ASTROCYTES,
+        source_population_name=vasculature.population_name,
+        target_population_name=astrocytes.population_name,
         source_population_size=len(vasculature.properties),
         target_population_size=len(astrocytes.properties),
         source_node_ids=vasculature_ids,
         target_node_ids=astrocyte_ids,
-        edge_population_name=Population.GLIOVASCULAR,
+        edge_population_name=population_name,
         edge_properties=edge_properties,
     )
 
 
 def write_glialglial_connectivity(
-    glialglial_data: pd.DataFrame, n_astrocytes: int, output_path: "pathlib.Path"
+    output_path: Path,
+    population_name: str,
+    astrocytes: voxcell.CellCollection,
+    glialglial_data: pd.DataFrame,
 ) -> None:
     """
     Export he connectivity between glia and glia to SONATA Edges HDF5
 
     Args:
-
+        output_path: Path to output HDF5 file
+        population_name: Name of population that will be written in the hdf5 file
+        astrocytes: Astrocytes node population, loaded as a CellCollection
         glialglial_data: DataFrame, with the touch properties
-        sorted by ['astrocyte_source_id', 'astrocyte_target_id', 'connection_id']
-        n_astrocytes: The number of astrocytes
-        output_path: path to output HDF5 file
+            sorted by ['astrocyte_source_id', 'astrocyte_target_id', 'connection_id']
     """
-
     _write_edge_population(
         output_path=output_path,
-        source_population_name=Population.ASTROCYTES,
-        target_population_name=Population.ASTROCYTES,
-        source_population_size=n_astrocytes,
-        target_population_size=n_astrocytes,
+        source_population_name=astrocytes.population_name,
+        target_population_name=astrocytes.population_name,
+        source_population_size=len(astrocytes),
+        target_population_size=len(astrocytes),
         source_node_ids=glialglial_data.pop("source_node_id").to_numpy(),
         target_node_ids=glialglial_data.pop("target_node_id").to_numpy(),
-        edge_population_name=Population.GLIALGLIAL,
+        edge_population_name=population_name,
         edge_properties=glialglial_data,
     )

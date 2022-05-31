@@ -87,7 +87,7 @@ custom:
 sonata:
 
   - description: SONATA node population of astrocytes.
-    filepath: sonata/nodes/glia.h5
+    filepath: sonata/networks/nodes/astrocytes/nodes.h5
     population_name: astrocytes
     population_type: nodes
     attributes:
@@ -134,7 +134,7 @@ sonata:
       representation and the section/segment one, the section and segment ids for each edge are
       stored so that the section representation can be uniquely reconstructed if needed.
 
-    filepath: sonata/nodes/vasculature.h5
+    filepath: sonata/networks/nodes/vasculature/nodes.h5
     population_name: vasculature
     population_type: nodes
     attributes:
@@ -207,7 +207,7 @@ sonata:
       edge corresponds to a connection between an astrocyte, a synapse and its post-synaptic neuron.
       The pre-synaptic neuron, although not directly accessible, it can be retrieved via the syna-
       ptic connectivity using the synapse id. The synapse id is stored as a property on the edges.
-    filepath: sonata/edges/neuroglial.h5
+    filepath: sonata/networks/edges/neuroglial/edges.h5
     population_name: neuroglial
     population_type: edges
     source_node_population_name: astrocytes
@@ -263,7 +263,7 @@ sonata:
   - description: >
       Gliovascular connectivity. Connection between the vasculature and astrocytes. Each edge
       corresponds to a perivascular endfoot that links an astrocyte with a vasculature segment.
-    filepath: sonata/edges/gliovascular.h5
+    filepath: sonata/networks/edges/gliovascular/edges.h5
     population_name: gliovascular
     population_type: edges
     source_node_population_name: vasculature
@@ -316,7 +316,7 @@ sonata:
 
   - description: >
       Gap junctional connections between astrocytes and their neighbors
-    filepath: sonata/edges/glialglial.h5
+    filepath: sonata/networks/edges/glialglial/edges.h5
     population_name: glialglial
     population_type: edges
     source_node_population_name: astrocytes

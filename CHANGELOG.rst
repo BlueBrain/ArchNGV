@@ -1,6 +1,22 @@
 Changelog
 =========
 
+Version 2.0.2
+-------------
+
+Improvements
+~~~~~~~~~~~~
+
+- Make the NGV population types consistent with the SONATA documentation, and maintain backward
+  backward compatibility with the legacy types. [`NSETM-1923`_]
+
+Fixed
+~~~~~
+
+- Output the correct key entry 'endfeet_meshes_file' for the endfeet meshes path in the SONATA
+  config. Maintain backward compatibility with the old 'endfeet_meshes' entry. [`NSETM-1904`]
+
+
 Version 2.0.1
 -------------
 
@@ -35,7 +51,8 @@ Removed
 - SONATA config no longer stores the bioname parameters. [`NSETM-1746`_]
 - The deprecated `extras` subpackage has been removed.
 
-
+.. _`NSETM-1923`: https://bbpteam.epfl.ch/project/issues/browse/NSETM-1923
+.. _`NSETM-1904`: https://bbpteam.epfl.ch/project/issues/browse/NSETM-1904
 .. _`NSETM-1872`: https://bbpteam.epfl.ch/project/issues/browse/NSETM-1872
 .. _`NSETM-1830`: https://bbpteam.epfl.ch/project/issues/browse/NSETM-1830
 .. _`NSETM-1778`: https://bbpteam.epfl.ch/project/issues/browse/NSETM-1778

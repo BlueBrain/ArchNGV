@@ -41,7 +41,7 @@ def assign_emodels(input, hoc, output):
 
 
 @click.command()
-@click.option("--config", help="Path to astrocyte placement YAML config", required=True)
+@click.option("--config", help="Path to the ngv MANIFEST config", required=True)
 @click.option("--atlas", help="Atlas URL / path", required=True)
 @click.option("--atlas-cache", help="Path to atlas cache folder", default=None, show_default=True)
 @click.option("--vasculature", help="Path to vasculature node population", required=True)
@@ -52,8 +52,9 @@ def assign_emodels(input, hoc, output):
     default=0,
     show_default=True,
 )
+@click.option("--population-name", help="Name of astrocyte node population", required=True)
 @click.option("-o", "--output", help="Path to output SONATA nodes file", required=True)
-def cell_placement(config, atlas, atlas_cache, vasculature, seed, output):
+def cell_placement(config, atlas, atlas_cache, vasculature, seed, population_name, output):
     """
     Generate astrocyte positions and radii inside the bounding box of the vasculature
     dataset.
@@ -107,7 +108,12 @@ def cell_placement(config, atlas, atlas_cache, vasculature, seed, output):
 
     LOGGER.info("Export to CellData...")
     export_astrocyte_population(
-        output, cell_names, somata_positions, somata_radii, mtype="ASTROCYTE"
+        filepath=output,
+        population_name=population_name,
+        cell_names=cell_names,
+        somata_positions=somata_positions,
+        somata_radii=somata_radii,
+        mtype="ASTROCYTE",
     )
 
     LOGGER.info("Done!")
@@ -120,12 +126,12 @@ def cell_placement(config, atlas, atlas_cache, vasculature, seed, output):
 def finalize_astrocytes(somata_file, emodels_file, output):
     """Build the finalized astrocyte node population by merging the different astrocyte
     properties"""
-    from archngv.core.constants import Population
-
     somata = voxcell.CellCollection.load(somata_file)
     emodels = voxcell.CellCollection.load(emodels_file)
     somata.properties["model_template"] = emodels.properties["model_template"]
-    somata.population_name = Population.ASTROCYTES
+
+    assert emodels.population_name == somata.population_name
+
     somata.save_sonata(output)
 
 
@@ -216,8 +222,11 @@ def build_microdomains(config, astrocytes, atlas, atlas_cache, seed, output_file
     default=0,
     show_default=True,
 )
+@click.option("--population-name", help="Name of the edges population", required=True)
 @click.option("--output", help="Path to output edges HDF5 (data)", required=True)
-def gliovascular_connectivity(config, astrocytes, microdomains, vasculature, seed, output):
+def gliovascular_connectivity(
+    config, astrocytes, microdomains, vasculature, seed, population_name, output
+):
     """
     Build connectivity between astrocytes and the vasculature graph.
     """
@@ -248,12 +257,13 @@ def gliovascular_connectivity(config, astrocytes, microdomains, vasculature, see
 
     LOGGER.info("Exporting sonata edges...")
     write_gliovascular_connectivity(
-        output,
-        astrocytes,
-        voxcell.CellCollection.load_sonata(vasculature),
-        endfeet_to_astrocyte_mapping,
-        endfeet_to_vasculature_mapping,
-        endfoot_surface_positions,
+        output_path=output,
+        population_name=population_name,
+        astrocytes=astrocytes,
+        vasculature=voxcell.CellCollection.load_sonata(vasculature),
+        endfeet_to_astrocyte=endfeet_to_astrocyte_mapping,
+        endfeet_to_vasculature=endfeet_to_vasculature_mapping,
+        endfoot_surface_positions=endfoot_surface_positions,
     )
 
     LOGGER.info("Done!")
@@ -358,6 +368,7 @@ def attach_endfeet_info_to_gliovascular_connectivity(
     default=0,
     show_default=True,
 )
+@click.option("--population-name", help="The name of the edge population", required=True)
 @click.option("-o", "--output-path", help="Path to output file (SONATA Edges HDF5)", required=True)
 def neuroglial_connectivity(
     neurons_path,
@@ -365,6 +376,7 @@ def neuroglial_connectivity(
     microdomains_path,
     neuronal_connectivity_path,
     seed,
+    population_name,
     output_path,
 ):
     """Generate connectivity between neurons (N) and astrocytes (G)"""
@@ -376,22 +388,23 @@ def neuroglial_connectivity(
 
     numpy.random.seed(seed)
 
-    astrocytes_data = voxcell.CellCollection.load(astrocytes_path)
+    astrocytes = voxcell.CellCollection.load(astrocytes_path)
 
     LOGGER.info("Generating neuroglial connectivity...")
 
     data_iterator = generate_neuroglial(
-        astrocytes=astrocytes_data,
+        astrocytes=astrocytes,
         microdomains=Microdomains(microdomains_path),
         neuronal_connectivity=NeuronalConnectivity(neuronal_connectivity_path),
     )
 
     LOGGER.info("Exporting the per astrocyte files...")
     write_neuroglial_connectivity(
-        data_iterator,
-        neurons=voxcell.CellCollection.load(neurons_path),
-        astrocytes=astrocytes_data,
         output_path=output_path,
+        population_name=population_name,
+        neurons=voxcell.CellCollection.load(neurons_path),
+        astrocytes=astrocytes,
+        astrocyte_data=data_iterator,
     )
 
     LOGGER.info("Done!")
@@ -477,13 +490,15 @@ def attach_morphology_info_to_neuroglial_connectivity(
     default=0,
     show_default=True,
 )
+@click.option("--population-name", help="Name of the edge population", required=True)
 @click.option("--output-connectivity", help="Path to output HDF5 (connectivity)", required=True)
-def build_glialglial_connectivity(astrocytes, touches_dir, seed, output_connectivity):
+def build_glialglial_connectivity(
+    astrocytes, touches_dir, seed, population_name, output_connectivity
+):
     """Generate connectivitiy between astrocytes (G-G)"""
     # pylint: disable=redefined-argument-from-local,too-many-locals
     from archngv.building.connectivity.glialglial import generate_glialglial
     from archngv.building.exporters.edge_populations import write_glialglial_connectivity
-    from archngv.core.datasets import CellData
 
     LOGGER.info("Seed: %d", seed)
     numpy.random.seed(seed)
@@ -492,8 +507,12 @@ def build_glialglial_connectivity(astrocytes, touches_dir, seed, output_connecti
     glialglial_data = generate_glialglial(touches_dir)
 
     LOGGER.info("Exporting to SONATA file...")
-    write_glialglial_connectivity(glialglial_data, len(CellData(astrocytes)), output_connectivity)
-
+    write_glialglial_connectivity(
+        output_path=output_connectivity,
+        population_name=population_name,
+        astrocytes=voxcell.CellCollection.load_sonata(astrocytes),
+        glialglial_data=glialglial_data,
+    )
     LOGGER.info("Done!")
 
 
