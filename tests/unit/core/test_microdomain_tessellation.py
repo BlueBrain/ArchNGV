@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from numpy import testing as npt
 
-from archngv.building.exporters.export_microdomains import export_microdomains
+from archngv.building.exporters import export_microdomains
 from archngv.core.datasets import Microdomain, Microdomains
 
 N_CELLS = 5

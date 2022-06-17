@@ -288,7 +288,7 @@ class Microdomains(GroupedProperties):
     @property
     def n_microdomains(self) -> int:
         """Total number of Microdomains."""
-        return self.__len__()
+        return len(self)
 
     def n_neighbors(self, astrocyte_index: int, omit_walls: bool = True) -> int:
         """Number of neighboring microdomains around microdomains using astrocyte_index."""

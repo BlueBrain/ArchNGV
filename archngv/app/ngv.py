@@ -70,7 +70,7 @@ def cell_placement(config, atlas, atlas_cache, vasculature, seed, population_nam
 
     from archngv.building.cell_placement.positions import create_positions
     from archngv.building.checks import assert_bbox_alignment
-    from archngv.building.exporters.node_populations import export_astrocyte_population
+    from archngv.core.constants import Population
     from archngv.spatial import BoundingBox
 
     numpy.random.seed(seed)
@@ -104,17 +104,21 @@ def cell_placement(config, atlas, atlas_cache, vasculature, seed, population_nam
         spatial_indexes=spatial_indexes,
     )
 
-    cell_names = ["GLIA_{:013d}".format(index) for index in range(len(somata_positions))]
-
-    LOGGER.info("Export to CellData...")
-    export_astrocyte_population(
-        filepath=output,
-        population_name=population_name,
-        cell_names=cell_names,
-        somata_positions=somata_positions,
-        somata_radii=somata_radii,
-        mtype="ASTROCYTE",
+    cell_names = numpy.asarray(
+        [f"GLIA_{index:013d}" for index in range(len(somata_positions))],
+        dtype=str,
     )
+
+    assert len(somata_positions) == len(somata_radii) == len(cell_names)
+
+    LOGGER.info("Export astrocytic somata node population...")
+    cells = voxcell.CellCollection(population_name=population_name)
+    cells.positions = somata_positions
+    cells.properties["radius"] = somata_radii
+    cells.properties["morphology"] = cell_names
+    cells.properties["mtype"] = "ASTROCYTE"
+    cells.properties["model_type"] = Population.ASTROCYTES
+    cells.save_sonata(output)
 
     LOGGER.info("Done!")
 
@@ -159,7 +163,7 @@ def build_microdomains(config, astrocytes, atlas, atlas_cache, seed, output_file
     from scipy import stats
     from voxcell.nexus.voxelbrain import Atlas
 
-    from archngv.building.exporters.export_microdomains import export_microdomains
+    from archngv.building.exporters import export_microdomains
     from archngv.building.microdomains import (
         generate_microdomain_tessellation,
         scaling_factor_from_overlap,
@@ -233,8 +237,8 @@ def gliovascular_connectivity(
     # pylint: disable=too-many-locals
     from vascpy import PointVasculature
 
-    from archngv.building.connectivity.gliovascular import generate_gliovascular
-    from archngv.building.exporters.edge_populations import write_gliovascular_connectivity
+    from archngv.building.connectivity.gliovascular import generate_gliovascular_edge_properties
+    from archngv.building.exporters import write_edge_population
     from archngv.core.datasets import Microdomains
 
     LOGGER.info("Seed: %d", seed)
@@ -243,27 +247,22 @@ def gliovascular_connectivity(
     astrocytes = voxcell.CellCollection.load_sonata(astrocytes)
 
     LOGGER.info("Generating gliovascular connectivity...")
-    (
-        endfoot_surface_positions,
-        endfeet_to_astrocyte_mapping,
-        endfeet_to_vasculature_mapping,
-    ) = generate_gliovascular(
-        cell_ids=numpy.arange(len(astrocytes), dtype=numpy.int64),
-        astrocytic_positions=astrocytes.positions,
+    astrocyte_ids, vasculature_ids, properties = generate_gliovascular_edge_properties(
+        astrocytes=astrocytes,
         astrocytic_domains=Microdomains(microdomains),
         vasculature=PointVasculature.load_sonata(vasculature),
         params=load_ngv_manifest(config)["gliovascular_connectivity"],
     )
 
     LOGGER.info("Exporting sonata edges...")
-    write_gliovascular_connectivity(
+    write_edge_population(
         output_path=output,
         population_name=population_name,
-        astrocytes=astrocytes,
-        vasculature=voxcell.CellCollection.load_sonata(vasculature),
-        endfeet_to_astrocyte=endfeet_to_astrocyte_mapping,
-        endfeet_to_vasculature=endfeet_to_vasculature_mapping,
-        endfoot_surface_positions=endfoot_surface_positions,
+        source_population=voxcell.CellCollection.load_sonata(vasculature),
+        target_population=astrocytes,
+        source_node_ids=vasculature_ids,
+        target_node_ids=astrocyte_ids,
+        properties=properties,
     )
 
     LOGGER.info("Done!")
@@ -321,7 +320,7 @@ def attach_endfeet_info_to_gliovascular_connectivity(
     from archngv.building.endfeet_reconstruction.gliovascular_properties import (
         endfeet_mesh_properties,
     )
-    from archngv.building.exporters.edge_populations import add_properties_to_edge_population
+    from archngv.building.exporters import add_properties_to_edge_population
     from archngv.core.datasets import CellData, EndfootSurfaceMeshes, GliovascularConnectivity
 
     gv_connectivity = GliovascularConnectivity(input_file)
@@ -382,8 +381,10 @@ def neuroglial_connectivity(
     """Generate connectivity between neurons (N) and astrocytes (G)"""
     # pylint: disable=too-many-locals
 
-    from archngv.building.connectivity.neuroglial_generation import generate_neuroglial
-    from archngv.building.exporters.edge_populations import write_neuroglial_connectivity
+    from archngv.building.connectivity.neuroglial_generation import (
+        generate_neuroglial_edge_properties,
+    )
+    from archngv.building.exporters import write_edge_population
     from archngv.core.datasets import Microdomains, NeuronalConnectivity
 
     numpy.random.seed(seed)
@@ -392,21 +393,23 @@ def neuroglial_connectivity(
 
     LOGGER.info("Generating neuroglial connectivity...")
 
-    data_iterator = generate_neuroglial(
+    neuron_ids, astrocyte_ids, properties = generate_neuroglial_edge_properties(
         astrocytes=astrocytes,
         microdomains=Microdomains(microdomains_path),
         neuronal_connectivity=NeuronalConnectivity(neuronal_connectivity_path),
     )
 
-    LOGGER.info("Exporting the per astrocyte files...")
-    write_neuroglial_connectivity(
+    LOGGER.info("Writing neuroglial connectivity...")
+
+    write_edge_population(
         output_path=output_path,
         population_name=population_name,
-        neurons=voxcell.CellCollection.load(neurons_path),
-        astrocytes=astrocytes,
-        astrocyte_data=data_iterator,
+        source_population=astrocytes,
+        target_population=voxcell.CellCollection.load(neurons_path),
+        source_node_ids=astrocyte_ids,
+        target_node_ids=neuron_ids,
+        properties=properties,
     )
-
     LOGGER.info("Done!")
 
 
@@ -450,7 +453,7 @@ def attach_morphology_info_to_neuroglial_connectivity(
     import shutil
 
     from archngv.app.utils import apply_parallel_function
-    from archngv.building.exporters.edge_populations import add_properties_to_edge_population
+    from archngv.building.exporters import add_properties_to_edge_population
     from archngv.building.morphology_synthesis.neuroglial_properties import (
         astrocyte_morphology_properties,
     )
@@ -498,20 +501,25 @@ def build_glialglial_connectivity(
     """Generate connectivitiy between astrocytes (G-G)"""
     # pylint: disable=redefined-argument-from-local,too-many-locals
     from archngv.building.connectivity.glialglial import generate_glialglial
-    from archngv.building.exporters.edge_populations import write_glialglial_connectivity
+    from archngv.building.exporters import write_edge_population
 
     LOGGER.info("Seed: %d", seed)
     numpy.random.seed(seed)
 
     LOGGER.info("Creating symmetric connections from touches...")
-    glialglial_data = generate_glialglial(touches_dir)
+    data = generate_glialglial(touches_dir)
+
+    astrocytes = voxcell.CellCollection.load_sonata(astrocytes)
 
     LOGGER.info("Exporting to SONATA file...")
-    write_glialglial_connectivity(
+    write_edge_population(
         output_path=output_connectivity,
         population_name=population_name,
-        astrocytes=voxcell.CellCollection.load_sonata(astrocytes),
-        glialglial_data=glialglial_data,
+        source_population=astrocytes,
+        target_population=astrocytes,
+        source_node_ids=data.pop("source_node_id").to_numpy(),
+        target_node_ids=data.pop("target_node_id").to_numpy(),
+        properties=data,
     )
     LOGGER.info("Done!")
 
@@ -544,7 +552,7 @@ def build_endfeet_surface_meshes(
     import openmesh
 
     from archngv.building.endfeet_reconstruction.area_generation import endfeet_area_generation
-    from archngv.building.exporters.export_endfeet_meshes import export_endfeet_meshes
+    from archngv.building.exporters import export_endfeet_meshes
     from archngv.core.datasets import GliovascularConnectivity
 
     numpy.random.seed(seed)

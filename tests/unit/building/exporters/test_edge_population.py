@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 from numpy import testing as npt
 
-from archngv.building.exporters import edge_populations as tested
+from archngv.building import exporters as tested
 from archngv.core.datasets import GliovascularConnectivity
 from archngv.exceptions import NGVError
 

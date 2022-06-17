@@ -108,3 +108,43 @@ def generate_gliovascular(cell_ids, astrocytic_positions, astrocytic_domains, va
     endfeet_to_vasculature = np.column_stack((section_ids, segment_ids))
 
     return (endfeet_positions, endfeet_astrocyte_edges, endfeet_to_vasculature)
+
+
+def generate_gliovascular_edge_properties(astrocytes, astrocytic_domains, vasculature, params):
+    """Generate edge population edge population source/target ids and properties."""
+    (
+        endfoot_surface_positions,
+        endfeet_to_astrocyte_mapping,
+        endfeet_to_vasculature_mapping,
+    ) = generate_gliovascular(
+        cell_ids=np.arange(len(astrocytes), dtype=np.int64),
+        astrocytic_positions=astrocytes.positions,
+        astrocytic_domains=astrocytic_domains,
+        vasculature=vasculature,
+        params=params,
+    )
+
+    assert (
+        len(endfeet_to_astrocyte_mapping)
+        == len(endfeet_to_vasculature_mapping)
+        == len(endfoot_surface_positions)
+    )
+
+    # get the section/segment ids and use them to get the vasculature node ids
+    vasculature_properties = vasculature.edge_properties.loc[:, ["section_id", "segment_id"]]
+    vasculature_properties["index"] = vasculature_properties.index
+    vasculature_properties = vasculature_properties.set_index(["section_id", "segment_id"])
+
+    indices = pd.MultiIndex.from_arrays(endfeet_to_vasculature_mapping.T)
+    vasculature_ids = vasculature_properties.loc[indices, "index"].to_numpy()
+
+    properties = {
+        "endfoot_id": np.arange(len(endfeet_to_astrocyte_mapping), dtype=np.uint64),
+        "endfoot_surface_x": endfoot_surface_positions[:, 0].astype(np.float32),
+        "endfoot_surface_y": endfoot_surface_positions[:, 1].astype(np.float32),
+        "endfoot_surface_z": endfoot_surface_positions[:, 2].astype(np.float32),
+        "vasculature_section_id": endfeet_to_vasculature_mapping[:, 0].astype(np.uint32),
+        "vasculature_segment_id": endfeet_to_vasculature_mapping[:, 1].astype(np.uint32),
+    }
+
+    return endfeet_to_astrocyte_mapping, vasculature_ids, properties

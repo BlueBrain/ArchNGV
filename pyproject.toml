@@ -28,12 +28,11 @@ disable = [
     "too-few-public-methods",
     "too-many-public-methods",
     "fixme",
-    "no-init",
     "superfluous-parens",
-    "bad-continuation",
     "import-outside-toplevel",
     "unsubscriptable-object",
     "unsupported-assignment-operation",
+    "unnecessary-lambda-assignment",
     "unbalanced-tuple-unpacking",
     "unspecified-encoding",
     "consider-using-f-string",
@@ -56,7 +55,7 @@ max-locals = 30
 # Maximum number of return / yield for function / method body
 max-returns = 6
 # Maximum number of branch for function / method body
-max-branchs = 12
+max-branches = 12
 # Maximum number of statements in function / method body
 max-statements = 50
 # Maximum number of parents for a class (see R0901).

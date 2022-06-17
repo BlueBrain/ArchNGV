@@ -45,7 +45,7 @@ def astrocyte_neuroglial_connectivity(microdomain, synapses_spatial_index, synap
 
 
 def generate_neuroglial(astrocytes, microdomains, neuronal_connectivity):
-    """Yields the connectivity of the astrocyte ids with synapses and neurons
+    """Returns the connectivity of the astrocyte ids with synapses and neurons
 
     Args:
         astrocytes: voxcell.NodePopulation
@@ -77,3 +77,14 @@ def generate_neuroglial(astrocytes, microdomains, neuronal_connectivity):
     ret = pd.concat(ret)
     ret.sort_values(["neuron_id", "astrocyte_id", "synapse_id"], inplace=True)
     return ret
+
+
+def generate_neuroglial_edge_properties(astrocytes, microdomains, neuronal_connectivity):
+    """Generate neuroglial edge properties."""
+    df = generate_neuroglial(astrocytes, microdomains, neuronal_connectivity)
+
+    astrocyte_ids = df["astrocyte_id"].to_numpy(dtype=np.int64)
+    neuron_ids = df["neuron_id"].to_numpy(dtype=np.int64)
+    properties = {"synapse_id": df["synapse_id"].to_numpy(dtype=np.uint64)}
+
+    return neuron_ids, astrocyte_ids, properties

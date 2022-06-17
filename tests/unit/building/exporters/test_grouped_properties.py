@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 from numpy import testing as npt
 
-from archngv.building.exporters import grouped_properties as tested
+from archngv.building import exporters as tested
 from archngv.core.datasets import GroupedProperties
 
 

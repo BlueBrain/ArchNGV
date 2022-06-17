@@ -7,8 +7,7 @@ import morphio
 import numpy as np
 
 from archngv.app.utils import load_yaml, write_yaml
-from archngv.building.exporters.edge_populations import add_properties_to_edge_population
-from archngv.building.exporters.grouped_properties import export_grouped_properties
+from archngv.building.exporters import add_properties_to_edge_population, export_grouped_properties
 from archngv.core import datasets
 
 
