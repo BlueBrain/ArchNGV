@@ -12,7 +12,7 @@ VERSION = module.VERSION
 
 BUILDING = [
     "ngv-ctools>=1.0.0",
-    "spatial-index>=0.4.2",
+    "spatial-index==0.5.2",
     "bluepy-configfile>=0.1.11",
     "Click>=7.0",
     "numpy-stl>=2.10,<2.16.0",  # More recent versions require >1.22.0 which is not in spack yet
@@ -69,6 +69,7 @@ setup(
         # 2.38.10 is available in spack.
         # Update to a higher version in spack after checking that py-atlas-building-tools works
         "trimesh>=2.38.10",
+        "atlas-commons>=0.1.4",
     ],
     extras_require={"all": BUILDING, "docs": ["sphinx", "sphinx-bluebrain-theme"]},
     packages=find_packages(),

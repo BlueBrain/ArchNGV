@@ -5,6 +5,7 @@ from pathlib import Path
 import click
 import numpy
 import voxcell
+from atlas_commons.app_utils import assert_properties
 
 from archngv.app.logger import LOGGER
 from archngv.app.utils import load_ngv_manifest, write_json
@@ -69,38 +70,41 @@ def cell_placement(config, atlas, atlas_cache, vasculature, seed, population_nam
     from voxcell.nexus.voxelbrain import Atlas
 
     from archngv.building.cell_placement.positions import create_positions
-    from archngv.building.checks import assert_bbox_alignment
     from archngv.core.constants import Population
-    from archngv.spatial import BoundingBox
 
     numpy.random.seed(seed)
     LOGGER.info("Seed: %d", seed)
 
-    config = load_ngv_manifest(config)["cell_placement"]
-
+    config = load_ngv_manifest(config)
     atlas = Atlas.open(atlas, cache_dir=atlas_cache)
-    voxelized_intensity = atlas.load_data(config["density"])
-    voxelized_bnregions = atlas.load_data("brain_regions")
+
+    voxelized_intensity = atlas.load_data(config["cell_placement"]["density"])
+
+    if "region" in config["common"]:
+        region = config["common"]["region"]
+        region_mask = atlas.get_region_mask(region, with_descendants=True)
+        # Make sure that both Atlas got the same shape and offset and voxel_dimentions
+        assert_properties([region_mask, voxelized_intensity])
+        # update voxelized intensity to have values only where the region mask is 1
+        voxelized_intensity = voxelized_intensity.with_data(
+            voxelized_intensity.raw * region_mask.raw
+        )
+        LOGGER.info("Cells will be placed in region %s", region)
+    else:
+        LOGGER.info("No region found in MANIFEST.yml. The entire atlas will be used.")
 
     assert numpy.issubdtype(voxelized_intensity.raw.dtype, numpy.floating)
 
     spatial_indexes = []
     if vasculature is not None:
-
         vasc = PointVasculature.load_sonata(vasculature)
-
-        assert_bbox_alignment(
-            BoundingBox.from_points(vasc.points),
-            BoundingBox(voxelized_intensity.bbox[0], voxelized_intensity.bbox[1]),
-        )
-
         spatial_indexes.append(SphereIndex(vasc.points, 0.5 * vasc.diameters))
 
     LOGGER.info("Generating cell positions / radii...")
+
     somata_positions, somata_radii = create_positions(
-        config,
+        config["cell_placement"],
         voxelized_intensity,
-        voxelized_bnregions,
         spatial_indexes=spatial_indexes,
     )
 

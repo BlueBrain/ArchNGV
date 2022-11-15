@@ -2,6 +2,7 @@ ngv:
   common:
     parallel: true
     seed: 0
+    region: 'H'
     atlas: ../data/atlas/
     vasculature: ../data/atlas/vasculature.h5
     vasculature_mesh: ../data/atlas/vasculature.obj
@@ -81,3 +82,4 @@ ngv:
     resampling:
       enabled: true
       linear-density: 1.0
+

@@ -54,7 +54,7 @@ def transform_to_target_distribution(areas, target_distribution):
     Because endfeet meshes can only be reduced, we take into account only
     the areas that area bigger than the target distribution. Therefore,
     the empirical cumulative function of areas will give us the probability
-    that X will take value less than or equal to x, and it is this probablity
+    that X will take value less than or equal to x, and it is this probability
     that we feed into the inverse of the bio areas to find the target area that
     we should have if the distribution was that of the biological areas.
 

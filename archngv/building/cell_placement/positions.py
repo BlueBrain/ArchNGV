@@ -30,9 +30,7 @@ def create_placement_parameters(user_params):
     )
 
 
-def create_positions(
-    parameters, voxelized_intensity, voxelized_brain_regions, spatial_indexes=None
-):
+def create_positions(parameters, voxelized_intensity, spatial_indexes=None):
     """Placement function that generates positions given the parameters, density and spatial
     indexes
 
@@ -51,12 +49,10 @@ def create_positions(
 
     soma_distribution = truncated_normal_distribution(soma_data)
     L.info("Truncated Normal Soma Distr: mean: %.3f, std: %.3f, low: %.3f, high: %.3f", *soma_data)
-
-    placement_data = PlacementVoxelData(voxelized_intensity, voxelized_brain_regions)
+    placement_data = PlacementVoxelData(voxelized_intensity)
     L.info(
-        "Voxelized Intensity, Brain Regions shapes: %s, %s",
+        "Voxelized Intensity shape %s",
         voxelized_intensity.raw.shape,
-        voxelized_brain_regions.raw.shape,
     )
 
     placement_parameters = create_placement_parameters(parameters["MetropolisHastings"])

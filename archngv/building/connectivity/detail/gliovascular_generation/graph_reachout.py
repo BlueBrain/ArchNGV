@@ -165,7 +165,7 @@ def _maximum_reachout(source, targets, n_classes):
     """
     Args:
         source ndarray: float[(3,)]
-            Coordinates represeting the astrocyte's soma position.
+            Coordinates representing the astrocyte's soma position.
         targets pandas.DataFrame:
             A dataframe with the coordinates of the potential targets.
         n_classes int:

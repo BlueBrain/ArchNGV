@@ -183,7 +183,7 @@ def fast_marching_eikonal_solver(mesh, seed_coordinates, cutoff_distance):
 
     Propagates wavefronts from each source vertex. The wavefronts color
     the vertices they encounter and stop if another wavefront (group) has
-    already beed colored by a neighboring vertex.
+    already been colored by a neighboring vertex.
 
     Args:
         mesh: openmesh Trimesh
