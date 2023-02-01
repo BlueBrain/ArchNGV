@@ -24,6 +24,24 @@ class BoundingBox:
         max_coordinates = (points + radii[:, np.newaxis]).max(axis=0)
         return cls(min_coordinates, max_coordinates)
 
+    @classmethod
+    def from_voxel_data(cls, shape, voxel_dimensions, offset):
+        """Create bbox from voxelized volume."""
+        min_coordinates = offset
+        max_coordinates = offset + shape * voxel_dimensions
+
+        signs = np.sign(voxel_dimensions)
+
+        # legacy convention for Paxinos atlas
+        if not np.allclose(signs, 1.0):
+
+            points = np.array([min_coordinates, max_coordinates])
+
+            min_coordinates = points.min(axis=0)
+            max_coordinates = points.max(axis=0)
+
+        return cls(min_coordinates, max_coordinates)
+
     def __init__(self, min_coordinates, max_coordinates):
         self._bb = np.array((min_coordinates, max_coordinates), dtype=np.float32)
 

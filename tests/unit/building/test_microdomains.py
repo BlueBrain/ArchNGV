@@ -2,8 +2,10 @@ import mock
 import numpy as np
 import pytest
 from numpy import testing as npt
+from voxcell import VoxelData
 
 from archngv.building import microdomains as tested
+from archngv.core.datasets import Microdomain
 from archngv.exceptions import NGVError
 from archngv.spatial.bounding_box import BoundingBox
 from archngv.utils.ngons import polygons_to_triangles
@@ -110,3 +112,57 @@ def test_scaling_factor_from_overlap():
 
     with pytest.raises(NGVError):
         tested.scaling_factor_from_overlap(2.1)
+
+
+def test_limit_microdomains_to_roi():
+    """
+     Test a microdomnain that contains:
+      one point outside the roi in the region mask -> position must change (pt1)
+      one point outside the the region mask -> position must change (pt2)
+      two points inside the ROI -> position must not change (pt0 and pt3)
+
+    Microdomain points
+     -1 |pt2|   |   |   |   |
+     0  |pt0|   |   |   |   |
+     1  |   |   |   |   |   |
+     2  |   |   |   |   |   |
+     3  |   |   |   |   |   |
+     4  |pt1|   |pt3|   |   |
+          0   1   2   3   4
+
+    Region Mask
+     0  | X | X | X | X | X |
+     1  | X | X | X | X | X |
+     2  | X | X | X | X | X |
+     3  | X | X | X | X | X |
+     4  |   | X | X | X | X |
+          0   1   2   3   4
+    """
+
+    points = np.array([(0.1, 0.2, 0.3), (0.0, 4.0, 0.0), (0.0, -1.0, 0.2), (2.0, 4.0, 0.3)])
+    face_vertices = np.array([[0, 1, 2, 3]])
+    neighbors = np.array([-1])
+    domain = Microdomain(points=points, triangle_data=face_vertices, neighbors=neighbors)
+    microdomains = [domain]
+
+    region_mask_raw = np.ones((5, 5, 5), dtype=bool)
+    region_mask_raw[0][4][0] = False
+
+    region_mask = VoxelData(region_mask_raw, voxel_dimensions=[1, 1, 1])
+
+    astro_points = [
+        np.array([2.0, 2.0, 0.3])
+    ]  # => the radius for project_point_to_sphere will be 2.
+    # as the the 4th point with [2.,4., .3] is the closest point to astro_point [2,2,.3]
+
+    new_microdomains = list(
+        tested.limit_microdomains_to_roi(microdomains, astro_points, region_mask)
+    )
+    npt.assert_array_equal(new_microdomains[0].points[0], [0.1, 0.2, 0.3])
+    npt.assert_array_equal(new_microdomains[0].points[3], [2.0, 4.0, 0.3])
+    vectors = new_microdomains[0].points - astro_points
+
+    radii = np.linalg.norm(vectors, axis=1)
+
+    npt.assert_almost_equal(radii[1], 2.0)
+    npt.assert_almost_equal(radii[2], 2.0)

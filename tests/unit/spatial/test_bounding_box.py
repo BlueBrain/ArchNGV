@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+import voxcell
 
 from archngv.spatial import BoundingBox
 
@@ -40,6 +41,34 @@ def test_from_spheres_constructor():
 
     bbox = BoundingBox.from_spheres(points, radii)
     expected_bbox = BoundingBox(np.array([-1.0, 0.0, 1.0]), np.array([9.0, 11.0, 11.0]))
+
+    assert bbox == expected_bbox
+
+
+def test_from_voxel_data():
+    """Test that bbox is calculated correctly for the paxinos atlas (negative z dim)."""
+
+    shape = np.array((2, 2, 2))
+    offset = np.array([1.0, 2.0, 3.0])
+    voxel_dims = np.array([3.0, 2.0, 1.0])
+
+    bbox = BoundingBox.from_voxel_data(shape, voxel_dims, offset)
+
+    expected_bbox = BoundingBox(np.array([1.0, 2.0, 3.0]), np.array([7.0, 6.0, 5.0]))
+
+    assert bbox == expected_bbox
+
+
+def test_from_voxel_data__paxinos():
+    """Test that bbox is calculated correctly for the paxinos atlas (negative z dim)."""
+
+    shape = np.array((2, 2, 2))
+    offset = np.array([1.0, 2.0, 3.0])
+    voxel_dims = np.array([3.0, 2.0, -2.0])
+
+    bbox = BoundingBox.from_voxel_data(shape, voxel_dims, offset)
+
+    expected_bbox = BoundingBox(np.array([1.0, 2.0, -1.0]), np.array([7.0, 6.0, 3.0]))
 
     assert bbox == expected_bbox
 

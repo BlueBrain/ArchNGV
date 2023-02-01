@@ -307,8 +307,10 @@ class Microdomains(GroupedProperties):
         return neighbors
 
     def domain_is_boundary(self, astrocyte_index: int) -> np.bool_:
-        """Returns true if the domain is adjacent to a wall."""
-        return np.any(self.get("neighbors", astrocyte_index))
+        """Returns true if the domain is adjacent to a wall.
+        The walls have negative indices as "neighbors"
+        """
+        return np.any(self.get("neighbors", astrocyte_index) < 0)
 
     def domain_points(self, astrocyte_index: int) -> np.ndarray:
         """The coordinates of the vertices of the microdomain."""

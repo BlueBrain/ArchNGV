@@ -98,7 +98,7 @@ def readonly_morphology(filepath, position):
 
     Args:
         filepath (str): Path to morphology file
-        position (np.ndarray): Morphology offset
+        position (numpy.ndarray): Morphology offset
 
     Returns:
         readonly_morphology: morphio.Morphology

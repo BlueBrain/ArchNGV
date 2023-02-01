@@ -11,6 +11,7 @@ VERSION = module.VERSION
 
 
 BUILDING = [
+    "MVDTool>=2.4.4",
     "ngv-ctools>=1.0.0",
     "spatial-index==0.5.2",
     "bluepy-configfile>=0.1.11",
@@ -37,6 +38,7 @@ BUILDING = [
     # see: https://bbpteam.epfl.ch/project/issues/browse/NSETM-1921
     "dask[distributed,bag]<2022.04.1",
     "dask_mpi>=2.0",
+    "atlas-commons>=0.1.4",
 ]
 
 
@@ -58,7 +60,9 @@ setup(
     },
     license="BBP-internal-confidential",
     install_requires=[
-        "numpy>=1.19.5",
+        # In 1.22 aliases like np.bool have been removed. This breaks the old
+        # dependency of tns. Please update tns to the latest neurots to fix this.
+        "numpy<=1.22",
         "h5py>=3.1.0",
         "scipy>=1.5.0",
         "libsonata>=0.1.8",
@@ -69,7 +73,6 @@ setup(
         # 2.38.10 is available in spack.
         # Update to a higher version in spack after checking that py-atlas-building-tools works
         "trimesh>=2.38.10",
-        "atlas-commons>=0.1.4",
     ],
     extras_require={"all": BUILDING, "docs": ["sphinx", "sphinx-bluebrain-theme"]},
     packages=find_packages(),

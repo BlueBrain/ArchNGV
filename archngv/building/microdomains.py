@@ -10,6 +10,7 @@ import tess
 from archngv.core.datasets import Microdomain
 from archngv.exceptions import NGVError
 from archngv.spatial.bounding_box import BoundingBox
+from archngv.utils.linear_algebra import normalize_vectors
 from archngv.utils.ngons import polygons_to_triangles
 
 L = logging.getLogger(__name__)
@@ -100,3 +101,69 @@ def scaling_factor_from_overlap(overlap_factor: float) -> float:
     )
 
     return scaling_factor
+
+
+def scale_microdomains(microdomains, scaling_factors, bounding_box):
+    """Scale microdomains according to scaling factors.
+
+    Boundary domains are snapped to the bbox.
+    """
+    min_point, max_point = bounding_box.ranges
+
+    for domain, scaling_factor in zip(microdomains, scaling_factors):
+
+        new_domain = domain.scale(scaling_factor)
+
+        # snap the boundary points back to the bbox
+        new_domain.points = np.clip(new_domain.points, a_min=min_point, a_max=max_point)
+
+        yield new_domain
+
+
+def limit_microdomains_to_roi(microdomains, astrocyte_soma_pos, region_mask):
+    """
+    The input microdomains have been creating in the region of interest bounding box.
+    This function creates a new Microdomain if its points need to be transformed
+     (points that are located outside the region of interest (roi)
+     (using the region atlas) inside the roi, using the astrocyte soma position
+     and the the distance from the soma center to the closest domain point),
+     otherwise it yield the original
+
+    Args:
+        microdomains: Microdomains
+        astrocyte_soma_pos: numpy array of shape (N, 3) that represents the astrocytes positions.
+        region_mask: region of interest.
+
+    Yields:
+        a Microdomain.
+
+    """
+    for microdomain, soma_pos in zip(microdomains, astrocyte_soma_pos):
+
+        # small trick to ensure that the points on the walls will not be considered as outside
+        new_points = np.clip(microdomain.points, a_min=None, a_max=region_mask.bbox[1] - 1e-5)
+        vectors = new_points - soma_pos
+
+        radius = np.linalg.norm(vectors, axis=1).min()
+
+        # Create a mask of the points that lie in out of region voxels
+        is_out_of_bounds = region_mask.lookup(new_points, outer_value=0) == 0
+
+        if is_out_of_bounds.any():
+
+            new_points[is_out_of_bounds] = _create_points_on_sphere(
+                soma_pos, vectors[is_out_of_bounds], radius
+            )
+
+            yield Microdomain(
+                points=new_points,
+                triangle_data=microdomain.triangle_data,
+                neighbors=microdomain.neighbor_ids,
+            )
+        else:
+            yield microdomain
+
+
+def _create_points_on_sphere(origin, vectors, radius):
+    directions = normalize_vectors(vectors)
+    return origin + directions * radius

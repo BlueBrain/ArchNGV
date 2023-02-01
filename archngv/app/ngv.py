@@ -170,6 +170,8 @@ def build_microdomains(config, astrocytes, atlas, atlas_cache, seed, output_file
     from archngv.building.exporters import export_microdomains
     from archngv.building.microdomains import (
         generate_microdomain_tessellation,
+        limit_microdomains_to_roi,
+        scale_microdomains,
         scaling_factor_from_overlap,
     )
     from archngv.spatial import BoundingBox
@@ -177,22 +179,33 @@ def build_microdomains(config, astrocytes, atlas, atlas_cache, seed, output_file
     LOGGER.info("Seed: %d", seed)
     numpy.random.seed(seed)
 
-    config = load_ngv_manifest(config)["microdomains"]
+    microdomains_config = load_ngv_manifest(config)["microdomains"]
 
     atlas = Atlas.open(atlas, cache_dir=atlas_cache)
-    bbox_ranges = atlas.load_data("brain_regions").bbox
 
+    ngv_common_config = load_ngv_manifest(config)["common"]
+    if "region" in ngv_common_config:
+        region = ngv_common_config["region"]
+        region_mask = atlas.get_region_mask(region, with_descendants=True)
+        LOGGER.info("Build microdomains for the %s region ", region)
+    else:
+        region_mask = atlas.load_data("brain_regions")
+        LOGGER.info("Build microdomains for the entire atlas.")
+
+    bbox = BoundingBox.from_voxel_data(
+        region_mask.shape, region_mask.voxel_dimensions, region_mask.offset
+    )
     astrocytes = voxcell.CellCollection.load_sonata(astrocytes)
 
     LOGGER.info("Generating microdomains...")
     microdomains = generate_microdomain_tessellation(
         generator_points=astrocytes.positions,
         generator_radii=astrocytes.properties["radius"].to_numpy(),
-        bounding_box=BoundingBox(bbox_ranges[0], bbox_ranges[1]),
+        bounding_box=bbox,
     )
 
     LOGGER.info("Generating overlapping microdomains...")
-    overlap_distr = config["overlap_distribution"]["values"]
+    overlap_distr = microdomains_config["overlap_distribution"]["values"]
     overlap_distribution = stats.norm(loc=overlap_distr[0], scale=overlap_distr[1])
 
     scaling_factors = numpy.fromiter(
@@ -204,12 +217,19 @@ def build_microdomains(config, astrocytes, atlas, atlas_cache, seed, output_file
         count=len(astrocytes),
     )
 
-    overlapping_microdomains = (
-        dom.scale(factor) for dom, factor in zip(microdomains, scaling_factors)
+    LOGGER.info("Make microdomains overlap.")
+    overlapping_microdomains = scale_microdomains(microdomains, scaling_factors, bbox)
+
+    # The microdomains have been creating in the full Region of interest bounding box.
+    # We will now move the microdomains points that are located outside the region of
+    # interest (roi) (using the region atlas) inside the roi.
+    LOGGER.info("Move some microdomains points inside the region of interest...")
+    corrected_microdomains = limit_microdomains_to_roi(
+        overlapping_microdomains, astrocytes.positions, region_mask
     )
 
     LOGGER.info("Export overlapping microdomains...")
-    export_microdomains(output_file_path, overlapping_microdomains, scaling_factors)
+    export_microdomains(output_file_path, corrected_microdomains, scaling_factors)
 
     LOGGER.info("Done!")
 
