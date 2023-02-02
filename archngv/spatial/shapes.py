@@ -20,7 +20,6 @@ class Sphere:
     __slots__ = ["center", "radius"]
 
     def __init__(self, center, radius):
-
         self.center = center
         self.radius = radius
 
@@ -153,7 +152,6 @@ class TaperedCapsule:
     __slots__ = ["cap1_center", "cap2_center", "cap1_radius", "cap2_radius"]
 
     def __init__(self, cap1_center, cap2_center, cap1_radius, cap2_radius):
-
         self.cap1_center = cap1_center
         self.cap2_center = cap2_center
         self.cap1_radius = cap1_radius
@@ -182,7 +180,6 @@ class Cylinder:
     __slots__ = ["cap1_center", "cap2_center", "radius"]
 
     def __init__(self, cap1_center, cap2_center, radius):
-
         self.cap1_center = cap1_center
         self.cap2_center = cap2_center
         self.radius = radius

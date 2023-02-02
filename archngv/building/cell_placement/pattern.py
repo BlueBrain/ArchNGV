@@ -26,7 +26,6 @@ class SpatialSpherePattern:
     """
 
     def __init__(self, max_spheres):
-
         self._coordinates = numpy.zeros((max_spheres, 3), dtype=numpy.float64)
         self._radii = numpy.zeros(max_spheres, dtype=numpy.float64)
 

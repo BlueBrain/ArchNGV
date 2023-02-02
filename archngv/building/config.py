@@ -78,13 +78,11 @@ def _find_neuron_config(circuit_path, neuron_config_filename):
     type of config it is (BlueConfig, Sonata config etc.).
     """
     if neuron_config_filename is not None:
-
         config_filepath = Path(circuit_path, neuron_config_filename)
         if not config_filepath.exists():
             raise NGVError(f"Neuron circuit config {config_filepath.resolve()} does not exist")
 
     else:
-
         default_names = ["CircuitConfig", "BlueConfig", "circuit_config.json"]
         for default_name in default_names:
             config_filepath = Path(circuit_path) / default_name

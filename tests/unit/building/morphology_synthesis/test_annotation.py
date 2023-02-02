@@ -19,7 +19,6 @@ class MockCell:
 
 @pytest.fixture
 def cell():
-
     sections = [
         MockSection(
             np.array(
@@ -41,7 +40,6 @@ def cell():
 
 
 def test_morphology_unwrapped(cell):
-
     df = tested._morphology_unwrapped(cell)
 
     npt.assert_allclose(df.x, [0.0, 0.0, 0.0, 1.1, 1.3, 1.45])

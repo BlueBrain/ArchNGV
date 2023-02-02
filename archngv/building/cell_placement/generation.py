@@ -55,7 +55,6 @@ class PlacementGenerator:
         index_list,
         soma_radius_distribution,
     ):
-
         self.vdata = voxel_data
         self.index_list = index_list
         self.parameters = parameters
@@ -107,7 +106,6 @@ class PlacementGenerator:
         voxel_edge_length = self.vdata.voxelized_intensity.voxel_dimensions[0]
 
         while 1:
-
             new_position = proposal(voxel_centers, voxel_edge_length)
             new_radius = self.soma_proposal()
 
@@ -142,7 +140,6 @@ class PlacementGenerator:
         # metropolis hastings procedure for minimization of the
         # repulsion energy
         for _ in range(self.parameters.number_of_trials):
-
             trial_position, trial_radius = self.first_order(voxel_centers)
 
             pairwise_distance = self.pattern.distance_to_nearest_neighbor(trial_position)
@@ -155,13 +152,11 @@ class PlacementGenerator:
             logprob = self.parameters.beta * (current_energy - trial_energy)
 
             if np.log(np.random.random()) < min(0, logprob):
-
                 current_position = trial_position
                 current_radius = trial_radius
                 current_energy = trial_energy
 
             if current_energy < best_energy:
-
                 best_position = current_position
                 best_radius = current_radius
                 best_energy = current_energy
@@ -174,7 +169,6 @@ class PlacementGenerator:
 
         for group_total_counts, voxel_centers in groups_generator:
             for _ in range(group_total_counts):
-
                 if len(self.pattern) == self._total_spheres:
                     break
 

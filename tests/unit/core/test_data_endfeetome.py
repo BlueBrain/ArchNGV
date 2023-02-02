@@ -82,7 +82,6 @@ def endfeet_data(
 
 @pytest.fixture(scope="module")
 def endfeet_surface_meshes(tmpdir_factory, endfeet_data):
-
     path = os.path.join(tmpdir_factory.getbasetemp(), "enfeet_areas.h5")
 
     # write it to file
@@ -104,7 +103,6 @@ def test__getitem__(
     areas_per_entry,
     thicknesses_per_entry,
 ):
-
     assert not isinstance(endfeet_surface_meshes[0], list)
 
     all_indices = set(indices_per_entry)
@@ -112,12 +110,10 @@ def test__getitem__(
 
     n = 0
     for endfoot_id in range(N_ENDFEET):
-
         endfoot = endfeet_surface_meshes[endfoot_id]
         assert endfoot.index == endfoot_id
 
         if endfoot_id in all_indices:
-
             i = sorted_idx[n]
 
             assert np.allclose(endfoot.points, points_per_entry[i])
@@ -128,7 +124,6 @@ def test__getitem__(
             n += 1
 
         else:
-
             assert endfoot.points.size == 0
             assert endfoot.triangles.size == 0
             assert np.isclose(endfoot.thickness, 0.0)
@@ -138,9 +133,7 @@ def test__getitem__(
 def test_endfeet_mesh_points_triangles(
     endfeet_surface_meshes, indices_per_entry, points_per_entry, triangles_per_entry
 ):
-
     for i, endfoot_id in enumerate(indices_per_entry):
-
         npt.assert_allclose(endfeet_surface_meshes.mesh_points(endfoot_id), points_per_entry[i])
         npt.assert_allclose(
             endfeet_surface_meshes.mesh_triangles(endfoot_id), triangles_per_entry[i]
@@ -154,7 +147,6 @@ def test_bulk_attributes(
     areas_per_entry,
     thicknesses_per_entry,
 ):
-
     ids = indices_per_entry
 
     surface_areas = [endfeet_surface_meshes.get("surface_area", index) for index in ids]

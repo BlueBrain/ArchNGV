@@ -59,7 +59,6 @@ def assert_astrocyte_population_integrity(circuit: api.NGVCircuit):
 
     n_astrocytes = obj.size
     for astrocyte_id in (0, n_astrocytes // 2, n_astrocytes - 1):
-
         domain = obj.microdomains[astrocyte_id]
 
         assert len(domain.points) > 0
@@ -131,14 +130,12 @@ def assert_neuroglial_connectome_integrity(circuit: api.NGVCircuit):
 
     n_astrocytes = obj.astrocytes.size
     for astro_id in (0, n_astrocytes // 2, n_astrocytes - 1):
-
         obj.astrocyte_synapses(astro_id)
         obj.astrocyte_synapses_properties(astro_id)
         obj.connected_neurons(astro_id)
 
     n_neurons = obj.neurons.size
     for neuron_id in (0, n_neurons // 2, n_neurons - 1):
-
         obj.connected_astrocytes(neuron_id)
 
 
@@ -156,14 +153,12 @@ def assert_gliovascular_connectome_integrity(circuit: api.NGVCircuit):
 
     n_astrocytes = obj.astrocytes.size
     for astrocyte_id in (0, n_astrocytes // 2, n_astrocytes - 1):
-
         obj.astrocyte_endfeet(astrocyte_id)
         obj.connected_vasculature(astrocyte_id)
 
     n_vasculature_segments = obj.vasculature.size
 
     for vasculature_segment_id in (0, n_vasculature_segments // 2, n_vasculature_segments - 1):
-
         obj.connected_astrocytes(vasculature_segment_id)
         obj.vasculature_endfeet(vasculature_segment_id)
 
@@ -171,7 +166,6 @@ def assert_gliovascular_connectome_integrity(circuit: api.NGVCircuit):
 
     n_endfeet = obj.size
     for endfoot_id in (0, n_endfeet // 2, n_endfeet - 1):
-
         obj.vasculature_surface_targets(endfoot_id)
         obj.vasculature_sections_segments(endfoot_id)
 
@@ -190,7 +184,6 @@ def assert_glialglial_connectome_integrity(circuit: api.NGVCircuit):
     n_astrocytes = obj.target.size
 
     for astrocyte_id in (0, n_astrocytes // 2, n_astrocytes - 1):
-
         obj.astrocyte_gap_junctions(astrocyte_id)
         obj.astrocyte_astrocytes(astrocyte_id)
 
@@ -234,7 +227,6 @@ def assert_astrocyte_data_integrity(circuit: api.NGVCircuit):
         grown.
         """
         for astrocyte_id in range(astrocytes.size):
-
             endfeet_ids = gv_conn.astrocyte_endfeet(astrocyte_id)
 
             if len(endfeet_ids) == 0:
@@ -264,7 +256,6 @@ def assert_astrocyte_data_integrity(circuit: api.NGVCircuit):
     morphology_points = astrocyte_position + morph.points
 
     for endfoot_id in endfeet_ids:
-
         # In synthesis the surface_point is used as a target to grow the perivascular tree
         # towards that direction. The last point of that tree is always the target point.
 
@@ -303,7 +294,6 @@ def assert_astrocyte_data_integrity(circuit: api.NGVCircuit):
     ).to_numpy()
 
     for i, (section_id, segment_id, offset) in enumerate(df_annotations.itertuples(index=False)):
-
         section = morph.section(section_id)
         seg_beg, seg_end = section.points[[segment_id, segment_id + 1]]
 

@@ -21,7 +21,6 @@ class UniformGrid:
     """Uniform grid data structure"""
 
     def __init__(self, x_range, y_range, z_range, cell_size):
-
         self.cell_size = cell_size
         self.inv_cell_size = 1.0 / self.cell_size
 
@@ -73,7 +72,6 @@ class LaminarCounterGrid(UniformGrid):
 
         current_n = 0
         for rho_y in laminar_densities:
-
             # indices in i and k are stored closer than j
             # a slab will map to a contiguous sx * sz number
             # of elements in N_cells
@@ -99,7 +97,6 @@ class LaminarCounterGrid(UniformGrid):
         current_n = 0
 
         while current_n < self.s_x * self.s_y * self.s_z:
-
             next_n = int(current_n + self.s_x * self.s_z)
 
             yield self.index[current_n:next_n]

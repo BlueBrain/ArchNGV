@@ -97,7 +97,6 @@ def create_endfeet_compartment_data(vasculature_segments, targets, area_meshes):
     perimeters = np.zeros(len(targets), dtype=np.float32)
 
     for i, (segment, target, mesh) in enumerate(zip(vasculature_segments, targets, area_meshes)):
-
         if len(mesh.triangles) == 0:
             L.info("Endfoot %d has no triangles. Mesh has not been grown.", mesh.index)
             continue

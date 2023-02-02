@@ -29,7 +29,6 @@ from archngv.utils.ngons import polygons_to_triangles
     ],
 )
 def test_generate_microdomain_tessellation(points, radii, bbox):
-
     domain1, domain2 = tested.generate_microdomain_tessellation(points, radii, bbox)
 
     npt.assert_allclose(domain1.centroid, points[0])
@@ -68,7 +67,6 @@ def test_generate_microdomain_tessellation(points, radii, bbox):
 
 
 def test_microdomain_from_tess_cell():
-
     tess_domain = mock.Mock()
 
     points = [(0.1, 0.2, 0.3), (0.0, 4.0, 5.0), (0.0, -1.0, 2.0), (3.0, 4.0, -1.0)]
@@ -94,7 +92,6 @@ def test_microdomain_from_tess_cell():
 
 
 def test_scaling_factor_from_overlap():
-
     npt.assert_almost_equal(
         tested.scaling_factor_from_overlap(0.0),
         1.0,

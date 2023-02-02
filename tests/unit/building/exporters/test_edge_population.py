@@ -15,9 +15,7 @@ DATA = Path(__file__).resolve().parent / "data"
 
 @pytest.fixture(scope="function")
 def edge_population_file():
-
     with tempfile.NamedTemporaryFile(suffix=".h5") as tfile:
-
         shutil.copy(str(DATA / "gliovascular.h5"), tfile.name)
         yield tfile.name
 
@@ -29,7 +27,6 @@ def properties(edge_population_file):
 
 
 def test_add_properties_to_edge_population(edge_population_file, properties):
-
     new_properties = {"john": np.arange(23), "paul": np.arange(1, 24)}
 
     tested.add_properties_to_edge_population(edge_population_file, "gliovascular", new_properties)
@@ -47,7 +44,6 @@ def test_add_properties_to_edge_population(edge_population_file, properties):
 
 
 def test_add_properties_to_edge_population__assertions(edge_population_file, properties):
-
     new_properties = {"john": np.arange(23), "paul": np.arange(5)}
 
     # wrong length

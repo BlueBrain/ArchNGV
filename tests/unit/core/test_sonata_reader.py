@@ -34,7 +34,6 @@ class TestNodesReader:
         }
 
     def test_get_properties(self):
-
         npt.assert_equal(self.nodes.get_properties("layer"), [[1], [2], [3]])
         npt.assert_equal(self.nodes.get_properties(["layer"]), [[1], [2], [3]])
         npt.assert_equal(self.nodes.get_properties("layer", ids=0), [[1]])

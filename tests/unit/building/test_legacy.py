@@ -13,7 +13,6 @@ DATA_DIR = Path(__file__).parent.resolve() / "data"
 
 
 def test_merge_configuration_files():
-
     expected_manifest = {
         "common": {
             "log_level": "WARNING",
@@ -62,7 +61,6 @@ def test_merge_configuration_files():
     }
 
     with tempfile.NamedTemporaryFile(suffix=".yaml") as tfile:
-
         out_merged_filepath = tfile.name
 
         tested.merge_configuration_files(
@@ -75,11 +73,9 @@ def test_merge_configuration_files():
 
 
 def test_convert_microdomains_to_generic_format():
-
     old_file_path = DATA_DIR / "legacy/convert_microdomains_to_generic_format/microdomains.h5"
 
     with tempfile.NamedTemporaryFile(suffix=".h5") as tfile:
-
         new_file_path = tfile.name
         tested.convert_microdomains_to_generic_format(
             old_file_path=old_file_path, new_file_path=new_file_path
@@ -87,7 +83,6 @@ def test_convert_microdomains_to_generic_format():
 
         with h5py.File(old_file_path, "r") as old_file:
             with h5py.File(new_file_path, "r") as new_file:
-
                 npt.assert_allclose(old_file["data"]["points"][:], new_file["data"]["points"][:])
                 npt.assert_allclose(
                     old_file["data"]["triangle_data"][:], new_file["data"]["triangle_data"][:]
@@ -110,7 +105,6 @@ def test_convert_microdomains_to_generic_format():
 
 def test_merge_microdomains():
     def get_slice(h5_domains, dataset_name, i):
-
         data = h5_domains["data"][dataset_name]
         offs = h5_domains["offsets"][dataset_name]
 
@@ -122,7 +116,6 @@ def test_merge_microdomains():
     path2 = microdomains_dir / "overlapping_microdomains.h5"
 
     with tempfile.NamedTemporaryFile(suffix=".h5") as tfile:
-
         output_path = tfile.name
 
         tested.merge_microdomain_files(microdomains_dir, output_path)
@@ -130,11 +123,9 @@ def test_merge_microdomains():
         with h5py.File(output_path, "r") as merged_domains:
             with h5py.File(path1, "r") as r_domains:
                 with h5py.File(path2, "r") as o_domains:
-
                     scaling_factors = merged_domains["data"]["scaling_factors"][:]
 
                     for i, scaling_factor in enumerate(scaling_factors):
-
                         r_points = get_slice(r_domains, "points", i)
                         o_points = get_slice(o_domains, "points", i)
 
@@ -162,24 +153,20 @@ def test_merge_microdomains():
 
 
 def test_convert_endfeet_to_generic_format():
-
     endfeet_dir = DATA_DIR / "legacy/convert_endfeet_to_generic_format"
 
     old_file_path = endfeet_dir / "endfeet_areas.h5"
 
     with tempfile.NamedTemporaryFile(suffix=".h5") as tfile:
-
         output_path = tfile.name
 
         tested.convert_endfeet_to_generic_format(old_file_path, output_path)
 
         with h5py.File(old_file_path, "r") as old_format:
             with h5py.File(output_path, "r") as new_format:
-
                 n_endfeet = len(old_format["attributes"]["surface_area"])
 
                 for name in ("surface_area", "surface_thickness", "unreduced_surface_area"):
-
                     old_dset = old_format["attributes"][name]
                     new_dset = new_format["data"][name]
 
@@ -193,11 +180,9 @@ def test_convert_endfeet_to_generic_format():
                     ), f"Found offsets for linear property '{name}'"
 
                 for index in range(n_endfeet):
-
                     g = old_format["objects"][f"endfoot_{index}"]
 
                     for name in ("points", "triangles"):
-
                         data = new_format["data"][name]
                         offsets = new_format["offsets"][name]
 
@@ -205,7 +190,6 @@ def test_convert_endfeet_to_generic_format():
 
 
 def test_add_astrocyte_segment_center_property():
-
     data_dir = DATA_DIR / "legacy/add_astrocyte_segment_center_property"
 
     astrocytes_file_path = data_dir / "glia.h5"
@@ -215,7 +199,6 @@ def test_add_astrocyte_segment_center_property():
     expected_astrocyte_centers = np.load(data_dir / "expected_astrocyte_centers.npy")
 
     with tempfile.NamedTemporaryFile(suffix=".h5") as tfile:
-
         output_path = tfile.name
 
         tested.add_astrocyte_segment_center_property(

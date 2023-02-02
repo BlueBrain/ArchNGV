@@ -7,7 +7,6 @@ from archngv.spatial import BoundingBox
 
 @pytest.fixture
 def bbox1():
-
     min_point = np.array([1.0, 2.0, 3.0])
     max_point = np.array([5.0, 6.0, 7.0])
 
@@ -16,7 +15,6 @@ def bbox1():
 
 @pytest.fixture
 def bbox2():
-
     min_point = np.array([0.0, 1.0, 2.0])
     max_point = np.array([4.0, 5.0, 6.0])
 
@@ -24,7 +22,6 @@ def bbox2():
 
 
 def test_from_points_constructor():
-
     points = np.array([[0.0, 1.0, 2.0], [3.0, 9.0, 5.0], [6.0, 7.0, 8.0]])
 
     bbox = BoundingBox.from_points(points)
@@ -34,7 +31,6 @@ def test_from_points_constructor():
 
 
 def test_from_spheres_constructor():
-
     points = np.array([[0.0, 1.0, 2.0], [3.0, 9.0, 5.0], [6.0, 7.0, 8.0]])
 
     radii = np.array([1.0, 2.0, 3.0])
@@ -78,13 +74,11 @@ def test__init__(bbox1):
 
 
 def test__eq__(bbox1, bbox2):
-
     assert bbox1 == bbox1
     assert not bbox1 == bbox2
 
 
 def test__add__(bbox1, bbox2):
-
     bbox3 = bbox1 + bbox2
     expected_bbox = BoundingBox(np.array([0.0, 1.0, 2.0]), np.array([5.0, 6.0, 7.0]))
     assert bbox3 == expected_bbox
@@ -170,7 +164,6 @@ def test_points_inside__inside(bbox1):
 
 
 def test_points_inside__outside(bbox1):
-
     points = np.array([[0.8, 2.1, 3.1], [2.0, 4.3, 5.5], [4.9, 5.9, 6.9]])
 
     expected = [False, True, False]
@@ -178,13 +171,11 @@ def test_points_inside__outside(bbox1):
 
 
 def test_points_inside__border(bbox1):
-
     points = np.array([[1.0, 2.0, 3.0], [5.0, 6.0, 7.0]])
     assert np.all(bbox1.points_inside(points))
 
 
 def test_spheres_inside__inside(bbox1):
-
     points = np.array([[1.1, 2.1, 3.1], [2.0, 4.3, 5.5], [4.9, 5.9, 6.9]])
 
     radii = np.array([0.01, 0.01, 0.01])
@@ -193,7 +184,6 @@ def test_spheres_inside__inside(bbox1):
 
 
 def test_spheres_inside__border(bbox1):
-
     points = np.array([[1.1, 2.1, 3.1], [2.0, 4.3, 5.5], [4.9, 5.9, 6.9]])
 
     radii = np.array([1.0, 1.0, 1.0])
@@ -203,7 +193,6 @@ def test_spheres_inside__border(bbox1):
 
 
 def test_spheres_inside__outside(bbox1):
-
     points = np.array([[100.1, 2.1, 3.1], [200.0, 4.3, 5.5], [400.9, 5.9, 6.9]])
 
     radii = np.array([4.0, 2.0, 3.0])

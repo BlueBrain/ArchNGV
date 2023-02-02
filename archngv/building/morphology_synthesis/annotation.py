@@ -55,7 +55,6 @@ def _morphology_unwrapped(morphology):
     data = []
 
     for section in morphology.iter():
-
         ps = section.points
         p0s, p1s = ps[:-1], ps[1:]
         midpoints = 0.5 * (p0s + p1s)

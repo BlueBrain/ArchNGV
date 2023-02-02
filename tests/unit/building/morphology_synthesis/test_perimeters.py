@@ -30,7 +30,6 @@ def lrn_model(statistical_model_parameters):
 
 
 def test_linear_regression_noise_model(statistical_model_parameters, lrn_model):
-
     standard_deviation = statistical_model_parameters["standard_deviation"]
 
     xs = np.arange(100)
@@ -158,7 +157,6 @@ def test_perimeters_upstream(morphology):
 
 
 def test_longest_downstream_leaf(morphology):
-
     sections = morphology.sections
     expected_leaves = [5, 5, 3, 3, 4, 5, 6]
     for section_id, expected_leaf in enumerate(expected_leaves):
@@ -167,7 +165,6 @@ def test_longest_downstream_leaf(morphology):
 
 
 def test_longest_downstream_path(morphology):
-
     sections = morphology.sections
 
     expected_downstreams = [[1, 5], [5], [3], [], [], [], []]
@@ -197,7 +194,6 @@ def test_perimeters_downstream(morphology):
 
 
 def test_array_from_generator():
-
     value_generator = iter(range(100))
     array_size = 7
 
@@ -305,14 +301,12 @@ def test_expand_end(morphology):
 
 
 def _predict_perimeters(morphology, lrn_model):
-
     sections = morphology.sections
 
     # set noise to zero
     lrn_model._norm = lambda value: 0.0
 
     for i in range(7):
-
         section = sections[i]
         perimeters = _p._predict_perimeters(section, lrn_model)
         expected_perimeters = section.diameters * lrn_model.slope + lrn_model.intercept
@@ -320,7 +314,6 @@ def _predict_perimeters(morphology, lrn_model):
 
 
 def _smooth_perimeters(morphology, lrn_model):
-
     sections = morphology.sections
 
     # this window should not change the values
@@ -359,7 +352,6 @@ def _smooth_perimeters(morphology, lrn_model):
 
 
 def test_smooth_morphology_perimeters(morphology):
-
     smoothing_window = np.array([0.0, 2.0, 0.0])
 
     perimeters_list = [s.perimeters for s in morphology.iter()]
@@ -373,7 +365,6 @@ def test_smooth_morphology_perimeters(morphology):
 
 
 def test_add_perimeters_to_morphology(morphology, parameters):
-
     parameters["statistical_model"]["standard_deviation"] = 0.0
     parameters["smoothing"]["window"] = [0.0, 1.0, 0.0]
 

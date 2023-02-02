@@ -49,13 +49,11 @@ def parameters():
 
 
 def test_component(plane_mesh, endfeet_points, parameters):
-
     np.random.seed(0)
 
     data_generator = endfeet_area_generation(plane_mesh, parameters, endfeet_points)
 
     with tempfile.NamedTemporaryFile(suffix=".h5") as fd:
-
         filepath = fd.name
         export_endfeet_meshes(filepath, data_generator, len(endfeet_points))
 

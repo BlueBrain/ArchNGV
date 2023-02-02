@@ -153,7 +153,6 @@ def _create_target_point_cloud(microdomain, synapse_points, target_n_synapses, r
     total_synapses = n_synapses
 
     for _ in range(100):
-
         points = rng.uniform(
             low=(xmin, ymin, zmin), high=(xmax, ymax, zmax), size=(target_n_synapses, 3)
         )
@@ -216,7 +215,6 @@ def _obtain_point_cloud(
         np.ndarray: Array of 3D points
     """
     with Microdomains(microdomains_filepath) as microdomains:
-
         # scale the domain to avoid boundary effects from the point distribution
         # which influences the growing
         microdomain = _scale_domain(microdomains[astrocyte_index], 1.5)

@@ -112,7 +112,6 @@ class Objective:
     """
 
     def __init__(self, center, points, fixed_points=None):
-
         vectors = points - center
         lengths = np.linalg.norm(vectors, axis=1)
         self.angles = quadratic_angles(vectors, vectors)
@@ -173,7 +172,6 @@ def choose_ids(total_number, points, objective):
     selected = []
 
     for _ in range(total_number):
-
         best_index = next(iter(available_ids))
         best_cost = objective(best_index, selected)
         for index in available_ids:

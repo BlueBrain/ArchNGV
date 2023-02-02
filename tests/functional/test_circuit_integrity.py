@@ -13,7 +13,6 @@ from archngv.core.datasets import EndfootSurfaceMeshes, Microdomains
 
 
 def test_circuit():
-
     circuit = NGVCircuit("build/ngv_config.json")
 
     # if a file is missing this will raise
@@ -24,7 +23,6 @@ def test_circuit():
 
 
 def test_neuroglial_connectome__property_dtypes():
-
     circuit = NGVCircuit("build/ngv_config.json")
 
     ng_conn = circuit.neuroglial_connectome
@@ -49,7 +47,6 @@ def test_neuroglial_connectome__property_dtypes():
     )
 
     for property_name, expected_dtype in prop_dtypes.items():
-
         arr = ng_conn.get([0, 1], property_name)
         npt.assert_equal(arr.dtype, expected_dtype)
 
@@ -83,7 +80,6 @@ def test_neuroglial_connectome__annotation_equivalency():
         segment_offset,
         expected_section_pos,
     ) in data.itertuples():
-
         points = astro_morphs[astrocyte_id].sections[section_id].points
         segment_lengths = np.linalg.norm(points[1:] - points[:-1], axis=1)
 
@@ -101,7 +97,6 @@ def test_neuroglial_connectome__annotation_equivalency():
 
 
 def test_gliovascular_connectome__property_dtypes():
-
     circuit = NGVCircuit("build/ngv_config.json")
 
     gv_conn = circuit.gliovascular_connectome
@@ -161,12 +156,10 @@ def test_vasculature_representations_consistency():
     sonata_edges = sonata_vasculature.edges
 
     for aid in range(astrocytes.size):
-
         endfeet_ids = gv_connectivity.astrocyte_endfeet(aid)
         data = gv_connectivity.vasculature_sections_segments(endfeet_ids).to_numpy(dtype=np.int64)
 
         for edge_id, sec_id, seg_id in data:
-
             sonata_segment = sonata_points[sonata_edges[edge_id]]
             morphio_segment = morphio_sections[sec_id].points[seg_id : seg_id + 2]
 

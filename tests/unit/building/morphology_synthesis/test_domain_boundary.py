@@ -75,7 +75,6 @@ def domain_boundary(convex_polygon):
 
 
 def test_constructor(domain_boundary, convex_polygon):
-
     assert np.allclose(domain_boundary.face_points, convex_polygon.face_points)
     assert np.allclose(domain_boundary.face_normals, convex_polygon.face_normals)
     assert np.isclose(domain_boundary.hazard_rate, HAZARD_RATE)

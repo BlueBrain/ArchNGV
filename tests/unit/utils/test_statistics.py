@@ -4,7 +4,6 @@ from archngv.utils.statistics import truncated_normal
 
 
 def test_truncated_normal():
-
     mean_value = 3.1
     sdev_value = 0.001
     min_value = -1000.0

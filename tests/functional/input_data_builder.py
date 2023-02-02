@@ -88,7 +88,6 @@ def _sample_elimination(points, rmax, fraction):
     """
 
     def _weights_and_neighbors(points, rmax):
-
         # returns a sparse csr_matrix
         graph = sklearn.neighbors.radius_neighbors_graph(
             points, 2.0 * rmax, mode="distance", include_self=False
@@ -117,7 +116,6 @@ def _sample_elimination(points, rmax, fraction):
         heap.push(i, weight)
 
     for _ in range(int((1.0 - fraction) * len(points))):
-
         pid, _ = heap.pop()
 
         # neighbors and their respective weights
@@ -154,7 +152,6 @@ class Grid:
         return cls(shape.astype(np.int32), offset, voxel_side)
 
     def __init__(self, shape, offset, voxel_side):
-
         self.shape = shape
         self.offset = offset
         self.voxel_side = voxel_side
@@ -340,7 +337,6 @@ class GridBinnedDensity:
             self._grid.n_bin_edges(axis=1) == self.density_bins.size
             and np.allclose(self._grid.bins(axis=1), self.density_bins)
         ):
-
             L.info("Density bins are not aligned. Aligning to grid bins...")
             self.align_bins()
             self.match_grid_binning()
@@ -409,7 +405,6 @@ class GridVasculature:
         offset = len(vertices)
 
         for i, root in enumerate(roots):
-
             r_vertices = root + basis
             n_vertices = len(r_vertices)
 
@@ -511,7 +506,6 @@ class GridVasculatureMesh:
     """
 
     def __init__(self, grid, samples_per_segment=1000):
-
         self._grid = grid
 
         self._n_samples = samples_per_segment
@@ -675,11 +669,9 @@ class GridVasculatureMesh:
 
         t = 0
         for v1, v2 in tqdm(vasculature.edges):
-
             r1, r2 = 0.5 * v_diameters[v1], 0.5 * v_diameters[v2]
 
             if r1 > r2:
-
                 # swap points and radii
                 v1, v2 = v2, v1
                 r1, r2 = r2, r1
@@ -752,7 +744,6 @@ class GridNeuronalCircuit:
     """
 
     def __init__(self, grid, n_neurons, n_synapses):
-
         self.grid = grid
 
         self._n_neurons = n_neurons
@@ -859,7 +850,6 @@ class GridBrainRegions:
         return GridLayers(self.grid).build()
 
     def build(self):
-
         layers = self.build_layers()
 
         x_length, y_length, z_length = self.grid.extents
@@ -982,7 +972,6 @@ def run(out_dir):
 
 
 if __name__ == "__main__":
-
     import sys
 
     np.random.seed(0)

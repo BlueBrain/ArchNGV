@@ -4,7 +4,6 @@ from archngv.utils import linear_algebra as _la
 
 
 def test_skew_symmetric_matrix():
-
     v = np.array((1.0, 2.0, 3.0))
 
     A = _la.skew_symmetric_matrix(v)
@@ -15,7 +14,6 @@ def test_skew_symmetric_matrix():
 
 
 def test_angle_between_vectors():
-
     u = np.array((2.0, 1.0, 3.0))
     v = np.array((-1.0, 5.0, 4.0))
 
@@ -25,7 +23,6 @@ def test_angle_between_vectors():
 
 
 def test_normalize_vectors():
-
     vec = np.random.rand(4, 3)
 
     expected_result = vec / np.linalg.norm(vec, axis=1)[:, np.newaxis]
@@ -36,7 +33,6 @@ def test_normalize_vectors():
 
 
 def test_vectorized_dot_product():
-
     vec1 = np.random.rand(3)
     vecs = np.random.rand(4, 3)
 
@@ -48,7 +44,6 @@ def test_vectorized_dot_product():
 
 
 def test_rowwise_dot():
-
     vecs1 = np.random.rand(5, 4)
     vecs2 = np.random.rand(5, 4)
 
@@ -62,7 +57,6 @@ def test_rowwise_dot():
 
 
 def test_are_in_the_same_side():
-
     vecs1 = np.array([[1.0, 2.0, 1.0], [-1.0, -1.0, -1.0], [1.0, 1.0, 1.0]])
 
     vecs2 = np.array([[0.0, 1.0, 1.0], [1.0, 2.0, 1.0], [1.0, 1.0, 1.0]])
@@ -75,7 +69,6 @@ def test_are_in_the_same_side():
 
 
 def test_angle_matrix():
-
     a = np.array([[0.1, 0.2, 0.3], [-2.0, 0.3, -22.0], [5.0, 6.0, 11.0]])
 
     b = np.array([[2.0, 1.0, -1.0], [-23.0, 1.3, -12.0]])
@@ -97,7 +90,6 @@ def test_angle_matrix():
 
 
 def test_are_in_the_same_side():
-
     vecs1 = np.array([[1.0, 2.0, 1.0], [-1.0, -1.0, -1.0], [1.0, 1.0, 1.0]])
 
     vecs2 = np.array([[0.0, 1.0, 1.0], [1.0, 2.0, 1.0], [1.0, 1.0, 1.0]])

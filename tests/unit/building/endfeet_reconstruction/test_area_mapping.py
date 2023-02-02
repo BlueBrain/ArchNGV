@@ -28,7 +28,6 @@ def endfeet_surface_meshes():
 
 @pytest.fixture
 def target_distribution():
-
     mean = 191.55714285714288
     sdev = 160.55871962923592
     vmax = 442.1
@@ -37,7 +36,6 @@ def target_distribution():
 
 
 def test_sorted_nonzero_areas(endfeet_surface_meshes):
-
     ids, areas = _a._sorted_nonzero_areas(endfeet_surface_meshes)
 
     expected_ids = [0, 6, 5, 10, 4, 1, 2, 9, 7, 8]
@@ -47,7 +45,6 @@ def test_sorted_nonzero_areas(endfeet_surface_meshes):
 
 
 def test_map_to_target_distribution(endfeet_surface_meshes, target_distribution):
-
     res = _a.transform_to_target_distribution(endfeet_surface_meshes, target_distribution)
     expected_res = np.array(
         [

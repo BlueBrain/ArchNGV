@@ -31,7 +31,6 @@ def _vasculature_annotation_from_edges(vasculature, edge_indices):
 
 
 def _create_point_sampling_on_vasculature_skeleton(vasculature, graph_targeting_params):
-
     positions, edge_indices = create_targets(
         vasculature.points, vasculature.edges, graph_targeting_params
     )

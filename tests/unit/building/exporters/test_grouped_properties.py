@@ -49,11 +49,8 @@ def output_file(properties, tmpdir_factory):
 
 
 def test_grouped_properties__hdf5_file(properties, output_file):
-
     with h5py.File(output_file, mode="r") as fp:
-
         for property_name, dct in properties.items():
-
             npt.assert_allclose(
                 fp["data"][property_name][:],
                 properties[property_name]["values"],
@@ -69,11 +66,9 @@ def test_grouped_properties__hdf5_file(properties, output_file):
 
 
 def test_export_grouped_properties_api(properties, output_file):
-
     g = GroupedProperties(output_file)
 
     for property_name, dct in properties.items():
-
         expected_data, expected_offsets = dct["values"], dct["offsets"]
 
         assert g.get(property_name).dtype == expected_data.dtype
@@ -81,7 +76,6 @@ def test_export_grouped_properties_api(properties, output_file):
         n_groups = len(expected_data) if expected_offsets is None else len(expected_offsets) - 1
 
         for i in range(n_groups):
-
             values = g.get(property_name, i)
 
             expected_values = (

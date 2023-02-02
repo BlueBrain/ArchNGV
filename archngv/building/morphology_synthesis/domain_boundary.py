@@ -38,7 +38,6 @@ class StopAtConvexBoundary:
     """
 
     def __init__(self, points, triangles, triangle_normals, hazard_rate, rng):
-
         self.face_points = points[triangles[:, 0]]
         self.face_normals = triangle_normals
         self.hazard_rate = hazard_rate

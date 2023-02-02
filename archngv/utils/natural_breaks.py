@@ -47,7 +47,6 @@ def _fill_row_k(imin, imax, cluster, S, backtracking_matrix, sums, sums_of_squar
         jhigh = min(jhigh, backtracking_matrix[cluster][imax + 1])
 
     for j in range(jhigh, jlow - 1, -1):
-
         sji = _ssq(j, i, sums, sums_of_squares)
 
         if sji + S[cluster - 1, jlow - 1] >= S[cluster][i]:
@@ -157,7 +156,6 @@ def kmeans_1d(data, n_clusters):
     # starts at the bottom-right corner of the matrix (if the top-left is 0, 0),
     #  and moves the cluster target with the loop.
     for i, cluster in enumerate(range(n_clusters - 1, -1, -1)):
-
         # the backtrack matrix stores where the cluster should start and end.
         cluster_left = backtracking_matrix[cluster, cluster_right]
 

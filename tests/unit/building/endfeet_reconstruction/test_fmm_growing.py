@@ -10,7 +10,6 @@ DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 
 
 def test_closest_mesh_nodes():
-
     mesh_points = np.array([[0.0, 1.0, 3.0], [-1.0, 2.0, 1.0], [5.0, 10.0, 1.0], [1.0, 2.0, 3.0]])
 
     endfeet_points = np.array(
@@ -38,7 +37,6 @@ def _terminal_plot(mesh_coordinates, mesh_vertices):
 
 
 def test_closest_mesh_nodes__overlapping():
-
     """
     All points would overlap at A, but they are distributed so that their
     1-ring neighborhoods do not overlap. The connectivity of the test mesh
@@ -87,7 +85,6 @@ def test_closest_mesh_nodes__overlapping():
 
 
 def test_closest_mesh_nodes__overlapping_and_normal():
-
     plane = openmesh.read_trimesh(os.path.join(DATA_DIR, "plane_10x10.obj"))
     neighbors, nn_offsets, xyz = _fmm._mesh_to_flat_arrays(plane)
 
@@ -109,7 +106,6 @@ def test_closest_mesh_nodes__overlapping_and_normal():
 
 
 def test_mesh_to_flat_arrays():
-
     mesh = openmesh.read_trimesh(os.path.join(DATA_DIR, "cube-minimal.obj"))
 
     neighbors, offsets, xyz = _fmm._mesh_to_flat_arrays(mesh)

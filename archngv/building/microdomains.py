@@ -111,7 +111,6 @@ def scale_microdomains(microdomains, scaling_factors, bounding_box):
     min_point, max_point = bounding_box.ranges
 
     for domain, scaling_factor in zip(microdomains, scaling_factors):
-
         new_domain = domain.scale(scaling_factor)
 
         # snap the boundary points back to the bbox
@@ -139,7 +138,6 @@ def limit_microdomains_to_roi(microdomains, astrocyte_soma_pos, region_mask):
 
     """
     for microdomain, soma_pos in zip(microdomains, astrocyte_soma_pos):
-
         # small trick to ensure that the points on the walls will not be considered as outside
         new_points = np.clip(microdomain.points, a_min=None, a_max=region_mask.bbox[1] - 1e-5)
         vectors = new_points - soma_pos
@@ -150,7 +148,6 @@ def limit_microdomains_to_roi(microdomains, astrocyte_soma_pos, region_mask):
         is_out_of_bounds = region_mask.lookup(new_points, outer_value=0) == 0
 
         if is_out_of_bounds.any():
-
             new_points[is_out_of_bounds] = _create_points_on_sphere(
                 soma_pos, vectors[is_out_of_bounds], radius
             )

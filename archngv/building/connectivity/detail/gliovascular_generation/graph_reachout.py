@@ -32,7 +32,6 @@ def _argsort_components(source, components):
     closest_distances = np.empty(len(components), dtype=np.float32)
 
     for i, comp in enumerate(components):
-
         points = comp.loc[:, ("x", "y", "z")]
 
         distances = np.linalg.norm(source - points, axis=1)
@@ -144,7 +143,6 @@ def _select_component_targets(source, comp, n_elements):
     scores = rowwise_dot(vectors, vectors)
 
     for _ in range(n_elements - 1):
-
         # find the available index that has max respective score
         best_index = max(available, key=lambda k: scores[k])
 
@@ -214,7 +212,6 @@ def _maximum_reachout(source, targets, n_classes):
 
     n = 0
     for comp, n_elements in zip(sorted_components, n_elements_per_component):
-
         selected[n : n + n_elements] = _select_component_targets(source, comp, n_elements)
         n += n_elements
 

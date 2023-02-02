@@ -8,7 +8,6 @@ from archngv.exceptions import NGVError
 
 
 def test_post_growing():
-
     m = morphio.mut.Morphology()
     m.soma.points = np.array([[1.0, 1.0, 1.0]])
     m.soma.diameters = np.array([0.0])
@@ -45,7 +44,6 @@ def test_post_growing():
 
 
 def test_sanity_check__missing_duplicate_points():
-
     m = morphio.mut.Morphology()
     m.soma.points = np.array([[1.0, 1.0, 1.0]])
     m.soma.diameters = np.array([0.0])
@@ -65,7 +63,6 @@ def test_sanity_check__missing_duplicate_points():
 
 
 def test_sanity_check__one_point_sections():
-
     m = morphio.mut.Morphology()
     m.soma.points = np.array([[1.0, 1.0, 1.0]])
     m.soma.diameters = np.array([0.0])
@@ -80,7 +77,6 @@ def test_sanity_check__one_point_sections():
 
 
 def test_sanity_check__unifurcations():
-
     m = morphio.mut.Morphology()
     m.soma.points = np.array([[1.0, 1.0, 1.0]])
     m.soma.diameters = np.array([0.0])

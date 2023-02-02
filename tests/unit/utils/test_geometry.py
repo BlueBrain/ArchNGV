@@ -24,7 +24,6 @@ def test_sort_points():
 
 
 def test_are_consecutive_pairs_different():
-
     points = np.array(
         [
             [0.1, 0.2, 0.3],
@@ -48,7 +47,6 @@ def test_are_consecutive_pairs_different():
 
 
 def test_unique_points__ascending():
-
     points = np.array([[0.1, 0.2, 0.3], [0.1, 0.2, 0.4], [0.1, 0.2, 0.5]])
 
     expected_idx = np.array([0, 1, 2])
@@ -61,7 +59,6 @@ def test_unique_points__ascending():
 
 
 def test_unique_points__descending():
-
     points = np.array([[0.1, 0.2, 0.5], [0.1, 0.2, 0.4], [0.1, 0.2, 0.3]])
 
     expected_idx = np.array([0, 1, 2])
@@ -74,7 +71,6 @@ def test_unique_points__descending():
 
 
 def test_unique_points__mixed_1():
-
     points = np.array(
         [
             [0.1, 0.2, 0.3],
@@ -97,7 +93,6 @@ def test_unique_points__mixed_1():
 
 
 def test_unique_points__mixed_2():
-
     points = np.array(
         [[0.1, 0.2, 0.3], [0.3, 0.4, 0.5], [0.1, 0.2, 0.3], [0.5, 0.6, 0.7], [0.3, 0.4, 0.5]]
     )
@@ -112,7 +107,6 @@ def test_unique_points__mixed_2():
 
 
 def test_unique_points__an_army_of_clones():
-
     points = np.array([[0.1, 0.2, 0.3], [0.1, 0.2, 0.3], [0.1, 0.2, 0.3]])
 
     expected_idx = np.array([0])

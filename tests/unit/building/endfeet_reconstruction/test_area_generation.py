@@ -6,7 +6,6 @@ from archngv.building.endfeet_reconstruction.groups import GroupedElements
 
 
 def test_endfeet_meshes():
-
     triangle_areas = np.random.random(20)
 
     triangle_ids = np.arange(20, dtype=np.int32)
@@ -28,7 +27,6 @@ def test_endfeet_meshes():
 
 
 def test_global_to_local_indices():
-
     global_triangles = np.array([[6, 7, 8], [24, 25, 26], [45, 46, 47], [42, 43, 44], [9, 10, 11]])
 
     expected_global_vertices = [6, 7, 8, 9, 10, 11, 24, 25, 26, 42, 43, 44, 45, 46, 47]
@@ -42,7 +40,6 @@ def test_global_to_local_indices():
 
 
 def test_shrink_endfoot_triangles():
-
     triangles = np.array(
         [
             [0, 1, 2],

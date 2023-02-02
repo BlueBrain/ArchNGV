@@ -32,7 +32,6 @@ def assert_bbox_alignment(bbox1, bbox2, tolerance=10.0):
         )
 
     if not bbox1 == bbox2:
-
         max_aligned = np.allclose(bbox1.max_point, bbox2.max_point, atol=tolerance)
         min_aligned = np.allclose(bbox1.min_point, bbox2.min_point, atol=tolerance)
 

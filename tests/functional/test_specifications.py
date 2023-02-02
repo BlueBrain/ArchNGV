@@ -69,7 +69,6 @@ class H5SonataReader:
     def attribute_dtypes(self):
         dtypes = {}
         for group in self._population_names_dict.values():
-
             keys = set(group.keys())
             if "@library" in keys:
                 keys.remove("@library")
@@ -99,7 +98,6 @@ class H5SonataReader:
 
 class SonataValidator:
     def __init__(self, build_dir, specification):
-
         self.build_dir = build_dir
         self.spec = specification
 
@@ -118,13 +116,11 @@ class SonataValidator:
         try:
             npt.assert_equal(actual, desired)
         except AssertionError as e:
-
             flat_assertion_error = "\n".join(e.args)
             msg = f"\n{err_msg}{flat_assertion_error}\n"
             self.error_list.append(SpecError(msg))
 
     def check_population_name(self, spec):
-
         self._collect_error(
             actual=self.h5file.population_names,
             desired=[spec["population_name"]],
@@ -132,7 +128,6 @@ class SonataValidator:
         )
 
     def check_population_type(self, spec):
-
         self._collect_error(
             actual=self.h5file.population_types,
             desired=[spec["population_type"]],
@@ -140,7 +135,6 @@ class SonataValidator:
         )
 
     def check_attribute_names(self, spec):
-
         self._collect_error(
             actual=self.h5file.attribute_names,
             desired=sorted(spec["attributes"].keys()),
@@ -148,10 +142,8 @@ class SonataValidator:
         )
 
     def check_attribute_dtypes(self, spec):
-
         dtypes = self.h5file.attribute_dtypes
         for attr_name, attr_spec in spec["attributes"].items():
-
             str_dtype = attr_spec["dtype"]
 
             if str_dtype == "string":
@@ -164,7 +156,6 @@ class SonataValidator:
             )
 
     def check_source_target_node_populations(self, spec):
-
         self._collect_error(
             actual=self.h5file.source_population_names,
             desired=[spec["source_node_population_name"]],
@@ -178,7 +169,6 @@ class SonataValidator:
         )
 
     def run(self):
-
         self.check_population_type(self.spec)
         self.check_population_name(self.spec)
         self.check_attribute_names(self.spec)
@@ -190,7 +180,6 @@ class SonataValidator:
 
 def _validate_sonata_specs(specs):
     def assert_existence(key, dictionary, filepath, attr=None):
-
         if attr is None:
             msg = f"Missing '{key}' entry from the spec of '{filepath}'"
         else:
@@ -199,7 +188,6 @@ def _validate_sonata_specs(specs):
         assert key in dictionary, msg
 
     for n, spec in enumerate(specs):
-
         assert (
             "filepath" in spec
         ), f"Missing 'filepath' entry for the population at position {n} in the spec"
@@ -220,14 +208,12 @@ def _validate_sonata_specs(specs):
 
 
 def test_sonata_specifications(output_specs):
-
     sonata_specs = output_specs["sonata"]
     _validate_sonata_specs(sonata_specs)
 
     errors = []
 
     for pop_dict in output_specs["sonata"]:
-
         validator = SonataValidator(BUILD_DIR, pop_dict)
         validator.run()
 
@@ -237,7 +223,6 @@ def test_sonata_specifications(output_specs):
 
 
 def _check_dataset(filepath, dataset, layout):
-
     if dataset.ndim == 1:
         number_of_columns = 1
     else:
@@ -257,7 +242,6 @@ def _check_dataset(filepath, dataset, layout):
 
 
 def _check_hierarchy(filepath, h5file, hierarchy):
-
     group_keys = set(h5file)
     expected_group_keys = set(hierarchy)
 
@@ -268,25 +252,20 @@ def _check_hierarchy(filepath, h5file, hierarchy):
     )
 
     for name, sub_hierarchy in hierarchy.items():
-
         hdf5_object = h5file[name]
         hdf5_object_type = sub_hierarchy["object_type"]
 
         if hdf5_object_type == "group":
-
             assert isinstance(hdf5_object, h5py.Group)
             _check_hierarchy(filepath, hdf5_object, sub_hierarchy["contents"])
 
         else:
-
             assert isinstance(hdf5_object, h5py.Dataset)
             _check_dataset(filepath, hdf5_object, sub_hierarchy)
 
 
 def test_custom_specifications(output_specs):
-
     for pop_dict in output_specs["custom"]:
-
         filepath = BUILD_DIR / Path(pop_dict["filepath"])
         assert filepath.exists(), f"Filepath {filepath} does not exist."
 

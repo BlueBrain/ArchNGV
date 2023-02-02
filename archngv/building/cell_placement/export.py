@@ -36,7 +36,6 @@ def basalt_exporter(filepath, astrocyte_ids, somata_positions, somata_radii):
     astrocytes = ngv_graph.astrocytes  # pylint: disable=no-member
 
     for i, astrocyte_id in enumerate(astrocyte_ids):
-
         astrocyte = astrocytes[astrocyte_id]
         payload = astrocyte.data
 
@@ -70,5 +69,4 @@ def export_cell_placement_data(
     except KeyError as e:
         msg = f"Export method {method} is not valid. Choose from {writers.keys()}"
         raise KeyError(msg) from e
-    else:
-        writer_func(filepath, astrocyte_ids, somata_positions, somata_radii)
+    writer_func(filepath, astrocyte_ids, somata_positions, somata_radii)

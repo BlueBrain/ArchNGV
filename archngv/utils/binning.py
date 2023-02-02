@@ -19,7 +19,6 @@ def rebin_counts(ref_counts, ref_bin_edges, bin_edges):
     i = j = 0
     total = 0.0
     while i < n_bins and j < n_ref_bins:
-
         i_left, i_right = bin_edges[i], bin_edges[i + 1]
         j_left, j_right = ref_bin_edges[j], ref_bin_edges[j + 1]
         counts = ref_counts[j]

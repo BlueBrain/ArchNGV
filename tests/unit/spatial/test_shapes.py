@@ -24,7 +24,6 @@ def convex_polygon():
 
 
 def test_centroid(convex_polygon):
-
     expected_centroid = convex_polygon.points.mean(axis=0)
 
     actual_centroid = convex_polygon.centroid
@@ -34,12 +33,10 @@ def test_centroid(convex_polygon):
 
 
 def test_volume(convex_polygon):
-
     assert numpy.isclose(convex_polygon.volume, ConvexHull(convex_polygon.points).volume)
 
 
 def test_inscribed_sphere(convex_polygon):
-
     center, radius = convex_polygon.inscribed_sphere
 
     expected_center = convex_polygon.centroid
@@ -52,7 +49,6 @@ def test_inscribed_sphere(convex_polygon):
 
 
 def test_adjacency(convex_polygon):
-
     adjacency = convex_polygon.adjacency
 
     expected_adjacency = ({1, 2, 3}, {0, 2, 3}, {0, 1, 3}, {0, 1, 2})

@@ -96,7 +96,6 @@ def triangles1():
 
 
 def test_local_to_global_mapping__identity(sorted_points, triangles1):
-
     offsets = (
         np.array([0, 0], dtype=np.uint64),
         np.array([len(sorted_points), len(triangles1)], dtype=np.uint64),
@@ -329,7 +328,6 @@ def domain_neighbor1():
 
 @pytest.fixture
 def domain_neighbor2():
-
     triangles = np.array(
         [
             [1, 15, 5],
@@ -476,7 +474,6 @@ def neighboring_domains_tessellation(domain_neighbor1, domain_neighbor2):
 
 
 def test_local_to_global_polygon_ids(domain_polygon_triangles):
-
     _, triangles, polygon_ids, _ = domain_polygon_triangles
 
     polygon_ids = np.array(
@@ -559,7 +556,6 @@ def test_local_to_global_polygon_ids(domain_polygon_triangles):
 
 
 def test_triangles_to_polygons__one_domain_local(domain_polygon_triangles):
-
     _, triangles, polygon_ids, _ = domain_polygon_triangles
 
     polygons = _impl.triangles_to_polygons(triangles, polygon_ids)
@@ -578,7 +574,6 @@ def test_triangles_to_polygons__one_domain_local(domain_polygon_triangles):
 
 
 def test_triangles_to_polygons__one_domain_global(domain_polygon_triangles):
-
     local_ps, local_tris, local_polys, ps_tris_offsets = domain_polygon_triangles
 
     global_ps, global_tris, global_polys = _impl.local_to_global_mapping(
@@ -605,7 +600,6 @@ def test_triangles_to_polygons__one_domain_global(domain_polygon_triangles):
 
 @pytest.fixture
 def domains_one_polygon():
-
     triangles = np.array([[0, 1, 2], [0, 2, 3], [0, 3, 4], [0, 4, 5], [5, 6, 7]])
 
     points = np.array(
@@ -637,7 +631,6 @@ def domains_one_polygon():
 
 
 def test_triangles_to_polygons__two_neighboring_domains(domains_one_polygon):
-
     ps, tris, poly_ids, ps_tris_offsets = domains_one_polygon
 
     g_poly_ids = _impl.local_to_global_polygon_ids(poly_ids)

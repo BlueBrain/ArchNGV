@@ -10,7 +10,6 @@ from archngv.core.datasets import EndfootMesh
 
 
 def _rot2D(p, theta):
-
     c = np.cos(theta)
     s = np.sin(theta)
 
@@ -86,7 +85,6 @@ def test_extent_across_vasculature_segment_medial_axis():
 
 
 def test_endfoot_compartment_features():
-
     area = 3.12
     thickness = 1.1
     length = 1.32
@@ -102,7 +100,6 @@ def test_endfoot_compartment_features():
 
 
 def test_create_endfeet_compartment_data():
-
     segments = np.array(
         [
             [[0.0, 0.0, 0.0], [0.0, 1.0, 0.0]],

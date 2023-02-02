@@ -6,7 +6,6 @@ class HashMapBase:
     """Base of hashmap"""
 
     def __init__(self, voxel_size, offset):
-
         self._factor = 1.0 / float(voxel_size)
         self.offx, self.offy, self.offz = offset
         self._d = {}

@@ -12,7 +12,6 @@ MAX_NEIGHBORS = 3
 
 
 class MockMicrodomains:
-
     connectivity = [[j for j in range(MAX_NEIGHBORS) if i != j] for i in range(N_CELLS)]
 
     def __len__(self):
@@ -61,7 +60,6 @@ def microdomains_path(directory_path):
 
 @pytest.fixture(scope="module")
 def mockdomains(microdomains_path):
-
     mock_tess = MockMicrodomains()
 
     domains = list(iter(mock_tess))
@@ -80,7 +78,6 @@ def test_len(microdomains, mockdomains):
 
 
 def test_iter(microdomains, mockdomains):
-
     for mdom, fdom in zip(microdomains, mockdomains):
         npt.assert_allclose(mdom.points, fdom.points)
         npt.assert_allclose(mdom.triangles, fdom.triangles)
@@ -110,11 +107,9 @@ def test_domain_neighbors(microdomains, mockdomains):
 
 
 def test_domain_objects(microdomains):
-
     scaling_factors = np.linspace(0.1, 100.0, len(microdomains))
 
     for domain_index, domain in enumerate(microdomains):
-
         npt.assert_allclose(domain.points, microdomains.domain_points(domain_index))
         npt.assert_allclose(
             domain.triangle_data,
@@ -134,12 +129,10 @@ def test_domain_objects(microdomains):
 
 
 def test_scaling_factors(microdomains, mockdomains):
-
     scaling_factors = microdomains.get("scaling_factors")
     npt.assert_allclose(scaling_factors, mockdomains.scaling_factors)
 
     for domain_index, domain in enumerate(microdomains):
-
         npt.assert_equal(
             scaling_factors[domain_index],
             microdomains.get("scaling_factors", group_index=domain_index),
@@ -147,7 +140,6 @@ def test_scaling_factors(microdomains, mockdomains):
 
 
 def test_connectivity(microdomains):
-
     expected = np.asarray(
         [[0, 1], [0, 2], [0, 3], [0, 4], [1, 2], [1, 3], [1, 4], [2, 3], [2, 4]], dtype=np.int32
     )
@@ -156,6 +148,5 @@ def test_connectivity(microdomains):
 
 
 def test_export_mesh(microdomains, directory_path):
-
     filename = os.path.join(directory_path, "test_microdomains.stl")
     microdomains.export_mesh(filename)

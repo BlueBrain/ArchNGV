@@ -11,7 +11,6 @@ from archngv.building.morphology_synthesis.annotation import annotate_synapse_lo
 from archngv.core.datasets import NeuroglialConnectivity, NeuronalConnectivity
 
 if TYPE_CHECKING:
-
     from pandas import DataFrame
 
     from archngv.core.datastructures import CellData
@@ -57,7 +56,6 @@ def astrocyte_morphology_properties(
     )
 
     for ids, df_locations in it_results:
-
         properties["astrocyte_section_id"][ids] = df_locations.section_id
         properties["astrocyte_segment_id"][ids] = df_locations.segment_id
         properties["astrocyte_segment_offset"][ids] = df_locations.segment_offset
@@ -76,7 +74,6 @@ class NeuroglialWorker:
         self._seed = seed
 
     def __call__(self, data: Dict[str, Any]) -> Optional[Tuple[np.ndarray, "DataFrame"]]:
-
         seed = hash((self._seed, data["index"])) % (2**32)
         np.random.seed(seed)
 
@@ -88,7 +85,6 @@ def _dispatch_neuroglial_data(
 ) -> Iterator[Dict[str, Any]]:
     """Dispatches data to parallel workers"""
     for astro_id in range(len(astrocytes)):
-
         morphology_name = astrocytes.get_property("morphology", ids=astro_id)[0]
         morphology_path = str(Path(paths["morph_dir"], morphology_name + ".h5"))
         morphology_pos = astrocytes.positions(index=astro_id)[0]

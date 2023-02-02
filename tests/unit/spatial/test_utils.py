@@ -5,7 +5,6 @@ from archngv.utils.ngons import vectorized_triangle_normal
 
 
 def test_are_normals_backward():
-
     points = numpy.array([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 1.0], [0.0, 1.0, 0.0]])
 
     face_vertices = numpy.array([[3, 1, 0], [2, 1, 0], [2, 3, 0], [2, 3, 1]])
@@ -26,7 +25,6 @@ def test_are_normals_backward():
 
 def test_make_normals_outwards():
     def calc_normals(points, triangles):
-
         v1s = points[triangles[:, 1]] - points[triangles[:, 0]]
         v2s = points[triangles[:, 2]] - points[triangles[:, 0]]
 

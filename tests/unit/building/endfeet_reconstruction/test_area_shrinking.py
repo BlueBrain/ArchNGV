@@ -62,7 +62,6 @@ def triangle_travel_times():
 
 
 def test_shrink_surface_mesh(triangle_areas, triangle_travel_times):
-
     current_area = triangle_areas.sum()
     target_area = current_area * 0.2
 

@@ -49,7 +49,6 @@ def _morphology_to_tree_barcodes(morphology):
         """Class for mapping morphio section id to tmd point tree"""
 
         def __init__(self, _):
-
             self.data = {}
 
         def update(self, section_id, termination_id):
@@ -116,14 +115,12 @@ def _convert_morphio_trees(cell, property_builders=None):
 
     tree_end = 0
     for root in cell.root_sections:
-
         tree_length = 0
         tree_beg = tree_end
 
         p_builders = {name: builder(cell) for name, builder in property_builders.items()}
 
         for section in root.iter():
-
             # root sections have parent -1
             if section.is_root:
                 start = 0
@@ -221,12 +218,10 @@ def _tree_to_property_barcode(tree, filtration_function, property_class=NoProper
     ph = []
     while len(alives) > 1:
         for alive in alives:
-
             p = parents[alive]
             c = children[p]
 
             if np.alltrue(active[c]):
-
                 active[p] = True
                 active[c] = False
 
@@ -274,7 +269,6 @@ class EndoplasmicReticulum:
     """
 
     def __init__(self, morphology):
-
         self._morphology = morphology
         er_data = self.extract_morphio_er_data(morphology)
 
@@ -376,7 +370,6 @@ def _match_bars(barcode1, barcode2):
 
 
 def _find_in(paths, in_paths):
-
     paths = np.asarray(paths)
     in_paths = np.asarray(in_paths)
 
@@ -394,17 +387,14 @@ def _find_in(paths, in_paths):
 
 
 def _assign_er_to_sections(syn_barcodes, bio_barcodes, barcode_matching):
-
     section_ids_to_er_data = {}
 
     for syn_barcode_id, (syn_barcode, syn_barcode_data) in enumerate(syn_barcodes):
-
         # get the biological bar and its respective data that is matched
         # to the current synthetic bar
         bio_barcode, bio_barcode_data = bio_barcodes[barcode_matching[syn_barcode_id]]
 
         for syn_bar_id, bio_bar_id in enumerate(_match_bars(syn_barcode, bio_barcode)):
-
             if bio_bar_id == -1:
                 continue
 
@@ -421,7 +411,6 @@ def _assign_er_to_sections(syn_barcodes, bio_barcodes, barcode_matching):
 
             assert len(section_ids) == len(bio_ids)
             for syn_id, bio_id in enumerate(bio_ids):
-
                 sid = section_ids[syn_id]
                 er = bio_er_data[bio_id]
 

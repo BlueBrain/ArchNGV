@@ -19,7 +19,6 @@ MICRODOMAINS_DIR = "./microdomains"
 
 
 def _get_h5_files(directory):
-
     filenames = os.listdir(directory)
     filenames = filter(lambda s: s.endswith(".h5"), filenames)
 
@@ -55,7 +54,6 @@ def test_morphologies():
     )
 
     for filename in filenames:
-
         diff_result = diff(
             BUILD_DIR / MORPHOLOGIES_DIR / filename, EXPECTED_DIR / MORPHOLOGIES_DIR / filename
         )
@@ -64,7 +62,6 @@ def test_morphologies():
 
 
 def _h5_compare(actual_filepath, expected_filepath):
-
     import subprocess
 
     completed_process = subprocess.run(
@@ -80,7 +77,6 @@ def _h5_compare_all(actual_dir, expected_dir):
 
 
 def test_sonata_files():
-
     actual_files = sorted(Path(BUILD_DIR / "sonata/networks").rglob("*.h5"))
     expected_files = sorted(Path(EXPECTED_DIR / "sonata/networks").rglob("*.h5"))
 
@@ -100,7 +96,6 @@ def test_root_files():
 
 
 def test_config():
-
     expected_sonata_config = {
         "manifest": {
             "$CIRCUIT_DIR": "../",

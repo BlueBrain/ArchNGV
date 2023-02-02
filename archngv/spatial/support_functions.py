@@ -23,16 +23,13 @@ def convex_polytope2(shape_points, adjacency, direction):
     cur_dst = (shape_points[cur_vid] * direction).sum()
 
     while 1:
-
         new_vid = cur_vid
         new_dst = cur_dst
 
         for vid in adjacency[cur_vid]:
-
             dst = (shape_points[vid] * direction).sum()
 
             if dst > new_dst:
-
                 new_vid = vid
                 new_dst = dst
 
@@ -54,7 +51,6 @@ def cylinder(centroid, central_axis, radius, height, direction):
     half_height = 0.5 * height
 
     if numpy.allclose(orth_component, 0.0):
-
         return centroid + numpy.sign(dot_u_d) * half_height * central_axis
 
     return (

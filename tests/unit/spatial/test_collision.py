@@ -13,7 +13,6 @@ def _format_sphere_spheres(center, radius, centers, radii):
 
 
 def test_sphere_with_spheres_not_intersecting():
-
     center = np.random.random(3) * 31.0
     radius = np.random.uniform(1.0, 5.0)
 
@@ -29,7 +28,6 @@ def test_sphere_with_spheres_not_intersecting():
 
 
 def test_sphere_with_spheres_intersecting():
-
     center = np.random.random(3) * 31.0
     radius = np.random.uniform(1.0, 10.0)
 
@@ -46,7 +44,6 @@ def test_sphere_with_spheres_intersecting():
 
 
 def test_sphere_with_capsules_not_intersecting():
-
     p0s = np.array([[1.0, 1.0, 1.0], [10.0, 20.0, 10.0]])
     p1s = np.array([[10.0, 10.0, 10.0], [1.0, 11.0, 1.0]])
 
@@ -61,7 +58,6 @@ def test_sphere_with_capsules_not_intersecting():
 
 
 def test_sphere_with_capsules_intersecting():
-
     p0s = np.array([[1.0, 1.0, 1.0], [10.0, 20.0, 10.0]])
     p1s = np.array([[10.0, 10.0, 10.0], [1.0, 11.0, 1.0]])
 
@@ -78,7 +74,6 @@ def test_sphere_with_capsules_intersecting():
 
 
 def test_convex_shape_with_spheres_touching_outwards():
-
     points = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 1.0], [0.0, 1.0, 0.0]])
 
     face_vertices = np.array([[3, 1, 0], [2, 1, 0], [2, 3, 0], [2, 3, 1]])
@@ -112,7 +107,6 @@ def test_convex_shape_with_spheres_touching_outwards():
 
 
 def test_convex_shape_with_point():
-
     points = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 1.0], [0.0, 1.0, 0.0]])
 
     face_vertices = np.array([[3, 1, 0], [2, 1, 0], [2, 3, 0], [2, 3, 1]])

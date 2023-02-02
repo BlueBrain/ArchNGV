@@ -68,7 +68,6 @@ def _endfeet_areas(grouped_triangles, triangle_areas, n_endfeet):
 
 
 def _global_to_local_indices(triangles):
-
     local_vertices, inverse = np.unique(triangles, return_inverse=True)
 
     # remap triangle indices to the local index space
@@ -139,14 +138,12 @@ def _process_endfeet(
         but the results are yielded in a sorted incremental manner.
     """
     for group, triangle_ids in grouped_triangles.iter_assigned_groups():
-
         current_area, target_area = endfeet_areas[group], target_areas[group]
 
         # triangles for endfoot but the indices are from the entire mesh
         triangles_global = triangles[triangle_ids]
 
         if current_area > target_area:
-
             triangles_global = _shrink_endfoot_triangles(
                 triangles_global,
                 triangle_areas[triangle_ids],

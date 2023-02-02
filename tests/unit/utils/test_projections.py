@@ -5,7 +5,6 @@ from archngv.utils import projections as pj
 
 
 def test_scalar_projection():
-
     vec1 = numpy.random.rand(3)
     vecs = numpy.random.rand(4, 3)
 
@@ -19,7 +18,6 @@ def test_scalar_projection():
 
 
 def test_scalar_projections():
-
     vecs1 = numpy.random.rand(4, 3)
     vecs2 = numpy.random.rand(4, 3)
 
@@ -35,7 +33,6 @@ def test_scalar_projections():
 
 
 def test_vector_projection():
-
     vec1 = numpy.random.rand(3)
     vecs = numpy.random.rand(4, 3)
 
@@ -49,7 +46,6 @@ def test_vector_projection():
 
 
 def test_vectors_projections():
-
     vecs1 = numpy.random.rand(4, 3)
     vecs2 = numpy.random.rand(4, 3)
 
@@ -65,7 +61,6 @@ def test_vectors_projections():
 
 
 def test_projection_vector_on_plane():
-
     vectors = numpy.random.rand(4, 3)
 
     normal = numpy.array([1.0, 0.0, 0.0])

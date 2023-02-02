@@ -47,7 +47,6 @@ def pick_triangle(a, b, shape1, shape2, Niter):
     a = support(shape2, shape1, v)
 
     for _ in range(Niter):
-
         ab = b - a
         ao = -a
         ac = c - a
@@ -59,18 +58,15 @@ def pick_triangle(a, b, shape1, shape2, Niter):
         acp = cross(abc, ac)
 
         if dot(abp, ao) > 0.0:
-
             c = b
             b = a
             v = abp
 
         elif dot(acp, ao) > 0.0:
-
             b = a
             v = acp
 
         else:
-
             flag = 1
             break
 
@@ -91,7 +87,6 @@ def pick_tetrahedron(a, b, c, shape1, shape2, Niter):
     ao = -a
 
     if dot(abc, ao) > 0:
-
         d = c
         c = b
         b = a
@@ -100,14 +95,12 @@ def pick_tetrahedron(a, b, c, shape1, shape2, Niter):
         a = support(shape2, shape1, v)
 
     else:
-
         d = b
         b = a
         v = -abc
         a = support(shape2, shape1, v)
 
     for _ in range(Niter):
-
         ab = b - a
         ao = -a
         ac = c - a
@@ -116,11 +109,9 @@ def pick_tetrahedron(a, b, c, shape1, shape2, Niter):
         abc = cross(ab, ac)
 
         if dot(abc, ao) <= 0.0:
-
             acd = cross(ac, ad)
 
             if dot(acd, ao) > 0.0:
-
                 b = c
                 c = d
                 ab = ac
@@ -128,11 +119,9 @@ def pick_tetrahedron(a, b, c, shape1, shape2, Niter):
                 abc = acd
 
             else:
-
                 adb = cross(ad, ab)
 
                 if dot(adb, ao) > 0.0:
-
                     c = b
                     b = d
                     ac = ab
@@ -140,12 +129,10 @@ def pick_tetrahedron(a, b, c, shape1, shape2, Niter):
                     abc = adb
 
                 else:
-
                     flag = 1
                     break
 
         if dot(abc, ao) > 0:
-
             d = c
             c = b
             b = a
@@ -153,7 +140,6 @@ def pick_tetrahedron(a, b, c, shape1, shape2, Niter):
             a = support(shape2, shape1, v)
 
         else:
-
             d = b
             b = a
             v = -abc
@@ -174,11 +160,9 @@ def GJK(shape1, shape2, max_iter):
     a, b, c, found_triangle = pick_triangle(a, b, shape2, shape1, max_iter)
 
     if found_triangle:
-
         a, b, c, _, have_collided = pick_tetrahedron(a, b, c, shape2, shape1, max_iter)
 
     else:
-
         have_collided = False
 
     return have_collided

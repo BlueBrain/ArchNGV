@@ -5,7 +5,6 @@ from archngv.utils.linear_algebra import rowwise_dot
 
 
 def create_spheres(center, radius, epsilon):
-
     directions = numpy.random.rand(5, 3)
     directions /= numpy.linalg.norm(directions, axis=1)[:, numpy.newaxis]
 
@@ -17,7 +16,6 @@ def create_spheres(center, radius, epsilon):
 
 
 def test_spheres_in_sphere_inside():
-
     center = numpy.random.random(3)
     radius = numpy.random.uniform(10.0, 15.0)
 
@@ -34,7 +32,6 @@ def test_spheres_in_sphere_inside():
 
 
 def test_sphere_in_sphere_outside():
-
     center = numpy.random.random(3)
     radius = numpy.random.uniform(10.0, 15.0)
 
@@ -47,7 +44,6 @@ def test_sphere_in_sphere_outside():
 
 
 def test_sphere_in_sphere_touching_outside():
-
     center = numpy.random.random(3)
     radius = numpy.random.uniform(10.0, 15.0)
 
@@ -60,7 +56,6 @@ def test_sphere_in_sphere_touching_outside():
 
 
 def test_sphere_in_sphere_touching_inside():
-
     center = numpy.random.random(3)
     radius = numpy.random.uniform(10.0, 15.0)
 

@@ -20,7 +20,6 @@ def test_kmeans_1d_1():
 
 
 def test_kmeans_1d_2():
-
     values = np.array([1.0, 10.0, 100.0])
 
     results = kmeans_1d(values, 3)

@@ -21,7 +21,6 @@ def test_vectorized_consecutive_triangle_vectors():
 
 
 def test_vectorized_triangle_normal():
-
     As = np.random.rand(2, 3)
     Bs = np.random.rand(2, 3)
     Cs = np.random.rand(2, 3)
@@ -32,7 +31,6 @@ def test_vectorized_triangle_normal():
     result = []
 
     for i in range(2):
-
         x = (Us[i][1] * Vs[i][2]) - (Us[i][2] * Vs[i][1])
         y = (Us[i][2] * Vs[i][0]) - (Us[i][0] * Vs[i][2])
         z = (Us[i][0] * Vs[i][1]) - (Us[i][1] * Vs[i][0])
@@ -48,7 +46,6 @@ def test_vectorized_triangle_normal():
 
 
 def test_vectorized_parallelepiped_volume():
-
     vectors1 = np.array([(1.0, 1.0, 1.0), (5.0, 1.0, 3.0)])
     vectors2 = np.array([(2.0, 1.0, 2.0), (4.0, 1.0, 2.0)])
     vectors3 = np.array([(2.0, 4.0, 4.0), (2.0, 1.0, 4.0)])
@@ -60,7 +57,6 @@ def test_vectorized_parallelepiped_volume():
 
 
 def test_vectorized_tetrahedron_volume():
-
     vectors1 = np.array([(1.0, 1.0, 1.0), (5.0, 1.0, 3.0)])
     vectors2 = np.array([(2.0, 1.0, 2.0), (4.0, 1.0, 2.0)])
     vectors3 = np.array([(2.0, 4.0, 4.0), (2.0, 1.0, 4.0)])
@@ -72,7 +68,6 @@ def test_vectorized_tetrahedron_volume():
 
 
 def test_subdivide_triangles_iterations_0():
-
     points = np.array([[0.0, 0.0, 0.0], [0.0, 0.0, 3.0], [3.0, 0.0, 0.0]])
     triangles = [[0, 1, 2]]
 
@@ -86,7 +81,6 @@ def test_subdivide_triangles_iterations_0():
 
 
 def test_subdivide_triangles_iterations_1():
-
     points = np.array([[0.0, 0.0, 0.0], [0.0, 0.0, 9.0], [9.0, 0.0, 0.0]])
     triangles = [[0, 1, 2]]
 
@@ -115,7 +109,6 @@ def test_subdivide_triangles_iterations_1():
 
 
 def test_subdivide_triangles_by_total_area__no_subdivision():
-
     points = np.array([[0.0, 0.0, 0.0], [0.0, 0.0, 9.0], [9.0, 0.0, 0.0]])
     triangles = [[0, 1, 2]]
 
@@ -143,7 +136,6 @@ def test_subdivide_triangles_by_total_area__no_subdivision():
 
 
 def test_subdivide_triangles_by_total_area_1():
-
     points = np.array(
         [
             [0.0, 0.0, 0.0],
@@ -177,7 +169,6 @@ def test_subdivide_triangles_by_total_area_1():
 
 
 def test_subdivide_triangles_by_total_area_2():
-
     points = np.array(
         [
             [0.0, 0.0, 0.0],
@@ -285,7 +276,6 @@ def test_subdivide_triangles_by_total_area_2():
 
 
 def assert_equal_triangles(tris1, tris2):
-
     tris1 = np.sort(tris1, axis=1)
     tris2 = np.sort(tris2, axis=1)
 
@@ -299,7 +289,6 @@ def assert_equal_triangles(tris1, tris2):
 
 
 def circle_inscribed_polygon(n_points):
-
     thetas = np.linspace(0.0, 1.8 * np.pi, n_points)
     cosines = np.cos(thetas)
     sines = np.sin(thetas)
@@ -308,7 +297,6 @@ def circle_inscribed_polygon(n_points):
 
 
 def test_polygons_to_triangles_0():
-
     n_points = 4
 
     points = circle_inscribed_polygon(n_points)
@@ -324,7 +312,6 @@ def test_polygons_to_triangles_0():
 
 
 def test_polygon_to_triangles_1():
-
     n_points = 5
 
     points = circle_inscribed_polygon(n_points)
@@ -340,7 +327,6 @@ def test_polygon_to_triangles_1():
 
 
 def test_polygon_to_triangles_2():
-
     n_points = 6
 
     points = circle_inscribed_polygon(n_points)
@@ -363,13 +349,11 @@ def test_polygon_to_triangles__unique_triangulation():
     points = circle_inscribed_polygon(6)
 
     for points in [circle_inscribed_polygon(6), circle_inscribed_polygon(5)]:
-
         base_array = np.arange(len(points), dtype=np.int32)
 
         ref_tris, ref_tris_to_polys_map = ngons.polygons_to_triangles(points, [base_array])
 
         for i in range(len(points)):
-
             faces = [np.roll(base_array, i).tolist()]
 
             print("faces: ", faces)
@@ -379,7 +363,6 @@ def test_polygon_to_triangles__unique_triangulation():
             np.testing.assert_allclose(tris_to_polys_map, ref_tris_to_polys_map)
 
         for i in range(len(points)):
-
             faces = [np.roll(base_array[::-1], i).tolist()]
 
             print("faces: ", faces)

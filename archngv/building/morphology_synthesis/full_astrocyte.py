@@ -45,7 +45,6 @@ def _sanity_checks(morph):
         NGVError: If any of the tests are not satisfied
     """
     for section in morph.iter():
-
         if not (section.is_root or np.allclose(section.points[0], section.parent.points[-1])):
             raise NGVError(
                 f"Morphology {morph} is missing duplicate points.\n"

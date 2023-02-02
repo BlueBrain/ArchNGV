@@ -21,7 +21,6 @@ class LinearRegressionNoiseModel:
     """
 
     def __init__(self, parameter_dict, rng):
-
         self.coefficients = np.array([float(parameter_dict["slope"])])
         self.intercept = float(parameter_dict["intercept"])
 
@@ -47,7 +46,6 @@ class LinearRegressionNoiseModel:
 
         # ensure that we don't get negative values
         for i, (prediction, noise_value) in enumerate(zip(predictions, noise_values)):
-
             value = prediction + noise_value
 
             # resample until positive
@@ -86,7 +84,6 @@ def _longest_downstream_leaf(section):
     longest_upstream_length = 0
 
     for sec in iter_sections:
-
         upstream_length = sec.perimeters.size + upstream_lengths[sec.parent.id]
         upstream_lengths[sec.id] = upstream_length
 
@@ -120,7 +117,6 @@ def _perimeters_downstream(section):
 
 
 def _array_from_generator(array_size, value_generator):
-
     values = np.empty(array_size, dtype=np.float32)
 
     values[0] = next(value_generator)
@@ -138,7 +134,6 @@ def _array_from_generator(array_size, value_generator):
 
 
 def _reflect_perimeters(section, expansion_length):
-
     perimeters = np.empty(expansion_length, dtype=np.float32)
 
     section_perimeters = section.perimeters[1:]
@@ -198,7 +193,6 @@ def _predict_perimeters(section, statistical_model):
 
 
 def _smooth_perimeters(section, smoothing_window):
-
     window_length = len(smoothing_window)
 
     # how much do we need to extend our array for a valid convolution
@@ -217,7 +211,6 @@ def _smooth_perimeters(section, smoothing_window):
 
 
 def _smooth_morphology_perimeters(morphology, smoothing_window):
-
     # keep track of old and new total perimeters
     old_total = new_total = 0.0
 
@@ -227,7 +220,6 @@ def _smooth_morphology_perimeters(morphology, smoothing_window):
     # we have to smooth with respect to the current perimeters and not
     # update while we do that
     for section in morphology.iter():
-
         old_total += section.perimeters.sum()
         new_perimeters = _smooth_perimeters(section, smoothing_window)
 

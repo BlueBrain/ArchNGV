@@ -87,7 +87,6 @@ def principal_directions(points, return_eigenvalues=False):
     idx = np.argsort(eigs)[::-1]
 
     if return_eigenvalues:
-
         return eigs[idx], eigv[:, idx].T
 
     return eigv[:, idx].T

@@ -228,7 +228,6 @@ def surface_intersect(astrocyte_positions, potential_targets, astrocyte_target_e
 
     n_established = 0
     for astro_id, edge_id, target_point in zip(somata_idx, target_edge_indices, target_positions):
-
         target_to_soma_vec = astrocyte_positions[astro_id] - target_point
 
         for _ in range(10):
@@ -246,7 +245,6 @@ def surface_intersect(astrocyte_positions, potential_targets, astrocyte_target_e
             segment_length = np.linalg.norm(segment_beg_point - segment_end_point)
 
             if abs(segment_beg_radius - segment_end_radius) < EPS:  # cylinder
-
                 # unit length direction of the cone
                 cone_direction = (segment_end_point - segment_beg_point) / segment_length
                 roots = cylinder_intersections(
@@ -258,7 +256,6 @@ def surface_intersect(astrocyte_positions, potential_targets, astrocyte_target_e
                 )
 
             else:  # truncated cone
-
                 # make sure that the vector is always from the small radius to the big one
                 (
                     segment_beg_point,
@@ -318,7 +315,6 @@ def surface_intersect(astrocyte_positions, potential_targets, astrocyte_target_e
                 break
 
             if left < 0.0 and right < 0.0:  # check previous segment
-
                 cid = edges[edge_id][0]
                 # the int casting is a fix because np.uin64 is converted
                 # to float if added to a regular int
@@ -330,7 +326,6 @@ def surface_intersect(astrocyte_positions, potential_targets, astrocyte_target_e
                     break
 
             elif left > 0.0 and right > 0.0:  # check next segment
-
                 pid = edges[edge_id][1]
                 children = graph.successors(pid)
                 if children.size > 0:

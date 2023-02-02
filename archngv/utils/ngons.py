@@ -155,7 +155,6 @@ def subdivide_triangles_by_total_area(points, triangles, min_number_of_points):
     points_per_triangle = np.rint(areas[sorted_ids] * density)
 
     for i, triangle in enumerate(sorted_triangles):
-
         n_points = points_per_triangle[i]
 
         try:
@@ -199,12 +198,10 @@ def subdivide_triangles(initial_points, initial_triangles, max_level=0, max_poin
 
     level = 0
     while level <= max_level and len(added_points) <= max_points:
-
         iteration_points = []
         iteration_triangles = []
 
         for i, triangle in enumerate(new_triangles):
-
             center = (points[triangle[0]] + points[triangle[1]] + points[triangle[2]]) / 3.0
 
             iteration_points.append(center)
@@ -303,13 +300,11 @@ def polygons_to_triangles(points, face_vertices_collection):
 
     n = 0
     for face_index, face_vertices in enumerate(face_vertices_collection):
-
         n_vertices = len(face_vertices)
         face_vertices = np.asarray(face_vertices, dtype=np.uintp)
 
         # triangle, store it as it is
         if n_vertices == 3:
-
             tris[n] = face_vertices
             tris_to_polys_map[n] = face_index
             n += 1
@@ -347,7 +342,6 @@ def local_to_global_triangles(triangles, ps_tris_offsets, local_to_global_vertic
     global_tris = np.empty_like(triangles)
     total_tris = 0
     for (p_beg, t_beg), (p_end, t_end) in consecutive_pairs(ps_tris_offsets):
-
         # get the local triangles for the i-th astrocyte
         local_tris = triangles[t_beg:t_end]
         n_tris = len(local_tris)

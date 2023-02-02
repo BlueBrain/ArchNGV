@@ -11,7 +11,6 @@ from archngv.building.morphology_synthesis.domain_orientation import (
 
 
 def test_overlapping_orientations():
-
     ref_point = np.array([0.0, 0.0, 0.0])
 
     points = np.array([[0.0, 0.0, 1.0], [2.0, 0.0, 0.0], [1.0, 2.0, 1.0], [3.0, 6.0, 3.0]])
@@ -27,7 +26,6 @@ def test_overlapping_orientations():
 
 class MockObjective:
     def __init__(self, func, points):
-
         self._f = func
         self.points = points
         self.occupied = np.zeros(len(points), dtype=bool)
@@ -37,7 +35,6 @@ class MockObjective:
 
 
 def test_choose_ids_1():
-
     points = np.array([1, 5, 4, 3, 0])
     objective = MockObjective(lambda x: x, points)
 
@@ -47,7 +44,6 @@ def test_choose_ids_1():
 
 
 def test_choose_ids_2():
-
     points = np.array([1, 5, 4, 3, 0])
     objective = MockObjective(lambda x: -x, points)
 
@@ -57,7 +53,6 @@ def test_choose_ids_2():
 
 
 def test_chood_ids_all():
-
     points = np.array([1, 2, 3])
     objective = MockObjective(lambda _: None, points)
 
@@ -66,7 +61,6 @@ def test_chood_ids_all():
 
 
 def test_quadratic_angles():
-
     a = np.array(
         [
             [-135.81935278, 634.8777047, 338.16458719],
@@ -90,7 +84,6 @@ def test_quadratic_angles():
 
 
 def test_objective():
-
     points = np.array([[0.0, 0.0, 1.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0]])
 
     center = np.zeros(3)
@@ -108,7 +101,6 @@ def test_objective():
 
 
 def test_orientations_from_domain():
-
     soma_center = np.array([-92.36826886, 645.07314376, 365.45216845])
 
     points = np.array(

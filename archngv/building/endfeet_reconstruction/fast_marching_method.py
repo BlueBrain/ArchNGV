@@ -28,7 +28,6 @@ def _expanding_ring_neighborhoods(start_node, vertex_neighbors, max_level):
     visited = {start_node}
 
     for _ in range(max_level):
-
         ring = set(
             neighbor
             for vertex in ring
@@ -68,7 +67,6 @@ def _find_non_overlapping_mesh_nodes(
     occupied = set(closest_mesh_nodes)
 
     for mesh_node, endfeet_ids in overlapping_groups.items():
-
         if endfeet_ids.size <= 1:
             continue
 
@@ -85,18 +83,15 @@ def _find_non_overlapping_mesh_nodes(
         endfeet_list = deque(endfeet_ids[np.argsort(endfeet_dst)[::-1]][:-1])
 
         for ring in ring_neighborhood_generator:
-
             no_endfeet_left = False
 
             for vertex in ring:
-
                 v_neighbors = _get_neighbors(vertex_neighbors, vertex)
 
                 # we want to find a node where its 1-ring neighborhood
                 # is not overlapping with the 1-ring neighborhood of the
                 # other occupied points
                 if not any(neighbor in occupied for neighbor in v_neighbors):
-
                     endfoot_id = endfeet_list.pop()
                     closest_mesh_nodes[endfoot_id] = vertex
 

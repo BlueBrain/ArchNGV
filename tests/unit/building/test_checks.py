@@ -7,7 +7,6 @@ from archngv.spatial import BoundingBox
 
 
 def test_assert_bbox_alignment__aligned():
-
     min_point = np.array([1.0, 2.0, 3.0])
     max_point = np.array([8.0, 9.0, 10.0])
 
@@ -21,7 +20,6 @@ def test_assert_bbox_alignment__aligned():
 
 
 def test_check_alignment__tolerance():
-
     tolerance = 10.0
 
     bbox1 = BoundingBox(np.array([0.0, 0.0, 2.0]), np.array([8.0, 9.0, 10.0]))
@@ -45,7 +43,6 @@ def test_check_alignment__tolerance():
 
 
 def test_check_alignment__not_aligned():
-
     min_point = np.array([1.0, 2.0, 3.0])
     max_point = np.array([8.0, 9.0, 10.0])
 

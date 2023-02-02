@@ -23,7 +23,6 @@ TMP_SONATA_DIR = BUILD_DIR / "sonata.tmp"
 
 
 def assert_cli_run(cli, cmd_list):
-
     runner = click.testing.CliRunner()
     with runner.isolated_filesystem():
         result = runner.invoke(cli, [str(p) for p in cmd_list])
@@ -31,7 +30,6 @@ def assert_cli_run(cli, cmd_list):
 
 
 def test_ngv_config():
-
     assert_cli_run(
         tested.ngv_config,
         [
@@ -44,7 +42,6 @@ def test_ngv_config():
 
 
 def test_assign_emodels():
-
     assert_cli_run(
         tested.assign_emodels,
         [
@@ -59,7 +56,6 @@ def test_assign_emodels():
 
 
 def test_cell_placement():
-
     # TODO: Create a click sonata file type so that if sth else is passed to throw
     # meaningful error.
 
@@ -85,9 +81,7 @@ def test_cell_placement():
 
 
 def test_cell_placement__with_region_specified():
-
     with tempfile.TemporaryDirectory() as tdir:
-
         edited_manifest = Path(tdir, "MANIFEST.yaml")
 
         shutil.copyfile(BIONAME_DIR / "MANIFEST.yaml", Path(tdir, "MANIFEST.yaml"))
@@ -117,7 +111,6 @@ def test_cell_placement__with_region_specified():
 
 
 def test_finalize_astrocytes():
-
     assert_cli_run(
         tested.finalize_astrocytes,
         [
@@ -132,7 +125,6 @@ def test_finalize_astrocytes():
 
 
 def test_microdomains():
-
     assert_cli_run(
         tested.build_microdomains,
         [
@@ -153,7 +145,6 @@ def test_microdomains():
 
 
 def test_gliovascular_connectivity():
-
     assert_cli_run(
         tested.gliovascular_connectivity,
         [
@@ -176,7 +167,6 @@ def test_gliovascular_connectivity():
 
 
 def test_gliovascular_finalize():
-
     assert_cli_run(
         tested.attach_endfeet_info_to_gliovascular_connectivity,
         [
@@ -197,7 +187,6 @@ def test_gliovascular_finalize():
 
 
 def test_neuroglial_connectivity():
-
     assert_cli_run(
         tested.neuroglial_connectivity,
         [
@@ -220,7 +209,6 @@ def test_neuroglial_connectivity():
 
 
 def test_neuroglial_finalize():
-
     assert_cli_run(
         tested.attach_morphology_info_to_neuroglial_connectivity,
         [
@@ -243,7 +231,6 @@ def test_neuroglial_finalize():
 
 
 def test_glialglial_connectivity():
-
     assert_cli_run(
         tested.build_glialglial_connectivity,
         [
@@ -262,7 +249,6 @@ def test_glialglial_connectivity():
 
 
 def test_endfeet_meshes():
-
     assert_cli_run(
         tested.build_endfeet_surface_meshes,
         [
@@ -281,7 +267,6 @@ def test_endfeet_meshes():
 
 
 def test_synthesis():
-
     assert_cli_run(
         tested.synthesis,
         [
@@ -316,7 +301,6 @@ def test_synthesis():
 
 
 def test_verify_circuit_integrity():
-
     assert_cli_run(
         main.verify_circuit_integrity,
         [

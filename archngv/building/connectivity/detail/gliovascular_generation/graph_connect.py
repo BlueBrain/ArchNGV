@@ -53,7 +53,6 @@ def domains_to_vasculature(
     endfeet_per_domain = n_distr.rvs(size=len(cell_ids)).round().astype(np.int32)
 
     for domain_index, cell_id in enumerate(cell_ids):
-
         n_endfeet = endfeet_per_domain[domain_index]
 
         if n_endfeet == 0:

@@ -44,7 +44,6 @@ def convert_microdomains_to_generic_format(old_file_path: Path, new_file_path: P
     """
     with h5py.File(old_file_path, mode="r") as old_file:
         with h5py.File(new_file_path, mode="w") as new_file:
-
             g_data = new_file.create_group("data", track_order=True)
             g_data.create_dataset("points", data=old_file["data"]["points"], dtype=np.float32)
             g_data.create_dataset(
@@ -78,7 +77,6 @@ def merge_microdomain_files(microdomains_dir: Path, output_file_path: Path):
     with h5py.File(regular_microdomains_file_path, "r") as r_domains:
         with h5py.File(overlapping_microdomains_file_path, "r") as o_domains:
             with h5py.File(output_file_path, "w") as out_file:
-
                 num_domains = len(r_domains["offsets"]["points"]) - 1
 
                 assert (
@@ -97,13 +95,11 @@ def merge_microdomain_files(microdomains_dir: Path, output_file_path: Path):
                 g_offs = out_file.create_group("offsets", track_order=True)
 
                 for name in ("points", "triangle_data", "neighbors"):
-
                     g_data.create_dataset(name, data=o_data[name])
                     g_offs.create_dataset(name, data=o_offs[name])
 
                 # triangle_data and neighbors should be identical between the two tessellations
                 for name in ("triangle_data", "neighbors"):
-
                     assert np.allclose(
                         r_data[name][:], o_data[name][:]
                     ), f"{name} data entry is not identical between the two tessellations."
@@ -116,7 +112,6 @@ def merge_microdomain_files(microdomains_dir: Path, output_file_path: Path):
                 scaling_factors = np.empty(num_domains, dtype=float)
 
                 for domain_index in range(num_domains):
-
                     r_points = get_data_slice(r_data["points"], r_offs["points"], domain_index)
                     o_points = get_data_slice(o_data["points"], o_offs["points"], domain_index)
 
@@ -146,11 +141,9 @@ def convert_endfeet_to_generic_format(old_file_path: Path, new_file_path: Path) 
     properties = {}
 
     with h5py.File(old_file_path, "r") as o_endfeet:
-
         n_endfeet = len(o_endfeet["attributes"]["surface_area"])
 
         for name in ("surface_area", "surface_thickness", "unreduced_surface_area"):
-
             dset = o_endfeet["attributes"][name]
 
             assert (
@@ -163,18 +156,15 @@ def convert_endfeet_to_generic_format(old_file_path: Path, new_file_path: Path) 
             }
 
         for name in ("points", "triangles"):
-
             properties[name] = {
                 "values": [],
                 "offsets": np.zeros(n_endfeet + 1, dtype=np.int64),
             }
 
         for index in range(n_endfeet):
-
             g = o_endfeet["objects"][f"endfoot_{index}"]
 
             for name in ("points", "triangles"):
-
                 values = g[name][:]
                 properties[name]["values"].append(values)
                 properties[name]["offsets"][index + 1] = properties[name]["offsets"][index] + len(
@@ -217,7 +207,6 @@ def add_astrocyte_segment_center_property(
     astrocyte_segment_center_points = np.zeros((len(neuroglial), 3), dtype=np.float32)
 
     for astrocyte_id in range(len(astrocytes)):
-
         edge_ids = neuroglial.efferent_edges(astrocyte_id)
 
         if len(edge_ids) == 0:

@@ -2,7 +2,6 @@ from archngv.utils import functional as _funct
 
 
 def test_consecutive_pairs():
-
     a = [5, 3, 1, 4, 0]
 
     gen = _funct.consecutive_pairs(a)

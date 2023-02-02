@@ -2,7 +2,6 @@ from archngv.building.cell_placement.pattern import SpatialSpherePattern
 
 
 def test_constructor():
-
     max_spheres = 10
 
     pat = SpatialSpherePattern(max_spheres)

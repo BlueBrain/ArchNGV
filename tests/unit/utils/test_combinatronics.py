@@ -4,7 +4,6 @@ from archngv.utils import combinatronics as cb
 
 
 def test_cartesian_product():
-
     arr1 = np.array([4, 8])
     arr2 = np.array([1, 2])
     arr3 = np.array([0, 3])

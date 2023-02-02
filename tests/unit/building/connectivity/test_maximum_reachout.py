@@ -12,7 +12,6 @@ from archngv.building.connectivity.detail.gliovascular_generation.graph_reachout
 
 
 def test__distribute_elements_in_buckets():
-
     res = _distribute_elements_in_buckets(11, np.array([2, 5, 9]))
     np.testing.assert_allclose(res, [2, 5, 4])
     np.testing.assert_allclose(res.sum(), 11)
@@ -67,7 +66,6 @@ def test__distribute_elements_in_buckets():
 
 
 def test_select_component_targets__point_line():
-
     points = np.array(
         [
             [0.0, 0.0, 0.0],
@@ -110,13 +108,11 @@ def test_select_component_targets__point_line():
 
 
 def test_argsort_components():
-
     source = np.array([0.0, -1.0, 2.0])
 
     comps = []
 
     for i in range(5):
-
         points = np.column_stack((np.ones(10) * 2.0 + i, np.arange(-5.0, 5.0), np.zeros(10)))
         component = pd.DataFrame({"x": points[:, 0], "y": points[:, 1], "z": points[:, 2]})
 

@@ -26,27 +26,23 @@ def grouped_elements(ids, offsets, groups):
 
 
 def test_grouped_elements_contructor(grouped_elements, ids, offsets, groups):
-
     npt.assert_array_equal(grouped_elements.ids, ids)
     npt.assert_array_equal(grouped_elements.groups, groups)
     npt.assert_array_equal(grouped_elements._offsets, offsets)
 
 
 def test_grouped_elements_ids(grouped_elements, ids, offsets, groups):
-
     npt.assert_array_equal(grouped_elements.get_group_ids(0), ids[0:2])
     npt.assert_array_equal(grouped_elements.get_group_ids(1), ids[2:3])
     npt.assert_array_equal(grouped_elements.get_group_ids(2), ids[3:6])
 
 
 def test_grouped_elements_iter_assigned_grouped(grouped_elements):
-
     iter_assigned_groups = grouped_elements.iter_assigned_groups()
     npt.assert_array_equal([g for g, _ in iter_assigned_groups], [10, 22])
 
 
 def test_group_elements():
-
     v_group_index = np.array([-1, 3, 3, 3, 2, 2, 1, 0, -1, -1], dtype=np.int32)
     grouped_elements = _g.group_elements(v_group_index)
 
@@ -60,7 +56,6 @@ def test_group_elements():
 
 
 def test_vertex_to_triangle_groups():
-
     vertex_groups = np.array([-1, 0, 0, 0, 0, 0, 1, 1, 1, 1, -1, -1])
 
     triangles = np.array(

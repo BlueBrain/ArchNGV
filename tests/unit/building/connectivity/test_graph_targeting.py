@@ -18,7 +18,6 @@ def sequential_edges(Npoints):
 
 
 def _create_test_line(Npoints, dP, target_linear_density):
-
     l_T = target_linear_density
 
     start = np.array([1.0, 2.0, 3.0])
@@ -76,7 +75,6 @@ def test_targeting_on_straight_line():
     ],
 )
 def test_targeting_on_random_lines(step_size, linear_density):
-
     points, edges, e_targets = _create_test_line(20, step_size, linear_density)
 
     a_targets, a_segments = graph_targeting._distribution_on_line_graph(

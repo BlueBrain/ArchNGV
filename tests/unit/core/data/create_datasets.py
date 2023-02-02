@@ -70,7 +70,6 @@ def create_glia():
 
 
 def create_neuronal():
-
     props = {
         "afferent_center_x": [1110.0, 1111.0, 1112.0, 1113.0],
         "afferent_center_y": [1120.0, 1121.0, 1122.0, 1123.0],
@@ -93,7 +92,6 @@ def create_neuronal():
 
 
 def create_neuroglial():
-
     props = {
         "synapse_id": [1, 3, 0, 1],
         "efferent_section_id": [0, 0, 1, 1],
@@ -115,7 +113,6 @@ def create_neuroglial():
 
 
 def create_gliovascular():
-
     props = {
         "endfoot_id": [0, 1, 2],
         "efferent_section_id": [0, 0, 1],

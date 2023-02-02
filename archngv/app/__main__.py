@@ -124,7 +124,7 @@ def _run_snakemake_process(cmd, errorcode=1):
     return 0
 
 
-@app.command(context_settings=dict(ignore_unknown_options=True, allow_extra_args=True))
+@app.command(context_settings={"ignore_unknown_options": True, "allow_extra_args": True})
 @click.option(
     "-u",
     "--cluster-config",

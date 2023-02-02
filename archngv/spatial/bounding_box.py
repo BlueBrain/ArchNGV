@@ -34,7 +34,6 @@ class BoundingBox:
 
         # legacy convention for Paxinos atlas
         if not np.allclose(signs, 1.0):
-
             points = np.array([min_coordinates, max_coordinates])
 
             min_coordinates = points.min(axis=0)

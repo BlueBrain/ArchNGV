@@ -8,7 +8,6 @@ import pandas as pd
 from archngv.exceptions import NGVError
 
 if TYPE_CHECKING:
-
     from vascpy import PointVasculature
 
     from archngv.core.datastructure import CellData, EndfeetMeshes, GliovascularConnectivity
@@ -70,7 +69,6 @@ def endfeet_mesh_properties(
     )
 
     for ids, section_ids, lengths, diameters, perimeters in it_results:
-
         properties["astrocyte_section_id"][ids] = section_ids
         properties["endfoot_compartment_length"][ids] = lengths
         properties["endfoot_compartment_diameter"][ids] = diameters
@@ -130,7 +128,6 @@ def _dispatch_endfeet_data(
     vasculature_edges = vasculature.edges
 
     for astro_id in range(len(astrocytes)):
-
         endfeet_ids = gv_connectivity.astrocyte_endfeet(astro_id)
 
         # no endfeet, no processing to do

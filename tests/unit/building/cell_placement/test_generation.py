@@ -12,7 +12,6 @@ class MockEnergy:
 
 
 class MockIntensity:
-
     voxel_dimensions = None
     raw = None
     shape = (10, 10, 10)
@@ -36,7 +35,6 @@ class MockSomaDistribution:
 
 
 def placement_parameters():
-
     beta = 2.0
     number_of_trials = 120
     cutoff_radius = 2.0
@@ -48,7 +46,6 @@ def placement_parameters():
 
 
 def placement_generator():
-
     parameters = placement_parameters()
     intensity = MockIntensity()
     voxel_data = MockVoxelData(intensity)
@@ -63,7 +60,6 @@ def placement_generator():
 
 
 def test_placement_parameters():
-
     params = placement_parameters()
 
     assert params.beta == 2.0
@@ -73,7 +69,6 @@ def test_placement_parameters():
 
 
 def test_placement_generator_constructor():
-
     p_gen = placement_generator()
 
     assert isinstance(p_gen.vdata, MockVoxelData)
@@ -83,41 +78,33 @@ def test_placement_generator_constructor():
 
 
 def test_placement_generator__method_selection():
-
     with patch.object(MockEnergy, "has_second_order_potentials", return_value=True):
-
         p_gen = placement_generator()
         assert p_gen.method == p_gen.second_order
 
     with patch.object(MockEnergy, "has_second_order_potentials", return_value=False):
-
         p_gen = placement_generator()
         assert p_gen.method == p_gen.first_order
 
 
 def test_placement_generator_is_colliding__voxel_data():
-
     test_point = np.array([1, 2, 3])
     test_radius = 2.0
 
     with patch.object(MockVoxelData, "in_geometry", return_value=False):
-
         p_gen = placement_generator()
         assert p_gen.is_colliding(test_point, test_radius)
 
     with patch.object(MockVoxelData, "in_geometry", return_value=True):
-
         p_gen = placement_generator()
         assert not p_gen.is_colliding(test_point, test_radius)
 
 
 def test_placement_generator_is_colliding__empty_index_list():
-
     test_point = np.array([1, 2, 3])
     test_radius = 2.0
 
     with patch.object(MockVoxelData, "in_geometry", return_value=True):
-
         p_gen = placement_generator()
 
         mock_index = Mock(is_intersecting=lambda p, r: True)
@@ -128,12 +115,10 @@ def test_placement_generator_is_colliding__empty_index_list():
 
 
 def test_placement_generator_is_colliding__pattern():
-
     test_point = np.array([1, 2, 3])
     test_radius = 2.0
 
     with patch.object(MockVoxelData, "in_geometry", return_value=True):
-
         p_gen = placement_generator()
 
         mock_index = Mock(is_intersecting=lambda p, r: False)
@@ -157,7 +142,6 @@ def test_placement_generator_is_colliding__pattern():
 
 
 def test_placement_generator_first_order():
-
     voxel_centers = np.array([[0.0, 2.0, 3.0], [1.0, 2.0, 3.0], [2.0, 2.0, 3.0]])
 
     with patch.object(
@@ -167,7 +151,6 @@ def test_placement_generator_first_order():
     ), patch.object(
         generation, "proposal", return_value=(1.0, 2.0, 3.0)
     ):
-
         p_gen = placement_generator()
 
         new_point, new_radius = p_gen.first_order(voxel_centers)
@@ -181,7 +164,6 @@ def test_placement_generator_second_order():
 
 
 def test_generator_run():
-
     mock_point = np.array([1.0, 2.0, 3.0])
     mock_radius = 1.4
 
@@ -192,7 +174,6 @@ def test_generator_run():
     with patch.object(p_gen, "method", return_value=(mock_point, mock_radius)), patch.object(
         generation, "nonzero_intensity_groups", return_value=((10, voxel_centers) for _ in range(2))
     ):
-
         p_gen.run()
 
         coordinates = p_gen.pattern.coordinates
@@ -205,7 +186,6 @@ def test_generator_run():
 
 
 def test_proposal():
-
     voxel_centers = np.array([[1.0, 1.0, 1.0]])
     voxel_edge_length = 0.0
 
@@ -215,7 +195,6 @@ def test_proposal():
 
 
 def test_voxel_grid_centers():
-
     raw_array = np.zeros((2, 2, 2), dtype=np.float32)
     voxel_dimensions = (2, 2, 2)
 
@@ -242,7 +221,6 @@ def test_voxel_grid_centers():
 
 
 def test_voxel_group_centers():
-
     raw_array = np.zeros((2, 2, 2), dtype=np.float32)
 
     raw_array[..., 0] = 1e10
@@ -271,7 +249,6 @@ def test_voxel_group_centers():
 
 
 def test_counts_per_group():
-
     intensity_per_group = np.array([100000.0, 200000.0, 350000.0])
     voxels_per_group = np.array([100, 120, 210])
     voxel_volume = 1000.0
@@ -284,7 +261,6 @@ def test_counts_per_group():
 
 
 def test_nonzero_intensity_groups():
-
     raw_array = np.zeros((2, 2, 2), dtype=np.float32)
 
     raw_array[..., 0] = 1e10

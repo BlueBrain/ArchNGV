@@ -24,7 +24,6 @@ from archngv.exceptions import NGVError
     ],
 )
 def test_apply_callable(key, expected_result):
-
     callable_function = lambda index: index
 
     npt.assert_equal(

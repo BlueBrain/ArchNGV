@@ -24,19 +24,15 @@ class CutPointData:
         orientation, offset = cp_dict["cut_plane"]
 
         if orientation == "X":
-
             cut_plane = numpy.array([offset, 0.0, 0.0])
 
         elif orientation == "Y":
-
             cut_plane = numpy.array([0.0, offset, 0.0])
 
         elif orientation == "Z":
-
             cut_plane = numpy.array([0.0, 0.0, offset])
 
         else:
-
             raise TypeError("Unknown Orientation Axis {}".format(orientation))
 
         details = cp_dict["details"]
@@ -44,7 +40,6 @@ class CutPointData:
         return cls(cut_leaves, cut_plane, details)
 
     def __init__(self, cut_leaves_coordinates, cut_plane, details, cell=None):
-
         self.cell = cell
         self.details = details
 

@@ -5,7 +5,6 @@ from archngv.building.cell_placement import potentials
 
 
 def test_lenard_jones():
-
     epsilon = 0.1
     r_m = 2.0
 
@@ -31,7 +30,6 @@ def test_lenard_jones():
 
 
 def test_coulomb():
-
     r_m = 2.0
 
     distances = np.linspace(1.8, 2.5, 10)
@@ -56,7 +54,6 @@ def test_coulomb():
 
 
 def test_inverse_distance():
-
     r_m = 2.0
 
     distances = np.linspace(1.8, 2.5, 10)
@@ -81,7 +78,6 @@ def test_inverse_distance():
 
 
 def test_spring():
-
     d_0 = 2.0
 
     spring_constant = 0.1

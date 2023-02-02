@@ -6,7 +6,6 @@ from archngv.spatial import hashmap
 
 @pytest.fixture(scope="function")
 def hashmapbase():
-
     voxel_size = 12.0
     offset = np.array([10.0, 12.0, 13.0])
 
@@ -15,7 +14,6 @@ def hashmapbase():
 
 @pytest.fixture(scope="function")
 def empty_phashmap():
-
     voxel_size = 30.0
     offset = np.array([50.0, 22.0, 19.0])
 
@@ -24,7 +22,6 @@ def empty_phashmap():
 
 @pytest.fixture(scope="function")
 def filled_phashmap():
-
     voxel_size = 15.0
     offset = np.array([10.0, 22.0, 19.0])
 
@@ -48,7 +45,6 @@ def filled_phashmap():
 
 
 def test_key(hashmapbase):
-
     point = np.array([32.0, 44.0, 13.0])
 
     i, j, k = hashmapbase.key(point)
@@ -75,7 +71,6 @@ def test_add_point(empty_phashmap):
 
 
 def test_gen(filled_phashmap):
-
     # [(50, 27, 65), (3, 20, 28), (25, 11, 8), (5, 13, 12), (34, 5, 27), (607, 153, 80)]
 
     ijk_min = (2, 2, 2)

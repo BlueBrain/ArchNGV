@@ -29,12 +29,10 @@ def add_properties_to_edge_population(
             compatible with the edge population
     """
     with h5py.File(filepath, "r+") as h5f:
-
         group = h5f[f"/edges/{population_name}/0"]
         length = h5f[f"/edges/{population_name}/source_node_id"].shape[0]
 
         for name, values in properties.items():
-
             if name in group:
                 raise NGVError(f"'{name}' property already exists.")
 
@@ -120,12 +118,10 @@ def export_grouped_properties(filepath: Path, properties: Dict[str, Dict[str, np
         The property values of the i-th group correspond to values[offsets[i]: offsets[i + 1]]
     """
     with h5py.File(filepath, mode="w") as f:
-
         g_data = f.create_group("data", track_order=True)
         g_offsets = f.create_group("offsets", track_order=True)
 
         for name, dct in properties.items():
-
             g_data.create_dataset(name, data=dct["values"])
 
             if dct["offsets"] is not None:
@@ -247,7 +243,6 @@ def export_endfeet_meshes(filename: Path, endfeet: Iterator[EndfootMesh], n_endf
 
     # it is not guaranteed that endfoot index in consecutive
     for endfoot in endfeet:
-
         endfoot_index = endfoot.index
 
         properties["points"]["values"][endfoot_index] = endfoot.points
@@ -258,7 +253,6 @@ def export_endfeet_meshes(filename: Path, endfeet: Iterator[EndfootMesh], n_endf
         properties["surface_thickness"]["values"][endfoot_index] = endfoot.thickness
 
     for name in ("points", "triangles"):
-
         properties[name]["offsets"][1:] = np.cumsum(
             [len(points) for points in properties[name]["values"]]
         )
