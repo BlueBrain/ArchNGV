@@ -41,6 +41,19 @@ class BoundingBox:
 
         return cls(min_coordinates, max_coordinates)
 
+    @classmethod
+    def from_voxel_data_mask(cls, raw, voxel_dimensions, offset):
+        """Create bbox from non-zero elements in a volume."""
+        roi = raw.nonzero()
+
+        min_ijk = np.array([roi[0].min(), roi[1].min(), roi[2].min()])
+        max_ijk = np.array([roi[0].max(), roi[1].max(), roi[2].max()]) + 1
+
+        min_coordinates = offset + min_ijk * voxel_dimensions
+        max_coordinates = offset + max_ijk * voxel_dimensions
+
+        return cls(min_coordinates, max_coordinates)
+
     def __init__(self, min_coordinates, max_coordinates):
         self._bb = np.array((min_coordinates, max_coordinates), dtype=np.float32)
 

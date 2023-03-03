@@ -107,7 +107,6 @@ def cell_placement(config, atlas, atlas_cache, vasculature, seed, population_nam
         voxelized_intensity,
         spatial_indexes=spatial_indexes,
     )
-
     cell_names = numpy.asarray(
         [f"GLIA_{index:013d}" for index in range(len(somata_positions))],
         dtype=str,
@@ -174,7 +173,7 @@ def build_microdomains(config, astrocytes, atlas, atlas_cache, seed, output_file
         scale_microdomains,
         scaling_factor_from_overlap,
     )
-    from archngv.spatial import BoundingBox
+    from archngv.utils.ndimage import map_positions_to_connected_components
 
     LOGGER.info("Seed: %d", seed)
     numpy.random.seed(seed)
@@ -192,45 +191,71 @@ def build_microdomains(config, astrocytes, atlas, atlas_cache, seed, output_file
         region_mask = atlas.load_data("brain_regions")
         LOGGER.info("Build microdomains for the entire atlas.")
 
-    bbox = BoundingBox.from_voxel_data(
-        region_mask.shape, region_mask.voxel_dimensions, region_mask.offset
-    )
     astrocytes = voxcell.CellCollection.load_sonata(astrocytes)
+    astrocyte_positions = astrocytes.positions
+    astrocyte_radii = astrocytes.properties["radius"].to_numpy()
 
-    LOGGER.info("Generating microdomains...")
-    microdomains = generate_microdomain_tessellation(
-        generator_points=astrocytes.positions,
-        generator_radii=astrocytes.properties["radius"].to_numpy(),
-        bounding_box=bbox,
-    )
+    # Generating microdomains for each non connected components separately.
+    n_astrocytes = len(astrocytes)
+    microdomains = numpy.empty(n_astrocytes, dtype=object)
+    overlapping_microdomains = numpy.empty(n_astrocytes, dtype=object)
+    global_scale_factors = numpy.zeros(n_astrocytes, dtype=float)
 
-    LOGGER.info("Generating overlapping microdomains...")
+    LOGGER.info("Microdomains for %d astrocytes will be built.", n_astrocytes)
+
     overlap_distr = microdomains_config["overlap_distribution"]["values"]
     overlap_distribution = stats.norm(loc=overlap_distr[0], scale=overlap_distr[1])
 
-    scaling_factors = numpy.fromiter(
-        map(
-            scaling_factor_from_overlap,
-            overlap_distribution.rvs(size=len(astrocytes)),
-        ),
-        dtype=float,
-        count=len(astrocytes),
+    iter_per_component_data = map_positions_to_connected_components(
+        positions=astrocyte_positions,
+        voxel_data=region_mask,
     )
 
-    LOGGER.info("Make microdomains overlap.")
-    overlapping_microdomains = scale_microdomains(microdomains, scaling_factors, bbox)
+    LOGGER.info("Generating microdomains...")
+
+    # Build Microdomains component by component
+    for i, (component_bbox, component_mask) in enumerate(iter_per_component_data):
+        component_microdomains = list(
+            generate_microdomain_tessellation(
+                generator_points=astrocyte_positions[component_mask],
+                generator_radii=astrocyte_radii[component_mask],
+                bounding_box=component_bbox,
+            )
+        )
+
+        # map back to global array
+        microdomains[component_mask] = component_microdomains
+
+        scaling_factors = numpy.fromiter(
+            map(
+                scaling_factor_from_overlap,
+                overlap_distribution.rvs(size=len(component_microdomains)),
+            ),
+            dtype=float,
+            count=len(component_microdomains),
+        )
+
+        # map back to global array
+        global_scale_factors[component_mask] = scaling_factors
+
+        component_overlapping_microdomains = list(
+            scale_microdomains(component_microdomains, scaling_factors, component_bbox)
+        )
+
+        overlapping_microdomains[component_mask] = component_overlapping_microdomains
+
+        LOGGER.debug("Built %d domains in %d connected component", len(component_microdomains), i)
 
     # The microdomains have been creating in the full Region of interest bounding box.
     # We will now move the microdomains points that are located outside the region of
     # interest (roi) (using the region atlas) inside the roi.
-    LOGGER.info("Move some microdomains points inside the region of interest...")
+    LOGGER.info("Move some microdomain points inside the region of interest...")
     corrected_microdomains = limit_microdomains_to_roi(
         overlapping_microdomains, astrocytes.positions, region_mask
     )
 
     LOGGER.info("Export overlapping microdomains...")
-    export_microdomains(output_file_path, corrected_microdomains, scaling_factors)
-
+    export_microdomains(output_file_path, corrected_microdomains, global_scale_factors)
     LOGGER.info("Done!")
 
 
