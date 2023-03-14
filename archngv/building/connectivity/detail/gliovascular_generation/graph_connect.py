@@ -3,7 +3,7 @@
 import logging
 
 import numpy as np
-from spatial_index import SphereIndex
+from spatial_index import PointIndexBuilder
 
 from archngv.spatial import collision
 from archngv.utils.statistics import truncated_normal
@@ -47,7 +47,11 @@ def domains_to_vasculature(
     L.info("Endfeet Distribution Parameters %s", properties["endfeet_distribution"])
 
     domain_target_edges = []
-    index = SphereIndex(potential_targets.loc[:, ("x", "y", "z")].to_numpy(), radii=None)
+
+    index = PointIndexBuilder.from_numpy(
+        positions=potential_targets.loc[:, ("x", "y", "z")].to_numpy(),
+        ids=np.arange(potential_targets.shape[0])
+    )
 
     n_distr = truncated_normal(*properties["endfeet_distribution"])
     endfeet_per_domain = n_distr.rvs(size=len(cell_ids)).round().astype(np.int32)
@@ -61,7 +65,7 @@ def domains_to_vasculature(
         domain = domains[int(cell_id)]
 
         points = np.array(domain.bounding_box)
-        idx = index.find_intersecting_window(points[:3], points[3:])
+        idx = index.box_query(points[:3], points[3:], fields="id")
 
         if idx.size == 0:
             continue
