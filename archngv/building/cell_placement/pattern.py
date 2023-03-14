@@ -76,18 +76,20 @@ class SpatialSpherePattern:
         """
         return self._si.is_intersecting(new_position, new_radius)
 
-    def nearest_neighbor(self, trial_position):
-        """Yields the nearest neighbor index of the sphere (new_position, new_radius)
+    def distance_to_nearest_neighbor(self, trial_position, max_distance):
+        """Return the distance to the nearest centroid within `max_distance`.
 
-        Args:
-            trial_position: 1D array
-
-        Returns:
-            Index of the nearest neighbor.
+        Note, that only neighbours that overlap with the sphere
+        `(trial_position, max_distance)` are considered. If there are no
+        neighbours within this distance the method returns `np.inf`.
         """
-        return self._si.find_nearest(trial_position, 1)
 
-    def distance_to_nearest_neighbor(self, trial_position):
-        """Distance to nearest neighbor"""
-        index = self.nearest_neighbor(trial_position)
-        return numpy.linalg.norm(self.coordinates[index] - trial_position)
+        trial_position = np.reshape(trial_position, (3,))
+
+        candidates = self._si.sphere_query(trial_position, max_distance)
+        centroids = candidates["centroids"]
+
+        if np.size(centroids) > 0:
+            return np.sqrt(np.min(np.sum((centroids - trial_position)**2, axis=1)))
+
+        return np.inf

@@ -126,7 +126,10 @@ class PlacementGenerator:
 
         current_position, current_radius = self.first_order(voxel_centers)
 
-        pairwise_distance = self.pattern.distance_to_nearest_neighbor(current_position)
+        pairwise_distance = self.pattern.distance_to_nearest_neighbor(
+            current_position,
+            self.parameters.cutoff_radius
+        )
 
         if pairwise_distance > self.parameters.cutoff_radius:
             return current_position, current_radius
@@ -142,7 +145,10 @@ class PlacementGenerator:
         for _ in range(self.parameters.number_of_trials):
             trial_position, trial_radius = self.first_order(voxel_centers)
 
-            pairwise_distance = self.pattern.distance_to_nearest_neighbor(trial_position)
+            pairwise_distance = self.pattern.distance_to_nearest_neighbor(
+                trial_position
+                self.parameters.cutoff_radius
+            )
 
             if pairwise_distance > self.parameters.cutoff_radius:
                 return trial_position, trial_radius
