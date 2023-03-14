@@ -3,7 +3,7 @@ Handles the spatial point pattern generation and spatial indexing for the cell p
 """
 
 import numpy
-from spatial_index import SphereIndex
+from spatial_index import SphereIndexBuilder
 
 
 class SpatialSpherePattern:
@@ -31,7 +31,7 @@ class SpatialSpherePattern:
 
         self._index = 0
 
-        self._si = SphereIndex()
+        self._si = SphereIndexBuilder.create_empty()
 
     def __getitem__(self, pos):
         """Get sphere center and radius at position pos"""
@@ -59,7 +59,7 @@ class SpatialSpherePattern:
         self._coordinates[self._index] = position
         self._radii[self._index] = radius
 
-        self._si.insert(self._index, position, radius)
+        self._si.insert(centroid=position, radius=radius, id=self._index)
         self._index += 1
 
     def is_intersecting(self, new_position, new_radius):
