@@ -13,3 +13,9 @@ glial_gap_junctions:
 synthesis:
   jobname: ngv_synthesis
   time: '00:20:00'
+
+spatial_index:
+  jobname: spatial_index
+  nodes: 1
+  tasks: 1
+  time: '01:0:00'

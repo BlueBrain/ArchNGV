@@ -20,3 +20,4 @@ popd
 pytest test_specifications.py
 pytest test_build.py
 pytest test_circuit_integrity.py
+pytest test_spatial_index.py
