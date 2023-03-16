@@ -4,7 +4,7 @@
 
 ```shell
 # Clone this repository
-$ git clone ssh://bbpcode.epfl.ch/molecularsystems/ArchNGV /path/to/repo
+$ git clone git@bbpgitlab.epfl.ch:nse/ArchNGV.git
 
 # Load most recent stable modules
 $ module purge

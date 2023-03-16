@@ -87,7 +87,7 @@ MODULES = {
     'glial_gap_junctions':
         (SPACK_MODULEPATH, ['archive/2022-03', 'touchdetector/5.6.1']),
     'synthesis':
-        (SPACK_MODULEPATH, ['archive/2022-03', 'py-mpi4py/3.1.2']),
+        (SPACK_MODULEPATH, ['unstable', 'py-mpi4py/3.1.4']),
 }
 
 
