@@ -22,7 +22,6 @@ from archngv.core.datasets import (
     NeuroglialConnectivity,
     NeuronalConnectivity,
 )
-from archngv.exceptions import NGVError
 
 L = logging.getLogger(__name__)
 
@@ -127,7 +126,9 @@ def obtain_synapse_data(astrocyte_index, synaptic_data_filepath, neuroglial_file
 def _create_target_point_cloud(microdomain, synapse_points, target_n_synapses, rng):
     """Uniformly generates points inside the microdomains until the total number of
     synapse point reaches the target_n_synapses. If synapse_points are equal or more
-    than target_n_synapses, nothing happens.
+    than target_n_synapses, nothing happens. If after 100 loops, the number of
+    generated points does not reach the target_n_synapses, it returns the existing
+    generated points anyway.
 
     Args:
         microdomain (Microdomain): The bounding region of the astrocyte
@@ -138,8 +139,6 @@ def _create_target_point_cloud(microdomain, synapse_points, target_n_synapses, r
     Returns:
         np.ndarray: new synapses
 
-    Raises:
-        NGVError: If the point cloud cannot be updated with new points
     """
     from archngv.spatial.collision import convex_shape_with_spheres
 
@@ -175,10 +174,7 @@ def _create_target_point_cloud(microdomain, synapse_points, target_n_synapses, r
         total_synapses += n_points
 
     else:
-        raise NGVError(
-            "Maximum number of iterations reached."
-            "The microdomain geometry cannot be filled with new points"
-        )
+        L.warning("Maximum number of iterations reached. Returns the generated points anyway.")
 
     return result_points
 

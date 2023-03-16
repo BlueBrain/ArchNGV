@@ -123,6 +123,10 @@ def synthesize_astrocyte(astrocyte_index, paths, parameters, random_generator):
         paths (SynthesisInputPaths): The various paths need by this function
         parameters (dict): Input synthesis parameters
         random_generator (numpy.random.Generator): Random generator instance
+
+    Returns: tuple:
+        -The cell morphology
+        -The cell_property
     """
     (
         cell_properties,
@@ -160,4 +164,4 @@ def synthesize_astrocyte(astrocyte_index, paths, parameters, random_generator):
     morph = _post_growing(morphology, cell_properties.soma_position)
     _sanity_checks(morph)
 
-    return morph
+    return morph, cell_properties

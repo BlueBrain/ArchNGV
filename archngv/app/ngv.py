@@ -633,14 +633,12 @@ def _synthesize(astrocyte_index, seed, paths, config):
     # imports must be local, otherwise when used with modules, they use numpy of the loaded
     # module which might be outdated
     from archngv.app.utils import random_generator
-    from archngv.building.morphology_synthesis.data_extraction import astrocyte_circuit_data
     from archngv.building.morphology_synthesis.full_astrocyte import synthesize_astrocyte
 
     seed = hash((seed, astrocyte_index)) % (2**32)
     rng = random_generator(seed)
 
-    morph = synthesize_astrocyte(astrocyte_index, paths, config, rng)
-    cell_properties = astrocyte_circuit_data(astrocyte_index, paths, rng)[0]
+    morph, cell_properties = synthesize_astrocyte(astrocyte_index, paths, config, rng)
     morph.write(Path(paths.morphology_directory, cell_properties.name[0] + ".h5"))
 
 
