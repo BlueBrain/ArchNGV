@@ -8,7 +8,8 @@ $ git clone ssh://bbpcode.epfl.ch/molecularsystems/ArchNGV /path/to/repo
 
 # Load most recent stable modules
 $ module purge
-$ module load archive/2021-05 python/3.8.3 cmake
+$ module load unstable python/3.10.8 spatial-index/1.2.1
+
 
 # Create a Python virtualenv in repository source directory
 $ python -m venv /path/to/repo/.venv
@@ -18,7 +19,7 @@ $ . /path/to/repo/.venv/bin/activate
 
 # Install ArchNGV
 $ cd /path/to/repo
-$ make install
+$ pip install .
 ```
 
 ## Create circuit exemplars

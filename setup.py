@@ -13,7 +13,6 @@ VERSION = module.VERSION
 BUILDING = [
     "MVDTool>=2.4.4",
     "ngv-ctools>=1.0.0",
-    "spatial-index==0.5.2",
     "bluepy-configfile>=0.1.11",
     "Click>=7.0",
     "numpy-stl>=2.10,<2.16.0",  # More recent versions require >1.22.0 which is not in spack yet
