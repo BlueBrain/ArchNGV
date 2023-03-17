@@ -19,9 +19,9 @@ def test_domains_to_vasculature(mocked_function):
 
     potential_targets = pd.DataFrame(
         {
-            "x": [0.0 , 0.0 , 40.0],
-            "y": [20.0, 40.0, 40.0],
-            "z": [40.0, 60.0, 30.0],
+            "x": [0.0 , 0.0 , 40.0], # potential_targets 0 is located inside Microdomain 0
+            "y": [20.0, 40.0, 40.0], # potential_targets 1 is located inside Microdomain 0 and 1
+            "z": [40.0, 60.0, 30.0], # potential_targets 2 is located inside Microdomain 1
             "r": [0., 0., 0.],
             "edge_index": [0, 1, 1],
             "vasculature_section_id": [0, 1, 1],
@@ -32,7 +32,7 @@ def test_domains_to_vasculature(mocked_function):
     properties = {"reachout_strategy": "maximum_reachout", "endfeet_distribution": [2, 2, 0, 15]}
     domains = Microdomains(BUILD_DIR / "microdomains.h5")
         
-    """ This is the omain Bounding Box values
+    """ This is the 2 used domains Bounding Box values
     (-7.6956673, 33.304604, 20.442867, 77.779236, 77.40124, 77.37364)
     (-7.914425, 7.0291786, -7.3803453, 77.56047, 77.630165, 47.34516)
     """
