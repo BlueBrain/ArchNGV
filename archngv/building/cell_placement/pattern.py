@@ -74,7 +74,8 @@ class SpatialSpherePattern:
         Returns: Bool
             True if there is intersection with another object.
         """
-        return self._si.is_intersecting(new_position, new_radius)
+        res = self._si.sphere_empty(new_position, new_radius)
+        return not self._si.sphere_empty(new_position, new_radius)
 
     def nearest_neighbor(self, trial_position):
         """Yields the nearest neighbor index of the sphere (new_position, new_radius)
