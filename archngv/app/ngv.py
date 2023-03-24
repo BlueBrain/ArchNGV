@@ -65,7 +65,7 @@ def cell_placement(config, atlas, atlas_cache, vasculature, seed, population_nam
     """
     # pylint: disable=too-many-locals
 
-    from spatial_index import SphereIndex
+    from spatial_index import SphereIndexBuilder
     from vascpy import PointVasculature
     from voxcell.nexus.voxelbrain import Atlas
 
@@ -98,7 +98,7 @@ def cell_placement(config, atlas, atlas_cache, vasculature, seed, population_nam
     spatial_indexes = []
     if vasculature is not None:
         vasc = PointVasculature.load_sonata(vasculature)
-        spatial_indexes.append(SphereIndex(vasc.points, 0.5 * vasc.diameters))
+        spatial_indexes.append(SphereIndexBuilder.from_numpy(vasc.points, 0.5 * vasc.diameters))
 
     LOGGER.info("Generating cell positions / radii...")
 
@@ -410,6 +410,11 @@ def attach_endfeet_info_to_gliovascular_connectivity(
     required=True,
 )
 @click.option(
+    "--synapses-index-path",
+    help="Path to spatial-index synapses file",
+    required=True,
+)
+@click.option(
     "--seed",
     help="Pseudo-random generator seed",
     type=int,
@@ -423,6 +428,7 @@ def neuroglial_connectivity(
     astrocytes_path,
     microdomains_path,
     neuronal_connectivity_path,
+    synapses_index_path,
     seed,
     population_name,
     output_path,
@@ -446,6 +452,7 @@ def neuroglial_connectivity(
         astrocytes=astrocytes,
         microdomains=Microdomains(microdomains_path),
         neuronal_connectivity=NeuronalConnectivity(neuronal_connectivity_path),
+        synapses_index_path=synapses_index_path,
     )
 
     LOGGER.info("Writing neuroglial connectivity...")

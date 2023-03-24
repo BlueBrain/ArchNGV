@@ -198,6 +198,8 @@ def test_neuroglial_connectivity():
             BUILD_DIR / "microdomains.h5",
             "--neuronal-connectivity-path",
             EXTERNAL_DIR / "circuit/edges.h5",
+            "--synapses-index-path",
+            BUILD_DIR / "spatial_index_synapses/",
             "--seed",
             0,
             "--population-name",

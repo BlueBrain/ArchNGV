@@ -12,8 +12,8 @@ VERSION = module.VERSION
 
 BUILDING = [
     "MVDTool>=2.4.4",
+    "spatial-index>=2.0.0",
     "ngv-ctools>=1.0.0",
-    "spatial-index==0.5.2",
     "bluepy-configfile>=0.1.11",
     "Click>=7.0",
     "numpy-stl>=2.10,<2.16.0",  # More recent versions require >1.22.0 which is not in spack yet
@@ -44,9 +44,9 @@ BUILDING = [
 
 setup(
     classifiers=[
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
     ],
     name="ArchNGV",
     version=VERSION,

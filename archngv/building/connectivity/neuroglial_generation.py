@@ -6,7 +6,7 @@ from builtins import range
 
 import numpy as np
 import pandas as pd
-from spatial_index import SphereIndex
+import spatial_index
 
 from archngv.spatial.collision import convex_shape_with_spheres
 
@@ -20,7 +20,8 @@ def spheres_inside_domain(index, synapse_coordinates, domain):
     """
     query_window = domain.bounding_box
 
-    idx = index.find_intersecting_window(query_window[:3], query_window[3:])
+    idx = index.box_query(query_window[:3], query_window[3:], fields="id")
+
     mask = convex_shape_with_spheres(
         domain.face_points,
         domain.face_normals,
@@ -44,13 +45,14 @@ def astrocyte_neuroglial_connectivity(microdomain, synapses_spatial_index, synap
     return spheres_inside_domain(synapses_spatial_index, synapse_coordinates, microdomain)
 
 
-def generate_neuroglial(astrocytes, microdomains, neuronal_connectivity):
+def generate_neuroglial(astrocytes, microdomains, neuronal_connectivity, synapses_index_path):
     """Returns the connectivity of the astrocyte ids with synapses and neurons
 
     Args:
         astrocytes: voxcell.NodePopulation
         microdomains: Microdomains
         neuronal_connectivity: NeuronalConnectivity
+        synapses_index_path: (str) path to the synapses spatial-index file
 
     Returns:
         DataFrame with 'astrocyte_id', 'synapse_id', 'neuron_id'
@@ -58,7 +60,7 @@ def generate_neuroglial(astrocytes, microdomains, neuronal_connectivity):
     synapse_coordinates = neuronal_connectivity.synapse_positions()
     synapse_to_neuron = neuronal_connectivity.target_neurons()
 
-    index = SphereIndex(synapse_coordinates, radii=None)
+    index = spatial_index.open_index(synapses_index_path)
 
     ret = []
     for astrocyte_id in range(len(astrocytes.properties)):
@@ -79,9 +81,11 @@ def generate_neuroglial(astrocytes, microdomains, neuronal_connectivity):
     return ret
 
 
-def generate_neuroglial_edge_properties(astrocytes, microdomains, neuronal_connectivity):
+def generate_neuroglial_edge_properties(
+    astrocytes, microdomains, neuronal_connectivity, synapses_index_path
+):
     """Generate neuroglial edge properties."""
-    df = generate_neuroglial(astrocytes, microdomains, neuronal_connectivity)
+    df = generate_neuroglial(astrocytes, microdomains, neuronal_connectivity, synapses_index_path)
 
     astrocyte_ids = df["astrocyte_id"].to_numpy(dtype=np.int64)
     neuron_ids = df["neuron_id"].to_numpy(dtype=np.int64)

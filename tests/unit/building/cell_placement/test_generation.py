@@ -107,10 +107,9 @@ def test_placement_generator_is_colliding__empty_index_list():
     with patch.object(MockVoxelData, "in_geometry", return_value=True):
         p_gen = placement_generator()
 
-        mock_index = Mock(is_intersecting=lambda p, r: True)
+        mock_index = Mock(sphere_empty=lambda p, r: False)
 
         p_gen.index_list = [mock_index]
-
         assert p_gen.is_colliding(test_point, test_radius)
 
 

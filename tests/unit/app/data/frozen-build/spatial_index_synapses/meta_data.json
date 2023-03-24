@@ -1,0 +1,11 @@
+{
+  "element_type": "synapse",
+  "in_memory": {
+    "heavy_data_path": "index.spi"
+  },
+  "version": 0,
+  "extended": {
+    "dataset_path": "../../../data/external/circuit/edges.h5",
+    "population": "All"
+  }
+}

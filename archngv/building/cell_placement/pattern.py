@@ -3,7 +3,7 @@ Handles the spatial point pattern generation and spatial indexing for the cell p
 """
 
 import numpy
-from spatial_index import SphereIndex
+from spatial_index import SphereIndexBuilder
 
 
 class SpatialSpherePattern:
@@ -31,7 +31,7 @@ class SpatialSpherePattern:
 
         self._index = 0
 
-        self._si = SphereIndex()
+        self._si = SphereIndexBuilder.create_empty()
 
     def __getitem__(self, pos):
         """Get sphere center and radius at position pos"""
@@ -59,7 +59,7 @@ class SpatialSpherePattern:
         self._coordinates[self._index] = position
         self._radii[self._index] = radius
 
-        self._si.insert(self._index, position, radius)
+        self._si.insert(centroid=position, radius=radius, id=self._index)
         self._index += 1
 
     def is_intersecting(self, new_position, new_radius):
@@ -74,20 +74,22 @@ class SpatialSpherePattern:
         Returns: Bool
             True if there is intersection with another object.
         """
-        return self._si.is_intersecting(new_position, new_radius)
+        return not self._si.sphere_empty(new_position, new_radius)
 
-    def nearest_neighbor(self, trial_position):
-        """Yields the nearest neighbor index of the sphere (new_position, new_radius)
+    def distance_to_nearest_neighbor(self, trial_position, max_distance):
+        """Return the distance to the nearest centroid within `max_distance`.
 
-        Args:
-            trial_position: 1D array
-
-        Returns:
-            Index of the nearest neighbor.
+        Note, that only neighbours that overlap with the sphere
+        `(trial_position, max_distance)` are considered. If there are no
+        neighbours within this distance the method returns `np.inf`.
         """
-        return self._si.find_nearest(trial_position, 1)
 
-    def distance_to_nearest_neighbor(self, trial_position):
-        """Distance to nearest neighbor"""
-        index = self.nearest_neighbor(trial_position)
-        return numpy.linalg.norm(self.coordinates[index] - trial_position)
+        trial_position = numpy.reshape(trial_position, (3,))
+
+        candidates = self._si.sphere_query(trial_position, max_distance)
+        centroids = candidates["centroid"]
+
+        if numpy.size(centroids) > 0:
+            return numpy.sqrt(numpy.min(numpy.sum((centroids - trial_position) ** 2, axis=1)))
+
+        return numpy.inf
