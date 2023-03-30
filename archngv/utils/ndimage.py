@@ -50,9 +50,11 @@ def connected_components(
 def connected_components_sub_array(
     input_array: NDArray,
     structure: Optional[NDArray] = None,
+    threshold: int = 10,
 ) -> Generator:
-    """Connected components of a multi-dimensional array generator.
+    """Connected components of a multidimensional array generator.
     Args:
+
         input_array (numpy.array): Input array of n dimensions.
         structure (numpy.array):
             Optional connectivity matrix for considering neighbors in group. By default all the
@@ -63,7 +65,8 @@ def connected_components_sub_array(
                 [1 1 1]
                 [1 1 1]
                 [1 1 1]
-
+        threshold: The minimum number of pixels to be in a component to make it "legit"
+            to yield it.
     Yields:
         NDArray:
             A sub array of the input_array
@@ -71,10 +74,13 @@ def connected_components_sub_array(
     result, n_components = connected_components(input_array, structure)
     for i in range(n_components):
         mask = result == i + 1
-        yield input_array * mask
+        if numpy.count_nonzero(mask) >= threshold:
+            yield input_array * mask
 
 
-def map_positions_to_connected_components(positions: NDArray, voxel_data: voxcell.VoxelData):
+def map_positions_to_connected_components(
+    positions: NDArray, voxel_data: voxcell.VoxelData, threshold: int = 10
+):
     """
     Compute the connected components from the voxel data and return
      a list of non-connected component and their associated position ids.
@@ -82,6 +88,8 @@ def map_positions_to_connected_components(positions: NDArray, voxel_data: voxcel
     Args:
         positions: Array of xyz positions
         voxel_data: Voxel data of interest.
+        threshold: The minimum number of pixels to be in a component to make it "legit"
+             to yield it.
 
     Returns:
         a Tuple:
@@ -90,7 +98,7 @@ def map_positions_to_connected_components(positions: NDArray, voxel_data: voxcel
 
     """
     ids = numpy.arange(len(positions), dtype=int)
-    for mask in connected_components_sub_array(voxel_data.raw):
+    for mask in connected_components_sub_array(voxel_data.raw, threshold=threshold):
         bbox = BoundingBox.from_voxel_data_mask(
             mask,
             voxel_data.voxel_dimensions,
