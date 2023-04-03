@@ -250,6 +250,11 @@ def build_microdomains(config, astrocytes, atlas, atlas_cache, seed, output_file
     # We will now move the microdomains points that are located outside the region of
     # interest (roi) (using the region atlas) inside the roi.
     LOGGER.info("Move some microdomain points inside the region of interest...")
+
+    config = load_ngv_manifest(config)
+    voxelized_intensity = atlas.load_data(config["cell_placement"]["density"])
+    region_mask = region_mask.with_data(voxelized_intensity.raw * region_mask.raw)
+
     corrected_microdomains = limit_microdomains_to_roi(
         overlapping_microdomains, astrocytes.positions, region_mask
     )
