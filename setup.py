@@ -11,6 +11,7 @@ VERSION = module.VERSION
 
 
 BUILDING = [
+    "atlas_commons>0.1.4"
     "MVDTool>=2.4.4",
     "spatial-index>=2.0.0",
     "ngv-ctools>=1.0.0",

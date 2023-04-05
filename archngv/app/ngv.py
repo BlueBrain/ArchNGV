@@ -83,7 +83,7 @@ def cell_placement(config, atlas, atlas_cache, vasculature, seed, population_nam
     if "region" in config["common"]:
         region = config["common"]["region"]
         region_mask = atlas.get_region_mask(region, with_descendants=True)
-        # Make sure that both Atlas got the same shape and offset and voxel_dimentions
+        # Make sure that both Atlas got the same shape and offset and voxel_dimensions
         assert_properties([region_mask, voxelized_intensity])
         # update voxelized intensity to have values only where the region mask is 1
         voxelized_intensity = voxelized_intensity.with_data(
@@ -253,6 +253,7 @@ def build_microdomains(config, astrocytes, atlas, atlas_cache, seed, output_file
 
     config = load_ngv_manifest(config)
     voxelized_intensity = atlas.load_data(config["cell_placement"]["density"])
+    assert_properties([region_mask, voxelized_intensity])
     region_mask = region_mask.with_data(voxelized_intensity.raw * region_mask.raw)
 
     corrected_microdomains = limit_microdomains_to_roi(
