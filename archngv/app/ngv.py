@@ -410,8 +410,8 @@ def attach_endfeet_info_to_gliovascular_connectivity(
     required=True,
 )
 @click.option(
-    "--synapses-index-path",
-    help="Path to spatial-index synapses file",
+    "--spatial-synapse-index-dir",
+    help="Path to the spatial-index-synapses directory",
     required=True,
 )
 @click.option(
@@ -428,7 +428,7 @@ def neuroglial_connectivity(
     astrocytes_path,
     microdomains_path,
     neuronal_connectivity_path,
-    synapses_index_path,
+    spatial_synapse_index_dir,
     seed,
     population_name,
     output_path,
@@ -452,7 +452,7 @@ def neuroglial_connectivity(
         astrocytes=astrocytes,
         microdomains=Microdomains(microdomains_path),
         neuronal_connectivity=NeuronalConnectivity(neuronal_connectivity_path),
-        synapses_index_path=synapses_index_path,
+        synapses_index_path=spatial_synapse_index_dir,
     )
 
     LOGGER.info("Writing neuroglial connectivity...")

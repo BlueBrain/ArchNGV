@@ -5,6 +5,7 @@ ngv:
     atlas: ../data/atlas/
     vasculature: ../data/atlas/vasculature.h5
     vasculature_mesh: ../data/atlas/vasculature.obj
+    base_spatial_synapse_index_dir: ../external/circuit/spatial_index_synapses
     base_circuit: ../external/circuit
     # relative to base_circuit
     base_circuit_sonata: ./circuit_config.json

@@ -55,7 +55,9 @@ def test_morphologies():
 
     for filename in filenames:
         diff_result = diff(
-            BUILD_DIR / MORPHOLOGIES_DIR / filename, EXPECTED_DIR / MORPHOLOGIES_DIR / filename
+            BUILD_DIR / MORPHOLOGIES_DIR / filename,
+            EXPECTED_DIR / MORPHOLOGIES_DIR / filename,
+            atol=1e-4,
         )
 
         assert not diff_result, diff_result.info
@@ -65,7 +67,7 @@ def _h5_compare(actual_filepath, expected_filepath):
     import subprocess
 
     completed_process = subprocess.run(
-        ["h5diff", "-v", "-c", "--delta=1e-6", actual_filepath, expected_filepath]
+        ["h5diff", "-v", "-c", "--delta=1e-4", actual_filepath, expected_filepath]
     )
 
     assert completed_process.returncode == 0

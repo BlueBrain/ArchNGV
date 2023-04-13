@@ -6,7 +6,6 @@ from archngv.app.utils import load_ngv_manifest
 
 LOGS_DIR = 'logs'
 MORPH_DIR = 'morphologies'
-SPATIAL_INDEX_SYNAPSES_DIR = 'spatial_index_synapses'
 BIONAME = os.path.realpath(config.get('bioname', 'bioname'))
 
 
@@ -80,17 +79,16 @@ EDGES_GLIALGLIAL_NAME = get_edge_population_name("glialglial", default="glialgli
 BASE_CIRCUIT_SONATA = COMMON['base_circuit_sonata']
 BASE_CIRCUIT_CELLS = COMMON['base_circuit_cells']
 BASE_CIRCUIT_CONNECTOME = COMMON['base_circuit_connectome']
+BASE_SPATIAL_SYNAPSE_INDEX_DIR = COMMON['base_spatial_synapse_index_dir']
 BUILDER_RECIPE = bioname_path('astrocyte_gap_junction_recipe.xml')
 
 SPACK_MODULEPATH = "/gpfs/bbp.cscs.ch/ssd/apps/bsd/modules/_meta"
 
 MODULES = {
-    'spatial_index':
-        (SPACK_MODULEPATH, ['unstable', 'py-mpi4py/3.1.4']),
     'glial_gap_junctions':
         (SPACK_MODULEPATH, ['archive/2022-03', 'touchdetector/5.6.1']),
     'synthesis':
-        (SPACK_MODULEPATH, ['unstable', 'py-mpi4py/3.1.4']),
+        (SPACK_MODULEPATH, ["archive/2023-03", "spatial-index/2.0.0", "py-mpi4py/3.1.4"]),
 }
 
 
@@ -184,23 +182,6 @@ rule ngv_config:
             '--bioname', BIONAME,
             '--output', '{output}',
         ])
-
-
-rule spatial_index_synapses:
-    output:
-        f'{SPATIAL_INDEX_SYNAPSES_DIR}/meta_data.json'
-    log:
-        log_path('spatial_index_synapses')
-
-    shell:
-        run_cmd([
-            'spatial-index-synapses',
-            f'{BASE_CIRCUIT_CONNECTOME}',
-            f'-o {SPATIAL_INDEX_SYNAPSES_DIR}'],
-            dump_log=True,
-            module_env='spatial_index',
-            slurm_env='spatial_index'
-        )
 
 
 rule sonata_vasculature:
@@ -328,7 +309,6 @@ rule gliovascular_connectivity:
 
 rule neuroglial_connectivity:
     input:
-        synapses_index = f'{SPATIAL_INDEX_SYNAPSES_DIR}/meta_data.json',
         astrocytes = f'sonata/networks/nodes/{NODES_ASTROCYTE_NAME}/nodes.h5',
         microdomains = 'microdomains.h5',
 
@@ -341,11 +321,11 @@ rule neuroglial_connectivity:
     shell:
         run_cmd([
             f'ngv {LOG_LEVEL} neuroglial-connectivity',
-            '--synapses-index-path {input[synapses_index]}',
             f'--neurons-path {BASE_CIRCUIT_CELLS}',
             '--astrocytes-path {input[astrocytes]}',
             '--microdomains-path {input[microdomains]}',
             f'--neuronal-connectivity-path {BASE_CIRCUIT_CONNECTOME}',
+            f'--spatial-synapse-index-dir {BASE_SPATIAL_SYNAPSE_INDEX_DIR}',
             '--output-path {output}',
             f'--population-name {EDGES_SYNAPSE_ASTROCYTE_NAME}',
             f'--seed {SEED}'],

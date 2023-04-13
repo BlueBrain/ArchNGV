@@ -10,6 +10,7 @@ ngv:
     base_circuit_sonata: ../data/circuit/circuit_config.json
     base_circuit_cells: ../data/circuit/nodes.h5
     base_circuit_connectome: ../data/circuit/edges.h5
+    base_spatial_synapse_index_dir: ../data/circuit/spatial_index_synapses
 
   assign_emodels:
     templates_dir: ../data/emodels/
