@@ -52,6 +52,15 @@ class BoundingBox:
         min_coordinates = offset + min_ijk * voxel_dimensions
         max_coordinates = offset + max_ijk * voxel_dimensions
 
+        signs = np.sign(voxel_dimensions)
+
+        # legacy convention for Paxinos atlas
+        if not np.allclose(signs, 1.0):
+            points = np.array([min_coordinates, max_coordinates])
+
+            min_coordinates = points.min(axis=0)
+            max_coordinates = points.max(axis=0)
+
         return cls(min_coordinates, max_coordinates)
 
     def __init__(self, min_coordinates, max_coordinates):

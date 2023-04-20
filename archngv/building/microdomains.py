@@ -138,8 +138,12 @@ def limit_microdomains_to_roi(microdomains, astrocyte_soma_pos, region_mask):
 
     """
     for microdomain, soma_pos in zip(microdomains, astrocyte_soma_pos):
+        # BoundingBox.from_voxel_data Handle ATLAS negative voxel dimension (region_mask does not)
+        bounding_box = BoundingBox.from_voxel_data(
+            region_mask.shape, region_mask.voxel_dimensions, region_mask.offset
+        )
         # small trick to ensure that the points on the walls will not be considered as outside
-        new_points = np.clip(microdomain.points, a_min=None, a_max=region_mask.bbox[1] - 1e-5)
+        new_points = np.clip(microdomain.points, a_min=None, a_max=bounding_box.max_point - 1e-5)
         vectors = new_points - soma_pos
 
         radius = np.linalg.norm(vectors, axis=1).min()

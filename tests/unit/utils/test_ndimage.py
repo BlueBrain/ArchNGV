@@ -131,3 +131,34 @@ def test_map_positions_to_connected_components():
     numpy.testing.assert_array_equal(bb1.min_point, [0.0, 0.0, 0.0])
     numpy.testing.assert_array_equal(bb1.max_point, [2.0, 2.0, 1.0])
     numpy.testing.assert_array_equal(ids1, [0, 1, 3])
+
+
+def test_map_positions_to_connected_components_negative_dimention():
+    region_mask_raw = numpy.zeros((5, 5, 5), dtype=bool)
+    region_mask_raw[0][0][0] = True
+    region_mask_raw[0][4][0] = True
+    region_mask = voxcell.VoxelData(region_mask_raw, voxel_dimensions=[1, -1, 1])
+
+    positions = numpy.array(
+        [
+            [0.0, 0.0, 0.0],
+            [0.0, -4.0, 0.0],
+            [0.0, 0.0, 1.0],
+        ]
+    )
+
+    nb_pixel_component_threshold = 1
+    (bb1, ids1), (bb2, ids2) = list(
+        test_module.map_positions_to_connected_components(
+            positions, region_mask, nb_pixel_component_threshold
+        )
+    )
+
+    numpy.testing.assert_array_equal(bb1.min_point, [0.0, -1.0, 0.0])
+    numpy.testing.assert_array_equal(bb1.max_point, [1.0, 0.0, 1.0])
+
+    numpy.testing.assert_array_equal(bb2.min_point, [0.0, -5.0, 0.0])
+    numpy.testing.assert_array_equal(bb2.max_point, [1.0, -4.0, 1.0])
+
+    numpy.testing.assert_array_equal(ids1, [0, 2])
+    numpy.testing.assert_array_equal(ids2, [1])
