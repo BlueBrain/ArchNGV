@@ -258,7 +258,7 @@ def globally_ordered_verts(face_points, face_vertices):
         right_shift = len(face_vertices) - first_index - 1
         return np.roll(face_vertices, right_shift)[::-1]
 
-    # shoft the array to the left so that first_index element is first eg
+    # shift the array to the left so that first_index element is first eg
     # [5, 6, 7, 8] -> [7, 8, 5, 6] if first_index = 2
     return np.roll(face_vertices, -first_index)
 

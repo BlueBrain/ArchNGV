@@ -56,7 +56,7 @@ def rand_rotation_matrix(deflection=1.0, randnums=None):
     """
     Creates a random rotation matrix.
 
-    deflection: the magnitude of the rotation. For 0, no rotation; for 1, competely random
+    deflection: the magnitude of the rotation. For 0, no rotation; for 1, completely random
     rotation. Small deflection => small perturbation.
     randnums: 3 random numbers in the range [0, 1]. If `None`, they will be auto-generated.
     """
