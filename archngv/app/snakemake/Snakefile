@@ -23,6 +23,7 @@ def bioname_path(filename):
 MANIFEST_PATH = bioname_path('MANIFEST.yaml')
 SEED = _get_seed(MANIFEST_PATH)
 
+
 def log_path(name):
     timestamp = datetime.datetime.now().strftime("%Y%m%dT%H%M%S")
     return os.path.abspath(os.path.join(LOGS_DIR, "%s.%s.log" % (name, timestamp)))
@@ -89,6 +90,10 @@ MODULES = {
         (SPACK_MODULEPATH, ['archive/2022-03', 'touchdetector/5.6.1']),
     'synthesis':
         (SPACK_MODULEPATH, ["archive/2023-03", "spatial-index/2.0.0", "py-mpi4py/3.1.4"]),
+    'refine_tetrahedral':
+        (SPACK_MODULEPATH, ['archive/2023-03', 'gmsh/4.10.3']),
+    'build_tetrahedral':
+        (SPACK_MODULEPATH, ['archive/2023-03', 'gmsh/4.10.3']),
 }
 
 
@@ -170,6 +175,7 @@ rule all:
         f'sonata/networks/edges/{EDGES_SYNAPSE_ASTROCYTE_NAME}/edges.h5',
         f'sonata/networks/edges/{EDGES_GLIALGLIAL_NAME}/edges.h5',
         f'sonata/networks/edges/{EDGES_ENDFOOT_NAME}/edges.h5',
+        f'refined-ngv-tetrahedral-mesh.msh',     
 
 
 rule ngv_config:
@@ -498,3 +504,52 @@ rule finalize_neuroglial_connectivity:
             ('--parallel' if PARALLEL else ''),
             f'--seed {SEED}'],
             dump_log=True)
+
+
+rule prepare_tetrahedral:
+    output:
+        'refined_surface_mesh.stl'
+    log:
+        log_path('refined_surface_mesh')
+
+    shell:
+        run_cmd([
+            f'ngv {LOG_LEVEL} refined-surface-mesh',
+            f'--config-path {bioname_path("MANIFEST.yaml")}',
+            f'--atlas {ATLAS}',
+            f'--atlas-cache {ATLAS_CACHE_DIR}',
+            '--output-path {output}'],
+            dump_log=True)
+
+
+rule build_tetrahedral:
+    input: 'refined_surface_mesh.stl'
+    output: 'ngv-tetrahedral-mesh.msh'
+        
+    log:
+        log_path('build_tetrahedral')
+
+    shell:
+        run_cmd([
+            'gmsh',
+            'refined_surface_mesh.geo',
+            '-3',
+            '-o {output}',
+            f'-algo initial3d'],
+        module_env='build_tetrahedral',
+        )
+
+
+rule refine_tetrahedral:
+    input: 'ngv-tetrahedral-mesh.msh'
+    output: 'refined-ngv-tetrahedral-mesh.msh'
+        
+    log:
+        log_path('refine_tetrahedral')
+
+    shell:
+        run_cmd([
+            'for (( c=1; c<=5; c++ )); do gmsh -refine {input} -o {output}; done'],
+        module_env='refine_tetrahedral',
+        )
+

@@ -309,3 +309,19 @@ def test_verify_circuit_integrity():
             BUILD_DIR / "ngv_config.json",
         ],
     )
+
+
+def test_refined_surface_mesh():
+    assert_cli_run(
+        tested.refined_surface_mesh,
+        [
+            "--config-path",
+            BIONAME_DIR / "MANIFEST.yaml",
+            "--atlas",
+            EXTERNAL_DIR / "atlas",
+            "--atlas-cache",
+            ".atlas",
+            "--output-path",
+            "refined_surface_mesh.stl",
+        ],
+    )

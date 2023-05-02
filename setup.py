@@ -12,7 +12,6 @@ VERSION = module.VERSION
 
 BUILDING = [
     "MVDTool>=2.4.4",
-    "spatial-index>=2.0.0",
     "ngv-ctools>=1.0.0",
     "bluepy-configfile>=0.1.11",
     "Click>=7.0",
@@ -38,6 +37,7 @@ BUILDING = [
     # see: https://bbpteam.epfl.ch/project/issues/browse/NSETM-1921
     "dask[distributed,bag]<2022.04.1",
     "dask_mpi>=2.0",
+    "spatial-index>=2.0.0",
     "atlas-commons>=0.1.4",
 ]
 
@@ -73,6 +73,7 @@ setup(
         # 2.38.10 is available in spack.
         # Update to a higher version in spack after checking that py-atlas-building-tools works
         "trimesh>=2.38.10",
+        "scikit-image>=0.20.0",
     ],
     extras_require={"all": BUILDING, "docs": ["sphinx", "sphinx-bluebrain-theme"]},
     packages=find_packages(),

@@ -752,3 +752,51 @@ def synthesis(
 
     time.sleep(10)  # this sleep is necessary to let dask synchronize state across the cluster
     client.retire_workers()
+
+
+@click.command(name="refine_surface_mesh")
+@click.option("--config-path", help="Path to synthesis YAML config", required=True)
+@click.option("--atlas", help="Atlas URL / path", required=True)
+@click.option("--atlas-cache", help="Path to atlas cache folder", default=None, show_default=True)
+@click.option("-o", "--output-path", help="Path to output file (*.msh)", required=True)
+def refined_surface_mesh(
+    config_path,
+    atlas,
+    atlas_cache,
+    output_path,
+):
+    """Create a surface mesh form the ATLAS and region.
+    Export the new 3D surface mesh
+    """
+    import trimesh
+    from voxcell.nexus.voxelbrain import Atlas
+
+    # check extensions to make sure it is supported format
+    if Path(output_path).suffix != ".stl":
+        raise ValueError("Only STL (file format) (.stl) is available!")
+
+    tetrahedral_mesh_config = load_ngv_manifest(config_path)["tetrahedral_mesh"]
+
+    surface_mesh_subdivision_steps = tetrahedral_mesh_config["surface_mesh_subdivision_steps"]
+
+    atlas = Atlas.open(atlas, cache_dir=atlas_cache)
+
+    ngv_common_config = load_ngv_manifest(config_path)["common"]
+    if "region" in ngv_common_config:
+        region_name = ngv_common_config["region"]
+        region_mask = atlas.get_region_mask(region_name, with_descendants=True)
+    else:
+        region_mask = atlas.load_data("brain_regions")
+
+    surface_mesh = trimesh.voxel.ops.matrix_to_marching_cubes(region_mask.raw, pitch=1.0)
+    # Supported formats are stl, off, ply, collada, json, dict, glb, dict64, msgpack
+
+    surface_mesh = surface_mesh.subdivide_loop(iterations=surface_mesh_subdivision_steps)
+    surface_mesh.export(output_path)
+
+    geo_filename = Path(output_path).stem + ".geo"
+    with open(geo_filename, "w") as f:
+        f.write(
+            "Merge '" + output_path + "';\n//+;\nSurface Loop(1) = {1};\n//+;\nVolume(1) = {1};"
+        )
+    LOGGER.info("Done!")
