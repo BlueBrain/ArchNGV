@@ -11,7 +11,6 @@ VERSION = module.VERSION
 
 
 BUILDING = [
-    "MVDTool>=2.4.4",
     "ngv-ctools>=1.0.0",
     "bluepy-configfile>=0.1.11",
     "Click>=7.0",
@@ -74,6 +73,9 @@ setup(
         # Update to a higher version in spack after checking that py-atlas-building-tools works
         "trimesh>=2.38.10",
         "scikit-image>=0.20.0",
+        # requests module pin urrlib3 in recent versions
+        # see https://github.com/psf/requests/issues/6432
+        "urllib3>=1.21.1,<1.27; python_version <= '3.8'",
     ],
     extras_require={"all": BUILDING, "docs": ["sphinx", "sphinx-bluebrain-theme"]},
     packages=find_packages(),
