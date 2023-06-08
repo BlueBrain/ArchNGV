@@ -3,6 +3,7 @@ from json.decoder import JSONDecodeError
 from pathlib import Path
 
 import h5py
+import libsonata
 from bluepy_configfile.exceptions import BlueConfigError
 
 from archngv.app.logger import LOGGER as L
@@ -45,13 +46,7 @@ def build_ngv_config(root_dir: Path, manifest: dict) -> dict:
     # the ngv specific nodes and edges of the current build
     _add_ngv_sonata_nodes_edges(config, root_dir, common)
 
-    # add intensity and brain regions used for this build
-    config["atlases"] = {
-        "intensity": _make_abs(
-            root_dir, common["atlas"], f"{manifest['cell_placement']['density']}.nrrd"
-        ),
-        "brain_regions": _make_abs(root_dir, common["atlas"], "brain_regions.nrrd"),
-    }
+    config["metadata"] = {"status": "partial"}
 
     return config
 
@@ -135,7 +130,7 @@ def _add_neuronal_circuit(config, circuit_path, neuron_config_filename):
         try:
             from bluepysnap import Config
 
-            tmp_config = Config(config_filepath).resolve()
+            tmp_config = Config(config_filepath, libsonata.CircuitConfig).to_dict()
 
             if len(tmp_config["networks"]["nodes"]) > 1:
                 raise NGVError(
@@ -158,7 +153,9 @@ def _add_neuronal_circuit(config, circuit_path, neuron_config_filename):
     if "populations" not in neuronal_nodes:
         neuronal_nodes["populations"] = {}
 
-    neuronal_nodes["populations"][neuron_node_population] = {"type": "biophysical"}
+    neuronal_nodes["populations"][neuron_node_population] = {
+        "type": "biophysical",
+    }
 
     # move the global components inside the neuronal node population
     # this is only valid for single population files

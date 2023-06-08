@@ -7,6 +7,7 @@
   "components": {
     "morphologies_dir": "$COMPONENT_DIR/morphologies"
   },
+  "metadata": {"status": "partial"},
   "networks": {
     "nodes": [
       {
@@ -27,8 +28,7 @@
             "alternate_morphologies": {
               "h5v1": "$NETWORK_DIR/morphologies-astro"
             },
-            "microdomains_file": "$NETWORK_DIR/microdomains.h5",
-            "microdomains_overlapping_file": "$NETWORK_DIR/overlapping_microdomains.h5"
+            "microdomains_file": "$NETWORK_DIR/microdomains.h5"
           }
         }
       },
@@ -39,7 +39,7 @@
           "vasculature": {
             "type": "vasculature",
             "vasculature_file": "$NETWORK_DIR/vasculature.h5",
-            "vasculature_mesh_file": "$NETWORK_DIR/vasculature_mesh.obj"
+            "vasculature_mesh": "$NETWORK_DIR/vasculature_mesh.obj"
           }
         }
       }
@@ -78,7 +78,7 @@
         "populations": {
           "gliovascular": {
             "type": "endfoot",
-            "endfeet_meshes": "$NETWORK_DIR/endfeet_meshes.h5"
+            "endfeet_meshes_file": "$NETWORK_DIR/endfeet_meshes.h5"
           }
         }
       }

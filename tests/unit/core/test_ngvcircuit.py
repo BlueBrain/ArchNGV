@@ -5,7 +5,6 @@ import pandas as pd
 import pytest
 import trimesh
 import vascpy
-from bluepysnap.nodes import NodeStorage
 from mock import PropertyMock, patch
 from numpy import testing as npt
 from pandas.testing import assert_frame_equal
@@ -52,7 +51,6 @@ class TestCircuit:
                     "type": "astrocyte",
                     "alternate_morphologies": {"h5v1": f"{TEST_DATA_DIR}/morphologies-astro"},
                     "microdomains_file": f"{TEST_DATA_DIR}/microdomains.h5",
-                    "microdomains_overlapping_file": f"{TEST_DATA_DIR}/overlapping_microdomains.h5",
                 }
             },
         }
@@ -86,9 +84,6 @@ class TestCircuit:
 
         assert isinstance(self.circuit.edges["neuroglial"], test_module.NeuroGlial)
         assert self.circuit.edges["neuroglial"] is self.circuit.neuroglial_connectome
-
-        assert isinstance(self.circuit.atlases, dict)
-        assert isinstance(self.circuit.atlases["my_atlas"], Atlas)
 
     def test_neurons_morphologies(self):
         neurons = self.circuit.neurons
@@ -135,6 +130,7 @@ class TestCircuit:
 
     def test_gliovascular_api(self):
         gv = self.circuit.gliovascular_connectome
+
         assert gv.astrocytes is self.circuit.astrocytes
         assert gv.vasculature is self.circuit.vasculature
         assert isinstance(gv.surface_meshes, EndfootSurfaceMeshes)
@@ -216,20 +212,9 @@ class TestCircuit:
         npt.assert_allclose(prop["@source_node"], [2, 0, 0])
         npt.assert_allclose(prop["@target_node"], [0, 1, 1])
 
-    def test_atlas(self):
-        assert isinstance(self.circuit.atlases["my_atlas"].get_atlas(), VoxelData)
-
     def test_repr(self):
         assert str(self.circuit) == f"<NGVCircuit : {TEST_DATA_DIR}/circuit_config.json>"
 
-    def test_same_population(self):
-        with patch(
-            "bluepysnap.nodes.NodeStorage.population_names", new_callable=PropertyMock
-        ) as mock:
-            mock.return_value = ["default", "default"]
-            with pytest.raises(NGVError):
-                test_module.NGVCircuit(TEST_DATA_DIR / "circuit_config.json").nodes
-
     def test_failing_get_population(self):
         with pytest.raises(NGVError):
-            self.circuit._get_population(NodeStorage)
+            self.circuit._get_population(type)

@@ -3,7 +3,8 @@
         "$BASE_DIR": "."
     },
     "components": {
-        "morphologies_dir": "NA"
+        "morphologies_dir": "NA",
+        "biophysical_neuron_models_dir": "NA"
     },
     "networks": {
         "nodes": [

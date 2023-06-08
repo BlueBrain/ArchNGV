@@ -64,8 +64,9 @@ setup(
         "numpy<=1.22",
         "h5py>=3.1.0",
         "scipy>=1.5.0",
-        "libsonata>=0.1.8",
-        "bluepysnap>=0.13,<1.0",
+        # 0.1.21 supports resolution of ngv populations extra files
+        "libsonata>=0.1.21",
+        "bluepysnap>=1.0",
         "cached-property>=1.5",
         "voxcell>=3.0.0",
         "vascpy>=0.1.0",

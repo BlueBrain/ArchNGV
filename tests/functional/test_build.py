@@ -178,10 +178,7 @@ def test_config():
                 },
             ],
         },
-        "atlases": {
-            "intensity": f"{DATA_DIR}/atlas/[density]astrocytes.nrrd",
-            "brain_regions": f"{DATA_DIR}/atlas/brain_regions.nrrd",
-        },
+        "metadata": {"status": "partial"},
     }
 
     build_sonata_config = load_json(BUILD_DIR / "ngv_config.json")

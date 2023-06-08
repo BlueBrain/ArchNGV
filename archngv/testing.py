@@ -4,7 +4,6 @@ from pathlib import Path
 from typing import Union
 
 import numpy as np
-import voxcell
 from morphio import Morphology
 from numpy import testing as npt
 
@@ -29,7 +28,6 @@ def assert_circuit_integrity(circuit_or_config_path: Union[str, Path, api.NGVCir
         assert_astrocyte_population_integrity,
         assert_vasculature_population_integrity,
         assert_neuron_population_integrity,
-        assert_atlas_integrity,
         assert_astrocyte_data_integrity,
         assert_astrocyte_morphologies_integrity,
         assert_neuroglial_connectome_integrity,
@@ -192,17 +190,6 @@ def assert_neuronal_connectome_integrity(circuit: api.NGVCircuit):
     """Checks integrity of the synaptic connectivity"""
 
     _assert_instance(circuit.neuronal_connectome, api.NGVEdges)
-
-
-def assert_atlas_integrity(circuit: api.NGVCircuit):
-    """Checks integrity of the atlas input"""
-
-    _assert_instance(circuit.atlases, dict)
-
-    _assert_instance(circuit.atlases["intensity"], api.Atlas)
-    _assert_instance(circuit.atlases["intensity"].get_atlas(), voxcell.VoxelData)
-    _assert_instance(circuit.atlases["brain_regions"], api.Atlas)
-    _assert_instance(circuit.atlases["brain_regions"].get_atlas(), voxcell.VoxelData)
 
 
 def assert_cross_population_integrity(circuit: api.NGVCircuit):

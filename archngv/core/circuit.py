@@ -9,15 +9,15 @@ import numpy as np
 import trimesh
 import vascpy
 from bluepysnap import Circuit
-from bluepysnap.edges import EdgePopulation, EdgeStorage
+from bluepysnap.edges import EdgePopulation
 from bluepysnap.morph import MorphHelper
-from bluepysnap.nodes import NodePopulation, NodeStorage
+from bluepysnap.nodes import NodePopulation
 from bluepysnap.sonata_constants import Edge
 from cached_property import cached_property
+from libsonata import NodeStorage
 
 from archngv.core.constants import Population
 from archngv.core.datasets import Microdomains
-from archngv.core.structures import Atlas
 from archngv.exceptions import NGVError
 
 
@@ -193,7 +193,6 @@ class Vasculature(NGVNodes):
         Notes:
             The morphologies of the vasculature is handled by the VasculatureAPI package.
         """
-
         return vascpy.SectionVasculature.load(self.config["vasculature_file"])
 
     @cached_property
@@ -203,13 +202,12 @@ class Vasculature(NGVNodes):
         Returns:
             vascpy.PointVasculature
         """
-
-        return vascpy.PointVasculature.load_sonata(self._node_storage.h5_filepath)
+        return vascpy.PointVasculature.load_sonata(self.h5_filepath)
 
     @cached_property
     def surface_mesh(self):
         """Returns vasculature surface mesh object."""
-        return trimesh.load(self.config["vasculature_mesh_file"])
+        return trimesh.load(self.config["vasculature_mesh"])
 
 
 class Neurons(NGVNodes):
@@ -367,7 +365,7 @@ class NeuroGlial(NGVEdges):
     @property
     def synapses(self):
         """Returns the neuronal connectome to access the synapse population."""
-        return self._edge_storage.circuit.neuronal_connectome
+        return self._circuit.neuronal_connectome
 
     def astrocyte_synapses(self, astrocyte_id):
         """Returns the synapse ids connected to a given `astrocyte_id`."""
@@ -377,9 +375,7 @@ class NeuroGlial(NGVEdges):
     def astrocyte_synapses_properties(self, astrocyte_id, properties=None):
         """Returns the synapse properties and ids connected to a given `astrocyte_id`."""
         synapse_ids = self.astrocyte_synapses(astrocyte_id)
-        return self._edge_storage.circuit.neuronal_connectome.get(
-            synapse_ids, properties=properties
-        )
+        return self._circuit.neuronal_connectome.get(synapse_ids, properties=properties)
 
     def connected_neurons(self, astrocyte_group=None):
         """Returns all the neuron ids connected to the astrocytes."""
@@ -413,16 +409,16 @@ class NGVCircuit(Circuit):
     @cached_property
     def nodes(self):
         """Access to node population(s)."""
-        return _collect_ngv_populations(
-            self._config["networks"]["nodes"], lambda cfg: NodeStorage(cfg, self)
-        )
+        return {
+            pop.name: _dispatch_nodes(pop.type)(self, pop.name) for pop in super().nodes.values()
+        }
 
     @cached_property
     def edges(self):
         """Access to edges population(s)."""
-        return _collect_ngv_populations(
-            self._config["networks"]["edges"], lambda cfg: EdgeStorage(cfg, self)
-        )
+        return {
+            pop.name: _dispatch_edges(pop.type)(self, pop.name) for pop in super().edges.values()
+        }
 
     def _get_population(self, node_class):
         for pop in list(self.nodes.values()) + list(self.edges.values()):
@@ -467,12 +463,6 @@ class NGVCircuit(Circuit):
     def glialglial_connectome(self):
         """Access to the glialglial connectivity edge population."""
         return self._get_population(GlialGlial)
-
-    @cached_property
-    def atlases(self):
-        """Access to the Voxel atlases"""
-        config = self._config["atlases"]
-        return {name: Atlas(name, filepath) for name, filepath in config.items()}
 
     def __repr__(self):
         """Representation of circuit."""

@@ -82,5 +82,6 @@
   "atlases": {
     "intensity": "$CIRCUIT_DIR/external/atlas/[density]astrocytes.nrrd",
     "brain_regions": "$CIRCUIT_DIR/external/atlas/brain_regions.nrrd"
-  }
+  },
+  "metadata": {"status": "partial"}
 }
