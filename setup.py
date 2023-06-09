@@ -73,7 +73,8 @@ setup(
         # 2.38.10 is available in spack.
         # Update to a higher version in spack after checking that py-atlas-building-tools works
         "trimesh>=2.38.10",
-        "scikit-image>=0.20.0",
+        # trimesh soft dependency for using marching cubes
+        "scikit-image>=0.18",
         # requests module pin urrlib3 in recent versions
         # see https://github.com/psf/requests/issues/6432
         "urllib3>=1.21.1,<1.27; python_version <= '3.8'",
