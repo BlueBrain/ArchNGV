@@ -1,7 +1,8 @@
+from unittest.mock import patch
+
 import libsonata
 import numpy.testing as npt
 import pytest
-from mock import patch
 from utils import get_data
 
 import archngv.core.sonata_readers as tested
