@@ -110,6 +110,37 @@ def test_cell_placement__with_region_specified():
         )
 
 
+def test_cell_placement__with_region_and_region_mask_specified():
+    with tempfile.TemporaryDirectory() as tdir:
+        edited_manifest = Path(tdir, "MANIFEST.yaml")
+
+        shutil.copyfile(BIONAME_DIR / "MANIFEST.yaml", Path(tdir, "MANIFEST.yaml"))
+        data = load_yaml(edited_manifest)
+        data["ngv"]["common"]["region"] = "H"
+        data["ngv"]["common"]["mask"] = "[mask]H"
+        write_yaml(edited_manifest, data)
+
+        assert_cli_run(
+            tested.cell_placement,
+            [
+                "--config",
+                str(edited_manifest),
+                "--atlas",
+                EXTERNAL_DIR / "atlas",
+                "--atlas-cache",
+                ".atlas",
+                "--vasculature",
+                FIN_SONATA_DIR / "nodes/vasculature.h5",
+                "--seed",
+                0,
+                "--population-name",
+                "astrocytes",
+                "--output",
+                "output_nodes.h5",
+            ],
+        )
+
+
 def test_finalize_astrocytes():
     assert_cli_run(
         tested.finalize_astrocytes,

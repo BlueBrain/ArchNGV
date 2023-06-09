@@ -64,9 +64,9 @@ def cell_placement(config, atlas, atlas_cache, vasculature, seed, population_nam
     astrocytic somata.
     """
     # pylint: disable=too-many-locals
-
     from spatial_index import SphereIndexBuilder
     from vascpy import PointVasculature
+    from voxcell import ROIMask
     from voxcell.nexus.voxelbrain import Atlas
 
     from archngv.building.cell_placement.positions import create_positions
@@ -83,6 +83,14 @@ def cell_placement(config, atlas, atlas_cache, vasculature, seed, population_nam
     if "region" in config["common"]:
         region = config["common"]["region"]
         region_mask = atlas.get_region_mask(region, with_descendants=True)
+
+        if "mask" in config["common"]:
+            mask_dset = config["common"]["mask"]
+            root_mask = atlas.load_data(mask_dset, cls=ROIMask)
+            region_mask.raw &= root_mask.raw
+        if not numpy.any(region_mask.raw):
+            raise ValueError(f"Empty region mask for region: '{region}'")
+
         # Make sure that both Atlas got the same shape and offset and voxel_dimentions
         assert_properties([region_mask, voxelized_intensity])
         # update voxelized intensity to have values only where the region mask is 1
