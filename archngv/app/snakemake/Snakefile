@@ -4,9 +4,9 @@ import datetime
 import logging
 from archngv.app.utils import load_ngv_manifest
 
-LOGS_DIR = 'logs'
-MORPH_DIR = 'morphologies'
-BIONAME = os.path.realpath(config.get('bioname', 'bioname'))
+LOGS_DIR = "logs"
+MORPH_DIR = "morphologies"
+BIONAME = os.path.realpath(config.get("bioname", "bioname"))
 
 
 def _get_seed(manifest_path):
@@ -20,7 +20,8 @@ def _get_seed(manifest_path):
 def bioname_path(filename):
     return os.path.join(BIONAME, filename)
 
-MANIFEST_PATH = bioname_path('MANIFEST.yaml')
+
+MANIFEST_PATH = bioname_path("MANIFEST.yaml")
 SEED = _get_seed(MANIFEST_PATH)
 
 
@@ -36,28 +37,27 @@ def escape_single_quotes(value):
 def get_log_level_for_cli(level):
     levels = (logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG)
     level = logging.getLevelName(level)
-    assert level in levels, f'Unknown log level {level}. Allowed levels: {levels}'
+    assert level in levels, f"Unknown log level {level}. Allowed levels: {levels}"
     idx = levels.index(level)
-    cli_level = ''.join(['v'] * idx)
+    cli_level = "".join(["v"] * idx)
     if cli_level:
-        return f'-{cli_level}'
-    return ''
+        return f"-{cli_level}"
+    return ""
 
 
 MANIFEST = load_ngv_manifest(MANIFEST_PATH)
 COMMON = MANIFEST["common"]
 
-ATLAS = COMMON['atlas']
+ATLAS = COMMON["atlas"]
 ATLAS_CACHE_DIR = ".atlas"
-VASCULATURE_MORPHOLOGY = COMMON['vasculature']
-PARALLEL = COMMON.get('parallel', True)
-LOG_LEVEL = get_log_level_for_cli(COMMON.get('log_level', 'WARNING'))
+VASCULATURE_MORPHOLOGY = COMMON["vasculature"]
+PARALLEL = COMMON.get("parallel", True)
+LOG_LEVEL = get_log_level_for_cli(COMMON.get("log_level", "WARNING"))
 
 
 def get_node_population_name(population_type, default=None):
-
-    if 'node_population_name' in COMMON:
-        return COMMON['node_population_name'].get(population_type, default=default)
+    if "node_population_name" in COMMON:
+        return COMMON["node_population_name"].get(population_type, default=default)
 
     return default
 
@@ -67,80 +67,81 @@ NODES_VASCULATURE_NAME = get_node_population_name("vasculature", default="vascul
 
 
 def get_edge_population_name(population_type, default=None):
-
-    if 'edge_population_name' in COMMON:
-        return COMMON['edge_population_name'].get(population_type, default=default)
+    if "edge_population_name" in COMMON:
+        return COMMON["edge_population_name"].get(population_type, default=default)
 
     return default
+
 
 EDGES_SYNAPSE_ASTROCYTE_NAME = get_edge_population_name("synapse_astrocyte", default="neuroglial")
 EDGES_ENDFOOT_NAME = get_edge_population_name("endfoot", default="gliovascular")
 EDGES_GLIALGLIAL_NAME = get_edge_population_name("glialglial", default="glialglial")
 
-BASE_CIRCUIT_SONATA = COMMON['base_circuit_sonata']
-BASE_CIRCUIT_CELLS = COMMON['base_circuit_cells']
-BASE_CIRCUIT_CONNECTOME = COMMON['base_circuit_connectome']
-BASE_SPATIAL_SYNAPSE_INDEX_DIR = COMMON['base_spatial_synapse_index_dir']
-BUILDER_RECIPE = bioname_path('astrocyte_gap_junction_recipe.xml')
+BASE_CIRCUIT_SONATA = COMMON["base_circuit_sonata"]
+BASE_CIRCUIT_CELLS = COMMON["base_circuit_cells"]
+BASE_CIRCUIT_CONNECTOME = COMMON["base_circuit_connectome"]
+BASE_SPATIAL_SYNAPSE_INDEX_DIR = COMMON["base_spatial_synapse_index_dir"]
+BUILDER_RECIPE = bioname_path("astrocyte_gap_junction_recipe.xml")
 
 SPACK_MODULEPATH = "/gpfs/bbp.cscs.ch/ssd/apps/bsd/modules/_meta"
 
 MODULES = {
-    'glial_gap_junctions':
-        (SPACK_MODULEPATH, ['archive/2022-03', 'touchdetector/5.6.1']),
-    'synthesis':
-        (SPACK_MODULEPATH, ["archive/2023-03", "spatial-index/2.0.0", "py-mpi4py/3.1.4"]),
-    'refine_tetrahedral':
-        (SPACK_MODULEPATH, ['archive/2023-03', 'gmsh/4.10.3']),
-    'build_tetrahedral':
-        (SPACK_MODULEPATH, ['archive/2023-03', 'gmsh/4.10.3']),
+    "glial_gap_junctions": (SPACK_MODULEPATH, ["archive/2022-03", "touchdetector/5.6.1"]),
+    "synthesis": (SPACK_MODULEPATH, ["archive/2023-05", "spatial-index/2.0.0", "py-mpi4py/3.1.4"]),
+    "refine_tetrahedral": (SPACK_MODULEPATH, ["archive/2023-05", "gmsh/4.10.3"]),
+    "build_tetrahedral": (SPACK_MODULEPATH, ["archive/2023-05", "gmsh/4.10.3"]),
 }
 
 
-TOUCHES_DIR = 'connectome/touches'
+TOUCHES_DIR = "connectome/touches"
 
 
 def propagate_cluster_default_values():
     # propagate the missing options from the default
-    slurm_envs = set(cluster_config.keys()) - {'__default__'}
-    default = cluster_config['__default__']
+    slurm_envs = set(cluster_config.keys()) - {"__default__"}
+    default = cluster_config["__default__"]
     for slurm_env in slurm_envs:
         slurm_dict = cluster_config[slurm_env]
-        missing_keys = set(default.keys()) -  set(slurm_dict.keys())
+        missing_keys = set(default.keys()) - set(slurm_dict.keys())
         slurm_dict.update({key: default[key] for key in missing_keys})
 
 
 def salloc_cmd(slurm_env):
     if (slurm_env is not None) and cluster_config:
         if slurm_env not in cluster_config:
-            slurm_env = '__default__'
+            slurm_env = "__default__"
 
         cfg = cluster_config[slurm_env]
-        options = (f"-C {cfg['constraint']} -A {cfg['account']} -N {cfg['nodes']}" +
-                   f" -p {cfg['partition']} -J {cfg['jobname']} -t {cfg['time']}")
-        if 'tasks' in cfg:
+        options = (
+            f"-C {cfg['constraint']} -A {cfg['account']} -N {cfg['nodes']}"
+            + f" -p {cfg['partition']} -J {cfg['jobname']} -t {cfg['time']}"
+        )
+        if "tasks" in cfg:
             options += f' -n {cfg["tasks"]}'
-        if 'cpus-per-task' in cfg:
+        if "cpus-per-task" in cfg:
             options += f' --cpus-per-task {cfg["cpus-per-task"]}'
-        if 'exclusive' in cfg:
-            options += ' --exclusive'
-        if 'mem' in cfg:
+        if "exclusive" in cfg:
+            options += " --exclusive"
+        if "mem" in cfg:
             options += f' --mem {cfg["mem"]}'
-        return f'salloc {options}'
+        return f"salloc {options}"
     return ""
 
 
 def modules_cmd(module_env):
     if module_env is not None:
         modulepath, modules = MODULES[module_env]
-        return " && ".join([
-            "export MODULEPATH=%s" % modulepath,
-            ". /etc/profile.d/modules.sh",
-            "module purge",
-            "module load %s" % " ".join(modules),
-            "echo MODULEPATH=%s" % modulepath,
-            "module list", " "
-            ])
+        return " && ".join(
+            [
+                "export MODULEPATH=%s" % modulepath,
+                ". /etc/profile.d/modules.sh",
+                "module purge",
+                "module load %s" % " ".join(modules),
+                "echo MODULEPATH=%s" % modulepath,
+                "module list",
+                " ",
+            ]
+        )
     return ""
 
 
@@ -152,7 +153,7 @@ def run_cmd(cmd, dump_log=False, module_env=None, slurm_env=None):
         module_env (str): modules specified for this command in MODULES
         slurm_env (str): slurm environment specified in cluster config
     """
-    command = ' '.join(map(str, cmd))
+    command = " ".join(map(str, cmd))
     result = f"{modules_cmd(module_env)} {salloc_cmd(slurm_env)} {command}"
 
     if dump_log:
@@ -165,391 +166,387 @@ propagate_cluster_default_values()  #  cluster info propagation does not work so
 
 rule all:
     input:
-        'microdomains.h5',
-        'endfeet_meshes.h5',
-        MORPH_DIR + '/_DONE',
-        TOUCHES_DIR + '/_SUCCESS',
-        'ngv_config.json',
-        f'sonata/networks/nodes/{NODES_ASTROCYTE_NAME}/nodes.h5',
-        f'sonata/networks/nodes/{NODES_VASCULATURE_NAME}/nodes.h5',
-        f'sonata/networks/edges/{EDGES_SYNAPSE_ASTROCYTE_NAME}/edges.h5',
-        f'sonata/networks/edges/{EDGES_GLIALGLIAL_NAME}/edges.h5',
-        f'sonata/networks/edges/{EDGES_ENDFOOT_NAME}/edges.h5',
-        f'refined-ngv-tetrahedral-mesh.msh',     
+        "microdomains.h5",
+        "endfeet_meshes.h5",
+        MORPH_DIR + "/_DONE",
+        TOUCHES_DIR + "/_SUCCESS",
+        "ngv_config.json",
+        f"sonata/networks/nodes/{NODES_ASTROCYTE_NAME}/nodes.h5",
+        f"sonata/networks/nodes/{NODES_VASCULATURE_NAME}/nodes.h5",
+        f"sonata/networks/edges/{EDGES_SYNAPSE_ASTROCYTE_NAME}/edges.h5",
+        f"sonata/networks/edges/{EDGES_GLIALGLIAL_NAME}/edges.h5",
+        f"sonata/networks/edges/{EDGES_ENDFOOT_NAME}/edges.h5",
+        f"refined-ngv-tetrahedral-mesh.msh",
 
 
 rule ngv_config:
     output:
-        'ngv_config.json'
-
+        "ngv_config.json",
     shell:
-        run_cmd([
-            f'ngv {LOG_LEVEL} config-file',
-            '--bioname', BIONAME,
-            '--output', '{output}',
-        ])
+        run_cmd(
+            [
+                f"ngv {LOG_LEVEL} config-file",
+                "--bioname",
+                BIONAME,
+                "--output",
+                "{output}",
+            ]
+        )
 
 
 rule sonata_vasculature:
     input:
-        VASCULATURE_MORPHOLOGY
-
+        VASCULATURE_MORPHOLOGY,
     output:
-        f'sonata/networks/nodes/{NODES_VASCULATURE_NAME}/nodes.h5'
-
+        f"sonata/networks/nodes/{NODES_VASCULATURE_NAME}/nodes.h5",
     log:
-        log_path('sonata_vasculature')
-
+        log_path("sonata_vasculature"),
     shell:
-        run_cmd([
-            f'vascpy morphology-to-sonata',
-            '{input} {output}'],
-            dump_log=True)
+        run_cmd([f"vascpy morphology-to-sonata", "{input} {output}"], dump_log=True)
 
 
 rule cell_placement:
     input:
-        f'sonata/networks/nodes/{NODES_VASCULATURE_NAME}/nodes.h5'
-
+        f"sonata/networks/nodes/{NODES_VASCULATURE_NAME}/nodes.h5",
     output:
-        'sonata.tmp/nodes/glia.somata.h5'
-
+        "sonata.tmp/nodes/glia.somata.h5",
     log:
-        log_path('cell_placement')
-
+        log_path("cell_placement"),
     shell:
-        run_cmd([
-            f'ngv {LOG_LEVEL} cell-placement',
-            f'--config {bioname_path("MANIFEST.yaml")}',
-            f'--atlas {ATLAS}',
-            f'--atlas-cache {ATLAS_CACHE_DIR}',
-            f'--vasculature {input}',
-            f'--population-name {NODES_ASTROCYTE_NAME}',
-            '--output {output}',
-            f'--seed {SEED}'],
-            dump_log=True)
+        run_cmd(
+            [
+                f"ngv {LOG_LEVEL} cell-placement",
+                f'--config {bioname_path("MANIFEST.yaml")}',
+                f"--atlas {ATLAS}",
+                f"--atlas-cache {ATLAS_CACHE_DIR}",
+                f"--vasculature {input}",
+                f"--population-name {NODES_ASTROCYTE_NAME}",
+                "--output {output}",
+                f"--seed {SEED}",
+            ],
+            dump_log=True,
+        )
 
 
 rule assign_emodels:
     input:
-        'sonata.tmp/nodes/glia.somata.h5'
-
+        "sonata.tmp/nodes/glia.somata.h5",
     output:
-        'sonata.tmp/nodes/glia.emodels.h5'
-
+        "sonata.tmp/nodes/glia.emodels.h5",
     shell:
-        run_cmd([
-            f'ngv {LOG_LEVEL} assign-emodels',
-            '--input {input}',
-            '--output {output}',
-            f'--hoc {MANIFEST["assign_emodels"]["hoc_template"]}',
-        ])
+        run_cmd(
+            [
+                f"ngv {LOG_LEVEL} assign-emodels",
+                "--input {input}",
+                "--output {output}",
+                f'--hoc {MANIFEST["assign_emodels"]["hoc_template"]}',
+            ]
+        )
 
 
 rule finalize_astrocytes:
     input:
-        somata = 'sonata.tmp/nodes/glia.somata.h5',
-        emodels = 'sonata.tmp/nodes/glia.emodels.h5'
-
+        somata="sonata.tmp/nodes/glia.somata.h5",
+        emodels="sonata.tmp/nodes/glia.emodels.h5",
     output:
-        f'sonata/networks/nodes/{NODES_ASTROCYTE_NAME}/nodes.h5'
-
+        f"sonata/networks/nodes/{NODES_ASTROCYTE_NAME}/nodes.h5",
     log:
-        log_path('finalize_astrocytes')
-
+        log_path("finalize_astrocytes"),
     shell:
-        run_cmd([
-            f'ngv {LOG_LEVEL} finalize-astrocytes',
-            '--somata-file {input[somata]}',
-            '--emodels-file {input[emodels]}',
-            '--output {output}'],
-            dump_log=True)
+        run_cmd(
+            [
+                f"ngv {LOG_LEVEL} finalize-astrocytes",
+                "--somata-file {input[somata]}",
+                "--emodels-file {input[emodels]}",
+                "--output {output}",
+            ],
+            dump_log=True,
+        )
 
 
 rule microdomains:
     input:
-        f'sonata/networks/nodes/{NODES_ASTROCYTE_NAME}/nodes.h5'
-
+        f"sonata/networks/nodes/{NODES_ASTROCYTE_NAME}/nodes.h5",
     output:
-        'microdomains.h5',
-
+        "microdomains.h5",
     log:
-        log_path('microdomains')
-
+        log_path("microdomains"),
     shell:
-        run_cmd([
-            f'ngv {LOG_LEVEL} microdomains',
-            f'--config {bioname_path("MANIFEST.yaml")}',
-            '--astrocytes {input}',
-            f'--atlas {ATLAS}',
-            f'--atlas-cache {ATLAS_CACHE_DIR}',
-            '--output-file-path {output}',
-            f'--seed {SEED}'],
-            dump_log=True)
+        run_cmd(
+            [
+                f"ngv {LOG_LEVEL} microdomains",
+                f'--config {bioname_path("MANIFEST.yaml")}',
+                "--astrocytes {input}",
+                f"--atlas {ATLAS}",
+                f"--atlas-cache {ATLAS_CACHE_DIR}",
+                "--output-file-path {output}",
+                f"--seed {SEED}",
+            ],
+            dump_log=True,
+        )
 
 
 rule gliovascular_connectivity:
     input:
-        astrocytes = f'sonata/networks/nodes/{NODES_ASTROCYTE_NAME}/nodes.h5',
-        microdomains = 'microdomains.h5',
-        vasculature = f'sonata/networks/nodes/{NODES_VASCULATURE_NAME}/nodes.h5'
-
+        astrocytes=f"sonata/networks/nodes/{NODES_ASTROCYTE_NAME}/nodes.h5",
+        microdomains="microdomains.h5",
+        vasculature=f"sonata/networks/nodes/{NODES_VASCULATURE_NAME}/nodes.h5",
     output:
-        'sonata.tmp/edges/gliovascular.connectivity.h5',
-
+        "sonata.tmp/edges/gliovascular.connectivity.h5",
     log:
-        log_path('gliovascular_connectivity')
-
+        log_path("gliovascular_connectivity"),
     shell:
-        run_cmd([
-            f'ngv {LOG_LEVEL} gliovascular-connectivity',
-            f'--config {bioname_path("MANIFEST.yaml")}',
-            '--astrocytes {input[astrocytes]}',
-            '--microdomains {input[microdomains]}',
-            '--vasculature {input[vasculature]}',
-            f'--seed {SEED}',
-            f'--population-name {EDGES_ENDFOOT_NAME}',
-            '--output {output}'],
-            dump_log=True)
+        run_cmd(
+            [
+                f"ngv {LOG_LEVEL} gliovascular-connectivity",
+                f'--config {bioname_path("MANIFEST.yaml")}',
+                "--astrocytes {input[astrocytes]}",
+                "--microdomains {input[microdomains]}",
+                "--vasculature {input[vasculature]}",
+                f"--seed {SEED}",
+                f"--population-name {EDGES_ENDFOOT_NAME}",
+                "--output {output}",
+            ],
+            dump_log=True,
+        )
 
 
 rule neuroglial_connectivity:
     input:
-        astrocytes = f'sonata/networks/nodes/{NODES_ASTROCYTE_NAME}/nodes.h5',
-        microdomains = 'microdomains.h5',
-
+        astrocytes=f"sonata/networks/nodes/{NODES_ASTROCYTE_NAME}/nodes.h5",
+        microdomains="microdomains.h5",
     output:
-        'sonata.tmp/edges/neuroglial.connectivity.h5',
-
+        "sonata.tmp/edges/neuroglial.connectivity.h5",
     log:
-        log_path('neuroglial_connectivity')
-
+        log_path("neuroglial_connectivity"),
     shell:
-        run_cmd([
-            f'ngv {LOG_LEVEL} neuroglial-connectivity',
-            f'--neurons-path {BASE_CIRCUIT_CELLS}',
-            '--astrocytes-path {input[astrocytes]}',
-            '--microdomains-path {input[microdomains]}',
-            f'--neuronal-connectivity-path {BASE_CIRCUIT_CONNECTOME}',
-            f'--spatial-synapse-index-dir {BASE_SPATIAL_SYNAPSE_INDEX_DIR}',
-            '--output-path {output}',
-            f'--population-name {EDGES_SYNAPSE_ASTROCYTE_NAME}',
-            f'--seed {SEED}'],
-            dump_log=True)
+        run_cmd(
+            [
+                f"ngv {LOG_LEVEL} neuroglial-connectivity",
+                f"--neurons-path {BASE_CIRCUIT_CELLS}",
+                "--astrocytes-path {input[astrocytes]}",
+                "--microdomains-path {input[microdomains]}",
+                f"--neuronal-connectivity-path {BASE_CIRCUIT_CONNECTOME}",
+                f"--spatial-synapse-index-dir {BASE_SPATIAL_SYNAPSE_INDEX_DIR}",
+                "--output-path {output}",
+                f"--population-name {EDGES_SYNAPSE_ASTROCYTE_NAME}",
+                f"--seed {SEED}",
+            ],
+            dump_log=True,
+        )
+
 
 rule glial_gap_junctions:
     message:
         "Detect touches between astrocytes"
-
     input:
-        astrocytes = f'sonata/networks/nodes/{NODES_ASTROCYTE_NAME}/nodes.h5',
-        morphologies = MORPH_DIR + '/_DONE'
-
+        astrocytes=f"sonata/networks/nodes/{NODES_ASTROCYTE_NAME}/nodes.h5",
+        morphologies=MORPH_DIR + "/_DONE",
     output:
-        touch(TOUCHES_DIR + '/_SUCCESS')
-
+        touch(TOUCHES_DIR + "/_SUCCESS"),
     log:
-        log_path('touchdetector')
-
+        log_path("touchdetector"),
     shell:
-        run_cmd([
-            'srun --mpi pmi2 sh -c "' +
-            ' '.join(['touchdetector',
-            f'--output {TOUCHES_DIR}',
-            '--save-state',
-            f'--from {{input[astrocytes]}} {NODES_ASTROCYTE_NAME}',
-            f'--to {{input[astrocytes]}} {NODES_ASTROCYTE_NAME}',
-            BUILDER_RECIPE,
-            MORPH_DIR]) + '"'],
+        run_cmd(
+            [
+                'srun --mpi pmi2 sh -c "'
+                + " ".join(
+                    [
+                        "touchdetector",
+                                f"--output {TOUCHES_DIR}",
+                                "--save-state",
+                                f"--from {{input[astrocytes]}} {NODES_ASTROCYTE_NAME}",
+                                f"--to {{input[astrocytes]}} {NODES_ASTROCYTE_NAME}",
+                                BUILDER_RECIPE,
+                                MORPH_DIR,
+                            ]
+                        )
+                        + '"'
+            ],
             dump_log=True,
-            module_env='glial_gap_junctions',
-            slurm_env='glial_gap_junctions'
+            module_env="glial_gap_junctions",
+            slurm_env="glial_gap_junctions",
         )
 
 
 rule glialglial_connectivity:
     message:
         " Extract glial glial connectivity from touches"
-
     input:
-        astrocytes = f'sonata/networks/nodes/{NODES_ASTROCYTE_NAME}/nodes.h5',
-        touches = TOUCHES_DIR + '/_SUCCESS'
-
+        astrocytes=f"sonata/networks/nodes/{NODES_ASTROCYTE_NAME}/nodes.h5",
+        touches=TOUCHES_DIR + "/_SUCCESS",
     output:
-        glialglial_connectivity = f'sonata/networks/edges/{EDGES_GLIALGLIAL_NAME}/edges.h5'
-
+        glialglial_connectivity=f"sonata/networks/edges/{EDGES_GLIALGLIAL_NAME}/edges.h5",
     log:
-        log_path('glialglial_connectivity')
-
+        log_path("glialglial_connectivity"),
     shell:
-        run_cmd([
-            f'ngv {LOG_LEVEL} glialglial-connectivity',
-            '--astrocytes {input[astrocytes]}',
-            f'--touches-dir {TOUCHES_DIR}',
-            f'--population-name {EDGES_GLIALGLIAL_NAME}',
-            '--output-connectivity {output[glialglial_connectivity]}',
-            f'--seed {SEED}'],
+        run_cmd(
+            [
+                f"ngv {LOG_LEVEL} glialglial-connectivity",
+                "--astrocytes {input[astrocytes]}",
+                f"--touches-dir {TOUCHES_DIR}",
+                f"--population-name {EDGES_GLIALGLIAL_NAME}",
+                "--output-connectivity {output[glialglial_connectivity]}",
+                f"--seed {SEED}",
+            ],
             dump_log=True,
         )
 
 
 rule endfeet_area:
     input:
-        gliovascular_connectivity = 'sonata.tmp/edges/gliovascular.connectivity.h5',
-
+        gliovascular_connectivity="sonata.tmp/edges/gliovascular.connectivity.h5",
     output:
-        'endfeet_meshes.h5'
-
+        "endfeet_meshes.h5",
     log:
-        log_path('endfeet_area')
-
+        log_path("endfeet_area"),
     shell:
-        run_cmd([
-            f'ngv {LOG_LEVEL} endfeet-area',
-            f'--config-path {bioname_path("MANIFEST.yaml")}',
-            f'--vasculature-mesh-path {COMMON["vasculature_mesh"]}',
-            '--gliovascular-connectivity-path {input[gliovascular_connectivity]}',
-            '--output-path {output}',
-            f'--seed {SEED}'],
-            dump_log=True)
+        run_cmd(
+            [
+                f"ngv {LOG_LEVEL} endfeet-area",
+                f'--config-path {bioname_path("MANIFEST.yaml")}',
+                f'--vasculature-mesh-path {COMMON["vasculature_mesh"]}',
+                "--gliovascular-connectivity-path {input[gliovascular_connectivity]}",
+                "--output-path {output}",
+                f"--seed {SEED}",
+            ],
+            dump_log=True,
+        )
 
 
 rule synthesis:
     input:
-        astrocytes = f'sonata/networks/nodes/{NODES_ASTROCYTE_NAME}/nodes.h5',
-        microdomains = 'microdomains.h5',
-        gliovascular_connectivity = 'sonata.tmp/edges/gliovascular.connectivity.h5',
-        neuroglial_connectivity = 'sonata.tmp/edges/neuroglial.connectivity.h5',
-        endfeet_meshes = 'endfeet_meshes.h5'
-
+        astrocytes=f"sonata/networks/nodes/{NODES_ASTROCYTE_NAME}/nodes.h5",
+        microdomains="microdomains.h5",
+        gliovascular_connectivity="sonata.tmp/edges/gliovascular.connectivity.h5",
+        neuroglial_connectivity="sonata.tmp/edges/neuroglial.connectivity.h5",
+        endfeet_meshes="endfeet_meshes.h5",
     output:
-        touch(MORPH_DIR + '/_DONE'),
-
+        touch(MORPH_DIR + "/_DONE"),
     log:
-        log_path('synthesis')
-
+        log_path("synthesis"),
     shell:
-        run_cmd([
-            'srun' if PARALLEL else '',
-            f'ngv {LOG_LEVEL} synthesis',
-            f'--config-path {bioname_path("MANIFEST.yaml")}',
-            f'--tns-distributions-path {bioname_path("tns_distributions.json")}',
-            f'--tns-parameters-path {bioname_path("tns_parameters.json")}',
-            f'--tns-context-path {bioname_path("tns_context.json")}',
-            f'--er-data-path {bioname_path("er_data.json")}',
-            '--astrocytes-path {input[astrocytes]}',
-            '--microdomains-path {input[microdomains]}',
-            '--gliovascular-connectivity-path {input[gliovascular_connectivity]}',
-            '--neuroglial-connectivity-path {input[neuroglial_connectivity]}',
-            '--endfeet-meshes-path {input[endfeet_meshes]}',
-            f'--neuronal-connectivity-path {BASE_CIRCUIT_CONNECTOME}',
-            f'--out-morph-dir {MORPH_DIR}',
-            ('--parallel' if PARALLEL else ''),
-            f'--seed {SEED}'],
+        run_cmd(
+            [
+                "srun" if PARALLEL else "",
+                f"ngv {LOG_LEVEL} synthesis",
+                f'--config-path {bioname_path("MANIFEST.yaml")}',
+                f'--tns-distributions-path {bioname_path("tns_distributions.json")}',
+                f'--tns-parameters-path {bioname_path("tns_parameters.json")}',
+                f'--tns-context-path {bioname_path("tns_context.json")}',
+                f'--er-data-path {bioname_path("er_data.json")}',
+                "--astrocytes-path {input[astrocytes]}",
+                "--microdomains-path {input[microdomains]}",
+                "--gliovascular-connectivity-path {input[gliovascular_connectivity]}",
+                "--neuroglial-connectivity-path {input[neuroglial_connectivity]}",
+                "--endfeet-meshes-path {input[endfeet_meshes]}",
+                f"--neuronal-connectivity-path {BASE_CIRCUIT_CONNECTOME}",
+                f"--out-morph-dir {MORPH_DIR}",
+                ("--parallel" if PARALLEL else ""),
+                f"--seed {SEED}",
+            ],
             dump_log=True,
-            module_env='synthesis' if PARALLEL else None,
-            slurm_env='synthesis' if PARALLEL else None,
+            module_env="synthesis" if PARALLEL else None,
+            slurm_env="synthesis" if PARALLEL else None,
         )
 
 
 rule finalize_gliovascular_connectivity:
     input:
-        astrocytes = f'sonata/networks/nodes/{NODES_ASTROCYTE_NAME}/nodes.h5',
-        connectivity = 'sonata.tmp/edges/gliovascular.connectivity.h5',
-        endfeet_meshes = 'endfeet_meshes.h5',
-        morphologies = MORPH_DIR + '/_DONE',
-        vasculature_sonata = f'sonata/networks/nodes/{NODES_VASCULATURE_NAME}/nodes.h5',
-
+        astrocytes=f"sonata/networks/nodes/{NODES_ASTROCYTE_NAME}/nodes.h5",
+        connectivity="sonata.tmp/edges/gliovascular.connectivity.h5",
+        endfeet_meshes="endfeet_meshes.h5",
+        morphologies=MORPH_DIR + "/_DONE",
+        vasculature_sonata=f"sonata/networks/nodes/{NODES_VASCULATURE_NAME}/nodes.h5",
     output:
-        f'sonata/networks/edges/{EDGES_ENDFOOT_NAME}/edges.h5'
+        f"sonata/networks/edges/{EDGES_ENDFOOT_NAME}/edges.h5",
     log:
-        log_path('finalize_gliovascular_connectivity')
+        log_path("finalize_gliovascular_connectivity"),
     shell:
-        run_cmd([
-            f'ngv {LOG_LEVEL} attach-endfeet-info-to-gliovascular-connectivity',
-            '--input-file {input[connectivity]}',
-            '--output-file {output}',
-            '--astrocytes {input[astrocytes]}',
-            '--endfeet-meshes-path {input[endfeet_meshes]}',
-            '--vasculature-sonata {input[vasculature_sonata]}',
-            f'--morph-dir {MORPH_DIR}',
-            ('--parallel' if PARALLEL else ''),
-            f'--seed {SEED}'],
-            dump_log=True
+        run_cmd(
+            [
+                f"ngv {LOG_LEVEL} attach-endfeet-info-to-gliovascular-connectivity",
+                "--input-file {input[connectivity]}",
+                "--output-file {output}",
+                "--astrocytes {input[astrocytes]}",
+                "--endfeet-meshes-path {input[endfeet_meshes]}",
+                "--vasculature-sonata {input[vasculature_sonata]}",
+                f"--morph-dir {MORPH_DIR}",
+                ("--parallel" if PARALLEL else ""),
+                f"--seed {SEED}",
+            ],
+            dump_log=True,
         )
 
 
 rule finalize_neuroglial_connectivity:
     input:
-        astrocytes = f'sonata/networks/nodes/{NODES_ASTROCYTE_NAME}/nodes.h5',
-        microdomains = 'microdomains.h5',
-        connectivity = 'sonata.tmp/edges/neuroglial.connectivity.h5',
-        morphologies = MORPH_DIR + '/_DONE',
-
+        astrocytes=f"sonata/networks/nodes/{NODES_ASTROCYTE_NAME}/nodes.h5",
+        microdomains="microdomains.h5",
+        connectivity="sonata.tmp/edges/neuroglial.connectivity.h5",
+        morphologies=MORPH_DIR + "/_DONE",
     output:
-        f'sonata/networks/edges/{EDGES_SYNAPSE_ASTROCYTE_NAME}/edges.h5'
-
+        f"sonata/networks/edges/{EDGES_SYNAPSE_ASTROCYTE_NAME}/edges.h5",
     log:
-        log_path('finalize_neuroglial_connectivity')
-
+        log_path("finalize_neuroglial_connectivity"),
     shell:
-        run_cmd([
-            f'ngv {LOG_LEVEL} attach-morphology-info-to-neuroglial-connectivity',
-            '--input-file-path {input[connectivity]}',
-            '--output-file-path {output}',
-            '--astrocytes-path {input[astrocytes]}',
-            '--microdomains-path {input[microdomains]}',
-            f'--synaptic-data-path {BASE_CIRCUIT_CONNECTOME}',
-            f'--morph-dir {MORPH_DIR}',
-            ('--parallel' if PARALLEL else ''),
-            f'--seed {SEED}'],
-            dump_log=True)
+        run_cmd(
+            [
+                f"ngv {LOG_LEVEL} attach-morphology-info-to-neuroglial-connectivity",
+                "--input-file-path {input[connectivity]}",
+                "--output-file-path {output}",
+                "--astrocytes-path {input[astrocytes]}",
+                "--microdomains-path {input[microdomains]}",
+                f"--synaptic-data-path {BASE_CIRCUIT_CONNECTOME}",
+                f"--morph-dir {MORPH_DIR}",
+                ("--parallel" if PARALLEL else ""),
+                f"--seed {SEED}",
+            ],
+            dump_log=True,
+        )
 
 
 rule prepare_tetrahedral:
     output:
-        'refined_surface_mesh.stl'
+        "refined_surface_mesh.stl",
     log:
-        log_path('refined_surface_mesh')
-
+        log_path("refined_surface_mesh"),
     shell:
-        run_cmd([
-            f'ngv {LOG_LEVEL} refined-surface-mesh',
-            f'--config-path {bioname_path("MANIFEST.yaml")}',
-            f'--atlas {ATLAS}',
-            f'--atlas-cache {ATLAS_CACHE_DIR}',
-            '--output-path {output}'],
-            dump_log=True)
+        run_cmd(
+            [
+                f"ngv {LOG_LEVEL} refined-surface-mesh",
+                f'--config-path {bioname_path("MANIFEST.yaml")}',
+                f"--atlas {ATLAS}",
+                f"--atlas-cache {ATLAS_CACHE_DIR}",
+                "--output-path {output}",
+            ],
+            dump_log=True,
+        )
 
 
 rule build_tetrahedral:
-    input: 'refined_surface_mesh.stl'
-    output: 'ngv-tetrahedral-mesh.msh'
-        
+    input:
+        "refined_surface_mesh.stl",
+    output:
+        "ngv-tetrahedral-mesh.msh",
     log:
-        log_path('build_tetrahedral')
-
+        log_path("build_tetrahedral"),
     shell:
-        run_cmd([
-            'gmsh',
-            'refined_surface_mesh.geo',
-            '-3',
-            '-o {output}',
-            f'-algo initial3d'],
-        module_env='build_tetrahedral',
+        run_cmd(
+            ["gmsh", "refined_surface_mesh.geo", "-3", "-o {output}", f"-algo initial3d"],
+            module_env="build_tetrahedral",
         )
 
 
 rule refine_tetrahedral:
-    input: 'ngv-tetrahedral-mesh.msh'
-    output: 'refined-ngv-tetrahedral-mesh.msh'
-        
+    input:
+        "ngv-tetrahedral-mesh.msh",
+    output:
+        "refined-ngv-tetrahedral-mesh.msh",
     log:
-        log_path('refine_tetrahedral')
-
+        log_path("refine_tetrahedral"),
     shell:
-        run_cmd([
-            'for (( c=1; c<=5; c++ )); do gmsh -refine {input} -o {output}; done'],
-        module_env='refine_tetrahedral',
+        run_cmd(
+            ["for (( c=1; c<=5; c++ )); do gmsh -refine {input} -o {output}; done"],
+            module_env="refine_tetrahedral",
         )
-
