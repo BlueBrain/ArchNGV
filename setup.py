@@ -70,9 +70,9 @@ setup(
         "cached-property>=1.5",
         "voxcell>=3.0.0",
         "vascpy>=0.1.0",
-        # 2.38.10 is available in spack.
+        # 3.17.1 is available in spack.
         # Update to a higher version in spack after checking that py-atlas-building-tools works
-        "trimesh>=2.38.10",
+        "trimesh>=3.17.1",  # Method Trimesh:subdivide_loop is needed
         # trimesh soft dependency for using marching cubes
         "scikit-image>=0.18",
         # requests module pin urrlib3 in recent versions

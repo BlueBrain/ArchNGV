@@ -59,7 +59,7 @@ app.add_command(name="synthesis", cmd=ngv.synthesis)
 app.add_command(name="glialglial-connectivity", cmd=ngv.build_glialglial_connectivity)
 app.add_command(name="endfeet-area", cmd=ngv.build_endfeet_surface_meshes)
 app.add_command(name="config-file", cmd=ngv.ngv_config)
-app.add_command(name="refined-surface-mesh", cmd=ngv.refined_surface_mesh)
+app.add_command(name="refined-surface-mesh", cmd=ngv.refine_surface_mesh)
 
 
 @app.command(name="create-exemplar")

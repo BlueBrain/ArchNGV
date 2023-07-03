@@ -6,6 +6,7 @@ import click
 import numpy
 import voxcell
 from atlas_commons.app_utils import assert_properties
+from voxcell import ROIMask
 
 from archngv.app.logger import LOGGER
 from archngv.app.utils import load_ngv_manifest, write_json
@@ -66,7 +67,6 @@ def cell_placement(config, atlas, atlas_cache, vasculature, seed, population_nam
     # pylint: disable=too-many-locals
     from spatial_index import SphereIndexBuilder
     from vascpy import PointVasculature
-    from voxcell import ROIMask
     from voxcell.nexus.voxelbrain import Atlas
 
     from archngv.building.cell_placement.positions import create_positions
@@ -767,7 +767,7 @@ def synthesis(
 @click.option("--atlas", help="Atlas URL / path", required=True)
 @click.option("--atlas-cache", help="Path to atlas cache folder", default=None, show_default=True)
 @click.option("-o", "--output-path", help="Path to output file (*.msh)", required=True)
-def refined_surface_mesh(
+def refine_surface_mesh(
     config_path,
     atlas,
     atlas_cache,
@@ -776,6 +776,8 @@ def refined_surface_mesh(
     """Create a surface mesh form the ATLAS and region.
     Export the new 3D surface mesh
     """
+    import textwrap
+
     import trimesh
     from voxcell.nexus.voxelbrain import Atlas
 
@@ -796,15 +798,40 @@ def refined_surface_mesh(
     else:
         region_mask = atlas.load_data("brain_regions")
 
-    surface_mesh = trimesh.voxel.ops.matrix_to_marching_cubes(region_mask.raw, pitch=1.0)
+    if "mask" in ngv_common_config:
+        mask_dset = ngv_common_config["mask"]
+        root_mask = atlas.load_data(mask_dset, cls=ROIMask)
+        region_mask.raw &= root_mask.raw
+    if not numpy.any(region_mask.raw):
+        raise ValueError("Empty region mask")
+
+    # Keep only the points that are inside
+    roi = numpy.where(region_mask.raw > 0)
+    indices = numpy.stack(roi, axis=1)
+
+    # Get region points
+    region_points = region_mask.indices_to_positions(indices)
+
+    point_cloud = trimesh.PointCloud(region_points)
+    surface_mesh = point_cloud.convex_hull
     # Supported formats are stl, off, ply, collada, json, dict, glb, dict64, msgpack
 
-    surface_mesh = surface_mesh.subdivide_loop(iterations=surface_mesh_subdivision_steps)
-    surface_mesh.export(output_path)
+    # pylint: disable=no-member
+    refined_surface_mesh = surface_mesh.subdivide_loop(iterations=surface_mesh_subdivision_steps)
+    # pylint: enable=no-member
 
-    geo_filename = Path(output_path).stem + ".geo"
-    with open(geo_filename, "w") as f:
-        f.write(
-            "Merge '" + output_path + "';\n//+;\nSurface Loop(1) = {1};\n//+;\nVolume(1) = {1};"
-        )
+    refined_surface_mesh.export(output_path)
+
+    geo_filename = Path(output_path).with_suffix(".geo")
+    string = f"""
+        Merge '{output_path}';
+        //+;
+        Surface Loop(1) = {{1}};
+        //+;
+        Volume(1) = {{1}};
+        //+;
+        Physical Volume('extra', 1) = {{1}};
+        """
+    geo_filename.write_text(textwrap.dedent(string))
+
     LOGGER.info("Done!")

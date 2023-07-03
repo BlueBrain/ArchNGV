@@ -51,8 +51,19 @@ COMMON = MANIFEST["common"]
 ATLAS = COMMON["atlas"]
 ATLAS_CACHE_DIR = ".atlas"
 VASCULATURE_MORPHOLOGY = COMMON["vasculature"]
+TETMESH = MANIFEST["tetrahedral_mesh"]
 PARALLEL = COMMON.get("parallel", True)
 LOG_LEVEL = get_log_level_for_cli(COMMON.get("log_level", "WARNING"))
+
+
+def refinement_subdividing_steps():
+    """Return the refinement_subdividing_steps from config file if exist.
+    otherwise return 1.
+    """
+    if "refinement_subdividing_steps" in TETMESH:
+        return int(TETMESH["refinement_subdividing_steps"])
+
+    return 1
 
 
 def get_node_population_name(population_type, default=None):
@@ -176,7 +187,7 @@ rule all:
         f"sonata/networks/edges/{EDGES_SYNAPSE_ASTROCYTE_NAME}/edges.h5",
         f"sonata/networks/edges/{EDGES_GLIALGLIAL_NAME}/edges.h5",
         f"sonata/networks/edges/{EDGES_ENDFOOT_NAME}/edges.h5",
-        f"refined-ngv-tetrahedral-mesh.msh",
+        "ngv_refined_tetrahedral_mesh.msh",
 
 
 rule ngv_config:
@@ -507,10 +518,12 @@ rule finalize_neuroglial_connectivity:
 
 
 rule prepare_tetrahedral:
+    # generates a mesh file and a gmsh script for the next step
     output:
-        "refined_surface_mesh.stl",
+        mesh="ngv_prepared_tetrahedral_mesh.stl",
+        script="ngv_prepared_tetrahedral_mesh.geo",
     log:
-        log_path("refined_surface_mesh"),
+        log_path("prepare_tetrahedral"),
     shell:
         run_cmd(
             [
@@ -518,7 +531,7 @@ rule prepare_tetrahedral:
                 f'--config-path {bioname_path("MANIFEST.yaml")}',
                 f"--atlas {ATLAS}",
                 f"--atlas-cache {ATLAS_CACHE_DIR}",
-                "--output-path {output}",
+                "--output-path {output.mesh}",
             ],
             dump_log=True,
         )
@@ -526,27 +539,39 @@ rule prepare_tetrahedral:
 
 rule build_tetrahedral:
     input:
-        "refined_surface_mesh.stl",
+        mesh_file="ngv_prepared_tetrahedral_mesh.stl",
+        script_file="ngv_prepared_tetrahedral_mesh.geo",
     output:
-        "ngv-tetrahedral-mesh.msh",
+        "ngv_tetrahedral_mesh.msh",
     log:
         log_path("build_tetrahedral"),
     shell:
         run_cmd(
-            ["gmsh", "refined_surface_mesh.geo", "-3", "-o {output}", f"-algo initial3d"],
+            [
+                "gmsh",
+                "{input.script_file}",
+                "-3",  #  Perform mesh generation from 2d (surface) to 3d (tetrahedral).
+                "-o {output}",
+                f"-algo initial3d",
+            ],
             module_env="build_tetrahedral",
         )
 
 
 rule refine_tetrahedral:
     input:
-        "ngv-tetrahedral-mesh.msh",
+        "ngv_tetrahedral_mesh.msh",
     output:
-        "refined-ngv-tetrahedral-mesh.msh",
+        "ngv_refined_tetrahedral_mesh.msh",
     log:
         log_path("refine_tetrahedral"),
     shell:
         run_cmd(
-            ["for (( c=1; c<=5; c++ )); do gmsh -refine {input} -o {output}; done"],
+            [
+                "cp -v {input} tmp.msh && ",
+                f"for (( c=1; c<={refinement_subdividing_steps()}; c++ )); ",
+                "do gmsh -refine tmp.msh -o tmp.msh; done && ",
+                "mv -v tmp.msh {output}",
+            ],
             module_env="refine_tetrahedral",
         )

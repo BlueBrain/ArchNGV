@@ -1,6 +1,22 @@
 Changelog
 =========
 
+
+Version 3.0.2
+-------------
+
+Improvements
+~~~~~~~~~~~~
+
+- Limit the microdomains to the region of interest.[`BBPP152-76`_]
+- thread separately the non connected component [`BBPP152-111`_]
+- Switch to the new Spatial_index package version. Use multi index [`BBPP152-109`_]
+- Synthesis step improvement [`BBPP152-112`_]
+- Generate tetrahedral meshes [`BBPP152-113`_]
+- Adapt the build microdomains step for a negative entry for the region_mask.voxel_dimension [`BBPP152-155`_]
+- Add the optional use of a ROI mask [`BBPP152-176`_]
+
+
 Version 2.0.2
 -------------
 

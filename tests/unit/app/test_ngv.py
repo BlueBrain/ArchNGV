@@ -344,7 +344,7 @@ def test_verify_circuit_integrity():
 
 def test_refined_surface_mesh():
     assert_cli_run(
-        tested.refined_surface_mesh,
+        tested.refine_surface_mesh,
         [
             "--config-path",
             BIONAME_DIR / "MANIFEST.yaml",

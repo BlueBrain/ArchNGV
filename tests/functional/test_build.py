@@ -50,13 +50,18 @@ def test_surface_mesh():
     """Compare STP surface mesh"""
     import trimesh
 
-    built_mesh = trimesh.load(BUILD_DIR / "refined_surface_mesh.stl")
-    expected_mesh = trimesh.load(EXPECTED_DIR / "refined_surface_mesh.stl")
-    npt.assert_array_almost_equal(built_mesh.vertices, expected_mesh.vertices)
+    assert (
+        filecmp.cmp(
+            EXPECTED_DIR / "ngv_refined_tetrahedral_mesh.msh",
+            BUILD_DIR / "ngv_refined_tetrahedral_mesh.msh",
+        )
+        == 1
+    )
 
     assert (
         filecmp.cmp(
-            EXPECTED_DIR / "refined_surface_mesh.geo", BUILD_DIR / "refined_surface_mesh.geo"
+            EXPECTED_DIR / "ngv_prepared_tetrahedral_mesh.geo",
+            BUILD_DIR / "ngv_prepared_tetrahedral_mesh.geo",
         )
         == 1
     )
