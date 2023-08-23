@@ -2,6 +2,16 @@ Changelog
 =========
 
 
+Version 3.0.3
+-------------
+
+Fixed
+~~~~~
+
+- Fixed the snakemake syntax and code style by adding snakefmt requirement and command into the lint target of tox.ini
+- Move module release from 2023-03 to 2023-05 because of a libsonata issue: ImportError: cannot import name 'CircuitConfigStatus' from 'libsonata'
+
+
 Version 3.0.2
 -------------
 
