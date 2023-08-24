@@ -5,7 +5,7 @@ import logging
 from copy import deepcopy
 
 import numpy as np
-from tns.morphmath import sample
+from neurots.morphmath import sample
 
 from archngv.building.morphology_synthesis.data_structures import TNSData
 from archngv.building.morphology_synthesis.domain_boundary import StopAtConvexBoundary

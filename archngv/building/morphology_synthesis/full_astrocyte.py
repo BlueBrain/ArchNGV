@@ -6,7 +6,7 @@ import numpy as np
 from diameter_synthesis import build_diameters
 from morph_tool.resampling import resample_linear_density
 from morph_tool.transform import translate
-from tns import AstrocyteGrower
+from neurots import AstrocyteGrower
 
 from archngv.building.morphology_synthesis.data_extraction import astrocyte_circuit_data, tns_inputs
 from archngv.building.morphology_synthesis.endoplasmic_reticulum import (
@@ -87,14 +87,14 @@ def grow_circuit_astrocyte(
         morphio.mut.Morphology: The generated astrocyte morphology
     """
 
-    def diametrizer_function(cell, neurite_type, model_all, random_generator):
+    def diametrizer_function(cell, neurite_type, model_params, random_generator):
         # external diametrizer function handle
         return build_diameters.build(
             cell,
-            model_all,
             [neurite_type],
+            model_params,
             tns_data.parameters["diameter_params"],
-            rng=random_generator,
+            random_generator=random_generator,
         )
 
     tns_data = create_tns_inputs(

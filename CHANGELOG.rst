@@ -2,6 +2,16 @@ Changelog
 =========
 
 
+Version 3.1.0
+-------------
+
+Fixed
+~~~~~
+
+- Replaces the use of the unmaintained python package TNS by the Neurots one.
+
+
+
 Version 3.0.3
 -------------
 

@@ -26,12 +26,8 @@ BUILDING = [
     "pytouchreader>=1.4.7",
     "snakemake>=5.0.0",
     "tmd>=2.0.11",
-    # latest version available in spack before OSS to NeuroTS
-    # we cannot yet switch to neurots because there are major breaking changes
-    # that will require rebuilding the distribution inputs to circuit building
-    "tns==2.5.0",
-    # available version in spack, compatible with tns==2.5.0
-    "diameter-synthesis==0.2.5",
+    "NeuroTS>=3.4.0",
+    "diameter-synthesis>=0.5.4",
     # >= 2022.04.1 breaks the workflow
     # see: https://bbpteam.epfl.ch/project/issues/browse/NSETM-1921
     "dask[distributed,bag]<2022.04.1",
