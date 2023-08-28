@@ -199,6 +199,13 @@ def build_microdomains(config, astrocytes, atlas, atlas_cache, seed, output_file
         region_mask = atlas.load_data("brain_regions")
         LOGGER.info("Build microdomains for the entire atlas.")
 
+    if "mask" in ngv_common_config:
+        mask_dset = ngv_common_config["mask"]
+        root_mask = atlas.load_data(mask_dset, cls=ROIMask)
+        region_mask.raw &= root_mask.raw
+    if not numpy.any(region_mask.raw):
+        raise ValueError(f"Empty region mask for region: '{region}'")
+
     astrocytes = voxcell.CellCollection.load_sonata(astrocytes)
     astrocyte_positions = astrocytes.positions
     astrocyte_radii = astrocytes.properties["radius"].to_numpy()

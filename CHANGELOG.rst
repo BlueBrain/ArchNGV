@@ -8,6 +8,7 @@ Version 3.1.0
 Fixed
 ~~~~~
 
+- The bounding box for the microdomains is now consistent with the region of interest that has been selected.
 - Replaces the use of the unmaintained python package TNS by the Neurots one.
 
 
