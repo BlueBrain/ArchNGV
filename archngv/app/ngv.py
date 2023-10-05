@@ -771,22 +771,22 @@ def synthesis(
 
 @click.command(name="refine_surface_mesh")
 @click.option("--config-path", help="Path to synthesis YAML config", required=True)
-@click.option("--atlas", help="Atlas URL / path", required=True)
-@click.option("--atlas-cache", help="Path to atlas cache folder", default=None, show_default=True)
+@click.option("--astrocytes-path", help="Path to astrocyte nodes", default=None, show_default=True)
+@click.option("--neurons-path", help="Path to neuron nodes", default=None, show_default=True)
+@click.option(
+    "--vasculature-path", help="Path to vasculature nodes", default=None, show_default=True
+)
 @click.option("-o", "--output-path", help="Path to output file (*.msh)", required=True)
-def refine_surface_mesh(
-    config_path,
-    atlas,
-    atlas_cache,
-    output_path,
-):
+def refine_surface_mesh(config_path, output_path, astrocytes_path, neurons_path, vasculature_path):
     """Create a surface mesh form the ATLAS and region.
     Export the new 3D surface mesh
     """
     import textwrap
 
     import trimesh
-    from voxcell.nexus.voxelbrain import Atlas
+    from vascpy import PointVasculature
+
+    from archngv.core.datasets import CellData
 
     # check extensions to make sure it is supported format
     if Path(output_path).suffix != ".stl":
@@ -796,38 +796,20 @@ def refine_surface_mesh(
 
     surface_mesh_subdivision_steps = tetrahedral_mesh_config["surface_mesh_subdivision_steps"]
 
-    atlas = Atlas.open(atlas, cache_dir=atlas_cache)
+    # get all nodes coordinates (neurons, astrocytes and vasculature
+    glia = CellData(astrocytes_path)
+    neuron = CellData(neurons_path)
+    vasc = PointVasculature.load_sonata(vasculature_path)
+    nodes_points = numpy.concatenate([glia.positions(), neuron.positions(), vasc.points], 0)
 
-    ngv_common_config = load_ngv_manifest(config_path)["common"]
-    if "region" in ngv_common_config:
-        region_name = ngv_common_config["region"]
-        region_mask = atlas.get_region_mask(region_name, with_descendants=True)
-    else:
-        region_mask = atlas.load_data("brain_regions")
-
-    if "mask" in ngv_common_config:
-        mask_dset = ngv_common_config["mask"]
-        root_mask = atlas.load_data(mask_dset, cls=ROIMask)
-        region_mask.raw &= root_mask.raw
-    if not numpy.any(region_mask.raw):
-        raise ValueError("Empty region mask")
-
-    # Keep only the points that are inside
-    roi = numpy.where(region_mask.raw > 0)
-    indices = numpy.stack(roi, axis=1)
-
-    # Get region points
-    region_points = region_mask.indices_to_positions(indices)
-
-    point_cloud = trimesh.PointCloud(region_points)
+    point_cloud = trimesh.PointCloud(nodes_points)
     surface_mesh = point_cloud.convex_hull
-    # Supported formats are stl, off, ply, collada, json, dict, glb, dict64, msgpack
-
     # pylint: disable=no-member
-    refined_surface_mesh = surface_mesh.subdivide_loop(iterations=surface_mesh_subdivision_steps)
+    for _ in range(surface_mesh_subdivision_steps):
+        surface_mesh = surface_mesh.subdivide()
     # pylint: enable=no-member
 
-    refined_surface_mesh.export(output_path)
+    surface_mesh.export(output_path)
 
     geo_filename = Path(output_path).with_suffix(".geo")
     string = f"""

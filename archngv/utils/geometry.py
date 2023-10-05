@@ -13,7 +13,7 @@ def apply_rotation_to_points(points, rotation_matrix):
         rotation_matrix: 2D array
             3x3 Rotation Matrix
 
-    Reutnrs:
+    Returns:
         2D array:
             Rotated points using the rotation_matrix. The
             points are not centered to the origin.

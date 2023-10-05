@@ -4,10 +4,15 @@ import os
 from pathlib import Path
 
 import jsondiff
+import meshio
 import pytest
+import vascpy
+from bluepysnap import Circuit
 from numpy import testing as npt
 
 from archngv.app.utils import load_json
+from archngv.core.datasets import CellData
+from archngv.spatial import BoundingBox
 
 L = logging.getLogger(__name__)
 
@@ -65,6 +70,30 @@ def test_surface_mesh():
         )
         == 1
     )
+
+
+def test_nodes_inside_mesh():
+    """test that every node (cells soma and vasculature nodes)
+    are included in the tetrahedral mesh
+    """
+
+    neuron_pos = CellData(DATA_DIR / "circuit/nodes.h5").positions()
+    glial_pos = CellData(BUILD_DIR / "sonata/networks/nodes/astrocytes/nodes.h5").positions()
+    vasc_pos = vascpy.PointVasculature.load_sonata(
+        BUILD_DIR / "sonata/networks/nodes/vasculature/nodes.h5"
+    ).points
+    mesh_pos = meshio.read(BUILD_DIR / "ngv_refined_tetrahedral_mesh.msh").points
+
+    bb = BoundingBox.from_points(mesh_pos)
+
+    astro_mask = bb.points_inside(glial_pos)
+    assert astro_mask.all()
+
+    neuron_mask = bb.points_inside(neuron_pos)
+    assert neuron_mask.all()
+
+    vasculature_mask = bb.points_inside(vasc_pos)
+    assert vasculature_mask.all()
 
 
 def test_morphologies():

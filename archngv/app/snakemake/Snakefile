@@ -519,6 +519,10 @@ rule finalize_neuroglial_connectivity:
 
 rule prepare_tetrahedral:
     # generates a mesh file and a gmsh script for the next step
+    input:
+        astrocytes=f"sonata/networks/nodes/{NODES_ASTROCYTE_NAME}/nodes.h5",
+        vasculature=f"sonata/networks/nodes/{NODES_VASCULATURE_NAME}/nodes.h5",
+        neuron=f"{BASE_CIRCUIT_CELLS}",
     output:
         mesh="ngv_prepared_tetrahedral_mesh.stl",
         script="ngv_prepared_tetrahedral_mesh.geo",
@@ -529,8 +533,9 @@ rule prepare_tetrahedral:
             [
                 f"ngv {LOG_LEVEL} refined-surface-mesh",
                 f'--config-path {bioname_path("MANIFEST.yaml")}',
-                f"--atlas {ATLAS}",
-                f"--atlas-cache {ATLAS_CACHE_DIR}",
+                "--astrocytes-path {input[astrocytes]}",
+                "--neurons-path {input[neuron]}",
+                "--vasculature-path {input[vasculature]}",
                 "--output-path {output.mesh}",
             ],
             dump_log=True,

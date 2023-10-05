@@ -34,6 +34,7 @@ BUILDING = [
     "dask_mpi>=2.0",
     "spatial-index>=2.0.0",
     "atlas-commons>=0.1.4",
+    "meshio>=5.3.4"
 ]
 
 

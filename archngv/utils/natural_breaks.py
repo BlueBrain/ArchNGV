@@ -160,7 +160,7 @@ def kmeans_1d(data, n_clusters):
         cluster_left = backtracking_matrix[cluster, cluster_right]
 
         # store the smallest value id in each cluster
-        # because we traverse the matric from the end to the start we
+        # because we traverse the matrix from the end to the start we
         # need to store in reverse the positions in ids
         ids[n_clusters - i - 1] = cluster_left
         if cluster > 0:
