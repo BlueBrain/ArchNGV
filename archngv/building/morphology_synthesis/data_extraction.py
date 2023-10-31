@@ -175,6 +175,7 @@ def _create_target_point_cloud(microdomain, synapse_points, target_n_synapses, r
 
     else:
         L.warning("Maximum number of iterations reached. Returns the generated points anyway.")
+        result_points = result_points[:total_synapses]
 
     return result_points
 
