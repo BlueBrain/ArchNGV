@@ -357,8 +357,8 @@ def _match_bars(barcode1, barcode2):
     lengths1 = get_lengths(barcode1)
     lengths2 = get_lengths(barcode2)
 
-    sorted_ids1 = np.argsort(lengths1)
-    sorted_ids2 = np.argsort(lengths2)
+    sorted_ids1 = np.argsort(lengths1, kind="stable")
+    sorted_ids2 = np.argsort(lengths2, kind="stable")
 
     limit = min(sorted_ids1.size, sorted_ids2.size)
 
@@ -376,7 +376,7 @@ def _find_in(paths, in_paths):
     if paths.size == in_paths.size and np.allclose(paths, in_paths):
         return np.arange(paths.size, dtype=np.int32)
 
-    sorted_ids = np.argsort(in_paths)
+    sorted_ids = np.argsort(in_paths, kind="stable")
 
     sorted_pos = np.searchsorted(in_paths[sorted_ids], paths)
 

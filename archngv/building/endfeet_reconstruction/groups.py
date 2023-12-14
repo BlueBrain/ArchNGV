@@ -49,7 +49,7 @@ def group_elements(v_group_index):
     # group vertices with same seed, note: casting to uint to have -1 sort at the end
     values = v_group_index
 
-    idx = np.argsort(values)
+    idx = np.argsort(values, kind="stable")
 
     # find unique groups in values and their respective offsets
     groups, offsets = np.unique(values, return_counts=True)

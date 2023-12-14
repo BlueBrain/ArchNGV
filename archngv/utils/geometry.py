@@ -203,7 +203,7 @@ def unique_points(points, decimals):
     duplicate_ids = np.cumsum(is_unique) - 1
 
     # maps the i-th row of points to the j-th row of sorted points
-    to_sorted = np.argsort(sorted_idx)
+    to_sorted = np.argsort(sorted_idx, kind="stable")
 
     # maps each point in the initial array to the unique one
     inverse_mapping = np.empty_like(sorted_idx)

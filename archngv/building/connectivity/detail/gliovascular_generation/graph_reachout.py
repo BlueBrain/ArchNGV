@@ -40,7 +40,7 @@ def _argsort_components(source, components):
         closest_vertices[i] = comp.index[closest_pos]
         closest_distances[i] = distances[closest_pos]
 
-    return np.argsort(closest_distances), closest_vertices
+    return np.argsort(closest_distances, kind="stable"), closest_vertices
 
 
 def _distribute_elements_in_buckets(n_elements, bucket_capacities):

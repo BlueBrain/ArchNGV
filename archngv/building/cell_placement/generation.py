@@ -241,7 +241,7 @@ def voxels_group_centers(labels, intensity):
     Returns: list of lists
         Voxel centers per group
     """
-    sorted_labels = labels.argsort()
+    sorted_labels = labels.argsort(kind="stable")
     group_starts = np.searchsorted(labels[sorted_labels], np.unique(labels))
 
     voxel_centers = voxel_grid_centers(intensity)

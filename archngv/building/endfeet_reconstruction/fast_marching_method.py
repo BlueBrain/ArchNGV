@@ -80,7 +80,7 @@ def _find_non_overlapping_mesh_nodes(
 
         # leave the closest endfoot to be assigned to mesh_node
         # we will change the rest
-        endfeet_list = deque(endfeet_ids[np.argsort(endfeet_dst)[::-1]][:-1])
+        endfeet_list = deque(endfeet_ids[np.argsort(endfeet_dst, kind="stable")[::-1]][:-1])
 
         for ring in ring_neighborhood_generator:
             no_endfeet_left = False

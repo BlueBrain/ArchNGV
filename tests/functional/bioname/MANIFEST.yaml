@@ -81,7 +81,7 @@ ngv:
         - 1.0
         - 1.0
     resampling:
-      enabled: true
+      enabled: false
       linear-density: 1.0
 
 

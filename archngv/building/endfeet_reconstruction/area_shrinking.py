@@ -27,7 +27,7 @@ def shrink_surface_mesh(triangle_areas, triangle_travel_times, current_area, tar
     """
     area_to_remove = current_area - target_area
 
-    descending_idx = np.argsort(triangle_travel_times)[::-1]
+    descending_idx = np.argsort(triangle_travel_times, kind="stable")[::-1]
 
     # sort areas wrt to the travel times
     cumulative_areas = np.cumsum(triangle_areas[descending_idx])

@@ -150,7 +150,7 @@ def subdivide_triangles_by_total_area(points, triangles, min_number_of_points):
     result_points = list(points)
     result_triangles = []
 
-    sorted_ids = np.argsort(areas)[::-1]
+    sorted_ids = np.argsort(areas, kind="stable")[::-1]
     sorted_triangles = triangles[sorted_ids].tolist()
     points_per_triangle = np.rint(areas[sorted_ids] * density)
 

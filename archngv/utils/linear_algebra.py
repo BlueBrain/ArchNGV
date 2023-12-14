@@ -84,7 +84,7 @@ def principal_directions(points, return_eigenvalues=False):
 
     eigs, eigv = np.linalg.eig(covariance)
 
-    idx = np.argsort(eigs)[::-1]
+    idx = np.argsort(eigs, kind="stable")[::-1]
 
     if return_eigenvalues:
         return eigs[idx], eigv[:, idx].T

@@ -14,7 +14,7 @@ BUILDING = [
     "ngv-ctools>=1.0.0",
     "bluepy-configfile>=0.1.11",
     "Click>=7.0",
-    "numpy-stl>=2.10,<2.16.0",  # More recent versions require >1.22.0 which is not in spack yet
+    "numpy-stl>=2.10",
     "openmesh>=1.1.2",
     "pyyaml>=5.0",
     "pandas>=1.1.0",
@@ -28,13 +28,11 @@ BUILDING = [
     "tmd>=2.0.11",
     "NeuroTS>=3.4.0",
     "diameter-synthesis>=0.5.4",
-    # >= 2022.04.1 breaks the workflow
-    # see: https://bbpteam.epfl.ch/project/issues/browse/NSETM-1921
-    "dask[distributed,bag]<2022.04.1",
+    "dask[distributed,bag]>=2022.04.1",
     "dask_mpi>=2.0",
     "spatial-index>=2.0.0",
     "atlas-commons>=0.1.4",
-    "meshio>=5.3.4"
+    "meshio>=5.3.4",
 ]
 
 
@@ -56,9 +54,7 @@ setup(
     },
     license="BBP-internal-confidential",
     install_requires=[
-        # In 1.22 aliases like np.bool have been removed. This breaks the old
-        # dependency of tns. Please update tns to the latest neurots to fix this.
-        "numpy<=1.22",
+        "numpy>=1.22",
         "h5py>=3.1.0",
         "scipy>=1.5.0",
         # 0.1.21 supports resolution of ngv populations extra files
