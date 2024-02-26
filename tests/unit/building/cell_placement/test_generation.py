@@ -184,15 +184,6 @@ def test_generator_run():
         assert np.allclose(radii, mock_radius)
 
 
-def test_proposal():
-    voxel_centers = np.array([[1.0, 1.0, 1.0]])
-    voxel_edge_length = 0.0
-
-    result_point = generation.proposal(voxel_centers, voxel_edge_length)
-
-    assert np.allclose(result_point, voxel_centers[0])
-
-
 def test_voxel_grid_centers():
     raw_array = np.zeros((2, 2, 2), dtype=np.float32)
     voxel_dimensions = (2, 2, 2)

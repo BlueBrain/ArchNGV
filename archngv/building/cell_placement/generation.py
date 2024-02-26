@@ -17,7 +17,6 @@ PlacementParameters = namedtuple(
     ["beta", "number_of_trials", "cutoff_radius", "initial_sample_size"],
 )
 
-
 class PlacementGenerator:
     """The workhorse of placement
 
@@ -92,27 +91,37 @@ class PlacementGenerator:
 
         return self.pattern.is_intersecting(trial_position, trial_radius)
 
-    def first_order(self, voxel_centers):
-        """Sphere generation in the group of voxels with centers
+    def first_order(self, voxels, voxel_idx, probs):
+        """Sphere generation based on voxels' probability of containing cells
 
         Args:
-            voxel_centers: 2D array[float]
-                Centers of intensity voxels
+            voxels: 2D numpy array[int64] of shape (Nb_cell, 3) voxels (row,col, depth) indices
+            voxel_idx: 1D numpy array[int64] of shape (Nb_cell,) voxels flat indices
+            probs: 1D numpy array[int64] of shape (Nb_cell,) voxels probabilities of containing cells
 
         Returns: 1D array[float], float
             New position and radius that is found by sampling the
             available space.
         """
-        voxel_edge_length = self.vdata.voxelized_intensity.voxel_dimensions[0]
+        # pick a first position
+        for i in range(100000):
+            # Get a random voxel id associated with the probabilities probs
+            candidate_id = np.random.choice(voxel_idx, 1, p=probs)
 
-        while 1:
-            new_position = proposal(voxel_centers, voxel_edge_length)
+            # Get a random position inside the candidate voxel
+            new_position = self.vdata.voxelized_intensity.indices_to_positions(
+                voxels[candidate_id] + np.random.random(3))[0]
+
             new_radius = self.soma_proposal()
 
+            # Test that the new position is not colliding with other existing objets
             if not self.is_colliding(new_position, new_radius):
                 return new_position, new_radius
 
-    def second_order(self, voxel_centers):
+        raise RuntimeError("Unable to generate a cell position that does not collide with other objets")
+
+
+    def second_order(self, voxels, voxel_idx, probs):
         """Sphere generation in the group with respect to interaction
         potentials. Valid is uniformly picked in the same
         intensity group using the first order approach and an extra
@@ -120,97 +129,79 @@ class PlacementGenerator:
         to minimize the energy of the potential locally for each new
         sphere
         """
-        # generate some points first without the second order interaction
+
+        current_position, current_radius = self.first_order(voxels, voxel_idx, probs)
+
+        # Return some points first without the second order interaction
         if len(self.pattern) <= self.parameters.initial_sample_size:
-            return self.first_order(voxel_centers)
-
-        current_position, current_radius = self.first_order(voxel_centers)
-
-        pairwise_distance = self.pattern.distance_to_nearest_neighbor(
-            current_position, self.parameters.cutoff_radius
-        )
-
-        if pairwise_distance > self.parameters.cutoff_radius:
             return current_position, current_radius
 
-        current_energy = self.energy_operator.second_order_potentials(pairwise_distance)
-
-        best_position = current_position
-        best_radius = current_radius
-        best_energy = current_energy
-
-        # metropolis hastings procedure for minimization of the
-        # repulsion energy
-        for _ in range(self.parameters.number_of_trials):
-            trial_position, trial_radius = self.first_order(voxel_centers)
-
+        else:
             pairwise_distance = self.pattern.distance_to_nearest_neighbor(
-                trial_position, self.parameters.cutoff_radius
+                current_position, self.parameters.cutoff_radius
             )
-
             if pairwise_distance > self.parameters.cutoff_radius:
-                return trial_position, trial_radius
+                return current_position, current_radius
 
-            trial_energy = self.energy_operator.second_order_potentials(pairwise_distance)
+            current_energy = self.energy_operator.second_order_potentials(pairwise_distance)
 
-            logprob = self.parameters.beta * (current_energy - trial_energy)
+            best_position = current_position
+            best_radius = current_radius
+            best_energy = current_energy
 
-            if np.log(np.random.random()) < min(0, logprob):
-                current_position = trial_position
-                current_radius = trial_radius
-                current_energy = trial_energy
+            # metropolis hastings procedure for minimization of the
+            # repulsion energy
+            for _ in range(self.parameters.number_of_trials):
+                trial_position, trial_radius = self.first_order(voxels, voxel_idx, probs)
 
-            if current_energy < best_energy:
-                best_position = current_position
-                best_radius = current_radius
-                best_energy = current_energy
+                pairwise_distance = self.pattern.distance_to_nearest_neighbor(
+                    trial_position, self.parameters.cutoff_radius
+                )
 
-        return best_position, best_radius
+                if pairwise_distance > self.parameters.cutoff_radius:
+                    return trial_position, trial_radius
 
-    def run(self):
+                trial_energy = self.energy_operator.second_order_potentials(pairwise_distance)
+
+                logprob = self.parameters.beta * (current_energy - trial_energy)
+
+                if np.log(np.random.random()) < min(0, logprob):
+                    current_position = trial_position
+                    current_radius = trial_radius
+                    current_energy = trial_energy
+
+                if current_energy < best_energy:
+                    best_position = current_position
+                    best_radius = current_radius
+                    best_energy = current_energy
+
+            return best_position, best_radius
+
+    def run(self, cell_count_per_voxel, cell_count):
         """Create the population of spheres"""
-        groups_generator = nonzero_intensity_groups(self.vdata.voxelized_intensity)
+        density_factor = 1.
+        if cell_count == 0:
+            L.warning("Density resulted in zero cell counts.")
+            return np.empty((0, 3), dtype=np.float32)
+        # Get row/col/depth indices of none 0 density voxels
+        voxel_ijk = np.nonzero(cell_count_per_voxel > 0)
+        voxels = np.stack(voxel_ijk).transpose()
+        # Get indices of none 0 density voxels
+        voxel_idx = np.arange(len(voxel_ijk[0]))
+        probs = 1.0 * cell_count_per_voxel[voxel_ijk] / np.sum(cell_count_per_voxel)
 
-        for group_total_counts, voxel_centers in groups_generator:
-            for _ in range(group_total_counts):
-                if len(self.pattern) == self._total_spheres:
-                    break
-
-                new_position, new_radius = self.method(voxel_centers)
+        while len(self.pattern) < self._total_spheres:
+            new_position, new_radius = self.method(voxels, voxel_idx, probs)
+            if new_position is None:
+                print(f'No available pos for these voxels {voxel_centers}')
+            else:
                 self.pattern.add(new_position, new_radius)
-
-                # some logging for iteration info
-                if len(self.pattern) % 1000 == 0:
-                    L.info("Current Number: %d", len(self.pattern))
+            # some logging for iteration info
+            if len(self.pattern) % 1000 == 0:
+                L.info("Current Number: %d", len(self.pattern))
 
         L.debug("Total spheres: %s", self._total_spheres)
         L.debug("Created spheres: %s", len(self.pattern))
-
-
-def proposal(voxel_centers, voxel_edge_length):
-    """
-    Given the centers of the voxels in the groups and the size f the voxel
-    pick a random voxel and a random position in it.
-
-    Args:
-        voxel_centers: 2D array
-            Coordinates of the centers of vocels.
-        voxel_edge_length: float
-            Edge length od voxel
-
-    Returns: 1D array
-        Coordinates of uniformly chosen voxel center
-    """
-    random_index = np.random.randint(0, len(voxel_centers))
-    voxel_center = voxel_centers[random_index]
-
-    new_position = np.random.uniform(
-        low=voxel_center - 0.5 * voxel_edge_length,
-        high=voxel_center + 0.5 * voxel_edge_length,
-        size=3,
-    )
-
-    return new_position
 
 
 def voxel_grid_centers(voxel_grid):
