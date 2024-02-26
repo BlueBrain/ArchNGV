@@ -33,7 +33,7 @@ def test__find_config_location():
 
 
 class TestCircuit:
-    def setup(self):
+    def setup_method(self):
         self.circuit = test_module.NGVCircuit(TEST_DATA_DIR / "circuit_config.json")
 
     def test_config(self):

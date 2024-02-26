@@ -16,7 +16,7 @@ def test_bad_population(mock_libsonata):
 
 
 class TestNodesReader:
-    def setup(self):
+    def setup_method(self):
         self.nodes = tested.NodesReader(get_data("nodes.h5"))
 
     def test_name(self):
@@ -68,7 +68,7 @@ class TestNodesReader:
 
 
 class TestEdgesReader:
-    def setup(self):
+    def setup_method(self):
         self.edges = tested.EdgesReader(get_data("edges.h5"))
 
     def test_name(self):
