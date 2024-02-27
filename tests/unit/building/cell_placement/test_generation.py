@@ -277,9 +277,11 @@ def test_nonzero_intensity_groups():
     )
 
 
-'''
+"""
 --------------------------- Test VoxelPlacementGenerator -----------------------------
-'''
+"""
+
+
 def voxel_placement_generator():
     parameters = placement_parameters()
     intensity = MockIntensity()
@@ -305,17 +307,17 @@ def test_voxel_placement_generator__method_selection():
 
 
 def test_voxel_placement_generator_first_order():
-    voxels = np.array([[0,0,0],[0,0,1] ,[0,0,2]])
+    voxels = np.array([[0, 0, 0], [0, 0, 1], [0, 0, 2]])
     voxel_idx = np.array([0, 1, 2])
-    probs = np.array([.1, 0.2, 0.3 ])
-
+    probs = np.array([0.1, 0.2, 0.3])
 
     with patch.object(
         MockIntensity, "voxel_dimensions", new_callable=PropertyMock, return_value=(1.0,)
     ), patch.object(MockSomaDistribution, "__call__", return_value=1.2), patch.object(
         MockVoxelData, "in_geometry", return_value=True
     ), patch.object(
-        generation, "new_position", return_value=(1.0, 2.0, 3.0)):
+        generation, "new_position", return_value=(1.0, 2.0, 3.0)
+    ):
         p_gen = voxel_placement_generator()
 
         new_point, new_radius = p_gen.first_order(voxels, voxel_idx, probs)
@@ -350,7 +352,7 @@ def test_voxel_generator_run():
 
 def test_get_cell_count():
     intensity = MockIntensity()
-  
+
     result_cell_count_per_voxel, result_cell_count = generation.get_cell_count(intensity)
 
     expected_cell_count_per_voxel = np.array([10, 24, 73], dtype=np.int32)

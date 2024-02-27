@@ -19,6 +19,7 @@ def total_number_of_cells(voxelized_intensity):
     values = voxelized_intensity.raw[~np.isnan(voxelized_intensity.raw)]
     return int(np.round(voxelized_intensity.voxel_volume * np.sum(values) * 1e-9))
 
+
 def create_placement_parameters(user_params):
     """Create placement parameters named tuple"""
     return PlacementParameters(
@@ -66,7 +67,6 @@ def create_positions(parameters, voxelized_intensity, spatial_indexes=None):
     )
 
     L.info("Placement Generator Initializes.")
-    
     pgen.run()
 
     return pgen.pattern.coordinates, pgen.pattern.radii
