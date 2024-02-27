@@ -303,9 +303,9 @@ class VoxelPlacementGenerator(PlacementGenerator):
 
 
 def _voxel_centers_and_probabilities(voxelized_intensity):
-    voxelized_counts = _voxelized_counts(voxelized_intensity)
+    voxelized_counts = _voxelized_counts(voxelized_intensity).ravel()
     nonzero_mask = voxelized_counts > 0
-    voxel_centers = voxel_grid_centers(voxelized_intensity.raw)[nonzero_mask]
+    voxel_centers = voxel_grid_centers(voxelized_intensity)[nonzero_mask]
     voxel_probabilities = voxelized_counts[nonzero_mask] / voxelized_counts.sum()
     return voxel_centers, voxel_probabilities
 
