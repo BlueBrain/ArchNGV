@@ -282,6 +282,32 @@ def nonzero_intensity_groups(voxelized_intensity):
 
 
 class VoxelPlacementGenerator(PlacementGenerator):
+    """Placement generator on full voxel atlases.
+
+    Args:
+        parameters:
+
+        total_spheres: int
+            The number of spheres that will be generated.
+        voxel_data: PlacementVoxelData
+            Atlas voxelized intensity and regions.
+        energy_operator: EnergyOperator
+            Function object that calculates the potential for a new
+            placement operation.
+        index_list: list[rtree]
+            List of static spatial indexes, i.e. the indexes that
+            are not changed during the simulation.
+        soma_radius_distribution:
+            Soma radius sampler
+
+    Attrs:
+        pattern:
+            The empty collection for the spheres that we will place
+            in space.
+        method:
+            The energy method to be used.
+    """
+
     def run(self):
         """Create the population of spheres"""
         voxel_centers, voxel_probabilities = _voxel_centers_and_probabilities(
