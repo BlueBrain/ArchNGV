@@ -10,15 +10,16 @@ from archngv.building.cell_placement.atlas import PlacementVoxelData
 from archngv.building.cell_placement.energy import EnergyOperator
 from archngv.building.cell_placement.generation import (
     PlacementParameters,
-    VoxelPlacementGenerator,
-    get_cell_count,
-)
+    VoxelPlacementGenerator)
 from archngv.building.cell_placement.soma_generation import truncated_normal_distribution
 
 L = logging.getLogger(__name__)
 
 
-
+def total_number_of_cells(voxelized_intensity):
+    """Given a 3D intensity array return the total number of cells"""
+    values = voxelized_intensity.raw[~np.isnan(voxelized_intensity.raw)]
+    return int(np.round(voxelized_intensity.voxel_volume * np.sum(values) * 1e-9))
 
 def create_placement_parameters(user_params):
     """Create placement parameters named tuple"""
@@ -41,7 +42,7 @@ def create_positions(parameters, voxelized_intensity, spatial_indexes=None):
     spatial_indexes = [] if spatial_indexes is None else spatial_indexes
     L.info("Number of other Indexes: %d", len(spatial_indexes))
 
-    cell_count_per_voxel, total_cells = get_cell_count(voxelized_intensity)
+    total_cells = total_number_of_cells(voxelized_intensity)
     L.info("Total number of cells: %d", total_cells)
 
     energy_operator = EnergyOperator(voxelized_intensity, parameters["Energy"])
