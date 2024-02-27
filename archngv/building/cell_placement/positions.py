@@ -8,30 +8,13 @@ import numpy as np
 
 from archngv.building.cell_placement.atlas import PlacementVoxelData
 from archngv.building.cell_placement.energy import EnergyOperator
-from archngv.building.cell_placement.generation import PlacementGenerator, PlacementParameters
-
-
+from archngv.building.cell_placement.generation import (
+    VoxelPlacementGenerator, PlacementParameters, get_cell_count)
 from archngv.building.cell_placement.soma_generation import truncated_normal_distribution
 
 L = logging.getLogger(__name__)
 
 
-
-def get_cell_count(voxelized_intensity):
-    """Helper function that counts the number of cells per voxel and the total
-    number of cells.
-    Args:
-        voxelized_intensity(voxcell.voxel_data.VoxelData)
-    Returns:
-        tuple:
-         - The number of cells to generated per voxel
-         - The total number of cells to generated
-    """
-    voxel_mm3 = voxelized_intensity.voxel_volume / 1e9  # voxel volume is in um^3
-    cell_count_per_voxel = voxelized_intensity.raw * voxel_mm3
-    cell_count = int(np.round(np.sum(cell_count_per_voxel)))
-
-    return cell_count_per_voxel, cell_count
 
 
 def create_placement_parameters(user_params):
@@ -71,7 +54,7 @@ def create_positions(parameters, voxelized_intensity, spatial_indexes=None):
 
     placement_parameters = create_placement_parameters(parameters["MetropolisHastings"])
 
-    pgen = PlacementGenerator(
+    pgen = VoxelPlacementGenerator(
         placement_parameters,
         total_cells,
         placement_data,
@@ -82,6 +65,6 @@ def create_positions(parameters, voxelized_intensity, spatial_indexes=None):
 
     L.info("Placement Generator Initializes.")
     
-    pgen.run(cell_count_per_voxel, total_cells)
+    pgen.run()
 
     return pgen.pattern.coordinates, pgen.pattern.radii

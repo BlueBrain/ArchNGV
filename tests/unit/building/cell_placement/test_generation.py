@@ -275,3 +275,86 @@ def test_nonzero_intensity_groups():
     assert np.allclose(
         res2[1], np.array([[0.0, 3.0, 4.0], [0.0, 3.0, 6.0], [0.0, 5.0, 4.0], [0.0, 5.0, 6.0]])
     )
+
+
+'''
+--------------------------- Test VoxelPlacementGenerator -----------------------------
+'''
+def voxel_placement_generator():
+    parameters = placement_parameters()
+    intensity = MockIntensity()
+    voxel_data = MockVoxelData(intensity)
+    energy_operator = MockEnergy()
+    index_list = []
+    total_spheres = 100
+    soma_distribution = MockSomaDistribution()
+
+    return generation.VoxelPlacementGenerator(
+        parameters, total_spheres, voxel_data, energy_operator, index_list, soma_distribution
+    )
+
+
+def test_voxel_placement_generator__method_selection():
+    with patch.object(MockEnergy, "has_second_order_potentials", return_value=True):
+        p_gen = voxel_placement_generator()
+        assert p_gen.method == p_gen.second_order
+
+    with patch.object(MockEnergy, "has_second_order_potentials", return_value=False):
+        p_gen = voxel_placement_generator()
+        assert p_gen.method == p_gen.first_order
+
+
+def test_voxel_placement_generator_first_order():
+    voxels = np.array([[0,0,0],[0,0,1] ,[0,0,2]])
+    voxel_idx = np.array([0, 1, 2])
+    probs = np.array([.1, 0.2, 0.3 ])
+
+
+    with patch.object(
+        MockIntensity, "voxel_dimensions", new_callable=PropertyMock, return_value=(1.0,)
+    ), patch.object(MockSomaDistribution, "__call__", return_value=1.2), patch.object(
+        MockVoxelData, "in_geometry", return_value=True
+    ), patch.object(
+        generation, "new_position", return_value=(1.0, 2.0, 3.0)):
+        p_gen = voxel_placement_generator()
+
+        new_point, new_radius = p_gen.first_order(voxels, voxel_idx, probs)
+
+        assert np.allclose(new_point, (1.0, 2.0, 3.0))
+        assert np.allclose(new_radius, 1.2)
+
+
+def test_voxel_placement_generator_second_order():
+    pass
+
+
+def test_voxel_generator_run():
+    mock_point = np.array([1.0, 1.0, 1.0], [2.0, 2.0, 2.0], [3.0, 3.0, 3.0])
+    mock_radius = 1.4
+
+    p_gen = voxel_placement_generator()
+
+    with patch.object(p_gen, "method", return_value=(mock_point, mock_radius)), patch.object(
+        generation, "get_cell_count", return_value=([1, 1, 1], 3)
+    ):
+        p_gen.run()
+
+        coordinates = p_gen.pattern.coordinates
+        radii = p_gen.pattern.radii
+
+        assert len(coordinates) == len(radii) == 3, (coordinates, radii)
+
+        assert np.allclose(coordinates - mock_point, 0.0)
+        assert np.allclose(radii, mock_radius)
+
+
+def test_get_cell_count():
+    intensity = MockIntensity()
+  
+    result_cell_count_per_voxel, result_cell_count = generation.get_cell_count(intensity)
+
+    expected_cell_count_per_voxel = np.array([10, 24, 73], dtype=np.int32)
+    expected_result_cell_count = 10
+
+    assert np.all(result_cell_count == expected_result_cell_count)
+    assert np.all(result_cell_count_per_voxel == expected_cell_count_per_voxel)
