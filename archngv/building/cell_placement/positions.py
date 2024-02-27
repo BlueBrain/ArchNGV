@@ -9,7 +9,10 @@ import numpy as np
 from archngv.building.cell_placement.atlas import PlacementVoxelData
 from archngv.building.cell_placement.energy import EnergyOperator
 from archngv.building.cell_placement.generation import (
-    VoxelPlacementGenerator, PlacementParameters, get_cell_count)
+    PlacementParameters,
+    VoxelPlacementGenerator,
+    get_cell_count,
+)
 from archngv.building.cell_placement.soma_generation import truncated_normal_distribution
 
 L = logging.getLogger(__name__)
