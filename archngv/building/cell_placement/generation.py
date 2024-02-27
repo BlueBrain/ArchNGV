@@ -385,7 +385,7 @@ class VoxelPlacementGenerator(PlacementGenerator):
 
     def run(self):
         """Create the population of spheres"""
-        cell_count_per_voxel, total_cells = self.get_cell_count(self.vdata.voxelized_intensity)
+        cell_count_per_voxel, total_cells = get_cell_count(self.vdata.voxelized_intensity)
 
         density_factor = 1.
         if total_cells == 0:
