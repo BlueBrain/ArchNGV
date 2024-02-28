@@ -8,7 +8,7 @@ import numpy as np
 
 from archngv.building.cell_placement.atlas import PlacementVoxelData
 from archngv.building.cell_placement.energy import EnergyOperator
-from archngv.building.cell_placement.generation import PlacementGenerator, PlacementParameters
+from archngv.building.cell_placement.generation import PlacementParameters, VoxelPlacementGenerator
 from archngv.building.cell_placement.soma_generation import truncated_normal_distribution
 
 L = logging.getLogger(__name__)
@@ -57,7 +57,7 @@ def create_positions(parameters, voxelized_intensity, spatial_indexes=None):
 
     placement_parameters = create_placement_parameters(parameters["MetropolisHastings"])
 
-    pgen = PlacementGenerator(
+    pgen = VoxelPlacementGenerator(
         placement_parameters,
         total_cells,
         placement_data,
@@ -67,7 +67,6 @@ def create_positions(parameters, voxelized_intensity, spatial_indexes=None):
     )
 
     L.info("Placement Generator Initializes.")
-
     pgen.run()
 
     return pgen.pattern.coordinates, pgen.pattern.radii

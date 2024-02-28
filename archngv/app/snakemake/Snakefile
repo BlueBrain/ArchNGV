@@ -372,7 +372,7 @@ rule glial_gap_junctions:
                                 MORPH_DIR,
                             ]
                         )
-                        + '"'
+                + '"'
             ],
             dump_log=True,
             module_env="glial_gap_junctions",

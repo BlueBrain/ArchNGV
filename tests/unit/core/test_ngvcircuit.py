@@ -33,7 +33,7 @@ def test__find_config_location():
 
 
 class TestCircuit:
-    def setup(self):
+    def setup_method(self):
         self.circuit = test_module.NGVCircuit(TEST_DATA_DIR / "circuit_config.json")
 
     def test_config(self):
@@ -147,15 +147,15 @@ class TestCircuit:
         npt.assert_equal(gv.connected_astrocytes(), [0, 1, 2])
         # astrocytes connected to a group of vasculature
         vgroup = {"section_id": 0}
-        npt.assert_equal(gv.connected_astrocytes(vgroup), [1, 2])
+        npt.assert_equal(gv.connected_astrocytes(vgroup), [1, 2, "astrocytes"])
         vgroup = {"end_diameter": (0.52, 0.9)}
-        npt.assert_equal(gv.connected_astrocytes(vgroup), [0, 1])
+        npt.assert_equal(gv.connected_astrocytes(vgroup), [0, 1, "astrocytes"])
 
         npt.assert_equal(gv.connected_vasculature(), [0, 1, 2])
         agroup = {"radius": (0, 2.5)}
-        npt.assert_equal(gv.connected_vasculature(agroup), [1, 2])
+        npt.assert_equal(gv.connected_vasculature(agroup), [1, 2, "vasculature"])
         agroup = {"morphology": "morph-A"}
-        npt.assert_equal(gv.connected_vasculature(agroup), [2])
+        npt.assert_equal(gv.connected_vasculature(agroup), [2, "vasculature"])
 
         npt.assert_allclose(
             gv.vasculature_surface_targets([0, 1]).to_numpy(),
@@ -188,11 +188,11 @@ class TestCircuit:
 
         npt.assert_equal(ng.connected_neurons(), [0, 1])
         agroup = {"radius": (0, 2.5)}  # astro [0, 1]
-        npt.assert_equal(ng.connected_neurons(agroup), [1])  # both connect to neuron 1
+        npt.assert_equal(ng.connected_neurons(agroup), [1, "default"])  # both connect to neuron 1
 
         npt.assert_equal(ng.connected_astrocytes(), [0, 1, 2])
         ngroup = {"layer": [1, 3]}  # neurons [0, 2]
-        npt.assert_equal(ng.connected_astrocytes(ngroup), [2])
+        npt.assert_equal(ng.connected_astrocytes(ngroup), [2, "astrocytes"])
 
     def test_glialglial_api(self):
         gg = self.circuit.glialglial_connectome

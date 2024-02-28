@@ -1,6 +1,7 @@
 from unittest.mock import Mock, PropertyMock, patch
 
 import numpy as np
+import numpy.testing as npt
 from voxcell import VoxelData
 
 import archngv.building.cell_placement.generation as generation
@@ -187,9 +188,9 @@ def test_generator_run():
 def test_proposal():
     voxel_centers = np.array([[1.0, 1.0, 1.0]])
     voxel_edge_length = 0.0
+    voxel_probabilities = np.array([1])
 
-    result_point = generation.proposal(voxel_centers, voxel_edge_length)
-
+    result_point = generation.proposal(voxel_centers, voxel_edge_length, voxel_probabilities)
     assert np.allclose(result_point, voxel_centers[0])
 
 
@@ -284,3 +285,89 @@ def test_nonzero_intensity_groups():
     assert np.allclose(
         res2[1], np.array([[0.0, 3.0, 4.0], [0.0, 3.0, 6.0], [0.0, 5.0, 4.0], [0.0, 5.0, 6.0]])
     )
+
+
+def voxel_placement_generator():
+    parameters = placement_parameters()
+    intensity = MockIntensity()
+    voxel_data = MockVoxelData(intensity)
+    energy_operator = MockEnergy()
+    index_list = []
+    total_spheres = 1
+    soma_distribution = MockSomaDistribution()
+
+    return generation.VoxelPlacementGenerator(
+        parameters, total_spheres, voxel_data, energy_operator, index_list, soma_distribution
+    )
+
+
+def test_voxel_placement_generator__method_selection():
+    with patch.object(MockEnergy, "has_second_order_potentials", return_value=True):
+        p_gen = voxel_placement_generator()
+        assert p_gen.method == p_gen.second_order
+
+    with patch.object(MockEnergy, "has_second_order_potentials", return_value=False):
+        p_gen = voxel_placement_generator()
+        assert p_gen.method == p_gen.first_order
+
+
+def test_voxel_placement_generator_first_order():
+    voxel_centers = np.array([[0.0, 2.0, 3.0], [1.0, 2.0, 3.0], [2.0, 2.0, 3.0]])
+    probabilities = np.array([0.1, 0.2, 0.7])
+
+    with patch.object(
+        MockIntensity, "voxel_dimensions", new_callable=PropertyMock, return_value=(1.0,)
+    ), patch.object(MockSomaDistribution, "__call__", return_value=1.2), patch.object(
+        MockVoxelData, "in_geometry", return_value=True
+    ), patch.object(
+        generation, "proposal", return_value=(1.0, 2.0, 3.0)
+    ):
+        p_gen = voxel_placement_generator()
+
+        new_point, new_radius = p_gen.first_order(voxel_centers, probabilities)
+
+        assert np.allclose(new_point, (1.0, 2.0, 3.0))
+        assert np.allclose(new_radius, 1.2)
+
+
+def test_voxel_placement_generator_second_order():
+    pass
+
+
+def test_voxel_generator_run():
+    mock_point = np.array([[0.0, 0.0, 0.0]])
+    mock_radius = 1.4
+    voxel_centers = np.array([0.5, 0.5, 0.5], dtype=np.float32)
+    p_gen = voxel_placement_generator()
+
+    with patch.object(p_gen, "method", return_value=(mock_point, mock_radius)), patch.object(
+        generation,
+        "_voxel_centers_and_probabilities",
+        return_value=(voxel_centers, np.array([0.16666667])),
+    ):
+        p_gen.run()
+
+        coordinates = p_gen.pattern.coordinates
+        radii = p_gen.pattern.radii
+
+        assert len(coordinates) == len(radii) == 1, (coordinates, radii)
+        assert np.allclose(coordinates - mock_point, 0.0)
+        assert np.allclose(radii, mock_radius)
+
+
+@patch.object(MockIntensity, "raw", np.array([[[1, 2, 3]]]))
+def test_voxel_centers_and_probabilities():
+    with patch.object(
+        MockIntensity,
+        "indices_to_positions",
+        return_value=np.array([[0.5, 0.5, 0.5], [0.5, 0.5, 1.5], [0.5, 0.5, 2.5]]),
+    ):
+        voxel_centers, voxel_probabilities = generation._voxel_centers_and_probabilities(
+            MockIntensity
+        )
+        expected_voxel_centers = np.array(
+            [[0.5, 0.5, 0.5], [0.5, 0.5, 1.5], [0.5, 0.5, 2.5]], dtype=np.float32
+        )
+        expected_voxel_probabilities = np.array([0.16666667, 0.33333333, 0.5])
+        assert np.all(voxel_centers == expected_voxel_centers)
+        npt.assert_array_almost_equal(voxel_probabilities, expected_voxel_probabilities)

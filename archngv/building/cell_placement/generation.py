@@ -92,7 +92,7 @@ class PlacementGenerator:
 
         return self.pattern.is_intersecting(trial_position, trial_radius)
 
-    def first_order(self, voxel_centers):
+    def first_order(self, voxel_centers, voxel_probabilities=None):
         """Sphere generation in the group of voxels with centers
 
         Args:
@@ -106,13 +106,13 @@ class PlacementGenerator:
         voxel_edge_length = self.vdata.voxelized_intensity.voxel_dimensions[0]
 
         while 1:
-            new_position = proposal(voxel_centers, voxel_edge_length)
+            new_position = proposal(voxel_centers, voxel_edge_length, voxel_probabilities)
             new_radius = self.soma_proposal()
 
             if not self.is_colliding(new_position, new_radius):
                 return new_position, new_radius
 
-    def second_order(self, voxel_centers):
+    def second_order(self, voxel_centers, voxel_probabilities=None):
         """Sphere generation in the group with respect to interaction
         potentials. Valid is uniformly picked in the same
         intensity group using the first order approach and an extra
@@ -124,7 +124,7 @@ class PlacementGenerator:
         if len(self.pattern) <= self.parameters.initial_sample_size:
             return self.first_order(voxel_centers)
 
-        current_position, current_radius = self.first_order(voxel_centers)
+        current_position, current_radius = self.first_order(voxel_centers, voxel_probabilities)
 
         pairwise_distance = self.pattern.distance_to_nearest_neighbor(
             current_position, self.parameters.cutoff_radius
@@ -142,7 +142,7 @@ class PlacementGenerator:
         # metropolis hastings procedure for minimization of the
         # repulsion energy
         for _ in range(self.parameters.number_of_trials):
-            trial_position, trial_radius = self.first_order(voxel_centers)
+            trial_position, trial_radius = self.first_order(voxel_centers, voxel_probabilities)
 
             pairwise_distance = self.pattern.distance_to_nearest_neighbor(
                 trial_position, self.parameters.cutoff_radius
@@ -187,7 +187,7 @@ class PlacementGenerator:
         L.debug("Created spheres: %s", len(self.pattern))
 
 
-def proposal(voxel_centers, voxel_edge_length):
+def proposal(voxel_centers, voxel_edge_length, voxel_probabilities=None):
     """
     Given the centers of the voxels in the groups and the size f the voxel
     pick a random voxel and a random position in it.
@@ -198,11 +198,12 @@ def proposal(voxel_centers, voxel_edge_length):
         voxel_edge_length: float
             Edge length od voxel
 
+
     Returns: 1D array
         Coordinates of uniformly chosen voxel center
     """
-    random_index = np.random.randint(0, len(voxel_centers))
-    voxel_center = voxel_centers[random_index]
+    voxel_index = np.random.choice(len(voxel_centers), p=voxel_probabilities)
+    voxel_center = voxel_centers[voxel_index]
 
     new_position = np.random.uniform(
         low=voxel_center - 0.5 * voxel_edge_length,
@@ -278,3 +279,72 @@ def nonzero_intensity_groups(voxelized_intensity):
     for i, group_intensity in enumerate(intensity_per_group):
         if not np.isclose(group_intensity, 0.0):
             yield cnts_per_group[i], vox_centers_per_group[i]
+
+
+class VoxelPlacementGenerator(PlacementGenerator):
+    """Placement generator on full voxel atlases.
+
+    Args:
+        parameters:
+
+        total_spheres: int
+            The number of spheres that will be generated.
+        voxel_data: PlacementVoxelData
+            Atlas voxelized intensity and regions.
+        energy_operator: EnergyOperator
+            Function object that calculates the potential for a new
+            placement operation.
+        index_list: list[rtree]
+            List of static spatial indexes, i.e. the indexes that
+            are not changed during the simulation.
+        soma_radius_distribution:
+            Soma radius sampler
+
+    Attrs:
+        pattern:
+            The empty collection for the spheres that we will place
+            in space.
+        method:
+            The energy method to be used.
+    """
+
+    def run(self):
+        """Create the population of spheres"""
+        voxel_centers, voxel_probabilities = _voxel_centers_and_probabilities(
+            self.vdata.voxelized_intensity
+        )
+
+        while len(self.pattern) < self._total_spheres:
+            new_position, new_radius = self.method(voxel_centers, voxel_probabilities)
+            if new_position is None:
+                print(f"No available pos for these voxels {voxel_centers}")
+            else:
+                self.pattern.add(new_position, new_radius)
+            # some logging for iteration info
+            if len(self.pattern) % 1000 == 0:
+                L.info("Current Number: %d", len(self.pattern))
+
+        L.debug("Total spheres: %s", self._total_spheres)
+        L.debug("Created spheres: %s", len(self.pattern))
+
+
+def _voxel_centers_and_probabilities(voxelized_intensity):
+    voxelized_counts = _voxelized_counts(voxelized_intensity).ravel()
+    nonzero_mask = voxelized_counts > 0
+    voxel_centers = voxel_grid_centers(voxelized_intensity)[nonzero_mask]
+    voxel_probabilities = voxelized_counts[nonzero_mask] / voxelized_counts.sum()
+    return voxel_centers, voxel_probabilities
+
+
+def _voxelized_counts(voxelized_intensity):
+    """Helper function that counts the number of cells per voxel and the total
+    number of cells.
+    Args:
+        voxelized_intensity(voxcell.voxel_data.VoxelData)
+    Returns:
+        tuple:
+        - The number of cells to generated per voxel
+        - The total number of cells to generated
+    """
+    voxel_mm3 = voxelized_intensity.voxel_volume / 1e9  # voxel volume is in um^3
+    return voxelized_intensity.raw * voxel_mm3

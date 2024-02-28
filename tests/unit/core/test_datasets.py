@@ -36,7 +36,7 @@ def test_apply_callable(key, expected_result):
 
 
 class TestCellData:
-    def setup(self):
+    def setup_method(self):
         self.cells = tested.CellData(get_data("nodes.h5"))
 
     def test_positions(self):
@@ -45,7 +45,7 @@ class TestCellData:
 
 
 class TestGliovascularConnectivity:
-    def setup(self):
+    def setup_method(self):
         self.gliovascular = tested.GliovascularConnectivity(get_data("gliovascular.h5"))
 
     def test_vasculature_surface_targets(self):
@@ -59,7 +59,7 @@ class TestGliovascularConnectivity:
 
 
 class TestNeuronalConnectivity:
-    def setup(self):
+    def setup_method(self):
         self.neuronal = tested.NeuronalConnectivity(get_data("edges.h5"))
 
     def test_synapse_positions(self):
@@ -84,7 +84,7 @@ class TestNeuronalConnectivity:
 
 
 class TestNeuroglialConnectivity:
-    def setup(self):
+    def setup_method(self):
         self.neuroglial = tested.NeuroglialConnectivity(get_data("neuroglial.h5"))
 
     def test_astrocyte_synapses(self):
@@ -104,7 +104,7 @@ class TestNeuroglialConnectivity:
 
 
 class TestGlialglialConnectivity:
-    def setup(self):
+    def setup_method(self):
         self.glialglial = tested.GlialglialConnectivity(get_data("glialglial.h5"))
 
     def test_astrocyte_astrocytes(self):
