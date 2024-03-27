@@ -173,7 +173,11 @@ def _endfeet_properties_from_astrocyte(data: dict) -> Tuple[np.ndarray, ...]:
     )
 
     morphology = readonly_morphology(data["morphology_path"], data["morphology_position"])
-    astrocyte_section_ids = annotate_endfoot_location(morphology, data["endfeet_surface_targets"])
+    try:
+        astrocyte_section_ids = annotate_endfoot_location(morphology, data["endfeet_surface_targets"])
+    except ValueError:
+        print(f'DEBUG data["morphology_path"] {data["morphology_path"]}')
+        raise ValueError
 
     lengths, diameters, perimeters = create_endfeet_compartment_data(
         data["vasculature_segments"],
