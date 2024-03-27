@@ -110,7 +110,7 @@ def annotate_endfoot_location(morphology, endfoot_points):
         _, idx = cKDTree(points, copy_data=False).query(endfoot_points)  # pylint: disable=not-callable
     except ValueError:
         raise ValueError
-    
+
     return section_ids[idx]
 
 
