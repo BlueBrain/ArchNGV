@@ -1,5 +1,5 @@
 import sys
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import numpy as np
 from numpy import testing as npt
@@ -101,9 +101,8 @@ class EmptyMockTouchInfo:
 
 
 def test_glialglial_dataframe():
-    sys.modules["pytouchreader"] = Mock(TouchInfo=MockTouchInfo)
-
-    df = tested.generate_glialglial(None)
+    with patch.object(tested, "TouchInfo", new=MockTouchInfo):
+        df = tested.generate_glialglial(None)
 
     assert len(df) == 2
     assert set(df.columns) == EXPECTED_COLUMNS
@@ -136,15 +135,11 @@ def test_glialglial_dataframe():
         np.array([[21.1, 21.2, 21.3], [11.0, 11.1, 11.2]]),
     )
 
-    del sys.modules["pytouchreader"]
-
 
 def test_glialglial_dataframe__empty():
-    sys.modules["pytouchreader"] = Mock(TouchInfo=EmptyMockTouchInfo)
+    with patch.object(tested, "TouchInfo", new=EmptyMockTouchInfo):
+        df = tested.generate_glialglial(None)
 
-    df = tested.generate_glialglial(None)
     arr = df.to_numpy()
     assert arr.shape == (0, len(EXPECTED_COLUMNS))
     assert set(df.columns) == EXPECTED_COLUMNS
-
-    del sys.modules["pytouchreader"]

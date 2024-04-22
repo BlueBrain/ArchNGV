@@ -4,6 +4,8 @@ import logging
 import numpy as np
 import pandas as pd
 
+from archngv.core.pytouchreader import TouchInfo
+
 L = logging.getLogger(__name__)
 
 
@@ -23,8 +25,6 @@ def _unpack_types(branch_types):
 
 def generate_glialglial(touches_directory):
     """Create glial glial connectivity dataframe from touches."""
-    from pytouchreader import TouchInfo  # pylint: disable=import-error
-
     touches = TouchInfo(touches_directory).touches
 
     # touch names to column names
