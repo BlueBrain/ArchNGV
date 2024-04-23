@@ -33,8 +33,6 @@ def generate_microdomain_tessellation(
     Note:
         The domain polygons will be intersected with the bounding box geometry in the boundaries.
     """
-    limits = (bounding_box.min_point, bounding_box.max_point)
-
     try:
         # calculates the tessellations using voro++ library
         cells = multivoro.compute_voronoi(
