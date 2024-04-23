@@ -12,7 +12,6 @@ VERSION = module.VERSION
 
 BUILDING = [
     "ngv-ctools>=1.0.0",
-    "bluepy-configfile>=0.1.11",
     "Click>=7.0",
     "numpy-stl>=2.10",
     "openmesh>=1.1.2",

@@ -4,7 +4,6 @@ from pathlib import Path
 
 import h5py
 import libsonata
-from bluepy_configfile.exceptions import BlueConfigError
 
 from archngv.app.logger import LOGGER as L
 from archngv.core.constants import Population
@@ -78,7 +77,7 @@ def _find_neuron_config(circuit_path, neuron_config_filename):
             raise NGVError(f"Neuron circuit config {config_filepath.resolve()} does not exist")
 
     else:
-        default_names = ["CircuitConfig", "BlueConfig", "circuit_config.json"]
+        default_names = ["circuit_config.json"]
         for default_name in default_names:
             config_filepath = Path(circuit_path) / default_name
             if config_filepath.exists():
@@ -92,60 +91,22 @@ def _find_neuron_config(circuit_path, neuron_config_filename):
 def _add_neuronal_circuit(config, circuit_path, neuron_config_filename):
     config_filepath = _find_neuron_config(circuit_path, neuron_config_filename)
     L.warning("Use %s as neuronal config file", config_filepath)
+
     try:
-        # must be a sonata file i.e.: absolute path.
-        from bluepy_configfile.configfile import BlueConfig
+        from bluepysnap import Config
 
-        with open(config_filepath) as f:
-            blue_config = BlueConfig(f)
+        tmp_config = Config(config_filepath, libsonata.CircuitConfig).to_dict()
 
-        config["networks"]["nodes"].extend(
-            [
-                {
-                    "nodes_file": _check_sonata_file(blue_config.Run.CircuitPath, "nodes"),
-                }
-            ]
-        )
+        if len(tmp_config["networks"]["nodes"]) > 1:
+            raise NGVError("Only neuron circuits with a single node population are allowed.")
 
-        config["networks"]["edges"].extend(
-            [
-                {
-                    "edges_file": _check_sonata_file(blue_config.Run.nrnPath, "edges"),
-                }
-            ]
-        )
+        if len(tmp_config["networks"]["edges"]) > 1:
+            raise NGVError("Only neuron circuits with a single edge population are allowed.")
 
-        morph_type = blue_config.Run.get("MorphologyType", "neurolucida-asc").lower()
-        morph_path = blue_config.Run.MorphologyPath
-
-        if morph_type == "neurolucida-asc":
-            morph_path = str(Path(morph_path, "ascii"))
-
-        if morph_type == "swc":
-            config["components"] = {"morphologies_dir": morph_path}
-        else:
-            config["components"] = {"alternate_morphologies": {morph_type: morph_path}}
-
-    except BlueConfigError as bc_e:
-        try:
-            from bluepysnap import Config
-
-            tmp_config = Config(config_filepath, libsonata.CircuitConfig).to_dict()
-
-            if len(tmp_config["networks"]["nodes"]) > 1:
-                raise NGVError(
-                    "Only neuron circuits with a single node population are allowed."
-                ) from bc_e
-
-            if len(tmp_config["networks"]["edges"]) > 1:
-                raise NGVError(
-                    "Only neuron circuits with a single edge population are allowed."
-                ) from bc_e
-
-            tmp_config.pop("manifest", None)
-            config.update(tmp_config)
-        except (JSONDecodeError, KeyError) as e:
-            raise NGVError(f"{config_filepath} is not a bbp/sonata circuit config file") from e
+        tmp_config.pop("manifest", None)
+        config.update(tmp_config)
+    except (JSONDecodeError, KeyError) as e:
+        raise NGVError(f"{config_filepath} is not a bbp/sonata circuit config file") from e
 
     neuronal_nodes = config["networks"]["nodes"][0]
     neuron_node_population = NodesReader(neuronal_nodes["nodes_file"]).name
