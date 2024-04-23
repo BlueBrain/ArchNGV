@@ -4,8 +4,8 @@
 import logging
 from typing import Iterator
 
+import multivoro
 import numpy as np
-import tess
 
 from archngv.core.datasets import Microdomain
 from archngv.exceptions import NGVError
@@ -33,34 +33,51 @@ def generate_microdomain_tessellation(
     Note:
         The domain polygons will be intersected with the bounding box geometry in the boundaries.
     """
-    limits = (bounding_box.min_point, bounding_box.max_point)
-
     try:
         # calculates the tessellations using voro++ library
-        tess_cells = tess.Container(generator_points, limits=limits, radii=generator_radii)
+        cells = multivoro.compute_voronoi(
+            points=generator_points,
+            radii=generator_radii,
+            limits=bounding_box.ranges,
+            n_threads=1,
+        )
     except ValueError:
         # a value error is thrown when the bounding box is smaller or overlapping with a
         # generator point. In that case relax a bit the bounding box taking into account
         # the spherical extent of the somata
         L.warning("Bounding box smaller or overlapping with a generator point.")
         bounding_box = BoundingBox.from_spheres(generator_points, generator_radii) + bounding_box
-        limits = (bounding_box.min_point, bounding_box.max_point)
-        tess_cells = tess.Container(generator_points, limits=limits, radii=generator_radii)
+        cells = multivoro.compute_voronoi(
+            points=generator_points,
+            radii=generator_radii,
+            limits=bounding_box.ranges,
+            n_threads=1,
+        )
+    return map(_microdomain_from_tess_cell, cells)
 
-    return map(_microdomain_from_tess_cell, tess_cells)
 
-
-def _microdomain_from_tess_cell(cell: tess.Cell) -> Microdomain:
+def _microdomain_from_tess_cell(cell) -> Microdomain:
     """Converts a tess cell into a Microdomain object"""
-    points = np.asarray(cell.vertices(), dtype=np.float32)
+    points = cell.get_vertices().astype(np.float32)
 
     # polygon face neighbors
-    neighbors = np.asarray(cell.neighbors(), dtype=np.int64)
+    neighbors = cell.get_neighbors().astype(np.int64)
 
-    triangles, tris_to_polys_map = polygons_to_triangles(points, cell.face_vertices())
+    face_vertices = _face_list(cell.get_face_vertices())
+    triangles, tris_to_polys_map = polygons_to_triangles(points, face_vertices)
     triangle_data = np.column_stack((tris_to_polys_map, triangles))
 
     return Microdomain(points, triangle_data, neighbors[tris_to_polys_map])
+
+
+def _face_list(face_vertices):
+    pos_beg = 0
+    face_list = []
+    while pos_beg < len(face_vertices) - 1:
+        pos_end = pos_beg + face_vertices[pos_beg] + 1
+        face_list.append(face_vertices[(pos_beg + 1) : pos_end])
+        pos_beg = pos_end
+    return face_list
 
 
 def scaling_factor_from_overlap(overlap_factor: float) -> float:

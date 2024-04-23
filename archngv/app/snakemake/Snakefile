@@ -98,7 +98,7 @@ SPACK_MODULEPATH = "/gpfs/bbp.cscs.ch/ssd/apps/bsd/modules/_meta"
 
 MODULES = {
     "glial_gap_junctions": (SPACK_MODULEPATH, ["archive/2022-03", "touchdetector/5.6.1"]),
-    "synthesis": (SPACK_MODULEPATH, ["archive/2023-08", "spatial-index/2.0.0", "py-mpi4py/3.1.4"]),
+    "synthesis": (SPACK_MODULEPATH, ["archive/2023-08", "spatial-index/2.1.0", "py-mpi4py/3.1.4"]),
     "refine_tetrahedral": (SPACK_MODULEPATH, ["archive/2023-05", "gmsh/4.10.3"]),
     "build_tetrahedral": (SPACK_MODULEPATH, ["archive/2023-05", "gmsh/4.10.3"]),
 }

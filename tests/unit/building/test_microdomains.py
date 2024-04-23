@@ -67,28 +67,37 @@ def test_generate_microdomain_tessellation(points, radii, bbox):
     npt.assert_allclose(domain2.volume, 8.0, atol=1e-3)
 
 
-def test_microdomain_from_tess_cell():
-    tess_domain = mock.Mock()
+def test_face_list():
+    faces = [2, 1, 2, 5, 0, 1, 2, 4, 5, 1, 1]
 
-    points = [(0.1, 0.2, 0.3), (0.0, 4.0, 5.0), (0.0, -1.0, 2.0), (3.0, 4.0, -1.0)]
-    face_vertices = [[0, 1, 2, 3]]
-    neighbors = [-1]
+    res = tested._face_list(faces)
 
-    tess_domain.vertices = mock.Mock(return_value=points)
-    tess_domain.neighbors = mock.Mock(return_value=neighbors)
-    tess_domain.face_vertices = mock.Mock(return_value=face_vertices)
+    assert res == [[1, 2], [0, 1, 2, 4, 5], [1]]
 
-    microdomain = tested._microdomain_from_tess_cell(tess_domain)
+
+def test_microdomain_from_cell():
+    cell = mock.Mock()
+
+    points = np.array([(0.1, 0.2, 0.3), (0.0, 4.0, 5.0), (0.0, -1.0, 2.0), (3.0, 4.0, -1.0)])
+    face_vertices = np.array([4, 0, 1, 2, 3])
+    face_list = np.array([[0, 1, 2, 3]])
+    neighbors = np.array([-1])
+
+    cell.get_vertices = mock.Mock(return_value=points)
+    cell.get_neighbors = mock.Mock(return_value=neighbors)
+    cell.get_face_vertices = mock.Mock(return_value=face_vertices)
+
+    microdomain = tested._microdomain_from_tess_cell(cell)
 
     triangles, triangles_to_polygon_map = polygons_to_triangles(
-        np.asarray(points), np.asarray(face_vertices)
+        np.asarray(points), np.asarray(face_list)
     )
 
     npt.assert_allclose(microdomain.points, points)
     npt.assert_allclose(microdomain._triangles, triangles)
     npt.assert_allclose(microdomain.neighbor_ids, [-1, -1])
 
-    for poly, exp_poly in zip(microdomain.polygons, face_vertices):
+    for poly, exp_poly in zip(microdomain.polygons, face_list):
         assert set(poly) == set(exp_poly)
 
 

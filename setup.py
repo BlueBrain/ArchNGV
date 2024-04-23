@@ -17,9 +17,7 @@ BUILDING = [
     "openmesh>=1.1.2",
     "pyyaml>=5.0",
     "pandas>=1.1.0",
-    # tess has been mirrored in bbpgitlab: https://bbpgitlab.epfl.ch/nse/mirrors/tess
-    # and wheels have been released in devpi for >=0.3.2
-    "tess==0.3.2",
+    "multivoro",
     "MorphIO>=3.2.0",
     "morph-tool>=2.4.0",
     "snakemake>=5.0.0",
