@@ -23,7 +23,6 @@ BUILDING = [
     "tess==0.3.2",
     "MorphIO>=3.2.0",
     "morph-tool>=2.4.0",
-    "pytouchreader>=1.4.7",
     "snakemake>=5.0.0",
     "tmd>=2.0.11",
     "NeuroTS>=3.4.0",
