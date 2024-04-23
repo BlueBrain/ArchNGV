@@ -68,7 +68,6 @@ def test_generate_microdomain_tessellation(points, radii, bbox):
 
 
 def test_face_list():
-
     faces = [2, 1, 2, 5, 0, 1, 2, 4, 5, 1, 1]
 
     res = tested._face_list(faces)
@@ -76,13 +75,13 @@ def test_face_list():
     assert res == [[1, 2], [0, 1, 2, 4, 5], [1]]
 
 
-def test_microdomain_from_tess_cell():
+def test_microdomain_from_cell():
     cell = mock.Mock()
 
-    points = [(0.1, 0.2, 0.3), (0.0, 4.0, 5.0), (0.0, -1.0, 2.0), (3.0, 4.0, -1.0)]
-    face_vertices = [4, 0, 1, 2, 3]
-    face_list = [[0, 1, 2, 3]]
-    neighbors = [-1]
+    points = np.array([(0.1, 0.2, 0.3), (0.0, 4.0, 5.0), (0.0, -1.0, 2.0), (3.0, 4.0, -1.0)])
+    face_vertices = np.array([4, 0, 1, 2, 3])
+    face_list = np.array([[0, 1, 2, 3]])
+    neighbors = np.array([-1])
 
     cell.get_vertices = mock.Mock(return_value=points)
     cell.get_neighbors = mock.Mock(return_value=neighbors)

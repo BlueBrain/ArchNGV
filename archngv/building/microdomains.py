@@ -4,8 +4,8 @@
 import logging
 from typing import Iterator
 
-import numpy as np
 import multivoro
+import numpy as np
 
 from archngv.core.datasets import Microdomain
 from archngv.exceptions import NGVError
@@ -70,6 +70,7 @@ def _microdomain_from_tess_cell(cell) -> Microdomain:
     triangle_data = np.column_stack((tris_to_polys_map, triangles))
 
     return Microdomain(points, triangle_data, neighbors[tris_to_polys_map])
+
 
 def _face_list(face_vertices):
     pos_beg = 0
