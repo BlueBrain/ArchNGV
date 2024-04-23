@@ -1,3 +1,4 @@
+# pylint: disable-all
 from __future__ import absolute_import, division, print_function
 
 import glob
@@ -60,8 +61,8 @@ class _TouchInfoI(metaclass=ABCMeta):
         10279
 
         |  When selecting ranges a :py:class:`~caching.CachedDataset` object is returned
-        |  CachedDatasets support only a subset of Numpy operations. If required convert to a full array using \
-        :py:meth:`~caching.CachedDataset.to_nparray`\n
+        |  CachedDatasets support only a subset of Numpy operations. If required convert to a full \
+        array using :py:meth:`~caching.CachedDataset.to_nparray`\n
         >>> tr.neuron_stats[8000:9000]
         <CachedDataset [8000:9000]>
 
@@ -80,11 +81,14 @@ class _TouchInfoI(metaclass=ABCMeta):
     @abstractproperty
     def touches(self):
         """
-        :Property: A virtual array (:py:class:`~caching.CachedDataset` - see example in :py:attr:`~neuron_stats`) which\
-        will lazily load required raw touches when slicing/indexing/iterating.
+        :Property: A virtual array (:py:class:`~caching.CachedDataset` - see example in \
+        :py:attr:`~neuron_stats`) which will lazily load required raw touches when \
+        slicing/indexing/iterating.
 
-        Each record has fields: (pre_ids: [int]*3, post_ids: [int]*3, branch_order: int, distances: [float]*3)\n
-        |  NOTE: CachedDatasets are lazy and to be evaluated one must iterate over or explicitly call to_nparray()
+        Each record has fields: (pre_ids: [int]*3, post_ids: [int]*3, branch_order: \
+        int, distances: [float]*3)\n
+        |  NOTE: CachedDatasets are lazy and to be evaluated one must iterate over or explicitly \
+        call to_nparray()
         |  Please select a small region (slice notation) before converting to a list or numpy array.
         """
         pass
@@ -93,7 +97,7 @@ class _TouchInfoI(metaclass=ABCMeta):
     def get_neuron_stats(self, gids):
         """
         Retrieves neuron_stats (number and offset of touches) given the gid(s).
-        Gids that dont exist wont be in the dict, no exceptions are thrown.
+        Gids that dont exist won't be in the dict, no exceptions are thrown.
 
         :param gids: A single or a list of gids
         :returns: A dictionary of {gid->neuron_info_record[fileIndex, touchesCount, binaryOffset]}
@@ -107,12 +111,16 @@ class _TouchInfoI(metaclass=ABCMeta):
          12: (15, 43634, 341320320),
          13: (15, 44840, 343065680)}
 
-        **Note**: Providing a single neuronID or list of neurons to look for incur similar workload, since the entire dataset
-        has to be read through eventually from disk. Therefore it is strongly advised to provide a list of neuronIDs whenever
-        there's a known set of interest. To loop through the *entire collection* it is preferable to iterate over the
+        **Note**: Providing a single neuronID or list of neurons to look for incur similar \
+        workload, since the entire dataset
+        has to be read through eventually from disk. Therefore it is strongly advised to provide a \
+        list of neuronIDs whenever
+        there's a known set of interest. To loop through the *entire collection* it is preferable \
+        to iterate over the
         :py:attr:`~neuron_stats` property.
 
-        **Note2**: The first number is the fileIndex, which is not necessarily the same number in the touch file extension.
+        **Note2**: The first number is the fileIndex, which is not necessarily the same number in \
+        the touch file extension.
         Therefore, with multiple touch files it is recommended to only consider the touch count.
 
         To access the touches for a given gid please consider using :py:meth:`~get_touches` instead
@@ -122,35 +130,18 @@ class _TouchInfoI(metaclass=ABCMeta):
     @abstractmethod
     def get_touches(self, pre_gid):
         """
-        Retrieves the lazy CachedDataset of touches for a certain pre-synaptical neuron given its ID.
+        Retrieves the lazy CachedDataset of touches for a certain pre-synaptical neuron given its \
+        ID.
 
-        The result CachedDataset is then evaluated if converted to a numpy array (beware of memory limits) or iterated over
-        (minimal memory usage). The same way, to iterate over the *entire* collection of touches the user might consider
+        The result CachedDataset is then evaluated if converted to a numpy array (beware of memory \
+        limits) or iterated over
+        (minimal memory usage). The same way, to iterate over the *entire* collection of touches \
+        the user might consider
         iterating over the :py:attr:`~TouchInfo.touches` property directly.
 
         :param pre_gid: The pre_gid of the touches to be collected
         :returns: a lazy :py:class:`~caching.CachedDataset` of touches for a given gid
-        :raises KeyError: if the Gid doesnt exist
-
-        >>> tr.get_touches(40)
-        <CachedDataset [29632874:29670963]>
-
-        >>> # Extract the first 1000 touches for pre_syn neuron 40 into a Numpy Array
-        >>> tr.get_touches(40)[:1000].to_nparray()
-        array([ ([ 40,   7,   8], [  0, 750,  17],  8, [  1.56869263e+02,   9.96414661e+00,   1.98921120e+00]),
-                ([ 40,  36,   2], [  0, 812,   6], 16, [  2.96031982e+02,   9.35111713e+00,   1.94897437e+00]),
-                ([ 40,  39,   2], [  0, 812,   6], 16, [  2.94123413e+02,   4.85311127e+00,   1.64879370e+00]),
-                ([ 40,  65,  20], [  0, 757,  20],  9, [  2.47649658e+02,   7.73740351e-01,   1.96817005e+00]),
-                ([ 40,  70,  67], [  0, 766, 112], 12, [  4.11462097e+02,   4.07964754e+00,   1.04845428e+00]), ...}
-
-        :py:class:`~caching.CachedDataset` accepts column selection, avoiding loading non-interesting fields into memory \
-                  (single field, once):\n
-        >>> tr.get_touches(40)["post_ids"]
-        <CachedDataset [29632874:29670963]>
-        >>> tr.get_touches(40)["post_ids"][:20].to_nparray()
-        array([[  0, 750,  17],
-               [  0, 812,   6],
-               [  0, 812,   6]...
+        :raises KeyError: if the Gid doesn't exist
 
         For reference only, get_touches() is almost equivalent to:\n
         >>> # Please never write such code. There are no guarantees in the file ordering
@@ -172,8 +163,10 @@ class TouchInfo(_TouchInfoI):
     # ---
     def __init__(self, touch_file_or_dir):
         """
-        Creates the main TouchInfo object. If a directory path is given it will consider all touch files located inside. \n
-        :param touchfile_or_dir: the path for a binary touch file or for a directory containing several of them.
+        Creates the main TouchInfo object. If a directory path is given it will consider all touch \
+        files located inside. \n
+        :param touchfile_or_dir: the path for a binary touch file or for a directory containing \
+        several of them.
 
         >>> tr = pytouchreader.TouchInfo("/home/leite/scratch")
         >>> touches
@@ -296,13 +289,13 @@ class Version(object):
         return ".".join(str(i) for i in self._elements)
 
 
-# ===================================================================================================
+# ==================================================================================================
 class BaseTouchInfo(_TouchInfoI):
     """
     Reader of Binary Neuron-Touches info
     """
 
-    # ---------------------------------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------------------------
     _header_dtype = np.dtype(
         [
             ("architectureIdentifier", np.double),
@@ -513,17 +506,16 @@ class RawCStructReader(DataSetI):
     |  It is typically better used as a data source for a :py:class:`~caching.CachedDataset`
     """
 
-    # -----------------------------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------------------------
     def __init__(self, raw_file, record_dtype, swap_endianness=False, byte_offset=0, nrecords=None):
         """Initializes a RawStructReader \n
         :param raw_file: The path for the raw file
         :param record_dtype: The dtype of the elements to be read
         :param swap_endianness: (optional) If the records endianness must be swapped. Default: False
         :param byte_offset: (optional) Number of bytes to the beginning of the data block.
-        :param nrecords: (optional) Number of records available. Defaults to calculate according to file size
+        :param nrecords: (optional) Number of records available. Defaults to calculate according to\
+        file size
         """
-        # type: (str, np.dtype, int, bool) ->
-        # Some infos we read from the neuron_stats struct, e.g. length
         self.path = raw_file
         self._record_dtype = record_dtype if not swap_endianness else record_dtype.newbyteorder()
         self._record_size = record_dtype.itemsize

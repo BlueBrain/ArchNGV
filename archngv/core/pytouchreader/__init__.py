@@ -18,7 +18,7 @@
 
 """ PyTouchReader - A Python reader of Binary touches, as directly output by touch detector.
 """
-__all__ = ["TouchInfo", "tools"]
+__all__ = ["TouchInfo"]
 __licence__ = "LGPL"
 __copyright__ = "2017 EPFL - Blue Brain Project"
 __author__ = "Fernando Pereira <fernando.pereira[at]epfl.ch>"

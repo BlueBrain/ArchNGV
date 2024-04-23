@@ -1,3 +1,5 @@
+# pylint: disable-all
+
 import logging
 from abc import ABCMeta, abstractmethod, abstractproperty
 from bisect import bisect
@@ -19,7 +21,7 @@ class DataSetI(metaclass=ABCMeta):
         pass
 
     def __setitem__(self, key, value):
-        raise TypeError("Cant set attribute on such container")
+        raise TypeError("Can't set attribute on such container")
 
     @abstractproperty
     def dtype(self):
@@ -46,27 +48,29 @@ class CachingError(Exception):
     pass
 
 
-# ======================================================================================================
+# ==================================================================================================
 class CachedDataset(DataSetI):
     """
-    A CachedDataset implements lazy loading of a very large dataset typically stored on disk,
-    and optimizes reads by caching a relatively large block when needed, a kind of read-ahead buffer.
+    A CachedDataset implements lazy loading of a very large dataset typically stored on disk, and
+    optimizes reads by caching a relatively large block when needed, a kind of read-ahead buffer.
     """
 
-    # ------------------------------------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------------------------
     _MB = 1024 * 1024
     _MAX_DS_SIZE_MB = 1024
 
     # -----
     def __init__(self, ds, col_index=None, cache_size=4 * _MB, **kw):
         """
-        Creates a new Cached Dataset from an existing data source implementing DataSetI (e.g. RawCStructReader, Numpy, ...)
+        Creates a new Cached Dataset from an existing data source implementing DataSetI
+        (e.g. RawCStructReader, Numpy, ...)
 
         :param ds: The base dataset, anything implementing DataSetI
-        :param col_index: (optional) Extract/cache a single column (field). Only available for non-CachedDataset
-        :param cache_size: (optional) The cache size. Only available to non CachedDataset. Default: 4MB
+        :param col_index: (optional) Extract/cache a single column (field). Only available for
+            non-CachedDataset
+        :param cache_size: (optional) The cache size. Only available to non CachedDataset.
+            Default: 4MB
         """
-        # type: (DataSetI) ->
         if isinstance(ds, CachedDataset):
             self.__dict__.update(ds.__dict__)  # Get same properties as source
             self._slice_start = kw.get("_slice_start", ds._slice_start)
@@ -74,7 +78,8 @@ class CachedDataset(DataSetI):
             if col_index:
                 if self._col is not None:
                     raise CachingError(
-                        "CachedDataset can be column. Convert to Numpy if you need advanced indexing"
+                        "CachedDataset can be column. "
+                        "Convert to Numpy if you need advanced indexing."
                     )
                 self._col = col_index
 
@@ -101,7 +106,8 @@ class CachedDataset(DataSetI):
         :param item: The index, slice or column name \n
         |  If [integer] the request is immediately evaluated and a record returned.
         |  If [start:stop] a lazy Dataset) is returned
-        |  If ["column"] a lazy Dataset containing only the selected column. Only once and single column is supported \n
+        |  If ["column"] a lazy Dataset containing only the selected column.
+        Only once and single column is supported \n
         :return: a Numpy record, Numpy array, or CachedDataSet
         """
         if isinstance(item, slice):
@@ -151,7 +157,7 @@ class CachedDataset(DataSetI):
         """
         Materializes the current CachedDataset into a numpy array.\n
         :return: A numpy ndarray with all the data selected in the current dataset view.\n
-        :raises CachingError: If the requested regon is larger than CachedDataset._MAX_DS_SIZE_MB
+        :raises CachingError: If the requested region is larger than CachedDataset._MAX_DS_SIZE_MB
         """
         requested_size = len(self) * self.dtype.itemsize // self._MB
         if requested_size > self._MAX_DS_SIZE_MB:
@@ -198,9 +204,11 @@ class CachedDataset(DataSetI):
     def __repr__(self):
         return "<CachedDataset [{}:{}]>".format(self._slice_start, self._slice_stop)
 
-    # ------------------------------------------------------------------------------------ private section
+    # ------------------------------------------------------------------------------ private section
     def _check_load_buffer(self, start_offset):
-        """Verifies if a given virtual buffer position is available in memory, loading it if necessary"""
+        """Verifies if a given virtual buffer position is available in memory,
+        loading it if necessary.
+        """
         end_offset = self._cache_offset + self._cache_len
         if start_offset < self._cache_offset or start_offset >= end_offset:
             # Align to groups of 32 elems - mitigate reverse access
@@ -227,13 +235,13 @@ class CachedDataset(DataSetI):
             yield cache_b
 
 
-# ===========================================================================================================
+# ==================================================================================================
 class ComposedCachedDataset(DataSetI):
     """
     A CachedDataset which handles multiple dataset sources and behaves as a contiguous container.
     """
 
-    # ------------------------------------------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------------------------
     _MB = 1024 * 1024
     _MAX_DS_SIZE_MB = 1024
 
@@ -252,7 +260,8 @@ class ComposedCachedDataset(DataSetI):
     def add_container(self, container):
         """
         Append an additional data source to the existing dataset.\n
-        :param container: The additional data source to be incorporated, making the virtual dataset to increase length.
+        :param container: The additional data source to be incorporated, making the virtual dataset
+        to increase length.
         """
         container = CachedDataset(container)
         cur_container_index = self._container_count
@@ -279,12 +288,13 @@ class ComposedCachedDataset(DataSetI):
         if isinstance(item, slice):
             start, stop, step = item.indices(len(self))
             if step != 1:
-                raise RuntimeError("PyTouchReader doesnt support slicing step != 1")
+                raise RuntimeError("PyTouchReader doesn't support slicing step != 1")
             c1_i, c1_offset = self._to_real_index(start)
             c2_i, c2_offset = self._to_real_index(stop)
             c1 = self._containers[c1_i]
 
-            # If the data is in the same source container we return directly a slice of that CachedContainer
+            # If the data is in the same source container we return directly a slice of that
+            # CachedContainer
             # Otherwise we return a new composed container with the subcontainers properly sliced
             if c1_i == c2_i:
                 return c1[c1_offset:c2_offset]
