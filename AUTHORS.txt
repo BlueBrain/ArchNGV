@@ -1,0 +1,9 @@
+Maintainer
+----------
+* BBP/NSE
+
+Authors
+-------
+Eleftherios Zisis
+Michael Gevaert
+Jean Jacquemier
