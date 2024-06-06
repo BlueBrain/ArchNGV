@@ -26,7 +26,7 @@ BUILDING = [
     "diameter-synthesis>=0.5.4",
     "dask[distributed,bag]>=2022.04.1",
     "dask_mpi>=2.0",
-    "spatial-index>=2.0.0",
+    "brain-indexer>=3.0.0",
     "atlas-commons>=0.1.4",
     "meshio>=5.3.4",
 ]

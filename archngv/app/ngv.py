@@ -65,7 +65,7 @@ def cell_placement(config, atlas, atlas_cache, vasculature, seed, population_nam
     astrocytic somata.
     """
     # pylint: disable=too-many-locals
-    from spatial_index import SphereIndexBuilder
+    from brain_indexer import SphereIndexBuilder
     from vascpy import PointVasculature
     from voxcell.nexus.voxelbrain import Atlas
 

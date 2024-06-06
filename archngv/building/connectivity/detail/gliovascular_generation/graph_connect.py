@@ -3,7 +3,7 @@
 import logging
 
 import numpy as np
-from spatial_index import PointIndexBuilder
+from brain_indexer import PointIndexBuilder
 
 from archngv.spatial import collision
 from archngv.utils.statistics import truncated_normal

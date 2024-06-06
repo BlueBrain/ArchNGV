@@ -3,7 +3,7 @@ Handles the spatial point pattern generation and spatial indexing for the cell p
 """
 
 import numpy
-from spatial_index import SphereIndexBuilder
+from brain_indexer import SphereIndexBuilder
 
 
 class SpatialSpherePattern:
