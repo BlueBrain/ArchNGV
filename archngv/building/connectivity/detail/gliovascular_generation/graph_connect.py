@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """ Connect astrocytes with vasculature targets
 """
 import logging

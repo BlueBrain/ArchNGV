@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """Multi-dimensional image (e.g. volumes) utils."""
 import logging
 from typing import Generator, Optional, Tuple

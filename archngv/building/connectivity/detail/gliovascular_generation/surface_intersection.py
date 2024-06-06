@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """ Functions for the calculation of surface endfeet targets from their graph skeleton targets
 and the somata positions.
 """

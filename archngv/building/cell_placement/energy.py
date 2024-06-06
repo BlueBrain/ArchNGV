@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """
 Energy operator functionality for calculating the potential energy of the
 spatial point process

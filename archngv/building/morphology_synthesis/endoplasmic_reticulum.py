@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """
 Endoplasmic reticulum data creation and distribution methods
 """

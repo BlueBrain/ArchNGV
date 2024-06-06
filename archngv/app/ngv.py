@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """ngv cli"""
 # pylint: disable=too-many-statements
 from pathlib import Path

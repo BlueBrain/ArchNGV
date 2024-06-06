@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """ Astrocyte post synthesis properties
 """
 import os

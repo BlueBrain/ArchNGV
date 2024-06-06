@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """fast marching method growing"""
 import logging
 from collections import deque

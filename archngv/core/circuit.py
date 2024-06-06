@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """High level Circuit container. All NGV data can be accessed from here.
 
 It uses bluepysnap.circuit.Circuit as main backend.

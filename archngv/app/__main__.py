@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 r"""
 Collection of tools for NGV building
 

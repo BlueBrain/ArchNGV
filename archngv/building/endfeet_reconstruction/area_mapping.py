@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """ Functions for transforming endfeet meshes from overshoot
 distribution down to the biological target mesh area
 """

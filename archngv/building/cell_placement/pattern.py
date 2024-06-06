@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """
 Handles the spatial point pattern generation and spatial indexing for the cell placement
 """

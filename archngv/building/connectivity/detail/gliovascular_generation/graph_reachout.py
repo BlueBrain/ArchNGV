@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """ Contains strategies that can be deployed by astrocytes in order to
 determine the sites of contact with the vasculature
 """

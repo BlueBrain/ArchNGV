@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """NGV config building functions"""
 from json.decoder import JSONDecodeError
 from pathlib import Path

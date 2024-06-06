@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 # pylint: disable-all
 from __future__ import absolute_import, division, print_function
 

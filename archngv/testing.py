@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """Circuit verification testing functions
 """
 from pathlib import Path

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """Generation of connectivity of glial with their neighbors via the formation of gap junctions."""
 import logging
 

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """ Functions related to the calculation of the trunk orientation
 from the geometry of the microdomain
 """

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """This module combines all the NGV lazy data structures."""
 
 

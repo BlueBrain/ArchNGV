@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """NGV constant container for the different ngv objects"""
 
 # redirection of useful snap containers for neuronal circuits. This allows
