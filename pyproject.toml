@@ -78,6 +78,9 @@ Tracker = "https://github.com/BlueBrain/ArchNGV/issues"
 [project.scripts]
 ngv = "archngv.app.__main__:app"
 
+[tool.setuptools.packages.find]
+where = ["archngv"]
+
 [tool.setuptools_scm]
 local_scheme = "no-local-version"
 
@@ -87,6 +90,8 @@ target-version = [
     'py38',
     'py39',
     'py310',    
+    'py311',    
+    'py312',    
 ]
 include = '''
 ^/(
