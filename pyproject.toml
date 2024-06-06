@@ -1,11 +1,14 @@
 [build-system]
-requires = ["setuptools >= 45.0", "wheel"]
+requires = [
+    "setuptools>=64",
+    "setuptools_scm>=8"
+]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "ArchNGV"
 description = "NGV architecture modules"
-readme = { file = "README.rst", content-type = "text/x-rst" }
+readme = "README.md"
 requires-python = ">=3.9"
 license = { file = "LICENSE.txt" }
 authors = [
@@ -79,7 +82,8 @@ Tracker = "https://github.com/BlueBrain/ArchNGV/issues"
 ngv = "archngv.app.__main__:app"
 
 [tool.setuptools.packages.find]
-where = ["archngv"]
+include = ["archngv"]
+namespaces = false
 
 [tool.setuptools_scm]
 local_scheme = "no-local-version"

@@ -22,9 +22,9 @@ from pathlib import Path
 import click
 import pkg_resources
 
+from archngv import __version__ as VERSION
 from archngv.app import ngv
 from archngv.app.logger import LOGGER, setup_logging
-from archngv.version import VERSION
 
 
 @click.group("ngv", help=__doc__.format(esc="\b"))

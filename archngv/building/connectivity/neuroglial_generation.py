@@ -6,9 +6,9 @@
 import logging
 from builtins import range
 
+import brain_indexer
 import numpy as np
 import pandas as pd
-import brain_indexer
 
 from archngv.spatial.collision import convex_shape_with_spheres
 
