@@ -138,7 +138,6 @@ A final sbatch script example
 #SBATCH --error err-%J.log
 #SBATCH --mem 200000
 #SBATCH --exclusive
-​
 export DASK_DISTRIBUTED__WORKER__USE_FILE_LOCKING=False
 export DASK_DISTRIBUTED__WORKER__MEMORY__TARGET=False  # don't spill to disk
 export DASK_DISTRIBUTED__WORKER__MEMORY__SPILL=False  # don't spill to disk
@@ -149,13 +148,13 @@ export DASK_DISTRIBUTED__WORKER__PROFILE__INTERVAL=10000ms  # Time between stati
 export DASK_DISTRIBUTED__WORKER__PROFILE__CYCLE=1000000ms  # Time between starting new profile
 
 source <venv with ArchNGV installed>/bin/activate
-​
+
 snakemake --snakefile <path to Snakefile of this project> \
           --config bioname=<path to bioname> \
           --directory <path to save results> \
           --cluster-config <path to your cluster.yaml> \
           -f synthesis
-​```
+```
 
 ## Acknowledgements
 
