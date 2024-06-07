@@ -155,6 +155,28 @@ snakemake --snakefile <path to Snakefile of this project> \
           --cluster-config <path to your cluster.yaml> \
           -f synthesis
 ```
+## Citation
+When you use ArchNGV software or methods in your research, we ask you to cite the following publication (this includes poster presentations):
+
+[Zisis E, Keller D, Kanari L, Arnaudon A, Gevaert M, Delemontex T, Coste B, Foni A, Abdellah M, Calì C, Hess K, Magistretti PJ, Schürmann F, Markram H. 2021. Digital Reconstruction of the Neuro-Glia-Vascular Architecture. Cerebral Cortex. 31:5686–5703.
+](https://doi.org/10.1093/cercor/bhab254)
+
+```
+@article{10.1093/cercor/bhab254,
+    author = {Zisis, Eleftherios and Keller, Daniel and Kanari, Lida and Arnaudon, Alexis and Gevaert, Michael and Delemontex, Thomas and Coste, Benoît and Foni, Alessandro and Abdellah, Marwan and Calì, Corrado and Hess, Kathryn and Magistretti, Pierre Julius and Schürmann, Felix and Markram, Henry},
+    title = "{Digital Reconstruction of the Neuro-Glia-Vascular Architecture}",
+    journal = {Cerebral Cortex},
+    volume = {31},
+    number = {12},
+    pages = {5686-5703},
+    year = {2021},
+    month = {08},
+    issn = {1047-3211},
+    doi = {10.1093/cercor/bhab254},
+    url = {https://doi.org/10.1093/cercor/bhab254},
+    eprint = {https://academic.oup.com/cercor/article-pdf/31/12/5686/40814577/bhab254.pdf},
+}
+```
 
 ## Acknowledgements
 
