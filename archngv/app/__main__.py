@@ -11,12 +11,12 @@ Collection of tools for NGV building
 \____|__  /__|    \___  >___|  /\____|__  /\______  /  \___/
         \/            \/     \/         \/        \/
 """
+import importlib.resources
 import logging
 import os
 import stat
 import subprocess
 import sys
-import importlib.resources
 from datetime import datetime
 from pathlib import Path
 
@@ -25,7 +25,6 @@ import click
 from archngv import __version__ as VERSION
 from archngv.app import ngv
 from archngv.app.logger import LOGGER, setup_logging
-
 
 _PACKAGE = importlib.resources.files(__package__)
 
