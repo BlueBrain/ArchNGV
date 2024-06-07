@@ -1,36 +1,39 @@
-# Usage on BB5
+# ArchNGV
+Modules for in-silco building the Neuronal-Glial-Vascular structural architecture.
 
 ## Installation
 
+### From PyPI
+
 ```shell
-# Clone this repository
-$ git clone git@bbpgitlab.epfl.ch:nse/ArchNGV.git
-
-# Load most recent stable modules
-$ module purge
-$ module load unstable python/3.10.8
-
-
-# Create a Python virtualenv in repository source directory
-$ python -m venv /path/to/repo/.venv
-
-# Bring the virtualenv in this shell environment
-$ . /path/to/repo/.venv/bin/activate
-
-# Install ArchNGV
-$ cd /path/to/repo
-$ pip install .
+pip install archngv[all]
 ```
 
+### From source
+```shell
+# Clone this repository
+git clone https://github.com/BlueBrain/ArchNGV.git
+
+# Create a Python virtualenv in repository source directory
+python -m venv /path/to/repo/.venv
+
+# Bring the virtualenv in this shell environment
+. /path/to/repo/.venv/bin/activate
+
+# Install ArchNGV
+cd ArchNGV/
+pip install .[all]
+```
+# Examples
 ## Create circuit exemplars
 
 ```shell
 # Create a directory for your circuit
-$ circuit_dir=/gpfs/bbp.cscs.ch/project/projXX/$USER/ArchNGVCircuits
-$ mkdir -p $circuit_dir
+circuit_dir=./circuits
+mkdir -p $circuit_dir
 
 # Create an exemplar
-$ python ./exemplar/create_exemplar.py $circuit_dir
+python ./exemplar/create_exemplar.py $circuit_dir
 ```
 
 ## Execute cell placement
@@ -39,10 +42,10 @@ To proceed to the cell placement in one of the created exemplar:
 
 ```
 # Change directory to one of the created exemplar
-$ cd $circuit_dir/exemplar_ID
+cd $circuit_dir/exemplar_ID
 
 # Execute the "cell-placement" snakemake target
-$ ./run.sh cell-placement
+./run.sh cell-placement
 # -> creates file build/cell_data.h5
 ```
 
@@ -50,13 +53,13 @@ Use the `cell_data_sonata` SnakeMake task to perform output conversion to Sonata
 after the cell placement:
 
 ```shell
-$ ./run.sh cell_data_sonata
+./run.sh cell_data_sonata
 
 # sonata file glia.h5.somata is created in the sonata.tmp directory
-$ find build/sonata.tmp
-build/sonata.tmp
-build/sonata.tmp/nodes
-build/sonata.tmp/nodes/glia.h5.somata
+find build/sonata.tmp
+# build/sonata.tmp
+# build/sonata.tmp/nodes
+# build/sonata.tmp/nodes/glia.h5.somata
 ```
 
 ## Astrocyte Synthesis
@@ -153,3 +156,9 @@ snakemake --snakefile <path to Snakefile of this project> \
           --cluster-config <path to your cluster.yaml> \
           -f synthesis
 ​```
+
+## Acknowledgements
+
+The development of this software was supported by funding to the Blue Brain Project, a research center of the École polytechnique fédérale de Lausanne (EPFL), from the Swiss government’s ETH Board of the Swiss Federal Institutes of Technology.
+
+Copyright (c) 2019-2024 Blue Brain Project/EPFL
