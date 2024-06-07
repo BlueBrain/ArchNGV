@@ -16,11 +16,11 @@ import os
 import stat
 import subprocess
 import sys
+import importlib.resources
 from datetime import datetime
 from pathlib import Path
 
 import click
-import pkg_resources
 
 from archngv import __version__ as VERSION
 from archngv.app import ngv
@@ -81,8 +81,7 @@ def create_exemplar(project_dir):
     if not project_dir.exists():
         os.mkdir(project_dir)
 
-    exemplar_dir = Path(pkg_resources.resource_filename(__name__, "exemplar"))
-
+    exemplar_dir = importlib.resources.files(__name__) / "exemplar"
     copy_and_overwrite(exemplar_dir / "bioname", project_dir / "bioname")
     copy_and_overwrite(exemplar_dir / "run.sh", project_dir / "run.sh")
     copy_and_overwrite(exemplar_dir / "launch.sbatch", project_dir / "launch.sbatch")
@@ -95,7 +94,7 @@ def create_exemplar(project_dir):
 @app.command(name="snakefile-path")
 def snakefile_path():
     """Outputs a path to the default Snakefile."""
-    click.echo(pkg_resources.resource_filename(__name__, "snakemake/Snakefile"))
+    click.echo(importlib.resources.files(__name__) / "snakemake/Snakefile")
 
 
 def _index(args, *opts):
@@ -146,7 +145,7 @@ def _run_snakemake_process(cmd, errorcode=1):
     "--snakefile",
     required=False,
     type=click.Path(exists=True, dir_okay=False),
-    default=pkg_resources.resource_filename(__name__, "snakemake/Snakefile"),
+    default=importlib.resources.files(__name__) / "snakemake/Snakefile",
     show_default=True,
     help="Path to workflow definition in form of a snakefile.",
 )
@@ -163,7 +162,7 @@ def run(
     """
     args = ctx.args
     if snakefile is None:
-        snakefile = pkg_resources.resource_filename(__name__, "snakemake/Snakefile")
+        snakefile = importlib.resources.files(__name__) / "snakemake/Snakefile"
     assert Path(snakefile).is_file(), f'Snakefile "{snakefile}" does not exist!'
     assert _index(args, "--config", "-C") is None, "snakemake `--config` option is not allowed"
 
