@@ -180,6 +180,8 @@ When you use ArchNGV software or methods in your research, we ask you to cite th
 
 ## Acknowledgements
 
+This publication is based upon work supported by the King Abdullah University of Science and Technology (KAUST) Office of Sponsored Research (OSR) under Award No. OSR-2017-CRG6-3438
+
 The development of this software was supported by funding to the Blue Brain Project, a research center of the École polytechnique fédérale de Lausanne (EPFL), from the Swiss government’s ETH Board of the Swiss Federal Institutes of Technology.
 
 Copyright (c) 2019-2024 Blue Brain Project/EPFL
