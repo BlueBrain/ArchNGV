@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """ GJK algorithm
 https://en.wikipedia.org/wiki/Gilbert%E2%80%93Johnson%E2%80%93Keerthi_distance_algorithm
 """

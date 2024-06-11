@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """ Exporters for the cell placement stage of the NGV pipeline
 """
 

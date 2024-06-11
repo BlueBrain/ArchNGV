@@ -1,12 +1,14 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """ Neuroglial Connectivity
 """
 
 import logging
 from builtins import range
 
+import brain_indexer
 import numpy as np
 import pandas as pd
-import spatial_index
 
 from archngv.spatial.collision import convex_shape_with_spheres
 
@@ -60,7 +62,7 @@ def generate_neuroglial(astrocytes, microdomains, neuronal_connectivity, synapse
     synapse_coordinates = neuronal_connectivity.synapse_positions()
     synapse_to_neuron = neuronal_connectivity.target_neurons()
 
-    index = spatial_index.open_index(synapses_index_path)
+    index = brain_indexer.open_index(synapses_index_path)
 
     ret = []
     for astrocyte_id in range(len(astrocytes.properties)):

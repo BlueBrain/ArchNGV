@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """ Facade classes for NGV connectivity
 """
 

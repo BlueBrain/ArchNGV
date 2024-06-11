@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """Archngv dataset classes."""
 import collections.abc
 from dataclasses import dataclass

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 r"""
 Collection of tools for NGV building
 
@@ -9,6 +11,7 @@ Collection of tools for NGV building
 \____|__  /__|    \___  >___|  /\____|__  /\______  /  \___/
         \/            \/     \/         \/        \/
 """
+import importlib.resources
 import logging
 import os
 import stat
@@ -18,11 +21,12 @@ from datetime import datetime
 from pathlib import Path
 
 import click
-import pkg_resources
 
+from archngv import __version__ as VERSION
 from archngv.app import ngv
 from archngv.app.logger import LOGGER, setup_logging
-from archngv.version import VERSION
+
+_PACKAGE = importlib.resources.files(__package__)
 
 
 @click.group("ngv", help=__doc__.format(esc="\b"))
@@ -79,8 +83,7 @@ def create_exemplar(project_dir):
     if not project_dir.exists():
         os.mkdir(project_dir)
 
-    exemplar_dir = Path(pkg_resources.resource_filename(__name__, "exemplar"))
-
+    exemplar_dir = _PACKAGE / "app/exemplar"
     copy_and_overwrite(exemplar_dir / "bioname", project_dir / "bioname")
     copy_and_overwrite(exemplar_dir / "run.sh", project_dir / "run.sh")
     copy_and_overwrite(exemplar_dir / "launch.sbatch", project_dir / "launch.sbatch")
@@ -93,7 +96,7 @@ def create_exemplar(project_dir):
 @app.command(name="snakefile-path")
 def snakefile_path():
     """Outputs a path to the default Snakefile."""
-    click.echo(pkg_resources.resource_filename(__name__, "snakemake/Snakefile"))
+    click.echo(_PACKAGE / "app/snakemake/Snakefile")
 
 
 def _index(args, *opts):
@@ -144,7 +147,7 @@ def _run_snakemake_process(cmd, errorcode=1):
     "--snakefile",
     required=False,
     type=click.Path(exists=True, dir_okay=False),
-    default=pkg_resources.resource_filename(__name__, "snakemake/Snakefile"),
+    default=_PACKAGE / "app/snakemake/Snakefile",
     show_default=True,
     help="Path to workflow definition in form of a snakefile.",
 )
@@ -161,7 +164,7 @@ def run(
     """
     args = ctx.args
     if snakefile is None:
-        snakefile = pkg_resources.resource_filename(__name__, "snakemake/Snakefile")
+        snakefile = _PACKAGE / "app/snakemake/Snakefile"
     assert Path(snakefile).is_file(), f'Snakefile "{snakefile}" does not exist!'
     assert _index(args, "--config", "-C") is None, "snakemake `--config` option is not allowed"
 

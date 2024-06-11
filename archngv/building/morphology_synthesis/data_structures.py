@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """Morphology synthesis data structures"""
 from collections import namedtuple
 

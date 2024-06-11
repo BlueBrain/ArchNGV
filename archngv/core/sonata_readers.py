@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """h5 readers are simple standalone sonata readers using libsonata that prevents in memory
 loading of data and does not need circuit vision/config files."""
 import libsonata

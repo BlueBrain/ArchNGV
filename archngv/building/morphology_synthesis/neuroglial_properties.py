@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """Astrocyte morphology properties that are attached to the neuroglial connectivity
 following synthesis
 """

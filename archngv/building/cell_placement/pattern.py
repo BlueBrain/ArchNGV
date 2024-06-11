@@ -1,9 +1,11 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """
 Handles the spatial point pattern generation and spatial indexing for the cell placement
 """
 
 import numpy
-from spatial_index import SphereIndexBuilder
+from brain_indexer import SphereIndexBuilder
 
 
 class SpatialSpherePattern:

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """ Shapes Data Structures
 """
 from typing import Set, Tuple

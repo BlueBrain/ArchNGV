@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """ Geometric inclusion checks
 """
 import numpy as np

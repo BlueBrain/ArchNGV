@@ -56,6 +56,8 @@ html_theme = "sphinx-bluebrain-theme"
 # html_static_path = ['_static']
 
 html_theme_options = {
+    "repo_url": "https://github.com/BlueBrain/ArchNGV",
+    "repo_name": "BlueBrain/ArchNGV",
     "metadata_distribution": "archngv",
 }
 

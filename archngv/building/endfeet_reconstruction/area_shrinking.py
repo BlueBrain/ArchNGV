@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """ Functions to reduce the area of surface meshes using
 travel time from fmm simulation
 """

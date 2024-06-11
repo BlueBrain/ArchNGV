@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """ Annotations for synapses and endfeet surface targets
 """
 import morphio

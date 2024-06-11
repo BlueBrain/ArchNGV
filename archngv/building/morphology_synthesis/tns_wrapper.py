@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """ Wrapper of TNS AstrocyteGrower. It takes care of all
 the functionality required for astrocyte synthesis.
 """

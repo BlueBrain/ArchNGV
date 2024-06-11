@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """SONATA node and edge population exporters"""
 import logging
 from pathlib import Path

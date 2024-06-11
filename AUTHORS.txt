@@ -1,0 +1,11 @@
+Maintainer
+----------
+* BBP/NSE
+
+Authors
+-------
+Arseny V. Povolotsky
+Eleftherios Zisis
+Michael Gevaert
+Jean Jacquemier
+Thomas Delemontex

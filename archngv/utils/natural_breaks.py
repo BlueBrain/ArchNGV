@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """ Natural breaks algorithms
 """
 import numpy as np

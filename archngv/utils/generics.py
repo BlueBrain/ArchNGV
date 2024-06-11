@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """Generic utilities."""
 from collections.abc import Iterable
 

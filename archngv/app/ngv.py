@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """ngv cli"""
 # pylint: disable=too-many-statements
 from pathlib import Path
@@ -65,7 +67,7 @@ def cell_placement(config, atlas, atlas_cache, vasculature, seed, population_nam
     astrocytic somata.
     """
     # pylint: disable=too-many-locals
-    from spatial_index import SphereIndexBuilder
+    from brain_indexer import SphereIndexBuilder
     from vascpy import PointVasculature
     from voxcell.nexus.voxelbrain import Atlas
 

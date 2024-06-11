@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """Endfeet properties to be added to the gliovascular edge population file"""
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Iterator, Tuple

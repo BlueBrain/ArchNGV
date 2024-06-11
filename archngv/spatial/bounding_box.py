@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """ Bounding box related functions
 """
 # pylint: disable = too-many-locals
