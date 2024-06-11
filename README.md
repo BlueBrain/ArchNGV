@@ -1,7 +1,7 @@
 # ArchNGV
 Modules for in-silco building the Neuronal-Glial-Vascular structural architecture.
 
-## Documentations:
+## Documentation:
 
 * [latest](https://archngv.readthedocs.io/en/latest)
 
