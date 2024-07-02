@@ -1,3 +1,6 @@
+
+.. image: https://raw.githubusercontent.com/BlueBrain/ArchNGV/main/doc/source/logo/logo.jpg
+
 # ArchNGV
 Modules for in-silco building the Neuronal-Glial-Vascular structural architecture.
 
